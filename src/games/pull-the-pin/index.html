@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Pull the Pin - Mobile Gaming</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f0f23">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pull the Pin">
+  <meta name="description" content="Pull pins to guide balls to the goal">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../../styles/reset.css">
+  <link rel="stylesheet" href="../../styles/variables.css">
+  <link rel="stylesheet" href="../../styles/components.css">
+  <link rel="stylesheet" href="../../styles/game-shell.css">
+  <link rel="stylesheet" href="../../styles/infinite-mode.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="../../" class="skip-link">Skip to main content</a>
+
+  <div class="game-container">
+    <header class="game-header">
+      <a href="../../" class="back-link" aria-label="Back to games">
+        <span aria-hidden="true">&larr;</span> Back
+      </a>
+      <h1>Pull the Pin</h1>
+      <div class="game-header-controls">
+        <button class="game-btn game-btn-icon game-btn-ghost" id="btn-sound" aria-label="Toggle sound" title="Toggle sound">
+          <span aria-hidden="true">🔊</span>
+        </button>
+        <button class="game-btn game-btn-icon game-btn-ghost" id="btn-settings" aria-label="Settings" title="Settings">
+          <span aria-hidden="true">⚙️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Infinite Mode Panel -->
+    <div class="infinite-panel" id="infinite-panel" aria-label="Infinite mode settings">
+      <div class="infinite-panel-header">
+        <span class="infinite-panel-title">
+          <span aria-hidden="true">∞</span> Infinite Mode
+        </span>
+        <label class="infinite-toggle">
+          <input type="checkbox" class="infinite-toggle-switch" id="infinite-toggle" aria-label="Toggle infinite mode">
+        </label>
+      </div>
+
+      <!-- Infinite Mode Controls (hidden when disabled) -->
+      <div class="infinite-controls" id="infinite-controls" style="display: none;">
+        <!-- Seed Input -->
+        <div class="seed-section">
+          <span class="seed-label">Seed:</span>
+          <input type="text" class="seed-input" id="seed-input" placeholder="Enter seed..." maxlength="10" aria-label="Puzzle seed">
+          <button class="seed-refresh-btn" id="btn-new-seed" aria-label="Generate new seed" title="New random seed">
+            🎲
+          </button>
+          <button class="seed-share-btn" id="btn-share-seed" aria-label="Share seed" title="Copy seed to clipboard">
+            📋
+          </button>
+        </div>
+
+        <!-- Difficulty Selector -->
+        <div class="difficulty-section">
+          <div class="difficulty-label">Difficulty:</div>
+          <div class="difficulty-selector" role="radiogroup" aria-label="Difficulty level">
+            <button class="difficulty-btn easy" data-difficulty="easy" role="radio" aria-checked="false">
+              <span class="emoji">😊</span> Easy
+            </button>
+            <button class="difficulty-btn medium selected" data-difficulty="medium" role="radio" aria-checked="true">
+              <span class="emoji">🤔</span> Medium
+            </button>
+            <button class="difficulty-btn hard" data-difficulty="hard" role="radio" aria-checked="false">
+              <span class="emoji">😈</span> Hard
+            </button>
+          </div>
+        </div>
+
+        <!-- Session Stats -->
+        <div class="session-stats" id="session-stats">
+          <div class="session-stats-header">
+            <span class="session-stats-title">Session Stats</span>
+            <button class="session-stats-reset" id="btn-reset-stats">Reset</button>
+          </div>
+          <div class="session-stats-grid">
+            <div class="session-stat completed">
+              <div class="session-stat-value" id="stat-completed">0</div>
+              <div class="session-stat-label">Completed</div>
+            </div>
+            <div class="session-stat streak">
+              <div class="session-stat-value" id="stat-streak">0</div>
+              <div class="session-stat-label">Streak</div>
+            </div>
+            <div class="session-stat time">
+              <div class="session-stat-value" id="stat-time">0s</div>
+              <div class="session-stat-label">Time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-stats" role="status" aria-live="polite">
+      <div class="game-stat">
+        <span class="game-stat-value" id="level-display">1</span>
+        <span class="game-stat-label">Level</span>
+      </div>
+      <div class="game-stat">
+        <span class="game-stat-value" id="moves-display">0</span>
+        <span class="game-stat-label">Pins</span>
+      </div>
+      <div class="game-stat">
+        <span class="game-stat-value" id="balls-display">0</span>
+        <span class="game-stat-label">Balls</span>
+      </div>
+    </div>
+
+    <main id="main-content" class="game-board" role="main">
+      <canvas id="game-canvas" aria-label="Pull the Pin game board"></canvas>
+    </main>
+
+    <div class="game-controls">
+      <button class="game-btn game-btn-secondary" id="btn-undo" disabled aria-label="Undo last move">
+        <span aria-hidden="true">↩</span> Undo
+      </button>
+      <button class="game-btn game-btn-secondary" id="btn-hint" aria-label="Get hint">
+        <span aria-hidden="true">💡</span> Hint
+      </button>
+      <button class="game-btn game-btn-secondary" id="btn-restart" aria-label="Restart level">
+        <span aria-hidden="true">🔄</span> Restart
+      </button>
+    </div>
+
+    <!-- Level Navigation (hidden in infinite mode) -->
+    <div class="level-nav" id="level-nav">
+      <button class="game-btn game-btn-ghost" id="btn-prev" aria-label="Previous level">
+        <span aria-hidden="true">◀</span> Prev
+      </button>
+      <span id="level-progress" class="level-progress">Level 1 / 10</span>
+      <button class="game-btn game-btn-ghost" id="btn-next" aria-label="Next level">
+        Next <span aria-hidden="true">▶</span>
+      </button>
+    </div>
+
+    <!-- Next Puzzle Button (shown in infinite mode after win) -->
+    <div class="next-puzzle-section" id="next-puzzle-section" style="display: none;">
+      <button class="game-btn game-btn-primary game-btn-lg" id="btn-next-puzzle">
+        Next Puzzle →
+      </button>
+    </div>
+  </div>
+
+  <!-- Win Overlay -->
+  <div class="game-overlay" id="win-overlay" role="dialog" aria-labelledby="win-title" aria-hidden="true">
+    <div class="game-overlay-content">
+      <h2 class="game-overlay-title win" id="win-title">Level Complete!</h2>
+      <div class="stars-display" id="stars-display" aria-label="Rating">
+        <span class="star" aria-hidden="true">⭐</span>
+        <span class="star" aria-hidden="true">⭐</span>
+        <span class="star" aria-hidden="true">⭐</span>
+      </div>
+      <p class="stats-summary" id="stats-summary">All balls collected!</p>
+      <div class="overlay-buttons">
+        <button class="game-btn game-btn-secondary" id="btn-replay">Replay</button>
+        <button class="game-btn game-btn-primary" id="btn-next-level">Next Level</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lose Overlay -->
+  <div class="game-overlay" id="lose-overlay" role="dialog" aria-labelledby="lose-title" aria-hidden="true">
+    <div class="game-overlay-content">
+      <h2 class="game-overlay-title lose" id="lose-title">Try Again!</h2>
+      <p class="stats-summary" id="lose-summary">Some balls were lost!</p>
+      <div class="overlay-buttons">
+        <button class="game-btn game-btn-secondary" id="btn-retry">Retry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="game-overlay" id="settings-overlay" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
+    <div class="game-overlay-content settings-content">
+      <h2 id="settings-title">Settings</h2>
+      <div class="settings-group">
+        <label class="setting-item">
+          <span>Sound Effects</span>
+          <input type="checkbox" id="setting-sound" checked>
+        </label>
+        <label class="setting-item">
+          <span>Haptic Feedback</span>
+          <input type="checkbox" id="setting-haptic" checked>
+        </label>
+        <label class="setting-item">
+          <span>Reduced Motion</span>
+          <input type="checkbox" id="setting-motion">
+        </label>
+      </div>
+      <button class="game-btn game-btn-primary" id="btn-close-settings">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
