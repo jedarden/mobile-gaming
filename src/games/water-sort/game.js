@@ -23,6 +23,7 @@ import {
   executePour,
   checkWin,
   countCompletedTubes,
+  isTubeComplete,
   getHint,
   calculateStars,
   createHistory
@@ -368,7 +369,9 @@ class WaterSortGame {
         this.state.selectedTube = tubeIndex;
         audio.playSelect();
       } else {
-        audio.playError();
+        // Invalid move - play shake sound and animate
+        audio.playShake();
+        this.renderer.shake();
       }
       this.render();
     }
@@ -410,11 +413,20 @@ class WaterSortGame {
     this.animating = true;
     this.history.push(cloneState(this.state));
 
+    // Track tube completion before pour
+    const completedBefore = countCompletedTubes(this.state);
+
     // Animate pour
     await this.renderer.animatePour(this.state, fromIndex, toIndex, () => {
       executePour(this.state, fromIndex, toIndex);
       audio.playPour();
     });
+
+    // Check for newly completed tubes
+    const completedAfter = countCompletedTubes(this.state);
+    if (completedAfter > completedBefore) {
+      audio.playComplete();
+    }
 
     // Check win
     if (checkWin(this.state)) {

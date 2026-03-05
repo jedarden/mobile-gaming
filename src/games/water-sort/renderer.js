@@ -34,17 +34,29 @@ export function createRenderer(canvas) {
   let scale = 1;
   let reducedMotion = false;
   let animationFrame = null;
-  
+
   // Animation state
   const animations = new Map();
-  
+
+  // Shake animation state
+  let shakeOffset = 0;
+  let shakeEndTime = 0;
+
   return {
     get scale() { return scale; },
-    
+
     setReducedMotion(enabled) {
       reducedMotion = enabled;
     },
-    
+
+    /**
+     * Trigger shake animation for invalid move
+     */
+    shake() {
+      if (reducedMotion) return;
+      shakeEndTime = Date.now() + 300; // 300ms shake
+    },
+
     /**
      * Resize canvas to fit state
      */
@@ -52,42 +64,54 @@ export function createRenderer(canvas) {
       const container = canvas.parentElement;
       const containerWidth = container.clientWidth - 40;
       const containerHeight = container.clientHeight - 200;
-      
+
       const numTubes = state.tubes.length;
       const tubesPerRow = Math.min(numTubes, Math.floor(containerWidth / (TUBE_WIDTH + TUBE_GAP)));
       const rows = Math.ceil(numTubes / tubesPerRow);
-      
+
       const totalWidth = tubesPerRow * TUBE_WIDTH + (tubesPerRow - 1) * TUBE_GAP;
       const totalHeight = rows * TUBE_HEIGHT + (rows - 1) * TUBE_GAP;
-      
+
       scale = Math.min(
         containerWidth / totalWidth,
         containerHeight / totalHeight,
         1.5
       );
-      
+
       canvas.width = totalWidth * scale;
       canvas.height = totalHeight * scale;
-      
+
       canvas.style.width = `${canvas.width}px`;
       canvas.style.height = `${canvas.height}px`;
     },
-    
+
     /**
      * Render current state
      */
     render(state) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
+      // Calculate shake offset for invalid move animation
+      const now = Date.now();
+      if (now < shakeEndTime) {
+        const progress = (shakeEndTime - now) / 300;
+        shakeOffset = Math.sin(progress * Math.PI * 8) * 5 * scale * progress;
+      } else {
+        shakeOffset = 0;
+      }
+
       const numTubes = state.tubes.length;
       const tubesPerRow = Math.floor(canvas.width / ((TUBE_WIDTH + TUBE_GAP) * scale));
-      
+
       state.tubes.forEach((tube, index) => {
         const pos = this.getTubePosition(index, numTubes, tubesPerRow);
         const isSelected = state.selectedTube === index;
         const isPreview = state.pourPreview?.to === index;
-        
-        this.drawTube(tube, pos.x, pos.y, state.capacity, isSelected, isPreview);
+
+        // Apply shake offset to selected tube
+        const offsetX = isSelected ? shakeOffset : 0;
+
+        this.drawTube(tube, pos.x + offsetX, pos.y, state.capacity, isSelected, isPreview);
       });
     },
     
