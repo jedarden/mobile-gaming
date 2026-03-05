@@ -167,6 +167,11 @@ export function countNonEmptyTubes(state) {
  * Get hint for next move
  */
 export function getHint(state) {
+  // If game is already won, no hint needed
+  if (checkWin(state)) {
+    return null;
+  }
+
   // Find a valid move that makes progress
   for (let from = 0; from < state.tubes.length; from++) {
     const fromTube = state.tubes[from];

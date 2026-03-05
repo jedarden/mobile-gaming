@@ -7,9 +7,19 @@
  * - Social media deep links
  * - Score/result sharing
  * - GIF export and sharing
+ * - Achievement card generation and sharing
  */
 
 import { createGIFExporter, exportSolutionAsGIF } from './gif-export.js';
+import {
+  ShareCardGenerator,
+  ShareManager,
+  getStreakCalendarData,
+  shareCurrentStreak as shareStreakImpl,
+  shareCurrentLevel as shareLevelImpl,
+  shareDailyResult as shareDailyImpl,
+  shareProfileStats as shareProfileImpl
+} from './share-cards.js';
 
 export const Share = {
   /**
@@ -222,6 +232,219 @@ export const Share = {
       document.body.removeChild(textarea);
       return success;
     }
+  },
+
+  // ========== Achievement Card Sharing ==========
+
+  /**
+   * Create a share card generator
+   * @param {Object} options - Generator options
+   * @returns {ShareCardGenerator}
+   */
+  createCardGenerator(options) {
+    return new ShareCardGenerator(options);
+  },
+
+  /**
+   * Create a share manager for handling share dialogs
+   * @returns {ShareManager}
+   */
+  createShareManager() {
+    return new ShareManager();
+  },
+
+  /**
+   * Share streak achievement with card
+   * @param {Object} data - Streak data
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareStreak(data) {
+    const manager = new ShareManager();
+    return manager.shareStreak(data);
+  },
+
+  /**
+   * Share milestone/level achievement with card
+   * @param {Object} data - Milestone data
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareMilestone(data) {
+    const manager = new ShareManager();
+    return manager.shareMilestone(data);
+  },
+
+  /**
+   * Share game mastery achievement with card
+   * @param {Object} data - Mastery data
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareMastery(data) {
+    const manager = new ShareManager();
+    return manager.shareMastery(data);
+  },
+
+  /**
+   * Share daily challenge result with card
+   * @param {Object} data - Daily result data
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareDaily(data) {
+    const manager = new ShareManager();
+    return manager.shareDaily(data);
+  },
+
+  /**
+   * Share profile stats with card
+   * @param {Object} data - Profile data
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareProfile(data) {
+    const manager = new ShareManager();
+    return manager.shareProfile(data);
+  },
+
+  /**
+   * Share first 3-star achievement with card
+   * @param {Object} data - Achievement data
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareFirstStar(data) {
+    const manager = new ShareManager();
+    return manager.shareFirstStar(data);
+  },
+
+  // ========== Quick Share Functions ==========
+
+  /**
+   * Share current streak (uses stored profile data)
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareCurrentStreak() {
+    return shareStreakImpl();
+  },
+
+  /**
+   * Share current level (uses stored profile data)
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareCurrentLevel() {
+    return shareLevelImpl();
+  },
+
+  /**
+   * Share daily result for a game (uses stored data)
+   * @param {string} gameId - Game identifier
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareDailyResult(gameId) {
+    return shareDailyImpl(gameId);
+  },
+
+  /**
+   * Share profile stats (uses stored profile data)
+   * @returns {Promise<{success: boolean, method: string}>}
+   */
+  async shareProfileStats() {
+    return shareProfileImpl();
+  },
+
+  /**
+   * Get calendar data for streak visualization
+   * @param {number} days - Number of days to include
+   * @returns {Array} Calendar data array
+   */
+  getStreakCalendarData(days = 30) {
+    return getStreakCalendarData(days);
+  },
+
+  // ========== Share Prompt Helpers ==========
+
+  /**
+   * Show share prompt toast
+   * @param {Object} options - Prompt options
+   * @param {string} options.title - Prompt title
+   * @param {string} options.subtitle - Prompt subtitle
+   * @param {Function} options.onShare - Share callback
+   * @param {number} [options.timeout=10000] - Auto-dismiss timeout
+   * @returns {HTMLElement} The prompt element
+   */
+  showSharePrompt(options) {
+    const { title, subtitle, onShare, timeout = 10000 } = options;
+
+    const prompt = document.createElement('div');
+    prompt.className = 'share-prompt';
+    prompt.innerHTML = `
+      <div class="share-prompt-content">
+        <div class="share-prompt-title">${title}</div>
+        <div class="share-prompt-subtitle">${subtitle}</div>
+      </div>
+      <div class="share-prompt-actions">
+        <button class="share-prompt-btn share-prompt-btn-dismiss">Later</button>
+        <button class="share-prompt-btn share-prompt-btn-share">Share</button>
+      </div>
+    `;
+
+    document.body.appendChild(prompt);
+
+    const dismiss = () => {
+      prompt.style.animation = 'share-fadeIn 0.2s ease reverse';
+      setTimeout(() => prompt.remove(), 200);
+    };
+
+    // Dismiss button
+    prompt.querySelector('.share-prompt-btn-dismiss').addEventListener('click', dismiss);
+
+    // Share button
+    prompt.querySelector('.share-prompt-btn-share').addEventListener('click', async () => {
+      dismiss();
+      if (onShare) {
+        await onShare();
+      }
+    });
+
+    // Auto-dismiss
+    if (timeout > 0) {
+      setTimeout(dismiss, timeout);
+    }
+
+    return prompt;
+  },
+
+  /**
+   * Check if share prompt should be shown for achievement
+   * @param {string} type - Achievement type
+   * @param {Object} data - Achievement data
+   * @returns {boolean} Whether to show prompt
+   */
+  shouldPromptShare(type, data) {
+    // Milestone levels
+    const milestoneLevels = [10, 25, 50, 100];
+    if (type === 'milestone' && milestoneLevels.includes(data.level)) {
+      return true;
+    }
+
+    // Streak milestones
+    const streakMilestones = [7, 14, 30, 100];
+    if (type === 'streak' && streakMilestones.includes(data.currentStreak)) {
+      return true;
+    }
+
+    // Game mastery (100 stars)
+    if (type === 'mastery' && data.stars >= 100) {
+      return true;
+    }
+
+    // Daily completion
+    if (type === 'daily' && data.completed) {
+      return true;
+    }
+
+    // First 3-star
+    if (type === 'firstStar') {
+      return true;
+    }
+
+    return false;
   }
 };
 

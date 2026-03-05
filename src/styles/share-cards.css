@@ -1,0 +1,447 @@
+/**
+ * Share Cards CSS - Styles for Share Achievement Cards
+ *
+ * Provides styling for:
+ * - Share card modal dialogs
+ * - Share action buttons
+ * - Card preview container
+ * - Social media buttons
+ */
+
+/* Modal Container */
+.share-card-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: share-fadeIn 0.2s ease;
+}
+
+@keyframes share-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Backdrop */
+.share-card-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+/* Content Container */
+.share-card-content {
+  position: relative;
+  background-color: var(--color-bg-secondary, #1a1a2e);
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: share-slideUp 0.3s ease;
+}
+
+@keyframes share-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.share-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border, #2a2a4a);
+}
+
+.share-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.share-card-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #a0a0b0);
+  font-size: 24px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.share-card-close:hover {
+  background-color: var(--color-bg-card, #2a2a4a);
+  color: var(--color-text-primary, #ffffff);
+}
+
+/* Preview Container */
+.share-card-preview {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-bg-primary, #0f0f23);
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.share-card-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Actions Container */
+.share-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid var(--color-border, #2a2a4a);
+}
+
+/* Share Buttons */
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background-color: var(--color-bg-card, #2a2a4a);
+  color: var(--color-text-primary, #ffffff);
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.share-btn:active {
+  transform: translateY(0);
+}
+
+.share-btn span {
+  font-size: 18px;
+}
+
+/* Download Button */
+.share-btn-download {
+  background-color: #6366f1;
+  color: white;
+}
+
+.share-btn-download:hover {
+  background-color: #4f46e5;
+}
+
+/* Copy Button */
+.share-btn-copy {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.share-btn-copy:hover {
+  background-color: #7c3aed;
+}
+
+/* Twitter Button */
+.share-btn-twitter {
+  background-color: #1da1f2;
+  color: white;
+}
+
+.share-btn-twitter:hover {
+  background-color: #1a91da;
+}
+
+/* Reddit Button */
+.share-btn-reddit {
+  background-color: #ff4500;
+  color: white;
+}
+
+.share-btn-reddit:hover {
+  background-color: #e03e00;
+}
+
+/* Facebook Button */
+.share-btn-facebook {
+  background-color: #1877f2;
+  color: white;
+}
+
+.share-btn-facebook:hover {
+  background-color: #166fe5;
+}
+
+/* URL Footer */
+.share-card-url {
+  text-align: center;
+  padding: 12px 20px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+  background-color: var(--color-bg-primary, #0f0f23);
+}
+
+/* Share Prompt Toast */
+.share-prompt {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 9999;
+  animation: share-prompt-appear 0.4s ease;
+}
+
+@keyframes share-prompt-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.share-prompt-content {
+  flex: 1;
+}
+
+.share-prompt-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.share-prompt-subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.share-prompt-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.share-prompt-btn {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.share-prompt-btn-share {
+  background-color: white;
+  color: #6366f1;
+}
+
+.share-prompt-btn-share:hover {
+  background-color: #f0f0ff;
+}
+
+.share-prompt-btn-dismiss {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.share-prompt-btn-dismiss:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Inline Share Button */
+.share-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.share-inline-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.share-inline-btn:active {
+  transform: translateY(0);
+}
+
+/* Share Icon */
+.share-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .share-card-content {
+    max-width: 95vw;
+    border-radius: 12px;
+  }
+
+  .share-card-header {
+    padding: 12px 16px;
+  }
+
+  .share-card-preview {
+    padding: 12px;
+  }
+
+  .share-card-actions {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .share-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .share-prompt {
+    left: 16px;
+    right: 16px;
+    transform: none;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .share-prompt-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Dark Mode (default) */
+:root {
+  --share-bg-primary: #0f0f23;
+  --share-bg-secondary: #1a1a2e;
+  --share-bg-card: #2a2a4a;
+  --share-text-primary: #ffffff;
+  --share-text-secondary: #a0a0b0;
+  --share-border: #2a2a4a;
+}
+
+/* Light Mode Support */
+@media (prefers-color-scheme: light) {
+  .share-card-modal .share-card-content {
+    --share-bg-primary: #f8fafc;
+    --share-bg-secondary: #ffffff;
+    --share-bg-card: #f1f5f9;
+    --share-text-primary: #1e293b;
+    --share-text-secondary: #64748b;
+    --share-border: #e2e8f0;
+  }
+
+  .share-card-modal .share-card-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .share-card-modal,
+  .share-card-content,
+  .share-prompt,
+  .share-btn,
+  .share-inline-btn {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Focus States */
+.share-btn:focus-visible,
+.share-inline-btn:focus-visible,
+.share-prompt-btn:focus-visible,
+.share-card-close:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Loading State */
+.share-btn-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.share-btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: share-spin 0.8s linear infinite;
+}
+
+@keyframes share-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success State */
+.share-btn-success {
+  background-color: #22c55e !important;
+}
+
+.share-btn-success::before {
+  content: '✓';
+  margin-right: 8px;
+}
