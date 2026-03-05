@@ -5,7 +5,23 @@
  * - Configurable history depth
  * - Undo/redo operations
  * - State snapshots
+ * - Timeline navigation
+ * - Jump to specific states
  */
+
+/**
+ * Deep clone a value using structuredClone with JSON fallback
+ * @param {*} value - Value to clone
+ * @returns {*} Deep clone of the value
+ */
+function deepClone(value) {
+  // structuredClone is available in modern browsers and Node.js 17+
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  // Fallback for older environments
+  return JSON.parse(JSON.stringify(value));
+}
 
 export class History {
   constructor(maxDepth = 50) {
@@ -16,14 +32,14 @@ export class History {
 
   /**
    * Push a new state onto history
-   * @param {*} state - State to save
+   * @param {*} state - State to save (deep cloned)
    */
   push(state) {
-    // Remove any redo states
+    // Remove any redo states (branching)
     this.history = this.history.slice(0, this.index + 1);
 
-    // Add new state
-    this.history.push(this.clone(state));
+    // Add new state (deep clone to prevent mutations)
+    this.history.push(deepClone(state));
     this.index++;
 
     // Trim if over max depth
@@ -40,7 +56,7 @@ export class History {
   undo() {
     if (this.index > 0) {
       this.index--;
-      return this.clone(this.history[this.index]);
+      return deepClone(this.history[this.index]);
     }
     return null;
   }
@@ -52,7 +68,31 @@ export class History {
   redo() {
     if (this.index < this.history.length - 1) {
       this.index++;
-      return this.clone(this.history[this.index]);
+      return deepClone(this.history[this.index]);
+    }
+    return null;
+  }
+
+  /**
+   * Jump to a specific state by index
+   * @param {number} idx - Index to jump to
+   * @returns {*} State at index or null if invalid
+   */
+  jumpTo(idx) {
+    if (idx >= 0 && idx < this.history.length) {
+      this.index = idx;
+      return deepClone(this.history[idx]);
+    }
+    return null;
+  }
+
+  /**
+   * Get current state without changing position
+   * @returns {*} Current state or null if empty
+   */
+  current() {
+    if (this.index >= 0) {
+      return deepClone(this.history[this.index]);
     }
     return null;
   }
@@ -74,7 +114,19 @@ export class History {
   }
 
   /**
-   * Clear history
+   * Get all states for timeline visualization
+   * @returns {Array} Array of {index, state, isCurrent} objects
+   */
+  getTimeline() {
+    return this.history.map((state, i) => ({
+      index: i,
+      state: deepClone(state),
+      isCurrent: i === this.index
+    }));
+  }
+
+  /**
+   * Clear all history
    */
   clear() {
     this.history = [];
@@ -82,13 +134,23 @@ export class History {
   }
 
   /**
-   * Clone state (deep copy)
-   * @param {*} state
-   * @returns {*}
+   * Get current number of states in history
+   * @returns {number}
    */
-  clone(state) {
-    return JSON.parse(JSON.stringify(state));
+  get length() {
+    return this.history.length;
+  }
+
+  /**
+   * Get current position index
+   * @returns {number}
+   */
+  get position() {
+    return this.index;
   }
 }
+
+// Alias for API compatibility
+export { History as GameHistory };
 
 export default History;

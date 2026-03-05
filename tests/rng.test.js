@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import { createRNG, randomInt, shuffle, randomChoice, weightedChoice } from '../shared/rng.js';
+import { createRNG, randomInt, shuffle, randomChoice, weightedChoice } from '../src/shared/rng.js';
 
 let passed = 0;
 let failed = 0;
