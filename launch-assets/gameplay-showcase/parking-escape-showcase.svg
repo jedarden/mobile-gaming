@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+    <!-- Car colors -->
+    <linearGradient id="redCar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="50%" style="stop-color:#dc2626"/>
+      <stop offset="100%" style="stop-color:#b91c1c"/>
+    </linearGradient>
+    <linearGradient id="yellowCar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="50%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <linearGradient id="blueCar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="50%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="greenCar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="50%" style="stop-color:#16a34a"/>
+      <stop offset="100%" style="stop-color:#15803d"/>
+    </linearGradient>
+    <linearGradient id="targetCar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="50%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <!-- Exit glow -->
+    <linearGradient id="exitGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgba(0,255,136,0)"/>
+      <stop offset="50%" style="stop-color:rgba(0,255,136,0.3)"/>
+      <stop offset="100%" style="stop-color:rgba(0,255,136,0.6)"/>
+    </linearGradient>
+    <filter id="carShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="400" y="50" text-anchor="middle" font-family="system-ui, sans-serif" font-size="36" font-weight="bold" fill="url(#accentGrad)">Parking Escape</text>
+  <text x="400" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#8b8b9e">Slide cars to clear the exit path</text>
+
+  <!-- Game Grid - 6x6 -->
+  <g transform="translate(160, 100)">
+    <!-- Grid background -->
+    <rect x="0" y="0" width="360" height="360" rx="8" fill="#264653"/>
+
+    <!-- Grid lines -->
+    <g stroke="rgba(255,255,255,0.1)" stroke-width="1">
+      <line x1="60" y1="0" x2="60" y2="360"/>
+      <line x1="120" y1="0" x2="120" y2="360"/>
+      <line x1="180" y1="0" x2="180" y2="360"/>
+      <line x1="240" y1="0" x2="240" y2="360"/>
+      <line x1="300" y1="0" x2="300" y2="360"/>
+      <line x1="0" y1="60" x2="360" y2="60"/>
+      <line x1="0" y1="120" x2="360" y2="120"/>
+      <line x1="0" y1="180" x2="360" y2="180"/>
+      <line x1="0" y1="240" x2="360" y2="240"/>
+      <line x1="0" y1="300" x2="360" y2="300"/>
+    </g>
+
+    <!-- Exit area -->
+    <rect x="360" y="120" width="40" height="120" fill="url(#exitGlow)"/>
+    <text x="380" y="185" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#00ff88">EXIT</text>
+    <!-- Pulsing exit indicator -->
+    <circle cx="380" cy="180" r="8" fill="rgba(0,255,136,0.5)">
+      <animate attributeName="r" values="8;12;8" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.2;0.5" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Target car (yellow, horizontal, 2 cells) - being dragged -->
+    <g transform="translate(120, 120)" filter="url(#glow)">
+      <rect x="4" y="4" width="112" height="52" rx="8" fill="url(#targetCar)" filter="url(#carShadow)"/>
+      <!-- Windows -->
+      <rect x="12" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <rect x="92" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <!-- Wheels -->
+      <circle cx="20" cy="4" r="6" fill="#333"/>
+      <circle cx="100" cy="4" r="6" fill="#333"/>
+      <circle cx="20" cy="56" r="6" fill="#333"/>
+      <circle cx="100" cy="56" r="6" fill="#333"/>
+      <!-- Gold border for target -->
+      <rect x="2" y="2" width="116" height="56" rx="10" fill="none" stroke="#FFD700" stroke-width="3"/>
+      <!-- Drag arrow -->
+      <path d="M130,30 L160,30 M150,20 L160,30 L150,40" stroke="#FFD700" stroke-width="3" fill="none">
+        <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <!-- Valid move range indicator -->
+    <rect x="180" y="124" width="120" height="52" fill="rgba(0,255,136,0.15)" stroke="rgba(0,255,136,0.5)" stroke-width="2" stroke-dasharray="5,5"/>
+
+    <!-- Red car (horizontal, 2 cells) -->
+    <g transform="translate(0, 60)" filter="url(#carShadow)">
+      <rect x="4" y="4" width="112" height="52" rx="8" fill="url(#redCar)"/>
+      <rect x="12" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <rect x="92" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="20" cy="4" r="6" fill="#333"/>
+      <circle cx="100" cy="4" r="6" fill="#333"/>
+      <circle cx="20" cy="56" r="6" fill="#333"/>
+      <circle cx="100" cy="56" r="6" fill="#333"/>
+    </g>
+
+    <!-- Blue truck (horizontal, 3 cells) -->
+    <g transform="translate(0, 180)" filter="url(#carShadow)">
+      <rect x="4" y="4" width="172" height="52" rx="8" fill="url(#blueCar)"/>
+      <rect x="12" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <rect x="152" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="20" cy="4" r="6" fill="#333"/>
+      <circle cx="90" cy="4" r="6" fill="#333"/>
+      <circle cx="160" cy="4" r="6" fill="#333"/>
+      <circle cx="20" cy="56" r="6" fill="#333"/>
+      <circle cx="90" cy="56" r="6" fill="#333"/>
+      <circle cx="160" cy="56" r="6" fill="#333"/>
+    </g>
+
+    <!-- Green car (vertical, 2 cells) -->
+    <g transform="translate(240, 0)" filter="url(#carShadow)">
+      <rect x="4" y="4" width="52" height="112" rx="8" fill="url(#greenCar)"/>
+      <rect x="10" y="12" width="40" height="16" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <rect x="10" y="92" width="40" height="16" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="4" cy="20" r="6" fill="#333"/>
+      <circle cx="56" cy="20" r="6" fill="#333"/>
+      <circle cx="4" cy="100" r="6" fill="#333"/>
+      <circle cx="56" cy="100" r="6" fill="#333"/>
+    </g>
+
+    <!-- Purple car (vertical, 3 cells) -->
+    <g transform="translate(300, 240)" filter="url(#carShadow)">
+      <rect x="4" y="4" width="52" height="172" rx="8" fill="#8b5cf6"/>
+      <rect x="10" y="12" width="40" height="16" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <rect x="10" y="152" width="40" height="16" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="4" cy="20" r="6" fill="#333"/>
+      <circle cx="56" cy="20" r="6" fill="#333"/>
+      <circle cx="4" cy="90" r="6" fill="#333"/>
+      <circle cx="56" cy="90" r="6" fill="#333"/>
+      <circle cx="4" cy="160" r="6" fill="#333"/>
+      <circle cx="56" cy="160" r="6" fill="#333"/>
+    </g>
+
+    <!-- Orange car (horizontal, 2 cells) -->
+    <g transform="translate(180, 300)" filter="url(#carShadow)">
+      <rect x="4" y="4" width="112" height="52" rx="8" fill="#f97316"/>
+      <rect x="12" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <rect x="92" y="10" width="16" height="40" rx="2" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="20" cy="4" r="6" fill="#333"/>
+      <circle cx="100" cy="4" r="6" fill="#333"/>
+      <circle cx="20" cy="56" r="6" fill="#333"/>
+      <circle cx="100" cy="56" r="6" fill="#333"/>
+    </g>
+  </g>
+
+  <!-- Instructions -->
+  <g transform="translate(560, 120)">
+    <rect x="0" y="0" width="200" height="200" rx="12" fill="rgba(255,255,255,0.05)"/>
+    <text x="100" y="30" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f8fafc">How to Play</text>
+    <text x="20" y="60" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">1. Drag cars to move them</text>
+    <text x="20" y="85" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">2. Cars only move along</text>
+    <text x="30" y="100" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">their length</text>
+    <text x="20" y="125" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">3. Clear a path for the</text>
+    <text x="30" y="140" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">gold-bordered car</text>
+    <text x="20" y="165" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">4. Guide it to the EXIT</text>
+    <text x="100" y="190" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#00ff88">Level 15 of 100+</text>
+  </g>
+
+  <!-- Stats bar -->
+  <g transform="translate(50, 530)">
+    <rect x="0" y="0" width="700" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+    <text x="20" y="32" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Level 15</text>
+    <text x="120" y="32" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Moves: 12</text>
+    <text x="240" y="32" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Best: 8</text>
+    <text x="680" y="32" text-anchor="end" font-family="system-ui, sans-serif" font-size="14" fill="url(#accentGrad)">mobile-gaming.pages.dev</text>
+  </g>
+</svg>

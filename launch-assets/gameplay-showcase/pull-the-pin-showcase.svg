@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+    <!-- Pin gradient -->
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a1a1aa"/>
+      <stop offset="50%" style="stop-color:#71717a"/>
+      <stop offset="100%" style="stop-color:#52525b"/>
+    </linearGradient>
+    <!-- Ball gradients -->
+    <radialGradient id="blueBall" cx="30%" cy="30%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </radialGradient>
+    <radialGradient id="redBall" cx="30%" cy="30%">
+      <stop offset="0%" style="stop-color:#f87171"/>
+      <stop offset="100%" style="stop-color:#dc2626"/>
+    </radialGradient>
+    <radialGradient id="greenBall" cx="30%" cy="30%">
+      <stop offset="0%" style="stop-color:#4ade80"/>
+      <stop offset="100%" style="stop-color:#16a34a"/>
+    </radialGradient>
+    <!-- Goal glow -->
+    <radialGradient id="goalGlow" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:rgba(34,197,94,0.6)"/>
+      <stop offset="100%" style="stop-color:rgba(34,197,94,0)"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="400" y="50" text-anchor="middle" font-family="system-ui, sans-serif" font-size="36" font-weight="bold" fill="url(#accentGrad)">Pull the Pin</text>
+  <text x="400" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#8b8b9e">Remove pins in the right order to guide balls</text>
+
+  <!-- Game Container -->
+  <g transform="translate(200, 100)">
+    <!-- Container walls -->
+    <rect x="0" y="0" width="400" height="350" rx="0" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+
+    <!-- Horizontal Pin 1 (being pulled) -->
+    <g transform="translate(0, 100)">
+      <rect x="-30" y="-8" width="460" height="16" fill="url(#pinGrad)" filter="url(#shadow)">
+        <animate attributeName="x" values="-30;0;-30" dur="1.5s" repeatCount="indefinite"/>
+      </rect>
+      <!-- Pin head -->
+      <circle cx="-30" cy="0" r="14" fill="#71717a" stroke="#a1a1aa" stroke-width="2">
+        <animate attributeName="cx" values="-30;0;-30" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Pull indicator -->
+      <path d="M-55,0 L-35,0 M-45,-10 L-35,0 L-45,10" stroke="#00d4ff" stroke-width="3" fill="none">
+        <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <!-- Horizontal Pin 2 (stationary) -->
+    <g transform="translate(0, 200)">
+      <rect x="0" y="-8" width="400" height="16" fill="url(#pinGrad)" filter="url(#shadow)"/>
+      <circle cx="0" cy="0" r="14" fill="#71717a" stroke="#a1a1aa" stroke-width="2"/>
+      <circle cx="400" cy="0" r="14" fill="#71717a" stroke="#a1a1aa" stroke-width="2"/>
+    </g>
+
+    <!-- Vertical Pin -->
+    <g transform="translate(200, 0)">
+      <rect x="-8" y="0" width="16" height="200" fill="url(#pinGrad)" filter="url(#shadow)"/>
+      <circle cx="0" cy="0" r="14" fill="#71717a" stroke="#a1a1aa" stroke-width="2"/>
+    </g>
+
+    <!-- Balls in top section -->
+    <g transform="translate(0, 0)">
+      <!-- Blue balls -->
+      <circle cx="80" cy="50" r="20" fill="url(#blueBall)" filter="url(#shadow)"/>
+      <circle cx="130" cy="60" r="20" fill="url(#blueBall)" filter="url(#shadow)"/>
+      <!-- Green balls -->
+      <circle cx="300" cy="45" r="20" fill="url(#greenBall)" filter="url(#shadow)"/>
+      <circle cx="350" cy="55" r="20" fill="url(#greenBall)" filter="url(#shadow)"/>
+    </g>
+
+    <!-- Balls on middle platform -->
+    <g transform="translate(0, 100)">
+      <!-- Red balls -->
+      <circle cx="100" cy="40" r="20" fill="url(#redBall)" filter="url(#shadow)"/>
+      <circle cx="150" cy="50" r="20" fill="url(#redBall)" filter="url(#shadow)"/>
+      <circle cx="300" cy="45" r="20" fill="url(#blueBall)" filter="url(#shadow)"/>
+    </g>
+
+    <!-- Goal container -->
+    <g transform="translate(150, 280)">
+      <!-- Goal glow effect -->
+      <ellipse cx="50" cy="40" rx="80" ry="60" fill="url(#goalGlow)">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+      </ellipse>
+      <!-- Goal basket -->
+      <path d="M0,0 L20,70 L80,70 L100,0" fill="none" stroke="#22c55e" stroke-width="3"/>
+      <text x="50" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#22c55e">GOAL</text>
+      <!-- Balls in goal -->
+      <circle cx="30" cy="55" r="15" fill="url(#greenBall)" filter="url(#shadow)"/>
+      <circle cx="70" cy="55" r="15" fill="url(#greenBall)" filter="url(#shadow)"/>
+    </g>
+
+    <!-- Falling ball animation -->
+    <circle cx="180" cy="150" r="20" fill="url(#blueBall)" filter="url(#shadow)">
+      <animate attributeName="cy" values="150;250;150" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Instructions Panel -->
+  <g transform="translate(50, 480)">
+    <rect x="0" y="0" width="700" height="80" rx="12" fill="rgba(255,255,255,0.05)"/>
+    <text x="350" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f8fafc">How to Play</text>
+    <text x="100" y="55" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">1. Tap pins to remove them</text>
+    <text x="320" y="55" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">2. Order matters - plan ahead!</text>
+    <text x="540" y="55" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">3. Guide all balls to the goal</text>
+  </g>
+
+  <!-- Stats bar -->
+  <g transform="translate(50, 570)">
+    <rect x="0" y="0" width="700" height="25" rx="4" fill="rgba(255,255,255,0.03)"/>
+    <text x="20" y="17" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">Level 22</text>
+    <text x="680" y="17" text-anchor="end" font-family="system-ui, sans-serif" font-size="12" fill="url(#accentGrad)">mobile-gaming.pages.dev</text>
+  </g>
+</svg>

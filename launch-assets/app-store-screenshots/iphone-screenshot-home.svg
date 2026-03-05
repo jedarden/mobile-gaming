@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1290" height="2796" viewBox="0 0 1290 2796">
+  <!-- iPhone 14 Pro Max screenshot size -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1290" height="2796" fill="url(#bgGrad)"/>
+
+  <!-- Status Bar Area -->
+  <rect x="0" y="0" width="1290" height="100" fill="rgba(0,0,0,0.3)"/>
+
+  <!-- Header -->
+  <text x="645" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="url(#accentGrad)">Mobile Gaming</text>
+  <text x="645" y="280" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#94a3b8">Play the games the ads promised</text>
+
+  <!-- Game Cards Grid -->
+  <g transform="translate(60, 400)">
+    <!-- Water Sort Card -->
+    <g transform="translate(0, 0)">
+      <rect width="555" height="600" rx="32" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+      <text x="277" y="120" text-anchor="middle" font-size="120">💧</text>
+      <text x="277" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="600" fill="#f8fafc">Water Sort</text>
+      <text x="277" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">Pour liquids between</text>
+      <text x="277" y="380" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">tubes until sorted</text>
+      <rect x="177" y="480" width="200" height="60" rx="30" fill="#22c55e"/>
+      <text x="277" y="522" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="white">Play</text>
+    </g>
+
+    <!-- Parking Escape Card -->
+    <g transform="translate(615, 0)">
+      <rect width="555" height="600" rx="32" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+      <text x="277" y="120" text-anchor="middle" font-size="120">🚗</text>
+      <text x="277" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="600" fill="#f8fafc">Parking Escape</text>
+      <text x="277" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">Slide cars to</text>
+      <text x="277" y="380" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">unblock the exit</text>
+      <rect x="177" y="480" width="200" height="60" rx="30" fill="#22c55e"/>
+      <text x="277" y="522" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="white">Play</text>
+    </g>
+
+    <!-- Bus Jam Card -->
+    <g transform="translate(0, 660)">
+      <rect width="555" height="600" rx="32" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+      <text x="277" y="120" text-anchor="middle" font-size="120">🚌</text>
+      <text x="277" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="600" fill="#f8fafc">Bus Jam</text>
+      <text x="277" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">Sort passengers</text>
+      <text x="277" y="380" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">by color</text>
+      <rect x="177" y="480" width="200" height="60" rx="30" fill="#22c55e"/>
+      <text x="277" y="522" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="white">Play</text>
+    </g>
+
+    <!-- Pull the Pin Card -->
+    <g transform="translate(615, 660)">
+      <rect width="555" height="600" rx="32" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+      <text x="277" y="120" text-anchor="middle" font-size="120">📌</text>
+      <text x="277" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="600" fill="#f8fafc">Pull the Pin</text>
+      <text x="277" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">Remove pins in</text>
+      <text x="277" y="380" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8">the right order</text>
+      <rect x="177" y="480" width="200" height="60" rx="30" fill="#22c55e"/>
+      <text x="277" y="522" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="white">Play</text>
+    </g>
+  </g>
+
+  <!-- Features Section -->
+  <g transform="translate(60, 1800)">
+    <rect width="1170" height="400" rx="32" fill="rgba(255,255,255,0.03)"/>
+    <text x="585" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="36" font-weight="bold" fill="#f8fafc">Why You'll Love It</text>
+
+    <!-- Feature icons -->
+    <g transform="translate(100, 140)">
+      <text x="0" y="40" font-size="48">🚫</text>
+      <text x="80" y="40" font-family="system-ui, sans-serif" font-size="28" fill="#f8fafc">No Ads</text>
+      <text x="80" y="80" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">Zero interruptions</text>
+    </g>
+
+    <g transform="translate(400, 140)">
+      <text x="0" y="40" font-size="48">📱</text>
+      <text x="80" y="40" font-family="system-ui, sans-serif" font-size="28" fill="#f8fafc">PWA</text>
+      <text x="80" y="80" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">Works offline</text>
+    </g>
+
+    <g transform="translate(700, 140)">
+      <text x="0" y="40" font-size="48">🎯</text>
+      <text x="80" y="40" font-family="system-ui, sans-serif" font-size="28" fill="#f8fafc">100+ Levels</text>
+      <text x="80" y="80" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">Per game</text>
+    </g>
+
+    <g transform="translate(100, 260)">
+      <text x="0" y="40" font-size="48">🔒</text>
+      <text x="80" y="40" font-family="system-ui, sans-serif" font-size="28" fill="#f8fafc">No Tracking</text>
+      <text x="80" y="80" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">Privacy first</text>
+    </g>
+
+    <g transform="translate(400, 260)">
+      <text x="0" y="40" font-size="48">💰</text>
+      <text x="80" y="40" font-family="system-ui, sans-serif" font-size="28" fill="#f8fafc">Free Forever</text>
+      <text x="80" y="80" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">No paywalls</text>
+    </g>
+
+    <g transform="translate(700, 260)">
+      <text x="0" y="40" font-size="48">✅</text>
+      <text x="80" y="40" font-family="system-ui, sans-serif" font-size="28" fill="#f8fafc">Honest Ads</text>
+      <text x="80" y="80" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">What you see = what you get</text>
+    </g>
+  </g>
+
+  <!-- CTA Section -->
+  <g transform="translate(60, 2300)">
+    <rect x="285" y="0" width="600" height="120" rx="60" fill="url(#accentGrad)"/>
+    <text x="585" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="bold" fill="white">Play Now - It's Free!</text>
+  </g>
+
+  <!-- URL -->
+  <text x="645" y="2600" text-anchor="middle" font-family="system-ui, sans-serif" font-size="32" fill="#6366f1">mobile-gaming.pages.dev</text>
+
+  <!-- Footer -->
+  <text x="645" y="2700" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" fill="#64748b">Built with Claude Code</text>
+</svg>

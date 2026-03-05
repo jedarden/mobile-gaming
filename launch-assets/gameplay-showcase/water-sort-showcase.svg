@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+    <!-- Liquid gradients -->
+    <linearGradient id="redLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e74c3c"/>
+      <stop offset="50%" style="stop-color:#e74c3c"/>
+      <stop offset="100%" style="stop-color:#c0392b"/>
+    </linearGradient>
+    <linearGradient id="blueLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3498db"/>
+      <stop offset="50%" style="stop-color:#3498db"/>
+      <stop offset="100%" style="stop-color:#2980b9"/>
+    </linearGradient>
+    <linearGradient id="greenLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2ecc71"/>
+      <stop offset="50%" style="stop-color:#2ecc71"/>
+      <stop offset="100%" style="stop-color:#27ae60"/>
+    </linearGradient>
+    <linearGradient id="yellowLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f1c40f"/>
+      <stop offset="50%" style="stop-color:#f1c40f"/>
+      <stop offset="100%" style="stop-color:#f39c12"/>
+    </linearGradient>
+    <!-- Glass effect -->
+    <linearGradient id="glassShine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.3)"/>
+      <stop offset="50%" style="stop-color:rgba(255,255,255,0)"/>
+      <stop offset="100%" style="stop-color:rgba(0,0,0,0.1)"/>
+    </linearGradient>
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="400" y="60" text-anchor="middle" font-family="system-ui, sans-serif" font-size="36" font-weight="bold" fill="url(#accentGrad)">Water Sort</text>
+  <text x="400" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#8b8b9e">Pour liquids between tubes to sort colors</text>
+
+  <!-- Game Area -->
+  <g transform="translate(100, 120)">
+    <!-- Tube 1 - Mixed colors -->
+    <g transform="translate(50, 0)">
+      <rect x="0" y="0" width="70" height="200" rx="8" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+      <!-- Liquids from bottom -->
+      <rect x="4" y="150" width="62" height="46" rx="4" fill="url(#redLiquid)"/>
+      <rect x="4" y="100" width="62" height="50" fill="url(#blueLiquid)"/>
+      <rect x="4" y="50" width="62" height="50" fill="url(#greenLiquid)"/>
+      <!-- Shine effect -->
+      <rect x="4" y="50" width="62" height="146" rx="4" fill="url(#glassShine)"/>
+    </g>
+
+    <!-- Tube 2 - Mixed colors -->
+    <g transform="translate(150, 0)">
+      <rect x="0" y="0" width="70" height="200" rx="8" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+      <rect x="4" y="150" width="62" height="46" rx="4" fill="url(#yellowLiquid)"/>
+      <rect x="4" y="100" width="62" height="50" fill="url(#greenLiquid)"/>
+      <rect x="4" y="50" width="62" height="50" fill="url(#redLiquid)"/>
+      <rect x="4" y="50" width="62" height="146" rx="4" fill="url(#glassShine)"/>
+    </g>
+
+    <!-- Tube 3 - Being poured (selected) -->
+    <g transform="translate(250, 0)" filter="url(#glow)">
+      <rect x="0" y="0" width="70" height="200" rx="8" fill="none" stroke="#00d4ff" stroke-width="3"/>
+      <rect x="4" y="150" width="62" height="46" rx="4" fill="url(#blueLiquid)"/>
+      <rect x="4" y="100" width="62" height="50" fill="url(#yellowLiquid)"/>
+      <rect x="4" y="50" width="62" height="146" rx="4" fill="url(#glassShine)"/>
+      <!-- Pour indicator arrow -->
+      <path d="M35,-20 L35,-40 M25,-30 L35,-40 L45,-30" stroke="#00d4ff" stroke-width="3" fill="none"/>
+    </g>
+
+    <!-- Pour animation - liquid stream -->
+    <g transform="translate(285, -60)">
+      <ellipse cx="0" cy="0" rx="8" ry="4" fill="#3498db">
+        <animate attributeName="cy" values="0;60;0" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+
+    <!-- Tube 4 - Receiving pour -->
+    <g transform="translate(350, 0)">
+      <rect x="0" y="0" width="70" height="200" rx="8" fill="none" stroke="#2ecc71" stroke-width="3" stroke-dasharray="5,5"/>
+      <rect x="4" y="150" width="62" height="46" rx="4" fill="url(#blueLiquid)"/>
+      <rect x="4" y="100" width="62" height="50" fill="url(#blueLiquid)"/>
+      <rect x="4" y="50" width="62" height="146" rx="4" fill="url(#glassShine)"/>
+    </g>
+
+    <!-- Tube 5 - Empty -->
+    <g transform="translate(450, 0)">
+      <rect x="0" y="0" width="70" height="200" rx="8" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+      <rect x="4" y="194" width="62" height="2" rx="1" fill="rgba(255,255,255,0.1)"/>
+    </g>
+
+    <!-- Tube 6 - Sorted (green) -->
+    <g transform="translate(550, 0)">
+      <rect x="0" y="0" width="70" height="200" rx="8" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+      <rect x="4" y="50" width="62" height="146" rx="4" fill="url(#greenLiquid)"/>
+      <rect x="4" y="50" width="62" height="146" rx="4" fill="url(#glassShine)"/>
+      <!-- Checkmark for sorted -->
+      <circle cx="35" cy="20" r="12" fill="#2ecc71"/>
+      <path d="M28,20 L33,25 L43,15" stroke="white" stroke-width="2" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Instructions -->
+  <g transform="translate(400, 450)">
+    <rect x="-180" y="0" width="360" height="80" rx="12" fill="rgba(255,255,255,0.05)"/>
+    <text x="0" y="30" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Tap a tube to select, then tap another to pour</text>
+    <text x="0" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Sort all colors into separate tubes to win!</text>
+  </g>
+
+  <!-- Stats bar -->
+  <g transform="translate(50, 550)">
+    <rect x="0" y="0" width="700" height="40" rx="8" fill="rgba(255,255,255,0.05)"/>
+    <text x="20" y="26" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Level 12</text>
+    <text x="150" y="26" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Moves: 8</text>
+    <text x="280" y="26" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Best: 6</text>
+    <text x="680" y="26" text-anchor="end" font-family="system-ui, sans-serif" font-size="14" fill="url(#accentGrad)">mobile-gaming.pages.dev</text>
+  </g>
+</svg>

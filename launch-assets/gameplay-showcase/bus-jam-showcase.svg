@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+    <!-- Bus colors -->
+    <linearGradient id="redBus" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="100%" style="stop-color:#dc2626"/>
+    </linearGradient>
+    <linearGradient id="blueBus" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="greenBus" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#16a34a"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="400" y="50" text-anchor="middle" font-family="system-ui, sans-serif" font-size="36" font-weight="bold" fill="url(#accentGrad)">Bus Jam</text>
+  <text x="400" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#8b8b9e">Match passengers by color to fill buses</text>
+
+  <!-- Game Area -->
+  <g transform="translate(50, 100)">
+    <!-- Waiting Area -->
+    <rect x="0" y="0" width="500" height="280" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="250" y="30" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Waiting Passengers</text>
+
+    <!-- Passenger Queue - Row 1 -->
+    <g transform="translate(30, 50)">
+      <!-- Red passengers -->
+      <circle cx="0" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="45" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="90" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <!-- Blue passengers -->
+      <circle cx="160" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="205" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <!-- Green passengers -->
+      <circle cx="275" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="320" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="365" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="410" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+    </g>
+
+    <!-- Passenger Queue - Row 2 -->
+    <g transform="translate(30, 110)">
+      <circle cx="0" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="45" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="90" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="160" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="205" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="275" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="320" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <!-- Selected passenger (glowing) -->
+      <circle cx="365" cy="0" r="18" fill="#ef4444" stroke="#00d4ff" stroke-width="3" filter="url(#glow)">
+        <animate attributeName="stroke-opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="410" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+    </g>
+
+    <!-- Passenger Queue - Row 3 -->
+    <g transform="translate(30, 170)">
+      <circle cx="0" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="45" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="90" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="160" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="205" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="275" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="320" cy="0" r="18" fill="#22c55e" stroke="#86efac" stroke-width="2"/>
+      <circle cx="365" cy="0" r="18" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>
+      <circle cx="410" cy="0" r="18" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+    </g>
+
+    <!-- Bus Loading Area -->
+    <rect x="0" y="300" width="500" height="150" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="250" y="330" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Bus Depot</text>
+
+    <!-- Red Bus (partially filled) - selected target -->
+    <g transform="translate(30, 350)" filter="url(#glow)">
+      <rect x="0" y="0" width="130" height="80" rx="10" fill="url(#redBus)" stroke="#00d4ff" stroke-width="3"/>
+      <!-- Windows -->
+      <rect x="10" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <rect x="45" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <rect x="80" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <!-- Wheels -->
+      <circle cx="25" cy="80" r="12" fill="#333"/>
+      <circle cx="105" cy="80" r="12" fill="#333"/>
+      <!-- Passengers on board -->
+      <circle cx="22" cy="55" r="10" fill="#fca5a5"/>
+      <circle cx="57" cy="55" r="10" fill="#fca5a5"/>
+      <circle cx="92" cy="55" r="10" fill="#fca5a5"/>
+      <!-- Capacity indicator -->
+      <text x="65" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#fca5a5">3/4</text>
+    </g>
+
+    <!-- Blue Bus (full - ready to depart) -->
+    <g transform="translate(180, 350)">
+      <rect x="0" y="0" width="130" height="80" rx="10" fill="url(#blueBus)"/>
+      <rect x="10" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <rect x="45" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <rect x="80" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="25" cy="80" r="12" fill="#333"/>
+      <circle cx="105" cy="80" r="12" fill="#333"/>
+      <circle cx="22" cy="55" r="10" fill="#93c5fd"/>
+      <circle cx="57" cy="55" r="10" fill="#93c5fd"/>
+      <circle cx="92" cy="55" r="10" fill="#93c5fd"/>
+      <circle cx="112" cy="55" r="10" fill="#93c5fd"/>
+      <!-- Ready indicator -->
+      <rect x="45" y="-20" width="40" height="18" rx="9" fill="#22c55e"/>
+      <text x="65" y="-7" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="white">READY</text>
+      <!-- Departing animation -->
+      <animateTransform attributeName="transform" type="translate" values="0,0;10,0;0,0" dur="0.5s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Green Bus (empty) -->
+    <g transform="translate(330, 350)">
+      <rect x="0" y="0" width="130" height="80" rx="10" fill="url(#greenBus)"/>
+      <rect x="10" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <rect x="45" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <rect x="80" y="10" width="25" height="30" rx="4" fill="rgba(100,150,200,0.8)"/>
+      <circle cx="25" cy="80" r="12" fill="#333"/>
+      <circle cx="105" cy="80" r="12" fill="#333"/>
+      <text x="65" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">Empty</text>
+      <text x="65" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#86efac">0/4</text>
+    </g>
+  </g>
+
+  <!-- Instructions Panel -->
+  <g transform="translate(580, 100)">
+    <rect x="0" y="0" width="180" height="180" rx="12" fill="rgba(255,255,255,0.05)"/>
+    <text x="90" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f8fafc">How to Play</text>
+    <text x="15" y="55" font-family="system-ui, sans-serif" font-size="11" fill="#8b8b9e">1. Tap a passenger to</text>
+    <text x="25" y="70" font-family="system-ui, sans-serif" font-size="11" fill="#8b8b9e">select them</text>
+    <text x="15" y="95" font-family="system-ui, sans-serif" font-size="11" fill="#8b8b9e">2. Tap a matching</text>
+    <text x="25" y="110" font-family="system-ui, sans-serif" font-size="11" fill="#8b8b9e">bus to load them</text>
+    <text x="15" y="135" font-family="system-ui, sans-serif" font-size="11" fill="#8b8b9e">3. Fill buses to clear</text>
+    <text x="25" y="150" font-family="system-ui, sans-serif" font-size="11" fill="#8b8b9e">them from the lot</text>
+    <text x="90" y="175" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#00d4ff">Match colors!</text>
+  </g>
+
+  <!-- Stats bar -->
+  <g transform="translate(50, 530)">
+    <rect x="0" y="0" width="700" height="50" rx="8" fill="rgba(255,255,255,0.05)"/>
+    <text x="20" y="32" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Level 8</text>
+    <text x="100" y="32" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Buses: 2/6</text>
+    <text x="200" y="32" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Waiting: 18</text>
+    <text x="680" y="32" text-anchor="end" font-family="system-ui, sans-serif" font-size="14" fill="url(#accentGrad)">mobile-gaming.pages.dev</text>
+  </g>
+</svg>

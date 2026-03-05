@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1290" height="2796" viewBox="0 0 1290 2796">
+  <!-- iPhone 14 Pro Max screenshot size - Water Sort Gameplay -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="redLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e74c3c"/>
+      <stop offset="100%" style="stop-color:#c0392b"/>
+    </linearGradient>
+    <linearGradient id="blueLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3498db"/>
+      <stop offset="100%" style="stop-color:#2980b9"/>
+    </linearGradient>
+    <linearGradient id="greenLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2ecc71"/>
+      <stop offset="100%" style="stop-color:#27ae60"/>
+    </linearGradient>
+    <linearGradient id="yellowLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f1c40f"/>
+      <stop offset="100%" style="stop-color:#f39c12"/>
+    </linearGradient>
+    <linearGradient id="purpleLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9b59b6"/>
+      <stop offset="100%" style="stop-color:#8e44ad"/>
+    </linearGradient>
+    <linearGradient id="glassShine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.3)"/>
+      <stop offset="50%" style="stop-color:rgba(255,255,255,0)"/>
+      <stop offset="100%" style="stop-color:rgba(0,0,0,0.1)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1290" height="2796" fill="url(#bgGrad)"/>
+
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1290" height="150" fill="rgba(0,0,0,0.3)"/>
+  <text x="100" y="100" font-family="system-ui, sans-serif" font-size="40" fill="#f8fafc">← Back</text>
+  <text x="645" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="48" font-weight="bold" fill="url(#accentGrad)">Water Sort</text>
+  <text x="1190" y="100" text-anchor="end" font-family="system-ui, sans-serif" font-size="40" fill="#94a3b8">Level 24</text>
+
+  <!-- Game Area -->
+  <g transform="translate(95, 250)">
+    <!-- Tube 1 - Sorted (green) -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="140" height="400" rx="16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#greenLiquid)"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#glassShine)"/>
+      <circle cx="70" cy="40" r="24" fill="#22c55e"/>
+      <path d="M56,40 L66,50 L86,30" stroke="white" stroke-width="4" fill="none"/>
+    </g>
+
+    <!-- Tube 2 - Mixed -->
+    <g transform="translate(180, 0)">
+      <rect x="0" y="0" width="140" height="400" rx="16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+      <rect x="8" y="300" width="124" height="92" rx="8" fill="url(#redLiquid)"/>
+      <rect x="8" y="200" width="124" height="100" fill="url(#blueLiquid)"/>
+      <rect x="8" y="100" width="124" height="100" fill="url(#yellowLiquid)"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#glassShine)"/>
+    </g>
+
+    <!-- Tube 3 - Selected (glowing) -->
+    <g transform="translate(360, 0)" filter="url(#glow)">
+      <rect x="0" y="0" width="140" height="400" rx="16" fill="none" stroke="#00d4ff" stroke-width="6"/>
+      <rect x="8" y="300" width="124" height="92" rx="8" fill="url(#purpleLiquid)"/>
+      <rect x="8" y="200" width="124" height="100" fill="url(#greenLiquid)"/>
+      <rect x="8" y="100" width="124" height="100" fill="url(#blueLiquid)"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#glassShine)"/>
+      <!-- Pour indicator -->
+      <path d="M70,-40 L70,-80 M50,-60 L70,-80 L90,-60" stroke="#00d4ff" stroke-width="6" fill="none"/>
+    </g>
+
+    <!-- Tube 4 - Preview target -->
+    <g transform="translate(540, 0)">
+      <rect x="0" y="0" width="140" height="400" rx="16" fill="none" stroke="#2ecc71" stroke-width="4" stroke-dasharray="10,10"/>
+      <rect x="8" y="200" width="124" height="192" rx="8" fill="url(#blueLiquid)"/>
+      <rect x="8" y="100" width="124" height="100" fill="url(#purpleLiquid)"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#glassShine)"/>
+    </g>
+
+    <!-- Tube 5 - Empty -->
+    <g transform="translate(720, 0)">
+      <rect x="0" y="0" width="140" height="400" rx="16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+      <rect x="8" y="388" width="124" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+    </g>
+
+    <!-- Tube 6 - Sorted (red) -->
+    <g transform="translate(900, 0)">
+      <rect x="0" y="0" width="140" height="400" rx="16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#redLiquid)"/>
+      <rect x="8" y="100" width="124" height="292" rx="8" fill="url(#glassShine)"/>
+      <circle cx="70" cy="40" r="24" fill="#22c55e"/>
+      <path d="M56,40 L66,50 L86,30" stroke="white" stroke-width="4" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Stats Bar -->
+  <g transform="translate(60, 750)">
+    <rect width="1170" height="100" rx="16" fill="rgba(255,255,255,0.05)"/>
+    <text x="60" y="65" font-family="system-ui, sans-serif" font-size="36" fill="#94a3b8">Moves: 12</text>
+    <text x="350" y="65" font-family="system-ui, sans-serif" font-size="36" fill="#94a3b8">Best: 8</text>
+    <text x="600" y="65" font-family="system-ui, sans-serif" font-size="36" fill="#94a3b8">Sorted: 2/4</text>
+    <text x="1110" y="65" text-anchor="end" font-family="system-ui, sans-serif" font-size="36" fill="url(#accentGrad)">Undo</text>
+  </g>
+
+  <!-- Instruction Text -->
+  <text x="645" y="950" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" fill="#64748b">Tap a tube to select, then tap another to pour</text>
+
+  <!-- Feature Callouts -->
+  <g transform="translate(60, 1100)">
+    <rect width="1170" height="1200" rx="32" fill="rgba(255,255,255,0.03)"/>
+
+    <text x="585" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="48" font-weight="bold" fill="#f8fafc">Game Features</text>
+
+    <!-- Feature 1 -->
+    <g transform="translate(80, 180)">
+      <rect width="500" height="200" rx="20" fill="rgba(255,255,255,0.05)"/>
+      <text x="40" y="80" font-size="60">🎯</text>
+      <text x="140" y="70" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc">100+ Handcrafted Levels</text>
+      <text x="140" y="120" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">From easy to expert</text>
+      <text x="140" y="160" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Progressive difficulty</text>
+    </g>
+
+    <!-- Feature 2 -->
+    <g transform="translate(600, 180)">
+      <rect width="500" height="200" rx="20" fill="rgba(255,255,255,0.05)"/>
+      <text x="40" y="80" font-size="60">🔄</text>
+      <text x="140" y="70" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc">Infinite Mode</text>
+      <text x="140" y="120" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Procedurally generated</text>
+      <text x="140" y="160" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Endless puzzles</text>
+    </g>
+
+    <!-- Feature 3 -->
+    <g transform="translate(80, 420)">
+      <rect width="500" height="200" rx="20" fill="rgba(255,255,255,0.05)"/>
+      <text x="40" y="80" font-size="60">⏪</text>
+      <text x="140" y="70" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc">Undo System</text>
+      <text x="140" y="120" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Made a mistake?</text>
+      <text x="140" y="160" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Go back and try again</text>
+    </g>
+
+    <!-- Feature 4 -->
+    <g transform="translate(600, 420)">
+      <rect width="500" height="200" rx="20" fill="rgba(255,255,255,0.05)"/>
+      <text x="40" y="80" font-size="60">🏆</text>
+      <text x="140" y="70" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc">Achievements</text>
+      <text x="140" y="120" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Track your progress</text>
+      <text x="140" y="160" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Beat your best scores</text>
+    </g>
+
+    <!-- Feature 5 -->
+    <g transform="translate(80, 660)">
+      <rect width="500" height="200" rx="20" fill="rgba(255,255,255,0.05)"/>
+      <text x="40" y="80" font-size="60">🌙</text>
+      <text x="140" y="70" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc">Zen Mode</text>
+      <text x="140" y="120" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Relaxed gameplay</text>
+      <text x="140" y="160" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">No timers, no pressure</text>
+    </g>
+
+    <!-- Feature 6 -->
+    <g transform="translate(600, 660)">
+      <rect width="500" height="200" rx="20" fill="rgba(255,255,255,0.05)"/>
+      <text x="40" y="80" font-size="60">📤</text>
+      <text x="140" y="70" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc">Share Solutions</text>
+      <text x="140" y="120" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Export as GIF</text>
+      <text x="140" y="160" font-family="system-ui, sans-serif" font-size="26" fill="#94a3b8">Show off your solves</text>
+    </g>
+  </g>
+
+  <!-- Bottom CTA -->
+  <g transform="translate(60, 2400)">
+    <rect x="285" y="0" width="600" height="120" rx="60" fill="url(#accentGrad)"/>
+    <text x="585" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="bold" fill="white">Try All 4 Games Free!</text>
+  </g>
+
+  <text x="645" y="2650" text-anchor="middle" font-family="system-ui, sans-serif" font-size="32" fill="#6366f1">mobile-gaming.pages.dev</text>
+</svg>
