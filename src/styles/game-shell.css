@@ -1,0 +1,158 @@
+/**
+ * Game Shell CSS - Shared Game Layout
+ *
+ * Common layout structure for all game pages
+ */
+
+@import './variables.css';
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Game Container */
+.game-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+/* Game Header */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-4);
+}
+
+.game-header h1 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.game-header-controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Game Stats Bar */
+.game-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: var(--space-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}
+
+.game-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.game-stat-value {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-brand-primary);
+}
+
+.game-stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Game Board Area */
+.game-board {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-4);
+  min-height: 300px;
+}
+
+/* Game Controls */
+.game-controls {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  padding: var(--space-4) 0;
+}
+
+/* Back Link */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.back-link:hover {
+  color: var(--color-brand-primary);
+}
+
+/* Win/Lose Overlay */
+.game-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-overlay);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.game-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.game-overlay-content {
+  background-color: var(--color-bg-secondary);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  max-width: 320px;
+}
+
+.game-overlay-title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+}
+
+.game-overlay-title.win {
+  color: var(--color-success);
+}
+
+.game-overlay-title.lose {
+  color: var(--color-error);
+}
+
+/* Mobile Touch Feedback */
+@media (hover: none) {
+  .game-btn:active {
+    transform: scale(0.95);
+  }
+}

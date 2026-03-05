@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Profile | Mobile Gaming</title>
+  <link rel="stylesheet" href="../styles/reset.css">
+  <link rel="stylesheet" href="../styles/variables.css">
+  <link rel="stylesheet" href="../styles/game-shell.css">
+</head>
+<body>
+  <main class="profile-page">
+    <header class="profile-header">
+      <a href="../" class="back-link">← Back to Games</a>
+      <h1>Player Profile</h1>
+    </header>
+
+    <section class="profile-stats">
+      <div class="stat-card">
+        <span class="stat-label">Level</span>
+        <span class="stat-value" id="player-level">1</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total XP</span>
+        <span class="stat-value" id="total-xp">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Games Played</span>
+        <span class="stat-value" id="games-played">0</span>
+      </div>
+    </section>
+
+    <section class="profile-progress">
+      <h2>Level Progress</h2>
+      <div class="progress-bar">
+        <div class="progress-fill" id="level-progress" style="width: 0%"></div>
+      </div>
+      <p class="progress-text"><span id="xp-current">0</span> / <span id="xp-needed">100</span> XP</p>
+    </section>
+
+    <section class="profile-achievements">
+      <h2>Achievements</h2>
+      <p class="placeholder-text">Achievements coming soon...</p>
+    </section>
+  </main>
+
+  <script type="module" src="./profile.js"></script>
+</body>
+</html>

@@ -4,43 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mobile Gaming - Browser Puzzle Games</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./styles/reset.css">
+  <link rel="stylesheet" href="./styles/variables.css">
+  <link rel="stylesheet" href="./styles/components.css">
+  <link rel="stylesheet" href="./styles/index.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
 </head>
 <body>
   <div class="container">
     <header>
+      <a href="./profile/" class="profile-link">👤 Profile</a>
       <h1>Mobile Gaming</h1>
       <p class="subtitle">Play the games the ads promised</p>
     </header>
 
     <main class="games-grid">
-      <div class="game-card coming-soon">
-        <div class="game-icon">🚌</div>
-        <h2>Bus Jam</h2>
-        <p>Sort passengers by color, unblock the exit</p>
-        <span class="status">Coming Soon</span>
-      </div>
+      <a href="./games/water-sort/" class="game-card-link">
+        <div class="game-card coming-soon">
+          <div class="game-card-image">💧</div>
+          <h2 class="game-card-name">Water Sort</h2>
+          <p class="game-card-desc">Pour liquids between tubes until sorted</p>
+          <span class="badge badge-warning">Coming Soon</span>
+        </div>
+      </a>
 
-      <div class="game-card coming-soon">
-        <div class="game-icon">💧</div>
-        <h2>Water Sort</h2>
-        <p>Pour liquids between tubes until sorted</p>
-        <span class="status">Coming Soon</span>
-      </div>
+      <a href="./games/parking-escape/" class="game-card-link">
+        <div class="game-card coming-soon">
+          <div class="game-card-image">🚗</div>
+          <h2 class="game-card-name">Parking Escape</h2>
+          <p class="game-card-desc">Slide cars to unblock the exit</p>
+          <span class="badge badge-warning">Coming Soon</span>
+        </div>
+      </a>
 
-      <div class="game-card coming-soon">
-        <div class="game-icon">🚗</div>
-        <h2>Parking Escape</h2>
-        <p>Slide cars to unblock the exit</p>
-        <span class="status">Coming Soon</span>
-      </div>
+      <a href="./games/bus-jam/" class="game-card-link">
+        <div class="game-card coming-soon">
+          <div class="game-card-image">🚌</div>
+          <h2 class="game-card-name">Bus Jam</h2>
+          <p class="game-card-desc">Sort passengers by color, unblock the exit</p>
+          <span class="badge badge-warning">Coming Soon</span>
+        </div>
+      </a>
 
-      <div class="game-card coming-soon">
-        <div class="game-icon">📌</div>
-        <h2>Pull the Pin</h2>
-        <p>Remove pins in the right order</p>
-        <span class="status">Coming Soon</span>
-      </div>
+      <a href="./games/pull-the-pin/" class="game-card-link">
+        <div class="game-card coming-soon">
+          <div class="game-card-image">📌</div>
+          <h2 class="game-card-name">Pull the Pin</h2>
+          <p class="game-card-desc">Remove pins in the right order</p>
+          <span class="badge badge-warning">Coming Soon</span>
+        </div>
+      </a>
     </main>
 
     <footer>
