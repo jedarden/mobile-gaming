@@ -145,8 +145,19 @@
   .star.filled {
     animation: none;
   }
-  
+
   .hint-active {
     animation: none;
   }
+}
+
+/* Undo Timeline Container */
+.undo-timeline-container {
+  margin: var(--space-2) 0;
+  min-height: 0;
+  transition: min-height var(--transition-base);
+}
+
+.undo-timeline-container:not(:empty) {
+  min-height: 100px;
 }

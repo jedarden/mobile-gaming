@@ -57,6 +57,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import * as audio from './audio.js';
+import { createUndoTimeline } from '../../shared/undo-timeline.js';
 
 // Game constants
 const GAME_ID = 'pull-the-pin';
@@ -103,6 +104,10 @@ class PullThePinGame {
     this.loseOverlay = document.getElementById('lose-overlay');
     this.settingsOverlay = document.getElementById('settings-overlay');
 
+    // Undo timeline
+    this.undoTimelineContainer = document.getElementById('undo-timeline-container');
+    this.undoTimeline = null;
+
     // Game state
     this.levels = [];
     this.currentLevelIndex = 0;
@@ -148,6 +153,9 @@ class PullThePinGame {
       // Create renderer
       this.renderer = createRenderer(this.canvas);
       this.renderer.setReducedMotion(isReducedMotionEnabled());
+
+      // Initialize undo timeline
+      this.initUndoTimeline();
 
       // Check for daily mode
       const urlParams = new URLSearchParams(window.location.search);
@@ -229,6 +237,137 @@ class PullThePinGame {
         requiredBalls: 2
       }
     ];
+  }
+
+  /**
+   * Initialize the undo timeline component
+   */
+  initUndoTimeline() {
+    // Create thumbnail renderer function
+    const renderThumbnail = (state, canvas, scale) => {
+      const ctx = canvas.getContext('2d');
+      const width = 40;
+      const height = 60;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width * 2, height * 2);
+
+      // Draw background
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, width, height);
+
+      // Calculate scale to fit game state in thumbnail
+      const thumbScale = Math.min(width / 300, height / 400) * 2;
+
+      ctx.save();
+      ctx.scale(thumbScale, thumbScale);
+
+      // Draw simplified game state
+      this.renderThumbnailState(ctx, state, thumbScale);
+
+      ctx.restore();
+    };
+
+    // Create timeline instance
+    this.undoTimeline = createUndoTimeline({
+      container: this.undoTimelineContainer,
+      renderThumbnail,
+      onStateChange: (state, index) => {
+        // Restore state from timeline
+        this.state = state;
+        this.updateUI();
+        this.render();
+        audio.playPinRemove();
+        announce(`Jumped to move ${index + 1}`);
+      },
+      thumbnailWidth: 40,
+      thumbnailHeight: 60,
+      maxThumbnails: 15
+    });
+  }
+
+  /**
+   * Render simplified game state for thumbnail
+   */
+  renderThumbnailState(ctx, state, scale) {
+    // Draw walls
+    ctx.strokeStyle = '#4A4A5A';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    for (const wall of state.walls) {
+      ctx.beginPath();
+      ctx.moveTo(wall.x1 * scale, wall.y1 * scale);
+      ctx.lineTo(wall.x2 * scale, wall.y2 * scale);
+      ctx.stroke();
+    }
+
+    // Draw hazards (simplified)
+    for (const hazard of state.hazards) {
+      ctx.fillStyle = hazard.type === 'lava' ? '#FF4500' : '#444';
+      ctx.fillRect(
+        hazard.x * scale,
+        hazard.y * scale,
+        hazard.width * scale,
+        hazard.height * scale
+      );
+    }
+
+    // Draw goals (simplified)
+    for (const goal of state.goals) {
+      ctx.fillStyle = '#00C853';
+      ctx.globalAlpha = 0.7;
+      ctx.fillRect(
+        goal.x * scale,
+        goal.y * scale,
+        goal.width * scale,
+        goal.height * scale
+      );
+      ctx.globalAlpha = 1;
+    }
+
+    // Draw pins (simplified)
+    for (const pin of state.pins) {
+      if (pin.removed) continue;
+
+      const x = pin.x * scale;
+      const y = pin.y * scale;
+      const length = pin.length * scale;
+      const halfLength = length / 2;
+      const cos = Math.cos(pin.angle);
+      const sin = Math.sin(pin.angle);
+
+      ctx.strokeStyle = pin.removing ? '#FF6B6B' : '#C0C0C0';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x - halfLength * cos, y - halfLength * sin);
+      ctx.lineTo(x + halfLength * cos, y + halfLength * sin);
+      ctx.stroke();
+    }
+
+    // Draw balls (simplified)
+    for (const ball of state.balls) {
+      if (ball.collected || ball.destroyed) continue;
+
+      const x = ball.x * scale;
+      const y = ball.y * scale;
+      const r = ball.radius * scale;
+
+      // Simple gradient
+      const gradient = ctx.createRadialGradient(
+        x - r * 0.3, y - r * 0.3, 0,
+        x, y, r
+      );
+
+      const ballType = BALL_TYPES[ball.type] || BALL_TYPES.gold;
+      gradient.addColorStop(0, ballType.gradient[0]);
+      gradient.addColorStop(1, ballType.color);
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   /**
@@ -574,20 +713,25 @@ class PullThePinGame {
   startInfinitePuzzle() {
     startInfiniteSession();
     recordPuzzleAttempt();
-    
+
     const rng = createInfiniteRNG();
     const level = this.generateRandomLevel(rng);
-    
+
     this.state = createInitialState(level);
     this.history.clear();
     this.history.push(cloneState(this.state));
-    
+
     this.animating = false;
-    
+
     this.handleResize();
     this.updateUI();
     this.startGameLoop();
-    
+
+    // Update undo timeline
+    if (this.undoTimeline) {
+      this.undoTimeline.setHistory(this.history);
+    }
+
     announce(`Infinite puzzle started. Difficulty: ${getDifficulty()}`);
   }
 
@@ -620,6 +764,11 @@ class PullThePinGame {
     this.handleResize();
     this.updateUI();
     this.startGameLoop();
+
+    // Update undo timeline
+    if (this.undoTimeline) {
+      this.undoTimeline.setHistory(this.history);
+    }
 
     // Announce for screen readers
     announce(`Level ${index + 1} started. ${level.balls.length} balls, ${level.pins.length} pins.`);
@@ -690,15 +839,20 @@ class PullThePinGame {
    */
   async removePin(pin) {
     if (!removePin(this.state, pin.id)) return;
-    
+
     this.history.push(cloneState(this.state));
-    
+
+    // Update undo timeline
+    if (this.undoTimeline) {
+      this.undoTimeline.refresh();
+    }
+
     audio.playPinRemove();
-    
+
     // Animate pin removal
     await this.renderer.animatePinRemoval(pin);
     completePinRemoval(this.state, pin.id);
-    
+
     this.updateUI();
     this.render();
   }
@@ -907,6 +1061,10 @@ class PullThePinGame {
     const prevState = this.history.undo();
     if (prevState) {
       this.state = prevState;
+      // Update undo timeline
+      if (this.undoTimeline) {
+        this.undoTimeline.setPosition(this.history.position);
+      }
       this.updateUI();
       this.render();
       audio.playPinRemove();

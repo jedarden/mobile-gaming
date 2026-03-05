@@ -1,0 +1,259 @@
+/**
+ * Undo Timeline CSS - Visual Undo Timeline Component Styles
+ *
+ * Horizontal strip of thumbnails showing move history
+ */
+
+/* Timeline Container */
+.undo-timeline {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  padding: var(--space-2);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  user-select: none;
+  touch-action: pan-x;
+  cursor: grab;
+}
+
+.undo-timeline:focus {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+.undo-timeline.dragging {
+  cursor: grabbing;
+}
+
+/* Timeline Track (scrollable area) */
+.undo-timeline-track {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: var(--space-1);
+  padding-right: var(--space-4);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.undo-timeline-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Thumbnail Wrapper */
+.undo-timeline-thumb-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.undo-timeline-thumb-wrapper:hover {
+  transform: scale(1.05);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.undo-timeline-thumb-wrapper:active {
+  transform: scale(0.95);
+}
+
+/* Current State Indicator */
+.undo-timeline-thumb-wrapper.current {
+  background-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2px var(--color-brand-primary);
+}
+
+.undo-timeline-thumb-wrapper.current::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-brand-primary);
+}
+
+/* Future (redo) states */
+.undo-timeline-thumb-wrapper.future {
+  opacity: 0.6;
+}
+
+.undo-timeline-thumb-wrapper.future .undo-timeline-thumb {
+  filter: grayscale(30%);
+}
+
+/* Hover state during drag */
+.undo-timeline-thumb-wrapper.hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px var(--color-brand-accent);
+  z-index: 10;
+}
+
+/* Thumbnail Image */
+.undo-timeline-thumb {
+  width: 40px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  background-color: var(--color-bg-primary);
+  pointer-events: none;
+}
+
+/* Thumbnail Label */
+.undo-timeline-thumb-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.undo-timeline-thumb-wrapper.current .undo-timeline-thumb-label {
+  color: var(--color-brand-primary);
+  font-weight: 600;
+}
+
+/* Position Indicator (animated line) */
+.undo-timeline-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
+  border-radius: var(--radius-full) var(--radius-full) 0 0;
+  transition: left var(--transition-fast), width var(--transition-fast);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Empty State */
+.undo-timeline:empty::before {
+  content: 'No moves yet';
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  padding: var(--space-4);
+  text-align: center;
+  width: 100%;
+}
+
+/* Fade edges for scroll indication */
+.undo-timeline::before,
+.undo-timeline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.undo-timeline::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg-secondary), transparent);
+}
+
+.undo-timeline::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg-secondary), transparent);
+}
+
+/* Mobile adjustments */
+@media (max-width: 360px) {
+  .undo-timeline-thumb {
+    width: 32px;
+    height: 48px;
+  }
+
+  .undo-timeline-track {
+    gap: var(--space-1);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .undo-timeline-track {
+    scroll-behavior: auto;
+  }
+
+  .undo-timeline-thumb-wrapper {
+    transition: none;
+  }
+
+  .undo-timeline-indicator {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .undo-timeline-thumb-wrapper.current {
+    box-shadow: 0 0 0 3px var(--color-text-primary);
+  }
+
+  .undo-timeline-thumb-wrapper:hover {
+    outline: 2px solid var(--color-text-primary);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .undo-timeline-thumb-wrapper:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Animation for new thumbnails */
+@keyframes thumbAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.undo-timeline-thumb-wrapper:not(.current) {
+  animation: thumbAppear 0.2s ease-out;
+}
+
+/* Pulse animation for current state */
+@keyframes currentPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px var(--color-brand-primary);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5);
+  }
+}
+
+.undo-timeline-thumb-wrapper.current {
+  animation: currentPulse 2s ease-in-out infinite;
+}
+
+/* Disable pulse on reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .undo-timeline-thumb-wrapper.current {
+    animation: none;
+  }
+
+  .undo-timeline-thumb-wrapper:not(.current) {
+    animation: none;
+  }
+}
