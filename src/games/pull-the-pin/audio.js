@@ -24,6 +24,13 @@ function initAudioContext() {
 }
 
 /**
+ * Initialize audio (public API for game initialization)
+ */
+export function init() {
+  initAudioContext();
+}
+
+/**
  * Generate a simple tone
  */
 function playTone(frequency, duration, type = 'sine', volume = 0.3) {
@@ -238,6 +245,7 @@ export function isMuted() {
 }
 
 export default {
+  init,
   playPinRemove,
   playBounce,
   playHazard,

@@ -7,7 +7,7 @@
  * - Selection and preview highlights
  */
 
-import { COLORS, colorToHex, getColorPattern } from '../../shared/colors.js';
+// Color mapping defined locally for water-sort game
 
 const TUBE_WIDTH = 60;
 const TUBE_HEIGHT = 180;

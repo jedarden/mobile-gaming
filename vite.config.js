@@ -1,15 +1,26 @@
 import { defineConfig } from 'vite'
+import { resolve } from 'path'
 
 export default defineConfig({
   root: 'src',
+  publicDir: '../public',
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    // Source maps for debugging
+    sourcemap: true,
     // Performance optimizations
     minify: 'esbuild',
     target: 'es2020',
-    // Chunk splitting for better caching
+    // Multi-page application with all game entry points
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'src/index.html'),
+        'water-sort': resolve(__dirname, 'src/games/water-sort/index.html'),
+        'parking-escape': resolve(__dirname, 'src/games/parking-escape/index.html'),
+        'bus-jam': resolve(__dirname, 'src/games/bus-jam/index.html'),
+        'pull-the-pin': resolve(__dirname, 'src/games/pull-the-pin/index.html'),
+      },
       output: {
         manualChunks: {
           // Shared game utilities
@@ -29,11 +40,16 @@ export default defineConfig({
     // Chunk size warnings
     chunkSizeWarningLimit: 150
   },
-  publicDir: '../public',
-  // Dev server optimizations
+  // Dev server configuration
   server: {
+    port: 3000,
+    open: true,
     // Enable gzip compression
     compress: true
+  },
+  // Preview server for production builds
+  preview: {
+    port: 3000
   },
   // CSS optimizations
   css: {
