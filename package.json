@@ -7,12 +7,18 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "vite": "^5.4.0"
+    "@vitest/coverage-v8": "^4.0.18",
+    "happy-dom": "^20.8.3",
+    "vite": "^5.4.0",
+    "vitest": "^4.0.18"
   }
 }
