@@ -14,6 +14,8 @@ import { awardLevelComplete, getLevelInfo } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { getDailyChallenge, completeDailyChallenge, getGameDailySeed, isDailyCompleted } from '../../shared/daily.js';
 import { createRNG } from '../../shared/rng.js';
+import { createGIFExporter } from '../../shared/gif-export.js';
+import { Share } from '../../shared/share.js';
 
 import {
   createInitialState,
@@ -65,6 +67,11 @@ class WaterSortGame {
     this.history = createHistory(50);
     this.renderer = null;
 
+    // GIF Export
+    this.gifExporter = null;
+    this.recordedStates = [];
+    this.isRecording = false;
+
     // Interaction state
     this.animating = false;
 
@@ -98,6 +105,13 @@ class WaterSortGame {
       // Create renderer
       this.renderer = createRenderer(this.canvas);
       this.renderer.setReducedMotion(isReducedMotionEnabled());
+
+      // Initialize GIF exporter
+      this.gifExporter = createGIFExporter({
+        width: this.canvas.width || 400,
+        height: this.canvas.height || 600,
+        renderFrame: (canvas, state) => this.renderStateToCanvas(canvas, state)
+      });
 
       // Check for daily mode
       const urlParams = new URLSearchParams(window.location.search);
@@ -256,6 +270,9 @@ class WaterSortGame {
       this.hideWinOverlay();
       this.nextLevel();
     });
+    document.getElementById('btn-share-gif').addEventListener('click', () => {
+      this.shareSolutionGIF();
+    });
 
     // Settings overlay
     document.getElementById('btn-close-settings').addEventListener('click', () => {
@@ -291,6 +308,10 @@ class WaterSortGame {
     this.state = createInitialState(level);
     this.history.clear();
     this.history.push(cloneState(this.state));
+
+    // Start recording for GIF export
+    this.recordedStates = [cloneState(this.state)];
+    this.isRecording = true;
 
     // Reset interaction state
     this.animating = false;
@@ -421,6 +442,11 @@ class WaterSortGame {
       executePour(this.state, fromIndex, toIndex);
       audio.playPour();
     });
+
+    // Record state for GIF export
+    if (this.isRecording) {
+      this.recordedStates.push(cloneState(this.state));
+    }
 
     // Check for newly completed tubes
     const completedAfter = countCompletedTubes(this.state);
@@ -641,6 +667,115 @@ class WaterSortGame {
     this.btnUndo.disabled = !this.history.canUndo();
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;
+  }
+
+  /**
+   * Render state to a canvas for GIF export
+   * @param {HTMLCanvasElement} canvas - Target canvas
+   * @param {Object} state - Game state to render
+   */
+  renderStateToCanvas(canvas, state) {
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Clear canvas
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, width, height);
+
+    if (!state || !state.tubes) return;
+
+    const numTubes = state.tubes.length;
+    const tubeWidth = Math.min(40, (width - 40) / numTubes - 10);
+    const tubeHeight = tubeWidth * 4;
+    const liquidHeight = tubeHeight / 4;
+    const startX = (width - (numTubes * (tubeWidth + 10) - 10)) / 2;
+    const startY = (height - tubeHeight - 20) / 2;
+
+    // Draw tubes
+    state.tubes.forEach((tube, tubeIndex) => {
+      const x = startX + tubeIndex * (tubeWidth + 10);
+      const y = startY;
+
+      // Draw tube outline
+      ctx.strokeStyle = '#4a4a6a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, tubeWidth, tubeHeight, 4);
+      ctx.stroke();
+
+      // Draw liquid segments
+      tube.forEach((color, i) => {
+        const colorMap = {
+          'red': '#ef4444',
+          'blue': '#3b82f6',
+          'green': '#22c55e',
+          'yellow': '#eab308',
+          'purple': '#a855f7',
+          'orange': '#f97316'
+        };
+
+        ctx.fillStyle = colorMap[color] || '#888888';
+        const liquidY = y + tubeHeight - (i + 1) * liquidHeight;
+        ctx.beginPath();
+        ctx.roundRect(x + 2, liquidY, tubeWidth - 4, liquidHeight - 1, 2);
+        ctx.fill();
+      });
+    });
+  }
+
+  /**
+   * Share solution as animated GIF
+   */
+  async shareSolutionGIF() {
+    // Stop recording
+    this.isRecording = false;
+
+    if (this.recordedStates.length === 0) {
+      announce('No solution to share');
+      return;
+    }
+
+    const shareBtn = document.getElementById('btn-share-gif');
+    const originalText = shareBtn.innerHTML;
+    shareBtn.innerHTML = '<span>Generating...</span>';
+    shareBtn.disabled = true;
+
+    try {
+      // Start recording in exporter
+      this.gifExporter.startRecording();
+
+      // Capture all recorded states
+      for (const state of this.recordedStates) {
+        this.gifExporter.captureState(state, 500);
+      }
+
+      // Generate GIF
+      const blob = await this.gifExporter.stopAndGenerate({
+        watermark: true,
+        watermarkText: 'mobile-gaming.pages.dev'
+      });
+
+      // Share or download
+      const result = await Share.shareGIF(blob, {
+        gameId: GAME_ID,
+        levelId: this.isDailyMode ? 'daily' : this.currentLevelIndex + 1,
+        moves: this.state.moves,
+        title: this.isDailyMode
+          ? 'Water Sort Daily Challenge'
+          : `Water Sort Level ${this.currentLevelIndex + 1}`
+      });
+
+      if (result.success) {
+        announce(result.method === 'share' ? 'Shared successfully!' : 'GIF downloaded');
+      }
+    } catch (error) {
+      console.error('Failed to share GIF:', error);
+      announce('Failed to share GIF');
+    } finally {
+      shareBtn.innerHTML = originalText;
+      shareBtn.disabled = false;
+    }
   }
 }
 

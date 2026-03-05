@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="../../styles/variables.css">
   <link rel="stylesheet" href="../../styles/components.css">
   <link rel="stylesheet" href="../../styles/game-shell.css">
+  <link rel="stylesheet" href="../../styles/gif-export.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -93,6 +94,12 @@
       </div>
       <p class="stats-summary" id="stats-summary">Completed in 5 moves!</p>
       <div class="overlay-buttons">
+        <button class="btn-share-gif" id="btn-share-gif" aria-label="Share solution as GIF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+          </svg>
+          Share
+        </button>
         <button class="game-btn game-btn-secondary" id="btn-replay">Replay</button>
         <button class="game-btn game-btn-primary" id="btn-next-level">Next Level</button>
       </div>
