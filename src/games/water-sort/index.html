@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Water Sort - Mobile Gaming</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f0f23">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Water Sort">
+  <meta name="description" content="Sort colored liquids by pouring between tubes">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../../styles/reset.css">
+  <link rel="stylesheet" href="../../styles/variables.css">
+  <link rel="stylesheet" href="../../styles/components.css">
+  <link rel="stylesheet" href="../../styles/game-shell.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="../../" class="skip-link">Skip to main content</a>
+
+  <div class="game-container">
+    <header class="game-header">
+      <a href="../../" class="back-link" aria-label="Back to games">
+        <span aria-hidden="true">&larr;</span> Back
+      </a>
+      <h1>Water Sort</h1>
+      <div class="game-header-controls">
+        <button class="game-btn game-btn-icon game-btn-ghost" id="btn-sound" aria-label="Toggle sound" title="Toggle sound">
+          <span aria-hidden="true">🔊</span>
+        </button>
+        <button class="game-btn game-btn-icon game-btn-ghost" id="btn-settings" aria-label="Settings" title="Settings">
+          <span aria-hidden="true">⚙️</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="game-stats" role="status" aria-live="polite">
+      <div class="game-stat">
+        <span class="game-stat-value" id="level-display">1</span>
+        <span class="game-stat-label">Level</span>
+      </div>
+      <div class="game-stat">
+        <span class="game-stat-value" id="moves-display">0</span>
+        <span class="game-stat-label">Moves</span>
+      </div>
+      <div class="game-stat">
+        <span class="game-stat-value" id="completed-display">0</span>
+        <span class="game-stat-label">Complete</span>
+      </div>
+    </div>
+
+    <main id="main-content" class="game-board" role="main">
+      <canvas id="game-canvas" aria-label="Water Sort game board"></canvas>
+    </main>
+
+    <div class="game-controls">
+      <button class="game-btn game-btn-secondary" id="btn-undo" disabled aria-label="Undo last move">
+        <span aria-hidden="true">↩</span> Undo
+      </button>
+      <button class="game-btn game-btn-secondary" id="btn-hint" aria-label="Get hint">
+        <span aria-hidden="true">💡</span> Hint
+      </button>
+      <button class="game-btn game-btn-secondary" id="btn-restart" aria-label="Restart level">
+        <span aria-hidden="true">🔄</span> Restart
+      </button>
+    </div>
+
+    <!-- Level Select -->
+    <div class="level-nav">
+      <button class="game-btn game-btn-ghost" id="btn-prev" aria-label="Previous level">
+        <span aria-hidden="true">◀</span> Prev
+      </button>
+      <span id="level-progress" class="level-progress">Level 1 / 50</span>
+      <button class="game-btn game-btn-ghost" id="btn-next" aria-label="Next level">
+        Next <span aria-hidden="true">▶</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Win Overlay -->
+  <div class="game-overlay" id="win-overlay" role="dialog" aria-labelledby="win-title" aria-hidden="true">
+    <div class="game-overlay-content">
+      <h2 class="game-overlay-title win" id="win-title">Level Complete!</h2>
+      <div class="stars-display" id="stars-display" aria-label="Rating">
+        <span class="star" aria-hidden="true">⭐</span>
+        <span class="star" aria-hidden="true">⭐</span>
+        <span class="star" aria-hidden="true">⭐</span>
+      </div>
+      <p class="stats-summary" id="stats-summary">Completed in 5 moves!</p>
+      <div class="overlay-buttons">
+        <button class="game-btn game-btn-secondary" id="btn-replay">Replay</button>
+        <button class="game-btn game-btn-primary" id="btn-next-level">Next Level</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="game-overlay" id="settings-overlay" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
+    <div class="game-overlay-content settings-content">
+      <h2 id="settings-title">Settings</h2>
+      <div class="settings-group">
+        <label class="setting-item">
+          <span>Sound Effects</span>
+          <input type="checkbox" id="setting-sound" checked>
+        </label>
+        <label class="setting-item">
+          <span>Haptic Feedback</span>
+          <input type="checkbox" id="setting-haptic" checked>
+        </label>
+        <label class="setting-item">
+          <span>Reduced Motion</span>
+          <input type="checkbox" id="setting-motion">
+        </label>
+      </div>
+      <button class="game-btn game-btn-primary" id="btn-close-settings">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
