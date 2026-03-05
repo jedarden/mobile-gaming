@@ -41,6 +41,7 @@ class ParkingEscapeGame {
     this.canvas = document.getElementById('game-canvas');
     this.levelDisplay = document.getElementById('level-display');
     this.movesDisplay = document.getElementById('moves-display');
+    this.optimalDisplay = document.getElementById('optimal-display');
     this.levelProgress = document.getElementById('level-progress');
 
     // Buttons
@@ -466,8 +467,9 @@ class ParkingEscapeGame {
       star.classList.toggle('filled', i < stars);
     });
 
+    const level = this.levels[this.currentLevelIndex];
     document.getElementById('stats-summary').textContent =
-      `Completed in ${this.state.moves} moves!`;
+      `Completed in ${this.state.moves} moves (min: ${level.optimal})`;
 
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');
@@ -622,6 +624,7 @@ class ParkingEscapeGame {
 
     this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.movesDisplay.textContent = this.state.moves;
+    this.optimalDisplay.textContent = level.optimal;
 
     const levelText = this.isDailyMode ? 'Daily Challenge' : `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
     this.levelProgress.textContent = levelText;
