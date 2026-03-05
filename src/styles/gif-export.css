@@ -1,0 +1,210 @@
+/**
+ * GIF Export Styles
+ *
+ * Styles for GIF preview modal, recording indicator, and export UI
+ */
+
+/* Recording Indicator */
+.gif-recording-indicator {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  z-index: var(--z-overlay);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.gif-recording-indicator::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-radius: 50%;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* GIF Preview Modal */
+.gif-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.gif-preview-content {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.gif-preview-content img {
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-card);
+}
+
+.gif-preview-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* GIF Buttons */
+.gif-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.gif-btn-share {
+  background-color: var(--color-brand-primary);
+  color: white;
+}
+
+.gif-btn-share:hover {
+  background-color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.gif-btn-download {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.gif-btn-download:hover {
+  background-color: #16a34a;
+  transform: translateY(-1px);
+}
+
+.gif-btn-close {
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.gif-btn-close:hover {
+  background-color: var(--color-bg-elevated);
+}
+
+/* Export Progress */
+.gif-export-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+
+.gif-export-progress .progress-bar {
+  width: 200px;
+  height: 8px;
+}
+
+.gif-export-progress .progress-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Share Button in Win Overlay */
+.btn-share-gif {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary));
+  color: white;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-share-gif:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-share-gif svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+  .gif-preview-content {
+    padding: var(--space-3);
+    margin: var(--space-2);
+  }
+
+  .gif-preview-actions {
+    flex-direction: column;
+  }
+
+  .gif-btn {
+    width: 100%;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .gif-recording-indicator,
+  .gif-recording-indicator::before {
+    animation: none;
+  }
+
+  .gif-preview-modal,
+  .gif-preview-content {
+    animation: none;
+  }
+}
