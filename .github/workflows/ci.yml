@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for console.log statements
+        run: |
+          # Fail if console.log found in game files (except main.js which uses it for init)
+          if grep -r "console\.log" src/games/*/state.js src/games/*/renderer.js src/games/*/input.js src/games/*/generator.js 2>/dev/null; then
+            echo "::error::console.log statements found in game files. Remove them before merging."
+            exit 1
+          fi
+
+      - name: Validate scaffold files exist for all games
+        run: |
+          for game_dir in src/games/*/; do
+            game_name=$(basename "$game_dir")
+            echo "Checking $game_name..."
+            
+            # Required files
+            required_files=("index.html" "main.js" "state.js" "renderer.js" "input.js" "styles.css" "levels.json" "generator.js" "README.md")
+            missing_files=()
+            
+            for file in "${required_files[@]}"; do
+              if [ ! -f "$game_dir$file" ]; then
+                missing_files+=("$file")
+              fi
+            done
+            
+            if [ ${#missing_files[@]} -gt 0 ]; then
+              echo "::error file=$game_dir::Missing required files: ${missing_files[*]}"
+              exit 1
+            fi
+            
+            # Check levels.json has at least 3 levels
+            level_count=$(jq 'length' "$game_dir/levels.json" 2>/dev/null || echo "0")
+            if [ "$level_count" -lt 3 ]; then
+              echo "::error file=$game_dir/levels.json::Game must have at least 3 levels. Found: $level_count"
+              exit 1
+            fi
+          done
+          echo "All game scaffolds validated successfully"
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7
+
+  build:
+    name: Build & Bundle Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle sizes
+        run: |
+          # Bundle size budget: 500KB total for JS, 100KB for CSS
+          JS_SIZE=$(du -sb dist/assets/*.js 2>/dev/null | awk '{sum+=$1} END {print sum}')
+          CSS_SIZE=$(du -sb dist/assets/*.css 2>/dev/null | awk '{sum+=$1} END {print sum}')
+          
+          JS_BUDGET=$((500 * 1024))  # 500KB
+          CSS_BUDGET=$((100 * 1024)) # 100KB
+          
+          echo "JS bundle size: $((JS_SIZE / 1024))KB (budget: 500KB)"
+          echo "CSS bundle size: $((CSS_SIZE / 1024))KB (budget: 100KB)"
+          
+          if [ "$JS_SIZE" -gt "$JS_BUDGET" ]; then
+            echo "::error::JS bundle exceeds 500KB budget"
+            exit 1
+          fi
+          
+          if [ "$CSS_SIZE" -gt "$CSS_BUDGET" ]; then
+            echo "::error::CSS bundle exceeds 100KB budget"
+            exit 1
+          fi
+          
+          echo "Bundle sizes within budget"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # Summary job that requires all others to pass
+  ci-passed:
+    name: CI Passed
+    needs: [lint, test-unit, test-e2e, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed
+        run: echo "All CI checks passed successfully!"

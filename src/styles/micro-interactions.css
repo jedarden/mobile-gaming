@@ -1,0 +1,596 @@
+/**
+ * Micro-interactions.css - Visual Polish and Animations
+ *
+ * Provides:
+ * - Button interactions (hover, press, ripple)
+ * - Card interactions
+ * - Input interactions
+ * - Toast animations
+ * - Modal animations
+ * - Page transitions
+ * - Celebration effects
+ * - Haptic feedback helpers
+ */
+
+/* ============================================================================
+   BUTTON INTERACTIONS
+   ============================================================================ */
+
+/* Base button polish */
+.game-btn {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: all var(--transition-fast);
+}
+
+/* Hover lift effect */
+.game-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.game-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Press effect */
+.game-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Ripple effect */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Icon button spin on action */
+.icon-btn-action {
+  transition: transform var(--transition-fast);
+}
+
+.icon-btn-action:active {
+  transform: scale(0.9) rotate(-10deg);
+}
+
+.icon-btn-action.success {
+  animation: successPop 0.3s ease;
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+   CARD INTERACTIONS
+   ============================================================================ */
+
+.game-card {
+  position: relative;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.game-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+}
+
+.game-card:hover::before {
+  opacity: 1;
+}
+
+/* Card hover glow */
+.game-card-link:hover .game-card {
+  transform: translateY(-4px);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+/* Card touch feedback */
+@media (hover: none) {
+  .game-card:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================================================
+   INPUT INTERACTIONS
+   ============================================================================ */
+
+/* Input focus glow */
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Input error shake */
+.input-error {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-8px);
+  }
+  40%, 80% {
+    transform: translateX(8px);
+  }
+}
+
+/* Checkbox custom animation */
+.checkbox-animated {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.checkbox-animated input {
+  opacity: 0;
+  position: absolute;
+}
+
+.checkbox-animated .checkmark {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-bg-card);
+  border: 2px solid var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.checkbox-animated input:checked + .checkmark {
+  background-color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+}
+
+.checkbox-animated .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform var(--transition-fast);
+}
+
+.checkbox-animated input:checked + .checkmark::after {
+  transform: rotate(45deg) scale(1);
+}
+
+/* ============================================================================
+   TOAST ANIMATIONS
+   ============================================================================ */
+
+.toast {
+  animation: toastSlideIn 0.3s ease;
+}
+
+.toast.hiding {
+  animation: toastSlideOut 0.3s ease forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+/* ============================================================================
+   MODAL ANIMATIONS
+   ============================================================================ */
+
+.game-overlay {
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.game-overlay.active {
+  animation: fadeIn 0.2s ease;
+}
+
+.game-overlay.closing {
+  animation: fadeOut 0.2s ease forwards;
+}
+
+.game-overlay-content {
+  animation: modalSlideIn 0.3s ease;
+}
+
+.game-overlay.closing .game-overlay-content {
+  animation: modalSlideOut 0.2s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+}
+
+/* ============================================================================
+   PAGE TRANSITIONS
+   ============================================================================ */
+
+/* Page enter animation */
+.page-enter {
+  animation: pageEnter 0.3s ease;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: staggerFadeIn 0.4s ease forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   CELEBRATION EFFECTS
+   ============================================================================ */
+
+/* Confetti container */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-modal);
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-brand-primary);
+  animation: confettiFall 3s ease-out forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Star burst effect */
+.star-burst {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  animation: starBurst 0.6s ease-out forwards;
+}
+
+@keyframes starBurst {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Win celebration */
+.celebration {
+  animation: celebration 0.5s ease;
+}
+
+@keyframes celebration {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.02);
+  }
+}
+
+/* ============================================================================
+   NUMBER ANIMATIONS
+   ============================================================================ */
+
+/* Number increment animation */
+.number-increment {
+  display: inline-block;
+  animation: numberPop 0.3s ease;
+}
+
+@keyframes numberPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+    color: var(--color-brand-accent);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Score fly-in */
+.score-fly-in {
+  animation: scoreFlyIn 0.5s ease forwards;
+}
+
+@keyframes scoreFlyIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================================================
+   HOVER TOOLTIPS
+   ============================================================================ */
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  pointer-events: none;
+  z-index: var(--z-elevated);
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+/* ============================================================================
+   LOADING DOTS
+   ============================================================================ */
+
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-brand-primary);
+  border-radius: 50%;
+  animation: loadingDot 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loadingDot {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+   HAPTIC FEEDBACK HELPERS
+   ============================================================================ */
+
+/* Classes to trigger haptic feedback via JS */
+.haptic-light:active {
+  /* JS: navigator.vibrate(10) */
+}
+
+.haptic-medium:active {
+  /* JS: navigator.vibrate(20) */
+}
+
+.haptic-heavy:active {
+  /* JS: navigator.vibrate(30) */
+}
+
+.haptic-success:active {
+  /* JS: navigator.vibrate([10, 50, 10]) */
+}
+
+.haptic-error:active {
+  /* JS: navigator.vibrate([30, 50, 30, 50, 30]) */
+}
+
+/* ============================================================================
+   FOCUS ANIMATIONS
+   ============================================================================ */
+
+/* Animated focus ring */
+.focus-animated:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  animation: focusRing 0.3s ease forwards;
+}
+
+@keyframes focusRing {
+  to {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+  }
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .game-btn,
+  .game-card,
+  .toast,
+  .game-overlay,
+  .game-overlay-content,
+  .ripple,
+  .confetti,
+  .star-burst,
+  .number-increment,
+  .score-fly-in,
+  .loading-dots span {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .game-btn:hover:not(:disabled),
+  .game-card-link:hover .game-card {
+    transform: none;
+  }
+}

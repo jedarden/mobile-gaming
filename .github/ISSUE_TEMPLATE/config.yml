@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Game Pipeline Documentation
+    url: https://github.com/anthropics/mobile-gaming/blob/main/docs/GAME_PIPELINE.md
+    about: Learn about our game development process
+  - name: QA Checklist
+    url: https://github.com/anthropics/mobile-gaming/blob/main/docs/templates/qa-checklist.md
+    about: Quality assurance checklist for game testing
+  - name: Game Evaluation Template
+    url: https://github.com/anthropics/mobile-gaming/blob/main/docs/templates/game-evaluation.md
+    about: Template for evaluating new game ideas

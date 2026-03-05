@@ -1,0 +1,434 @@
+/**
+ * Cross-Platform.css - Cross-Browser and Device Fixes
+ *
+ * Handles platform-specific quirks:
+ * - iOS Safari (100vh bug, safe areas, rubber banding)
+ * - Android Chrome (touch delay, viewport)
+ * - Firefox mobile
+ * - Older device support
+ */
+
+/* ============================================================================
+   iOS SAFARI FIXES
+   ============================================================================ */
+
+/* Fix the 100vh bug on iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  /* Only targets iOS Safari */
+  .container,
+  .game-container,
+  body {
+    /* Use dvh (dynamic viewport height) with fallback */
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Alternative: Fixed positioning for full-height elements */
+  .full-height-ios {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}
+
+/* Safe area insets for notched devices (iPhone X+) */
+@supports (padding: max(0px)) {
+  .container,
+  .game-container {
+    /* Add padding for notch and home indicator */
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  /* Header safe area */
+  header,
+  .game-header {
+    padding-top: max(var(--space-3), env(safe-area-inset-top));
+  }
+
+  /* Footer safe area */
+  footer {
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  /* Game controls at bottom need extra space */
+  .game-controls {
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  /* Install banner at bottom */
+  .install-banner {
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  /* Overlays need safe area handling */
+  .game-overlay-content {
+    margin-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent rubber banding on iOS */
+body {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix position:fixed elements on iOS when keyboard is open */
+@supports (-webkit-touch-callout: none) {
+  .game-overlay,
+  .install-banner,
+  .update-notification {
+    position: absolute;
+  }
+
+  /* When keyboard is likely open (input focused), adjust */
+  .keyboard-open .game-overlay,
+  .keyboard-open .install-banner {
+    position: fixed;
+  }
+}
+
+/* ============================================================================
+   ANDROID CHROME FIXES
+   ============================================================================ */
+
+/* Remove 300ms tap delay (also helps iOS) */
+a,
+button,
+input,
+select,
+textarea,
+[role="button"],
+.game-btn,
+.game-card-link,
+.icon-btn {
+  touch-action: manipulation;
+}
+
+/* Prevent text selection on game elements */
+.game-board,
+.game-card,
+.game-btn,
+.game-controls {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Fix viewport units on Android */
+@supports not (height: 100dvh) {
+  .container,
+  .game-container {
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* ============================================================================
+   FIREFOX MOBILE FIXES
+   ============================================================================ */
+
+/* Firefox scrollbar styling */
+@-moz-document url-prefix() {
+  /* Hide scrollbar but keep functionality */
+  .game-board::-webkit-scrollbar {
+    display: none;
+  }
+
+  .game-board {
+    scrollbar-width: none;
+  }
+}
+
+/* ============================================================================
+   DESKTOP BROWSER FIXES
+   ============================================================================ */
+
+/* Custom scrollbar for desktop */
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-primary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-bg-elevated);
+  }
+}
+
+/* Firefox desktop scrollbar */
+@-moz-document url-prefix() {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-bg-card) var(--color-bg-primary);
+  }
+}
+
+/* ============================================================================
+   OLDER DEVICE SUPPORT
+   ============================================================================ */
+
+/* Fallbacks for CSS Grid on older browsers */
+@supports not (display: grid) {
+  .games-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .games-grid > * {
+    flex: 1 1 260px;
+    margin: var(--space-2);
+  }
+}
+
+/* Fallbacks for CSS Variables on very old browsers */
+@supports not (--css: variables) {
+  .game-btn-primary {
+    background-color: #6366f1;
+    color: white;
+  }
+
+  .game-btn-secondary {
+    background-color: #334155;
+    color: #f8fafc;
+  }
+
+  body {
+    background-color: #0f172a;
+    color: #f8fafc;
+  }
+}
+
+/* Flexbox gap fallback */
+@supports not (gap: 1rem) {
+  .game-header-controls {
+    margin: calc(var(--space-2) * -1);
+
+    > * {
+      margin: var(--space-2);
+    }
+  }
+
+  .game-controls {
+    margin: calc(var(--space-3) * -1);
+
+    > * {
+      margin: var(--space-3);
+    }
+  }
+}
+
+/* ============================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================================================ */
+
+/* Reduce paint on animated elements */
+.game-card,
+.game-btn,
+.toast,
+.install-banner,
+.game-overlay-content {
+  will-change: transform;
+}
+
+/* Remove will-change after animation completes (memory optimization) */
+.animation-complete {
+  will-change: auto;
+}
+
+/* GPU acceleration for animations */
+.animating,
+.sliding,
+.fading {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Contain layout for better performance */
+.game-card {
+  contain: layout style paint;
+}
+
+.game-board {
+  contain: layout paint;
+}
+
+/* ============================================================================
+   TOUCH TARGET OPTIMIZATION
+   ============================================================================ */
+
+/* Ensure minimum touch target size (44x44 is recommended) */
+@media (hover: none) and (pointer: coarse) {
+  .game-btn,
+  .icon-btn,
+  .game-card-link,
+  .install-btn,
+  .install-dismiss,
+  .back-link,
+  button[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Increase spacing for touch */
+  .game-header-controls {
+    gap: var(--space-3);
+  }
+
+  .game-controls {
+    gap: var(--space-4);
+  }
+
+  /* Prevent accidental double-tap zoom on buttons */
+  .game-btn {
+    touch-action: manipulation;
+  }
+}
+
+/* ============================================================================
+   ORIENTATION HANDLING
+   ============================================================================ */
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .game-container {
+    flex-direction: row;
+    max-width: none;
+    padding: var(--space-2);
+  }
+
+  .game-stats {
+    flex-direction: column;
+    padding: var(--space-2);
+    margin-bottom: 0;
+    margin-right: var(--space-3);
+  }
+
+  .game-board {
+    min-height: auto;
+    flex: 1;
+  }
+
+  .game-controls {
+    flex-direction: column;
+    padding: var(--space-2);
+  }
+}
+
+/* Portrait mode warning for games that need height */
+@media (orientation: landscape) and (max-height: 400px) {
+  .portrait-hint {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    font-size: var(--text-lg);
+    text-align: center;
+    padding: var(--space-4);
+  }
+}
+
+/* ============================================================================
+   HIGH DPI DISPLAY SUPPORT
+   ============================================================================ */
+
+/* Sharp borders on high DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .game-card,
+  .game-btn,
+  .toast,
+  .game-board {
+    /* Use box-shadow for 0.5px borders */
+    border: none;
+    box-shadow: 0 0 0 0.5px var(--color-bg-elevated);
+  }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  /* Hide interactive elements */
+  .game-controls,
+  .install-banner,
+  .update-notification,
+  .toast-container,
+  .game-overlay {
+    display: none !important;
+  }
+
+  /* Optimize for print */
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  .game-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #ccc;
+  }
+}
+
+/* ============================================================================
+   CONNECTION SPEED ADAPTATIONS
+   ============================================================================ */
+
+/* Reduce animations and effects on slow connections */
+@media (prefers-reduced-data: reduce) {
+  /* Disable non-essential animations */
+  .game-card,
+  .game-btn,
+  .toast {
+    transition: none;
+  }
+
+  /* Use system fonts */
+  :root {
+    --font-sans: system-ui, sans-serif;
+  }
+
+  /* Disable background gradients */
+  .install-banner {
+    background: var(--color-brand-primary);
+  }
+}
+
+/* ============================================================================
+   BATTERY SAVING MODE
+   ============================================================================ */
+
+/* Reduce animations when battery is low (future: detect via JS) */
+.battery-saving *,
+.battery-saving *::before,
+.battery-saving *::after {
+  animation-duration: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0ms !important;
+}
+
+.battery-saving .particles,
+.battery-saving .confetti,
+.battery-saving .sparkle {
+  display: none !important;
+}
