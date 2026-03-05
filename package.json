@@ -1,0 +1,14 @@
+{
+  "name": "mobile-gaming",
+  "version": "1.0.0",
+  "description": "Browser-based puzzle games inspired by mobile game ads",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
