@@ -1,113 +1,4393 @@
 [
   {
     "id": 1,
-    "grid": { "width": 300, "height": 400 },
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
     "balls": [
-      { "id": "b1", "x": 150, "y": 50, "radius": 12, "type": "gold" },
-      { "id": "b2", "x": 150, "y": 75, "radius": 12, "type": "gold" }
+      {
+        "id": "b1",
+        "x": 150,
+        "y": 50,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 75,
+        "radius": 12,
+        "type": "gold"
+      }
     ],
     "pins": [
-      { "id": "p1", "x": 150, "y": 120, "length": 80, "angle": 0 }
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 120,
+        "length": 80,
+        "angle": 0
+      }
     ],
     "hazards": [],
     "goals": [
-      { "id": "g1", "x": 100, "y": 350, "width": 100, "height": 40, "required": 2 }
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
     ],
     "walls": [
-      { "x1": 50, "y1": 30, "x2": 50, "y2": 340 },
-      { "x1": 250, "y1": 30, "x2": 250, "y2": 340 }
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      }
     ],
     "requiredBalls": 2
   },
   {
     "id": 2,
-    "grid": { "width": 300, "height": 400 },
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
     "balls": [
-      { "id": "b1", "x": 100, "y": 40, "radius": 12, "type": "gold" },
-      { "id": "b2", "x": 200, "y": 40, "radius": 12, "type": "silver" },
-      { "id": "b3", "x": 150, "y": 70, "radius": 12, "type": "gold" }
+      {
+        "id": "b1",
+        "x": 100,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 200,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 150,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      }
     ],
     "pins": [
-      { "id": "p1", "x": 100, "y": 100, "length": 70, "angle": 0 },
-      { "id": "p2", "x": 200, "y": 100, "length": 70, "angle": 0 }
+      {
+        "id": "p1",
+        "x": 100,
+        "y": 100,
+        "length": 70,
+        "angle": 0
+      },
+      {
+        "id": "p2",
+        "x": 200,
+        "y": 100,
+        "length": 70,
+        "angle": 0
+      }
     ],
     "hazards": [],
     "goals": [
-      { "id": "g1", "x": 100, "y": 350, "width": 100, "height": 40, "required": 3 }
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
     ],
     "walls": [
-      { "x1": 50, "y1": 30, "x2": 50, "y2": 340 },
-      { "x1": 250, "y1": 30, "x2": 250, "y2": 340 },
-      { "x1": 150, "y1": 30, "x2": 150, "y2": 90 }
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      },
+      {
+        "x1": 150,
+        "y1": 30,
+        "x2": 150,
+        "y2": 90
+      }
     ],
     "requiredBalls": 3
   },
   {
     "id": 3,
-    "grid": { "width": 300, "height": 400 },
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
     "balls": [
-      { "id": "b1", "x": 150, "y": 50, "radius": 12, "type": "gold" },
-      { "id": "b2", "x": 150, "y": 80, "radius": 12, "type": "silver" },
-      { "id": "b3", "x": 150, "y": 110, "radius": 12, "type": "bronze" }
+      {
+        "id": "b1",
+        "x": 150,
+        "y": 50,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 80,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 150,
+        "y": 110,
+        "radius": 12,
+        "type": "bronze"
+      }
     ],
     "pins": [
-      { "id": "p1", "x": 150, "y": 150, "length": 90, "angle": 0 },
-      { "id": "p2", "x": 150, "y": 220, "length": 70, "angle": 0.2 }
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 150,
+        "length": 90,
+        "angle": 0
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 220,
+        "length": 70,
+        "angle": 0.2
+      }
     ],
     "hazards": [],
     "goals": [
-      { "id": "g1", "x": 100, "y": 350, "width": 100, "height": 40, "required": 3 }
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
     ],
     "walls": [
-      { "x1": 50, "y1": 30, "x2": 50, "y2": 340 },
-      { "x1": 250, "y1": 30, "x2": 250, "y2": 340 }
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      }
     ],
     "requiredBalls": 3
   },
   {
     "id": 4,
-    "grid": { "width": 300, "height": 400 },
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
     "balls": [
-      { "id": "b1", "x": 150, "y": 50, "radius": 12, "type": "gold" },
-      { "id": "b2", "x": 150, "y": 80, "radius": 12, "type": "gold" }
+      {
+        "id": "b1",
+        "x": 150,
+        "y": 50,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 80,
+        "radius": 12,
+        "type": "gold"
+      }
     ],
     "pins": [
-      { "id": "p1", "x": 150, "y": 130, "length": 100, "angle": 0 }
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 130,
+        "length": 100,
+        "angle": 0
+      }
     ],
     "hazards": [
-      { "id": "h1", "type": "lava", "x": 50, "y": 300, "width": 80, "height": 30 }
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 300,
+        "width": 80,
+        "height": 30
+      }
     ],
     "goals": [
-      { "id": "g1", "x": 170, "y": 350, "width": 80, "height": 40, "required": 2 }
+      {
+        "id": "g1",
+        "x": 170,
+        "y": 350,
+        "width": 80,
+        "height": 40,
+        "required": 2
+      }
     ],
     "walls": [
-      { "x1": 50, "y1": 30, "x2": 50, "y2": 340 },
-      { "x1": 250, "y1": 30, "x2": 250, "y2": 340 }
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      }
     ],
     "requiredBalls": 2
   },
   {
     "id": 5,
-    "grid": { "width": 300, "height": 400 },
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
     "balls": [
-      { "id": "b1", "x": 100, "y": 40, "radius": 12, "type": "gold" },
-      { "id": "b2", "x": 200, "y": 40, "radius": 12, "type": "gold" },
-      { "id": "b3", "x": 150, "y": 70, "radius": 12, "type": "silver" },
-      { "id": "b4", "x": 150, "y": 100, "radius": 12, "type": "silver" }
+      {
+        "id": "b1",
+        "x": 100,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 200,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 150,
+        "y": 70,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b4",
+        "x": 150,
+        "y": 100,
+        "radius": 12,
+        "type": "silver"
+      }
     ],
     "pins": [
-      { "id": "p1", "x": 100, "y": 140, "length": 80, "angle": -0.2 },
-      { "id": "p2", "x": 200, "y": 140, "length": 80, "angle": 0.2 },
-      { "id": "p3", "x": 150, "y": 210, "length": 100, "angle": 0 }
+      {
+        "id": "p1",
+        "x": 100,
+        "y": 140,
+        "length": 80,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 200,
+        "y": 140,
+        "length": 80,
+        "angle": 0.2
+      },
+      {
+        "id": "p3",
+        "x": 150,
+        "y": 210,
+        "length": 100,
+        "angle": 0
+      }
     ],
     "hazards": [],
     "goals": [
-      { "id": "g1", "x": 100, "y": 350, "width": 100, "height": 40, "required": 4 }
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 4
+      }
     ],
     "walls": [
-      { "x1": 50, "y1": 30, "x2": 50, "y2": 340 },
-      { "x1": 250, "y1": 30, "x2": 250, "y2": 340 }
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      }
     ],
     "requiredBalls": 4
+  },
+  {
+    "id": 6,
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 150,
+        "y": 100,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 140,
+        "length": 100,
+        "angle": 0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 120,
+        "y": 350,
+        "width": 60,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 7,
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 90,
+        "length": 50,
+        "angle": 0
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 90,
+        "length": 50,
+        "angle": 0
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 90,
+        "length": 50,
+        "angle": 0
+      }
+    ],
+    "hazards": [],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 340
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 340
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 8,
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 70,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 100,
+        "y": 110,
+        "length": 60,
+        "angle": 0.5
+      },
+      {
+        "id": "p2",
+        "x": 200,
+        "y": 110,
+        "length": 60,
+        "angle": -0.5
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 300,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 170,
+        "y": 300,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 120,
+        "y": 350,
+        "width": 60,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 340
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 340
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 9,
+    "grid": {
+      "width": 300,
+      "height": 450
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 100,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 200,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 90,
+        "length": 100,
+        "angle": 0
+      },
+      {
+        "id": "p2",
+        "x": 100,
+        "y": 180,
+        "length": 60,
+        "angle": 0
+      },
+      {
+        "id": "p3",
+        "x": 200,
+        "y": 180,
+        "length": 60,
+        "angle": 0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 120,
+        "y": 350,
+        "width": 60,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 40,
+        "y": 400,
+        "width": 60,
+        "height": 40,
+        "required": 1
+      },
+      {
+        "id": "g2",
+        "x": 200,
+        "y": 400,
+        "width": 60,
+        "height": 40,
+        "required": 1
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 390
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 390
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 10,
+    "grid": {
+      "width": 300,
+      "height": 450
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 150,
+        "y": 100,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 150,
+        "y": 130,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 170,
+        "length": 100,
+        "angle": 0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 350,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 170,
+        "y": 350,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 120,
+        "y": 400,
+        "width": 60,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 50,
+        "y1": 30,
+        "x2": 50,
+        "y2": 390
+      },
+      {
+        "x1": 250,
+        "y1": 30,
+        "x2": 250,
+        "y2": 390
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 11,
+    "grid": {
+      "width": 300,
+      "height": 400
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      }
+    ],
+    "hazards": [],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 340
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 340
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 12,
+    "grid": {
+      "width": 300,
+      "height": 405
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 150,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      }
+    ],
+    "hazards": [],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 345
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 345
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 13,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      }
+    ],
+    "hazards": [],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 350
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 14,
+    "grid": {
+      "width": 300,
+      "height": 415
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 355
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 355
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 15,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      },
+      {
+        "id": "p4",
+        "x": 80,
+        "y": 250,
+        "length": 60,
+        "angle": 0.1
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 360
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 16,
+    "grid": {
+      "width": 300,
+      "height": 425
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      },
+      {
+        "id": "p4",
+        "x": 80,
+        "y": 250,
+        "length": 60,
+        "angle": 0.1
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 365
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 365
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 17,
+    "grid": {
+      "width": 300,
+      "height": 430
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      },
+      {
+        "id": "b4",
+        "x": 80,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      },
+      {
+        "id": "p4",
+        "x": 80,
+        "y": 250,
+        "length": 60,
+        "angle": 0.1
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 300,
+        "length": 80,
+        "angle": 0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 370
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 370
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 18,
+    "grid": {
+      "width": 300,
+      "height": 435
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      },
+      {
+        "id": "b4",
+        "x": 80,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      },
+      {
+        "id": "p4",
+        "x": 80,
+        "y": 250,
+        "length": 60,
+        "angle": 0.1
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 300,
+        "length": 80,
+        "angle": 0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 170,
+        "y": 300,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 375
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 375
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 19,
+    "grid": {
+      "width": 300,
+      "height": 440
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      },
+      {
+        "id": "b4",
+        "x": 80,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      },
+      {
+        "id": "p4",
+        "x": 80,
+        "y": 250,
+        "length": 60,
+        "angle": 0.1
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 300,
+        "length": 80,
+        "angle": 0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 170,
+        "y": 300,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 380
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 380
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 20,
+    "grid": {
+      "width": 300,
+      "height": 445
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 80,
+        "y": 40,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 150,
+        "y": 40,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 220,
+        "y": 40,
+        "radius": 12,
+        "type": "bronze"
+      },
+      {
+        "id": "b4",
+        "x": 80,
+        "y": 70,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 150,
+        "y": 70,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 80,
+        "y": 100,
+        "length": 60,
+        "angle": -0.2
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 150,
+        "length": 80,
+        "angle": -0.1
+      },
+      {
+        "id": "p3",
+        "x": 220,
+        "y": 200,
+        "length": 100,
+        "angle": 0.0
+      },
+      {
+        "id": "p4",
+        "x": 80,
+        "y": 250,
+        "length": 60,
+        "angle": 0.1
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 300,
+        "length": 80,
+        "angle": 0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 50,
+        "y": 280,
+        "width": 60,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 170,
+        "y": 300,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 4
+      }
+    ],
+    "walls": [
+      {
+        "x1": 40,
+        "y1": 30,
+        "x2": 40,
+        "y2": 385
+      },
+      {
+        "x1": 260,
+        "y1": 30,
+        "x2": 260,
+        "y2": 385
+      }
+    ],
+    "requiredBalls": 4
+  },
+  {
+    "id": 21,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 22,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 23,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 24,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 25,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b5",
+        "x": 70,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 250,
+        "length": 50,
+        "angle": 0.15
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 4
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 4
+  },
+  {
+    "id": 26,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b5",
+        "x": 70,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 250,
+        "length": 50,
+        "angle": 0.15
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 4
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 4
+  },
+  {
+    "id": 27,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b5",
+        "x": 70,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 130,
+        "y": 65,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 250,
+        "length": 50,
+        "angle": 0.15
+      },
+      {
+        "id": "p6",
+        "x": 230,
+        "y": 290,
+        "length": 65,
+        "angle": 0.3
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 5
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 5
+  },
+  {
+    "id": 28,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b5",
+        "x": 70,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 130,
+        "y": 65,
+        "radius": 12,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 250,
+        "length": 50,
+        "angle": 0.15
+      },
+      {
+        "id": "p6",
+        "x": 230,
+        "y": 290,
+        "length": 65,
+        "angle": 0.3
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 5
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 5
+  },
+  {
+    "id": 29,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b5",
+        "x": 70,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 130,
+        "y": 65,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b7",
+        "x": 190,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 250,
+        "length": 50,
+        "angle": 0.15
+      },
+      {
+        "id": "p6",
+        "x": 230,
+        "y": 290,
+        "length": 65,
+        "angle": 0.3
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 30,
+    "grid": {
+      "width": 300,
+      "height": 420
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 70,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 130,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b3",
+        "x": 190,
+        "y": 35,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 250,
+        "y": 35,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b5",
+        "x": 70,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 130,
+        "y": 65,
+        "radius": 12,
+        "type": "silver"
+      },
+      {
+        "id": "b7",
+        "x": 190,
+        "y": 65,
+        "radius": 12,
+        "type": "gold"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 70,
+        "y": 90,
+        "length": 50,
+        "angle": -0.44999999999999996
+      },
+      {
+        "id": "p2",
+        "x": 150,
+        "y": 130,
+        "length": 65,
+        "angle": -0.3
+      },
+      {
+        "id": "p3",
+        "x": 230,
+        "y": 170,
+        "length": 80,
+        "angle": -0.15
+      },
+      {
+        "id": "p4",
+        "x": 70,
+        "y": 210,
+        "length": 95,
+        "angle": 0.0
+      },
+      {
+        "id": "p5",
+        "x": 150,
+        "y": 250,
+        "length": 50,
+        "angle": 0.15
+      },
+      {
+        "id": "p6",
+        "x": 230,
+        "y": 290,
+        "length": 65,
+        "angle": 0.3
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 40,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 180,
+        "y": 280,
+        "width": 70,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 110,
+        "y": 360,
+        "width": 80,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 35,
+        "y1": 25,
+        "x2": 35,
+        "y2": 360
+      },
+      {
+        "x1": 265,
+        "y1": 25,
+        "x2": 265,
+        "y2": 360
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 31,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 2
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 2
+  },
+  {
+    "id": 32,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 3
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 3
+  },
+  {
+    "id": 33,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 4
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 4
+  },
+  {
+    "id": 34,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 5
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 5
+  },
+  {
+    "id": 35,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b8",
+        "x": 160,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      },
+      {
+        "id": "p6",
+        "x": 120,
+        "y": 255,
+        "length": 45,
+        "angle": 0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 36,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b8",
+        "x": 160,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      },
+      {
+        "id": "p6",
+        "x": 120,
+        "y": 255,
+        "length": 45,
+        "angle": 0.2
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 37,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b8",
+        "x": 160,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      },
+      {
+        "id": "p6",
+        "x": 120,
+        "y": 255,
+        "length": 45,
+        "angle": 0.2
+      },
+      {
+        "id": "p7",
+        "x": 180,
+        "y": 290,
+        "length": 57,
+        "angle": 0.4
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 38,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b8",
+        "x": 160,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      },
+      {
+        "id": "p6",
+        "x": 120,
+        "y": 255,
+        "length": 45,
+        "angle": 0.2
+      },
+      {
+        "id": "p7",
+        "x": 180,
+        "y": 290,
+        "length": 57,
+        "angle": 0.4
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 39,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b8",
+        "x": 160,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      },
+      {
+        "id": "p6",
+        "x": 120,
+        "y": 255,
+        "length": 45,
+        "angle": 0.2
+      },
+      {
+        "id": "p7",
+        "x": 180,
+        "y": 290,
+        "length": 57,
+        "angle": 0.4
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 6
+  },
+  {
+    "id": 40,
+    "grid": {
+      "width": 300,
+      "height": 410
+    },
+    "balls": [
+      {
+        "id": "b1",
+        "x": 60,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b2",
+        "x": 110,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b3",
+        "x": 160,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b4",
+        "x": 210,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b5",
+        "x": 260,
+        "y": 30,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b6",
+        "x": 60,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b7",
+        "x": 110,
+        "y": 55,
+        "radius": 11,
+        "type": "gold"
+      },
+      {
+        "id": "b8",
+        "x": 160,
+        "y": 55,
+        "radius": 11,
+        "type": "silver"
+      }
+    ],
+    "pins": [
+      {
+        "id": "p1",
+        "x": 60,
+        "y": 80,
+        "length": 45,
+        "angle": -0.8
+      },
+      {
+        "id": "p2",
+        "x": 120,
+        "y": 115,
+        "length": 57,
+        "angle": -0.6000000000000001
+      },
+      {
+        "id": "p3",
+        "x": 180,
+        "y": 150,
+        "length": 69,
+        "angle": -0.4
+      },
+      {
+        "id": "p4",
+        "x": 240,
+        "y": 185,
+        "length": 81,
+        "angle": -0.2
+      },
+      {
+        "id": "p5",
+        "x": 60,
+        "y": 220,
+        "length": 93,
+        "angle": 0.0
+      },
+      {
+        "id": "p6",
+        "x": 120,
+        "y": 255,
+        "length": 45,
+        "angle": 0.2
+      },
+      {
+        "id": "p7",
+        "x": 180,
+        "y": 290,
+        "length": 57,
+        "angle": 0.4
+      }
+    ],
+    "hazards": [
+      {
+        "id": "h1",
+        "type": "lava",
+        "x": 30,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      },
+      {
+        "id": "h2",
+        "type": "lava",
+        "x": 190,
+        "y": 270,
+        "width": 80,
+        "height": 30
+      }
+    ],
+    "goals": [
+      {
+        "id": "g1",
+        "x": 100,
+        "y": 350,
+        "width": 100,
+        "height": 40,
+        "required": 6
+      }
+    ],
+    "walls": [
+      {
+        "x1": 30,
+        "y1": 20,
+        "x2": 30,
+        "y2": 350
+      },
+      {
+        "x1": 270,
+        "y1": 20,
+        "x2": 270,
+        "y2": 350
+      }
+    ],
+    "requiredBalls": 6
   }
 ]
