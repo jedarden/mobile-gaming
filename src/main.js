@@ -7,6 +7,7 @@
  * - Install prompt handling
  * - Accessibility features
  * - Zen mode initialization
+ * - Error tracking and analytics
  */
 
 import { initStorage, getProfile, getSettings } from './shared/storage.js';
@@ -14,6 +15,8 @@ import { getLevelInfo, getProfileStats, formatXP } from './shared/meta.js';
 import { getStreakInfo, getStreakEmoji, getStreakMessage, getDailyStatus } from './shared/daily.js';
 import { initAccessibility, announce } from './shared/accessibility.js';
 import { initZenMode, isZenMode } from './shared/zen-mode.js';
+import { initErrorTracking } from './shared/error-tracking.js';
+import { initAnalytics, trackEvent, trackPageView, trackPWAInstall } from './shared/analytics.js';
 
 // Install prompt handling
 let deferredPrompt = null;
@@ -23,6 +26,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log('Mobile Gaming loaded');
 
   try {
+    // Initialize error tracking first
+    initErrorTracking();
+
+    // Initialize analytics
+    initAnalytics();
+
+    // Track page view
+    trackPageView('home');
+
     // Initialize storage and profile
     await initStorage();
 
@@ -48,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Listen for zen mode changes
     window.addEventListener('zenModeChanged', (e) => {
       console.log('Zen mode changed:', e.detail.enabled ? 'enabled' : 'disabled');
+      trackEvent('zen_mode_change', { enabled: e.detail.enabled });
     });
 
   } catch (error) {
@@ -117,6 +130,7 @@ function registerServiceWorker() {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New version available
               showUpdateNotification();
+              trackEvent('pwa_update_available');
             }
           });
         });
@@ -155,6 +169,7 @@ function setupInstallPrompt() {
     console.log('App installed');
     deferredPrompt = null;
     localStorage.removeItem('mg_install_dismissed');
+    trackPWAInstall();
   });
 }
 
@@ -192,6 +207,7 @@ function showInstallPrompt() {
   document.getElementById('install-dismiss').addEventListener('click', () => {
     localStorage.setItem('mg_install_dismissed', new Date().toISOString());
     banner.remove();
+    trackEvent('pwa_install_dismissed');
   });
 }
 
