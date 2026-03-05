@@ -12,16 +12,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Shared vendor chunk
-          vendor: ['vite'],
           // Shared game utilities
           shared: [
             './src/shared/storage.js',
-            './src/shared/colors.js',
-            './src/shared/rng.js',
-            './src/shared/audio.js',
+            './src/shared/meta.js',
+            './src/shared/daily.js',
             './src/shared/achievements.js',
-            './src/shared/accessibility.js'
+            './src/shared/accessibility.js',
+            './src/shared/rng.js'
           ]
         }
       }
@@ -43,8 +41,6 @@ export default defineConfig({
   },
   // Build optimizations
   esbuild: {
-    // Remove console logs in production
-    drop: process.env.NODE_ENV === 'production' ? ['console'] : [],
     // Minify options
     legalComments: 'none'
   }
