@@ -1,0 +1,1760 @@
+[
+  {
+    "id": 1,
+    "difficulty": 0.05,
+    "optimal": 3,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "blue",
+        "blue"
+      ],
+      [
+        "blue",
+        "blue",
+        "red",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 2,
+    "difficulty": 0.06,
+    "optimal": 3,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "blue",
+        "blue"
+      ],
+      [
+        "blue",
+        "red",
+        "red",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 3,
+    "difficulty": 0.07,
+    "optimal": 7,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "red",
+        "blue"
+      ],
+      [
+        "blue",
+        "red",
+        "blue",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 4,
+    "difficulty": 0.08,
+    "optimal": 5,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "green",
+        "red"
+      ],
+      [
+        "green",
+        "red",
+        "red",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 5,
+    "difficulty": 0.09,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "blue",
+        "green",
+        "red",
+        "blue"
+      ],
+      [
+        "green",
+        "blue",
+        "red",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 6,
+    "difficulty": 0.1,
+    "optimal": 7,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "red",
+        "red"
+      ],
+      [
+        "green",
+        "blue",
+        "blue",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 7,
+    "difficulty": 0.11,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "red",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "blue",
+        "red"
+      ],
+      [
+        "green",
+        "red",
+        "green",
+        "blue"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 8,
+    "difficulty": 0.12,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "blue",
+        "red"
+      ],
+      [
+        "blue",
+        "red",
+        "green",
+        "blue"
+      ],
+      [
+        "green",
+        "blue",
+        "red",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 9,
+    "difficulty": 0.13,
+    "optimal": 9,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "green",
+        "blue"
+      ],
+      [
+        "green",
+        "red",
+        "red",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "blue",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 10,
+    "difficulty": 0.15,
+    "optimal": 9,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "blue",
+        "red"
+      ],
+      [
+        "green",
+        "red",
+        "green",
+        "blue"
+      ],
+      [
+        "blue",
+        "blue",
+        "red",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 11,
+    "difficulty": 0.18,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "green",
+        "yellow"
+      ],
+      [
+        "green",
+        "yellow",
+        "red",
+        "blue"
+      ],
+      [
+        "yellow",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 12,
+    "difficulty": 0.2,
+    "optimal": 12,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "green",
+        "yellow",
+        "red",
+        "blue"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 13,
+    "difficulty": 0.22,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "red",
+        "yellow"
+      ],
+      [
+        "green",
+        "yellow",
+        "green",
+        "red"
+      ],
+      [
+        "yellow",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "blue"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 14,
+    "difficulty": 0.24,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "green",
+        "yellow",
+        "blue",
+        "green"
+      ],
+      [
+        "yellow",
+        "red",
+        "yellow",
+        "blue"
+      ],
+      [
+        "blue",
+        "green",
+        "red",
+        "yellow"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 15,
+    "difficulty": 0.26,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "yellow",
+        "red"
+      ],
+      [
+        "blue",
+        "red",
+        "green",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "blue",
+        "red",
+        "blue"
+      ],
+      [
+        "green",
+        "yellow",
+        "blue",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 16,
+    "difficulty": 0.28,
+    "optimal": 14,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "green",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "green",
+        "red",
+        "blue"
+      ],
+      [
+        "blue",
+        "red",
+        "yellow",
+        "green"
+      ],
+      [
+        "green",
+        "yellow",
+        "blue",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 17,
+    "difficulty": 0.3,
+    "optimal": 9,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "green",
+        "green",
+        "yellow",
+        "red"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "red",
+        "blue"
+      ],
+      [
+        "blue",
+        "blue",
+        "green",
+        "yellow"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 18,
+    "difficulty": 0.32,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "yellow",
+        "red"
+      ],
+      [
+        "green",
+        "yellow",
+        "blue",
+        "green"
+      ],
+      [
+        "yellow",
+        "red",
+        "green",
+        "yellow"
+      ],
+      [
+        "blue",
+        "green",
+        "red",
+        "blue"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 19,
+    "difficulty": 0.34,
+    "optimal": 14,
+    "tubes": [
+      [
+        "red",
+        "yellow",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "red"
+      ],
+      [
+        "yellow",
+        "red",
+        "green",
+        "blue"
+      ],
+      [
+        "green",
+        "blue",
+        "red",
+        "yellow"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 20,
+    "difficulty": 0.35,
+    "optimal": 14,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "blue",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "blue",
+        "red",
+        "green"
+      ],
+      [
+        "green",
+        "red",
+        "yellow",
+        "blue"
+      ],
+      [
+        "blue",
+        "yellow",
+        "green",
+        "red"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 21,
+    "difficulty": 0.36,
+    "optimal": 9,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "blue",
+        "yellow",
+        "red"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "green",
+        "blue"
+      ],
+      [
+        "green",
+        "green",
+        "red",
+        "yellow"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 22,
+    "difficulty": 0.37,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "green",
+        "yellow",
+        "red",
+        "blue"
+      ],
+      [
+        "yellow",
+        "red",
+        "blue",
+        "yellow"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 23,
+    "difficulty": 0.38,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "yellow",
+        "blue"
+      ],
+      [
+        "blue",
+        "yellow",
+        "green",
+        "red"
+      ],
+      [
+        "yellow",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "green",
+        "blue",
+        "red",
+        "yellow"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 24,
+    "difficulty": 0.39,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "yellow",
+        "green",
+        "red"
+      ],
+      [
+        "blue",
+        "red",
+        "yellow",
+        "blue"
+      ],
+      [
+        "yellow",
+        "green",
+        "blue",
+        "green"
+      ],
+      [
+        "green",
+        "blue",
+        "red",
+        "yellow"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 25,
+    "difficulty": 0.4,
+    "optimal": 12,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "yellow",
+        "green"
+      ],
+      [
+        "green",
+        "yellow",
+        "red",
+        "blue"
+      ],
+      [
+        "yellow",
+        "blue",
+        "green",
+        "yellow"
+      ],
+      [
+        "blue",
+        "red",
+        "red",
+        "green"
+      ],
+      [],
+      []
+    ]
+  },
+  {
+    "id": 26,
+    "difficulty": 0.42,
+    "optimal": 13,
+    "tubes": [
+      [
+        "green"
+      ],
+      [],
+      [
+        "purple",
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "blue",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "purple",
+        "green",
+        "purple",
+        "blue"
+      ],
+      [
+        "green",
+        "red",
+        "red",
+        "red"
+      ],
+      [
+        "purple",
+        "blue",
+        "yellow",
+        "yellow"
+      ]
+    ]
+  },
+  {
+    "id": 27,
+    "difficulty": 0.44,
+    "optimal": 12,
+    "tubes": [
+      [
+        "red",
+        "yellow",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "blue",
+        "red"
+      ],
+      [
+        "red",
+        "purple",
+        "purple"
+      ],
+      [
+        "green"
+      ],
+      [
+        "green",
+        "yellow",
+        "green",
+        "blue"
+      ],
+      [
+        "purple",
+        "purple",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "red"
+      ]
+    ]
+  },
+  {
+    "id": 28,
+    "difficulty": 0.46,
+    "optimal": 13,
+    "tubes": [
+      [
+        "yellow",
+        "red",
+        "red",
+        "purple"
+      ],
+      [
+        "blue",
+        "blue",
+        "blue",
+        "red"
+      ],
+      [
+        "green",
+        "purple",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "red"
+      ],
+      [
+        "purple",
+        "green"
+      ],
+      [
+        "yellow",
+        "blue",
+        "green",
+        "purple"
+      ],
+      [
+        "green"
+      ]
+    ]
+  },
+  {
+    "id": 29,
+    "difficulty": 0.48,
+    "optimal": 11,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "purple",
+        "purple"
+      ],
+      [],
+      [
+        "blue",
+        "blue",
+        "blue",
+        "yellow"
+      ],
+      [
+        "green"
+      ],
+      [
+        "purple",
+        "yellow",
+        "yellow",
+        "purple"
+      ],
+      [
+        "red",
+        "green",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "blue",
+        "yellow"
+      ]
+    ]
+  },
+  {
+    "id": 30,
+    "difficulty": 0.5,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "purple"
+      ],
+      [
+        "red",
+        "blue"
+      ],
+      [
+        "green",
+        "green",
+        "yellow"
+      ],
+      [
+        "blue",
+        "green"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "yellow",
+        "red"
+      ],
+      [
+        "purple",
+        "red",
+        "purple",
+        "purple"
+      ],
+      [
+        "green",
+        "blue",
+        "blue"
+      ]
+    ]
+  },
+  {
+    "id": 31,
+    "difficulty": 0.52,
+    "optimal": 10,
+    "tubes": [
+      [
+        "green",
+        "purple",
+        "purple"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "red",
+        "red",
+        "blue",
+        "purple"
+      ],
+      [
+        "green",
+        "green",
+        "red",
+        "red"
+      ],
+      [
+        "purple",
+        "yellow",
+        "yellow",
+        "blue"
+      ],
+      [
+        "blue"
+      ],
+      []
+    ]
+  },
+  {
+    "id": 32,
+    "difficulty": 0.54,
+    "optimal": 11,
+    "tubes": [
+      [
+        "purple",
+        "blue"
+      ],
+      [
+        "green",
+        "purple"
+      ],
+      [
+        "green",
+        "blue",
+        "blue",
+        "red"
+      ],
+      [
+        "yellow",
+        "red",
+        "red"
+      ],
+      [
+        "purple",
+        "blue",
+        "green",
+        "green"
+      ],
+      [
+        "red",
+        "purple"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "yellow"
+      ]
+    ]
+  },
+  {
+    "id": 33,
+    "difficulty": 0.56,
+    "optimal": 14,
+    "tubes": [
+      [
+        "red",
+        "green",
+        "yellow",
+        "purple"
+      ],
+      [
+        "blue",
+        "red",
+        "yellow"
+      ],
+      [
+        "red",
+        "green"
+      ],
+      [
+        "yellow"
+      ],
+      [
+        "purple",
+        "blue",
+        "yellow"
+      ],
+      [
+        "green",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "purple",
+        "purple",
+        "red"
+      ]
+    ]
+  },
+  {
+    "id": 34,
+    "difficulty": 0.58,
+    "optimal": 14,
+    "tubes": [
+      [
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "yellow",
+        "green",
+        "blue"
+      ],
+      [
+        "purple",
+        "yellow",
+        "green",
+        "blue"
+      ],
+      [
+        "yellow"
+      ],
+      [
+        "purple",
+        "red",
+        "yellow"
+      ],
+      [
+        "green",
+        "red",
+        "blue"
+      ],
+      [
+        "red",
+        "purple",
+        "purple"
+      ]
+    ]
+  },
+  {
+    "id": 35,
+    "difficulty": 0.6,
+    "optimal": 12,
+    "tubes": [
+      [
+        "purple",
+        "purple"
+      ],
+      [
+        "blue",
+        "green",
+        "green",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "green",
+        "blue"
+      ],
+      [
+        "yellow",
+        "green",
+        "purple",
+        "red"
+      ],
+      [
+        "blue",
+        "blue",
+        "yellow",
+        "red"
+      ],
+      [
+        "purple"
+      ],
+      [
+        "red",
+        "red"
+      ]
+    ]
+  },
+  {
+    "id": 36,
+    "difficulty": 0.62,
+    "optimal": 10,
+    "tubes": [
+      [
+        "purple",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "red",
+        "red",
+        "red"
+      ],
+      [
+        "green",
+        "blue",
+        "green",
+        "green"
+      ],
+      [
+        "green",
+        "purple",
+        "blue",
+        "yellow"
+      ],
+      [
+        "purple",
+        "purple",
+        "yellow"
+      ],
+      [
+        "red"
+      ],
+      [
+        "blue",
+        "blue"
+      ]
+    ]
+  },
+  {
+    "id": 37,
+    "difficulty": 0.64,
+    "optimal": 12,
+    "tubes": [
+      [
+        "purple",
+        "green",
+        "green",
+        "green"
+      ],
+      [
+        "blue",
+        "blue",
+        "yellow",
+        "red"
+      ],
+      [
+        "red",
+        "blue",
+        "purple",
+        "yellow"
+      ],
+      [
+        "green",
+        "blue",
+        "yellow"
+      ],
+      [
+        "purple",
+        "purple",
+        "yellow"
+      ],
+      [
+        "red"
+      ],
+      [
+        "red"
+      ]
+    ]
+  },
+  {
+    "id": 38,
+    "difficulty": 0.66,
+    "optimal": 12,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "yellow"
+      ],
+      [
+        "red",
+        "yellow",
+        "yellow",
+        "purple"
+      ],
+      [
+        "green",
+        "green",
+        "purple"
+      ],
+      [
+        "purple",
+        "blue",
+        "green"
+      ],
+      [
+        "red",
+        "yellow"
+      ],
+      [
+        "green",
+        "purple",
+        "blue"
+      ],
+      [
+        "blue",
+        "blue"
+      ]
+    ]
+  },
+  {
+    "id": 39,
+    "difficulty": 0.68,
+    "optimal": 10,
+    "tubes": [
+      [
+        "yellow",
+        "red",
+        "red"
+      ],
+      [
+        "blue",
+        "blue",
+        "red"
+      ],
+      [
+        "green",
+        "green",
+        "green",
+        "green"
+      ],
+      [
+        "blue",
+        "purple",
+        "blue"
+      ],
+      [
+        "purple",
+        "purple"
+      ],
+      [
+        "yellow",
+        "red",
+        "purple",
+        "yellow"
+      ],
+      [
+        "yellow"
+      ]
+    ]
+  },
+  {
+    "id": 40,
+    "difficulty": 0.7,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "red",
+        "purple"
+      ],
+      [
+        "blue"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "yellow"
+      ],
+      [
+        "purple",
+        "purple",
+        "green",
+        "blue"
+      ],
+      [
+        "blue",
+        "green"
+      ],
+      [
+        "red",
+        "yellow",
+        "purple"
+      ]
+    ]
+  },
+  {
+    "id": 41,
+    "difficulty": 0.72,
+    "optimal": 13,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "blue",
+        "green"
+      ],
+      [
+        "blue"
+      ],
+      [
+        "yellow",
+        "red",
+        "yellow"
+      ],
+      [],
+      [
+        "purple",
+        "purple",
+        "purple",
+        "green"
+      ],
+      [
+        "yellow",
+        "green",
+        "red",
+        "green"
+      ],
+      [
+        "blue",
+        "red",
+        "yellow",
+        "purple"
+      ]
+    ]
+  },
+  {
+    "id": 42,
+    "difficulty": 0.74,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "red"
+      ],
+      [
+        "blue",
+        "blue",
+        "red",
+        "green"
+      ],
+      [
+        "blue",
+        "purple"
+      ],
+      [
+        "green",
+        "green",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "purple",
+        "purple"
+      ],
+      [
+        "green",
+        "purple",
+        "red"
+      ],
+      [
+        "blue",
+        "yellow",
+        "yellow"
+      ]
+    ]
+  },
+  {
+    "id": 43,
+    "difficulty": 0.76,
+    "optimal": 12,
+    "tubes": [
+      [
+        "purple",
+        "yellow",
+        "red"
+      ],
+      [
+        "blue",
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "yellow",
+        "blue",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "purple"
+      ],
+      [],
+      [
+        "red"
+      ],
+      [
+        "green",
+        "red",
+        "purple",
+        "purple"
+      ]
+    ]
+  },
+  {
+    "id": 44,
+    "difficulty": 0.78,
+    "optimal": 10,
+    "tubes": [
+      [
+        "yellow"
+      ],
+      [
+        "red",
+        "red",
+        "yellow"
+      ],
+      [
+        "blue",
+        "blue",
+        "blue",
+        "green"
+      ],
+      [
+        "purple",
+        "red",
+        "green"
+      ],
+      [
+        "purple",
+        "purple",
+        "yellow"
+      ],
+      [
+        "yellow",
+        "purple"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "red"
+      ]
+    ]
+  },
+  {
+    "id": 45,
+    "difficulty": 0.8,
+    "optimal": 10,
+    "tubes": [
+      [
+        "green",
+        "green",
+        "yellow"
+      ],
+      [
+        "green",
+        "blue",
+        "blue",
+        "blue"
+      ],
+      [
+        "red",
+        "purple",
+        "purple",
+        "purple"
+      ],
+      [
+        "yellow",
+        "red",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "purple",
+        "red"
+      ],
+      [
+        "green",
+        "red"
+      ],
+      [
+        "blue"
+      ]
+    ]
+  },
+  {
+    "id": 46,
+    "difficulty": 0.82,
+    "optimal": 12,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "purple",
+        "red"
+      ],
+      [
+        "blue",
+        "purple",
+        "purple",
+        "blue"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "red"
+      ],
+      [
+        "green",
+        "green"
+      ],
+      [
+        "green"
+      ],
+      [
+        "blue",
+        "yellow"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "purple"
+      ]
+    ]
+  },
+  {
+    "id": 47,
+    "difficulty": 0.84,
+    "optimal": 11,
+    "tubes": [
+      [
+        "red",
+        "purple",
+        "green"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "green",
+        "purple"
+      ],
+      [
+        "green"
+      ],
+      [
+        "purple",
+        "purple",
+        "green"
+      ],
+      [
+        "yellow",
+        "red",
+        "red"
+      ],
+      [
+        "blue",
+        "blue",
+        "yellow",
+        "blue"
+      ],
+      [
+        "red",
+        "blue"
+      ]
+    ]
+  },
+  {
+    "id": 48,
+    "difficulty": 0.86,
+    "optimal": 15,
+    "tubes": [
+      [
+        "red",
+        "green"
+      ],
+      [
+        "green",
+        "purple",
+        "blue"
+      ],
+      [
+        "purple",
+        "purple",
+        "yellow",
+        "blue"
+      ],
+      [
+        "purple",
+        "red",
+        "blue",
+        "red"
+      ],
+      [
+        "red",
+        "yellow",
+        "green",
+        "blue"
+      ],
+      [
+        "green",
+        "yellow",
+        "yellow"
+      ],
+      []
+    ]
+  },
+  {
+    "id": 49,
+    "difficulty": 0.88,
+    "optimal": 11,
+    "tubes": [
+      [
+        "yellow",
+        "green",
+        "green"
+      ],
+      [
+        "blue",
+        "blue",
+        "blue"
+      ],
+      [],
+      [
+        "red",
+        "purple",
+        "red",
+        "red"
+      ],
+      [
+        "purple",
+        "purple",
+        "green",
+        "red"
+      ],
+      [
+        "yellow",
+        "yellow"
+      ],
+      [
+        "blue",
+        "green",
+        "yellow",
+        "purple"
+      ]
+    ]
+  },
+  {
+    "id": 50,
+    "difficulty": 0.9,
+    "optimal": 10,
+    "tubes": [
+      [
+        "red",
+        "blue",
+        "red"
+      ],
+      [],
+      [
+        "green",
+        "green",
+        "green"
+      ],
+      [
+        "purple",
+        "purple",
+        "yellow",
+        "red"
+      ],
+      [
+        "blue",
+        "purple",
+        "purple"
+      ],
+      [
+        "green",
+        "yellow",
+        "yellow",
+        "yellow"
+      ],
+      [
+        "blue",
+        "red",
+        "blue"
+      ]
+    ]
+  }
+]
