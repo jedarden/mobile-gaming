@@ -310,6 +310,40 @@ export function isHighContrastEnabled() {
          window.matchMedia('(prefers-contrast: more)').matches;
 }
 
+/**
+ * Apply accessibility settings (unified function for settings page)
+ * @param {Object} settings - Settings to apply
+ */
+export function applyAccessibilitySettings(settings) {
+  if (settings.reducedMotion !== undefined) {
+    if (settings.reducedMotion) {
+      document.documentElement.classList.add(ACCESSIBILITY_CLASSES.reducedMotion);
+    } else {
+      document.documentElement.classList.remove(ACCESSIBILITY_CLASSES.reducedMotion);
+    }
+  }
+  
+  if (settings.highContrast !== undefined) {
+    if (settings.highContrast) {
+      document.documentElement.classList.add(ACCESSIBILITY_CLASSES.highContrast);
+    } else {
+      document.documentElement.classList.remove(ACCESSIBILITY_CLASSES.highContrast);
+    }
+  }
+  
+  if (settings.colorblindMode !== undefined) {
+    applyColorblindMode(settings.colorblindMode);
+  }
+  
+  if (settings.showPatterns !== undefined) {
+    if (settings.showPatterns) {
+      document.documentElement.classList.add(ACCESSIBILITY_CLASSES.colorblindPatterns);
+    } else {
+      document.documentElement.classList.remove(ACCESSIBILITY_CLASSES.colorblindPatterns);
+    }
+  }
+}
+
 export default {
   initAccessibility,
   applyStoredSettings,
@@ -321,5 +355,6 @@ export default {
   trapFocus,
   getAccessibilitySettings,
   isReducedMotionEnabled,
-  isHighContrastEnabled
+  isHighContrastEnabled,
+  applyAccessibilitySettings
 };

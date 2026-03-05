@@ -6,12 +6,14 @@
  * - PWA service worker registration
  * - Install prompt handling
  * - Accessibility features
+ * - Zen mode initialization
  */
 
 import { initStorage, getProfile, getSettings } from './shared/storage.js';
 import { getLevelInfo, getProfileStats, formatXP } from './shared/meta.js';
 import { getStreakInfo, getStreakEmoji, getStreakMessage, getDailyStatus } from './shared/daily.js';
 import { initAccessibility, announce } from './shared/accessibility.js';
+import { initZenMode, isZenMode } from './shared/zen-mode.js';
 
 // Install prompt handling
 let deferredPrompt = null;
@@ -27,6 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize accessibility features
     initAccessibility();
 
+    // Initialize zen mode
+    initZenMode();
+
     // Update UI with player data
     updateProfileDisplay();
     updateDailyStatus();
@@ -39,6 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Track sessions for install prompt timing
     trackSession();
+
+    // Listen for zen mode changes
+    window.addEventListener('zenModeChanged', (e) => {
+      console.log('Zen mode changed:', e.detail.enabled ? 'enabled' : 'disabled');
+    });
 
   } catch (error) {
     console.error('Failed to initialize platform:', error);

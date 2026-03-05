@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Mobile Gaming</title>
+  <link rel="stylesheet" href="../styles/reset.css">
+  <link rel="stylesheet" href="../styles/variables.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/game-shell.css">
+  <link rel="stylesheet" href="../styles/zen-mode.css">
+  <style>
+    .settings-page {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: var(--space-4);
+    }
+    
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+    
+    .settings-header h1 {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+    }
+    
+    .settings-section {
+      margin-bottom: var(--space-6);
+    }
+    
+    .settings-section h2 {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      margin-bottom: var(--space-4);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4);
+      background-color: var(--color-bg-secondary);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-3);
+    }
+    
+    .setting-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    
+    .setting-label {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .setting-description {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+    
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: var(--color-bg-card);
+      transition: background-color var(--transition-base);
+      border-radius: var(--radius-full);
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--color-text-primary);
+      transition: transform var(--transition-base);
+      border-radius: 50%;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+      background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary));
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+    
+    .toggle-switch input:focus-visible + .toggle-slider {
+      outline: 3px solid var(--color-brand-accent);
+      outline-offset: 2px;
+    }
+    
+    /* Select dropdown */
+    .setting-select {
+      padding: var(--space-2) var(--space-3);
+      background-color: var(--color-bg-card);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-bg-elevated);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      cursor: pointer;
+      min-width: 120px;
+    }
+    
+    .setting-select:focus {
+      outline: 2px solid var(--color-brand-primary);
+      outline-offset: 2px;
+    }
+    
+    /* Range slider */
+    .setting-range {
+      width: 120px;
+      height: 6px;
+      appearance: none;
+      background: var(--color-bg-card);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+    }
+    
+    .setting-range::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--color-brand-primary);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .setting-range::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--color-brand-primary);
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .volume-display {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      min-width: 40px;
+      text-align: right;
+    }
+    
+    /* Zen mode highlight */
+    .zen-section {
+      border: 2px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-xl);
+      padding: var(--space-4);
+      background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.05), 
+        rgba(139, 92, 246, 0.05)
+      );
+    }
+    
+    .zen-section .setting-item {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .zen-icon {
+      font-size: 1.5rem;
+    }
+    
+    /* Hidden state */
+    .zen-only {
+      overflow: hidden;
+      max-height: 100px;
+      transition: max-height var(--transition-base), opacity var(--transition-base), margin var(--transition-base);
+    }
+    
+    .zen-only.hidden {
+      max-height: 0;
+      opacity: 0;
+      margin-bottom: 0;
+    }
+    
+    @media (max-width: 600px) {
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+      }
+      
+      .setting-item > *:last-child {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="settings-page">
+    <header class="settings-header">
+      <a href="../" class="back-link">← Back</a>
+      <h1>Settings</h1>
+    </header>
+
+    <!-- Zen Mode Section -->
+    <section class="settings-section zen-section">
+      <h2>🧘 Zen Mode</h2>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">
+            <span class="zen-icon">🧘</span>
+            Zen Mode
+          </span>
+          <span class="setting-description">No scores. No pressure. Just puzzles.</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="zen-toggle" aria-label="Toggle Zen Mode">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item zen-only hidden" id="zen-ambiance-row">
+        <div class="setting-info">
+          <span class="setting-label">Ambiance</span>
+          <span class="setting-description">Background sounds for relaxation</span>
+        </div>
+        <select class="setting-select" id="zen-ambiance" aria-label="Select ambient sound">
+          <option value="silence">Silence</option>
+          <option value="rain">Rain</option>
+          <option value="piano">Soft Piano</option>
+          <option value="nature">Nature</option>
+          <option value="lofi">Lo-fi</option>
+          <option value="ocean">Ocean</option>
+        </select>
+      </div>
+      
+      <div class="setting-item zen-only hidden" id="zen-volume-row">
+        <div class="setting-info">
+          <span class="setting-label">Volume</span>
+          <span class="setting-description">Ambient audio volume</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <input type="range" class="setting-range" id="zen-volume" 
+                 min="0" max="100" value="30" aria-label="Ambient volume">
+          <span class="volume-display" id="volume-display">30%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Audio Settings -->
+    <section class="settings-section">
+      <h2>🔊 Audio</h2>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">Sound Effects</span>
+          <span class="setting-description">Game sounds and feedback</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="sound-toggle" checked aria-label="Toggle sound effects">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">Haptic Feedback</span>
+          <span class="setting-description">Vibration on interactions</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="haptic-toggle" checked aria-label="Toggle haptic feedback">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Accessibility Settings -->
+    <section class="settings-section">
+      <h2>♿ Accessibility</h2>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">Reduced Motion</span>
+          <span class="setting-description">Minimize animations</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="motion-toggle" aria-label="Toggle reduced motion">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">High Contrast</span>
+          <span class="setting-description">Enhanced color contrast</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="contrast-toggle" aria-label="Toggle high contrast">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">Colorblind Mode</span>
+          <span class="setting-description">Alternative color schemes</span>
+        </div>
+        <select class="setting-select" id="colorblind-select" aria-label="Select colorblind mode">
+          <option value="none">None</option>
+          <option value="deuteranopia">Deuteranopia</option>
+          <option value="protanopia">Protanopia</option>
+          <option value="tritanopia">Tritanopia</option>
+        </select>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">Show Patterns</span>
+          <span class="setting-description">Patterns for color differentiation</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="patterns-toggle" checked aria-label="Toggle patterns">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./settings.js"></script>
+</body>
+</html>

@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="./styles/variables.css">
   <link rel="stylesheet" href="./styles/components.css">
   <link rel="stylesheet" href="./styles/index.css">
+  <link rel="stylesheet" href="./styles/zen-mode.css">
 </head>
 <body>
   <!-- Skip link for keyboard navigation -->
@@ -34,9 +35,14 @@
 
   <div class="container">
     <header role="banner">
-      <a href="./profile/" class="profile-link" aria-label="View your profile and stats">
-        <span aria-hidden="true">👤</span> Profile
-      </a>
+      <nav class="header-nav" aria-label="User navigation">
+        <a href="./profile/" class="profile-link" aria-label="View your profile and stats">
+          <span aria-hidden="true">👤</span> Profile
+        </a>
+        <a href="./settings/" class="settings-link" aria-label="Open settings">
+          <span aria-hidden="true">⚙️</span> Settings
+        </a>
+      </nav>
       <h1>Mobile Gaming</h1>
       <p class="subtitle">Play the games the ads promised</p>
     </header>
