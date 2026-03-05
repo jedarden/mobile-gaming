@@ -1,0 +1,210 @@
+/**
+ * Parking Escape - Game Styles
+ *
+ * Custom styles for the Parking Escape puzzle game
+ */
+
+/* Game Board Canvas */
+#game-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-lg);
+  cursor: grab;
+  touch-action: none;
+}
+
+#game-canvas:active {
+  cursor: grabbing;
+}
+
+/* Level Navigation */
+.level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.level-progress {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Stars Display */
+.stars-display {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.stars-display .star {
+  font-size: 2rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.3;
+}
+
+.stars-display .star.filled {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Stats Summary */
+.stats-summary {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* Overlay Buttons */
+.overlay-buttons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+/* Settings Content */
+.settings-content {
+  min-width: 280px;
+}
+
+.settings-group {
+  margin-bottom: var(--space-4);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-bg-card);
+  cursor: pointer;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-brand-primary);
+}
+
+/* Hint Animation */
+.hint-active {
+  animation: hint-pulse 1s ease-in-out 3;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+}
+
+/* Car Selection */
+.car-selected {
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8));
+}
+
+/* Dragging State */
+.dragging {
+  cursor: grabbing;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--color-text-secondary);
+}
+
+/* Drag instructions */
+.drag-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.drag-hint.visible {
+  opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .game-container {
+    padding: var(--space-2);
+  }
+
+  .game-controls {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .game-btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .level-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .game-overlay-content {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-bg-card);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .stars-display .star,
+  .hint-active,
+  .car-selected {
+    animation: none;
+    transition: none;
+  }
+}
+
+.reduced-motion .stars-display .star,
+.reduced-motion .hint-active,
+.reduced-motion .car-selected {
+  animation: none;
+  transition: none;
+}
+
+/* High contrast mode */
+.high-contrast .game-btn {
+  border: 2px solid var(--color-text-primary);
+}
+
+.high-contrast #game-canvas {
+  border: 2px solid var(--color-text-primary);
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .game-btn:active {
+    transform: scale(0.95);
+  }
+
+  #game-canvas:active {
+    opacity: 0.9;
+  }
+}

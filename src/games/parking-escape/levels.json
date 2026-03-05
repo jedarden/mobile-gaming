@@ -1,0 +1,126 @@
+[
+  {
+    "id": 1,
+    "difficulty": 0.1,
+    "optimal": 2,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 2 },
+    "cars": [
+      { "id": "target", "x": 0, "y": 2, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 2, "y": 0, "length": 2, "orientation": "vertical", "color": "blue" },
+      { "id": "car2", "x": 2, "y": 3, "length": 3, "orientation": "vertical", "color": "green" }
+    ]
+  },
+  {
+    "id": 2,
+    "difficulty": 0.15,
+    "optimal": 3,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 2 },
+    "cars": [
+      { "id": "target", "x": 1, "y": 2, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 3, "orientation": "vertical", "color": "blue" },
+      { "id": "car2", "x": 3, "y": 0, "length": 2, "orientation": "vertical", "color": "green" },
+      { "id": "car3", "x": 3, "y": 2, "length": 2, "orientation": "horizontal", "color": "yellow" }
+    ]
+  },
+  {
+    "id": 3,
+    "difficulty": 0.2,
+    "optimal": 4,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 2 },
+    "cars": [
+      { "id": "target", "x": 0, "y": 2, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 2, "orientation": "horizontal", "color": "blue" },
+      { "id": "car2", "x": 2, "y": 0, "length": 3, "orientation": "vertical", "color": "green" },
+      { "id": "car3", "x": 3, "y": 1, "length": 2, "orientation": "vertical", "color": "yellow" },
+      { "id": "car4", "x": 3, "y": 3, "length": 2, "orientation": "horizontal", "color": "purple" }
+    ]
+  },
+  {
+    "id": 4,
+    "difficulty": 0.25,
+    "optimal": 5,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 3 },
+    "cars": [
+      { "id": "target", "x": 0, "y": 3, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 2, "orientation": "horizontal", "color": "blue" },
+      { "id": "car2", "x": 2, "y": 0, "length": 2, "orientation": "horizontal", "color": "green" },
+      { "id": "car3", "x": 4, "y": 0, "length": 3, "orientation": "vertical", "color": "yellow" },
+      { "id": "car4", "x": 2, "y": 2, "length": 2, "orientation": "vertical", "color": "purple" },
+      { "id": "car5", "x": 3, "y": 3, "length": 2, "orientation": "horizontal", "color": "orange" }
+    ]
+  },
+  {
+    "id": 5,
+    "difficulty": 0.3,
+    "optimal": 6,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 2 },
+    "cars": [
+      { "id": "target", "x": 1, "y": 2, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 3, "orientation": "vertical", "color": "blue" },
+      { "id": "car2", "x": 1, "y": 0, "length": 2, "orientation": "horizontal", "color": "green" },
+      { "id": "car3", "x": 3, "y": 0, "length": 3, "orientation": "vertical", "color": "yellow" },
+      { "id": "car4", "x": 4, "y": 0, "length": 2, "orientation": "vertical", "color": "purple" },
+      { "id": "car5", "x": 3, "y": 3, "length": 2, "orientation": "horizontal", "color": "orange" },
+      { "id": "car6", "x": 0, "y": 4, "length": 3, "orientation": "horizontal", "color": "blue" }
+    ]
+  },
+  {
+    "id": 6,
+    "difficulty": 0.35,
+    "optimal": 7,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 2 },
+    "cars": [
+      { "id": "target", "x": 0, "y": 2, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 2, "orientation": "vertical", "color": "blue" },
+      { "id": "car2", "x": 1, "y": 0, "length": 2, "orientation": "horizontal", "color": "green" },
+      { "id": "car3", "x": 2, "y": 0, "length": 2, "orientation": "vertical", "color": "yellow" },
+      { "id": "car4", "x": 3, "y": 0, "length": 3, "orientation": "vertical", "color": "purple" },
+      { "id": "car5", "x": 4, "y": 0, "length": 2, "orientation": "vertical", "color": "orange" },
+      { "id": "car6", "x": 2, "y": 3, "length": 3, "orientation": "horizontal", "color": "blue" },
+      { "id": "car7", "x": 4, "y": 4, "length": 2, "orientation": "horizontal", "color": "green" }
+    ]
+  },
+  {
+    "id": 7,
+    "difficulty": 0.4,
+    "optimal": 8,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 3 },
+    "cars": [
+      { "id": "target", "x": 0, "y": 3, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 2, "orientation": "horizontal", "color": "blue" },
+      { "id": "car2", "x": 2, "y": 0, "length": 3, "orientation": "vertical", "color": "green" },
+      { "id": "car3", "x": 3, "y": 0, "length": 2, "orientation": "horizontal", "color": "yellow" },
+      { "id": "car4", "x": 5, "y": 0, "length": 3, "orientation": "vertical", "color": "purple" },
+      { "id": "car5", "x": 3, "y": 2, "length": 2, "orientation": "vertical", "color": "orange" },
+      { "id": "car6", "x": 0, "y": 4, "length": 2, "orientation": "horizontal", "color": "blue" },
+      { "id": "car7", "x": 2, "y": 4, "length": 2, "orientation": "horizontal", "color": "green" },
+      { "id": "car8", "x": 4, "y": 4, "length": 2, "orientation": "horizontal", "color": "yellow" }
+    ]
+  },
+  {
+    "id": 8,
+    "difficulty": 0.45,
+    "optimal": 10,
+    "gridSize": 6,
+    "exit": { "x": 6, "y": 2 },
+    "cars": [
+      { "id": "target", "x": 2, "y": 2, "length": 2, "orientation": "horizontal", "color": "red" },
+      { "id": "car1", "x": 0, "y": 0, "length": 3, "orientation": "vertical", "color": "blue" },
+      { "id": "car2", "x": 1, "y": 0, "length": 2, "orientation": "horizontal", "color": "green" },
+      { "id": "car3", "x": 3, "y": 0, "length": 2, "orientation": "vertical", "color": "yellow" },
+      { "id": "car4", "x": 4, "y": 0, "length": 3, "orientation": "vertical", "color": "purple" },
+      { "id": "car5", "x": 5, "y": 0, "length": 2, "orientation": "vertical", "color": "orange" },
+      { "id": "car6", "x": 0, "y": 4, "length": 3, "orientation": "horizontal", "color": "blue" },
+      { "id": "car7", "x": 3, "y": 3, "length": 2, "orientation": "vertical", "color": "green" },
+      { "id": "car8", "x": 4, "y": 3, "length": 2, "orientation": "horizontal", "color": "yellow" },
+      { "id": "car9", "x": 5, "y": 4, "length": 2, "orientation": "vertical", "color": "purple" }
+    ]
+  }
+]

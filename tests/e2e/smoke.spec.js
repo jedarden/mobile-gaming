@@ -53,6 +53,25 @@ test.describe('Smoke Tests', () => {
     });
   });
 
+  test.describe('Parking Escape Game', () => {
+    test('should load parking escape game page', async ({ page }) => {
+      await page.goto('/games/parking-escape/');
+      await expect(page.getByRole('heading', { name: /parking escape/i })).toBeVisible();
+    });
+
+    test('should display game canvas', async ({ page }) => {
+      await page.goto('/games/parking-escape/');
+      const canvas = page.locator('canvas');
+      await expect(canvas).toBeVisible();
+    });
+
+    test('should have drag input cursor', async ({ page }) => {
+      await page.goto('/games/parking-escape/');
+      const canvas = page.locator('canvas');
+      await expect(canvas).toHaveCSS('cursor', 'grab');
+    });
+  });
+
   test.describe('Bus Jam Game', () => {
     test('should load bus jam game page', async ({ page }) => {
       await page.goto('/games/bus-jam/');
