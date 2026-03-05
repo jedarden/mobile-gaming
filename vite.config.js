@@ -42,14 +42,14 @@ export default defineConfig({
   },
   // Dev server configuration
   server: {
-    port: 3000,
+    port: 5173,
     open: true,
     // Enable gzip compression
     compress: true
   },
   // Preview server for production builds
   preview: {
-    port: 3000
+    port: 5173
   },
   // CSS optimizations
   css: {
