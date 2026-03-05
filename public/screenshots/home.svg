@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="390" height="844" fill="url(#bg)"/>
+
+  <!-- Header -->
+  <text x="195" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" fill="url(#accent)">Mobile Gaming</text>
+  <text x="195" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#8b8b9e">Play the games the ads promised</text>
+
+  <!-- Game Cards -->
+  <g transform="translate(20, 160)">
+    <!-- Card 1 -->
+    <rect width="170" height="180" rx="16" fill="#1a1a2e"/>
+    <text x="85" y="70" text-anchor="middle" font-size="48">💧</text>
+    <text x="85" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">Water Sort</text>
+    <text x="85" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">Pour to sort</text>
+  </g>
+
+  <g transform="translate(200, 160)">
+    <!-- Card 2 -->
+    <rect width="170" height="180" rx="16" fill="#1a1a2e"/>
+    <text x="85" y="70" text-anchor="middle" font-size="48">🚗</text>
+    <text x="85" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">Parking Escape</text>
+    <text x="85" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">Slide to exit</text>
+  </g>
+
+  <g transform="translate(20, 360)">
+    <!-- Card 3 -->
+    <rect width="170" height="180" rx="16" fill="#1a1a2e"/>
+    <text x="85" y="70" text-anchor="middle" font-size="48">🚌</text>
+    <text x="85" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">Bus Jam</text>
+    <text x="85" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">Sort passengers</text>
+  </g>
+
+  <g transform="translate(200, 360)">
+    <!-- Card 4 -->
+    <rect width="170" height="180" rx="16" fill="#1a1a2e"/>
+    <text x="85" y="70" text-anchor="middle" font-size="48">📌</text>
+    <text x="85" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white">Pull the Pin</text>
+    <text x="85" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#8b8b9e">Remove pins</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="195" y="800" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#8b8b9e">Built with Claude Code</text>
+</svg>

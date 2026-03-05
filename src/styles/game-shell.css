@@ -5,6 +5,8 @@
  */
 
 @import './variables.css';
+@import './accessibility.css';
+@import './utilities.css';
 
 body {
   font-family: var(--font-sans);

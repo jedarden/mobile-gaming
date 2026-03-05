@@ -1,0 +1,421 @@
+/**
+ * Utilities.css - Performance and Platform Utilities
+ *
+ * Provides:
+ * - GPU acceleration helpers
+ * - iOS Safari viewport fixes
+ * - Touch optimization
+ * - Loading states
+ * - Animation utilities
+ */
+
+/* ============================================================================
+   GPU ACCELERATION
+   ============================================================================ */
+
+/* Force GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Specific elements that benefit from GPU acceleration */
+.game-card,
+.game-btn,
+.toast,
+.game-overlay,
+.install-banner {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Clean up will-change after animation */
+.gpu-accelerated:not(.animating) {
+  will-change: auto;
+}
+
+/* ============================================================================
+   IOS SAFARI VIEWPORT FIX
+   ============================================================================ */
+
+/* Fix for iOS Safari 100vh bug */
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
+
+  .game-container {
+    min-height: 100dvh;
+  }
+
+  .game-board {
+    min-height: calc(100dvh - 200px);
+  }
+}
+
+/* Fallback for browsers without dvh support */
+@supports not (height: 100dvh) {
+  body {
+    min-height: -webkit-fill-available;
+  }
+
+  .game-container {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  .game-header {
+    padding-top: max(var(--space-3), env(safe-area-inset-top));
+  }
+
+  .game-controls {
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  .install-banner {
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================================================
+   TOUCH OPTIMIZATION
+   ============================================================================ */
+
+/* Prevent double-tap zoom on interactive elements */
+.game-btn,
+.game-card,
+.icon-btn,
+.install-btn,
+.install-dismiss {
+  touch-action: manipulation;
+}
+
+/* Improve scroll performance */
+.scrollable {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent text selection during gameplay */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Prevent touch callouts on game elements */
+.game-board {
+  -webkit-touch-callout: none;
+}
+
+/* ============================================================================
+   LOADING STATES
+   ============================================================================ */
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  z-index: var(--z-modal);
+}
+
+.loading-text {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* Skeleton screens */
+.skeleton-card {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+
+.skeleton-image {
+  aspect-ratio: 16/9;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-card) 25%,
+    var(--color-bg-elevated) 50%,
+    var(--color-bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}
+
+.skeleton-text {
+  height: 1em;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-card) 25%,
+    var(--color-bg-elevated) 50%,
+    var(--color-bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-text.medium {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ============================================================================
+   MICRO-INTERACTIONS
+   ============================================================================ */
+
+/* Button press effect */
+.btn-press {
+  transition: transform 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* Success pulse */
+@keyframes successPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+}
+
+.success-pulse {
+  animation: successPulse 0.6s ease-out;
+}
+
+/* Gentle bounce for feedback */
+@keyframes gentleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.bounce {
+  animation: gentleBounce 0.3s ease;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease;
+}
+
+/* Slide animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease;
+}
+
+.slide-down {
+  animation: slideDown 0.3s ease;
+}
+
+/* ============================================================================
+   ERROR STATES
+   ============================================================================ */
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.error-state-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+}
+
+.error-state-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.error-state-message {
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================================
+   EMPTY STATES
+   ============================================================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-message {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 280px;
+}
+
+/* ============================================================================
+   PERFORMANCE UTILITIES
+   ============================================================================ */
+
+/* Defer rendering until ready */
+.defer-render {
+  content-visibility: auto;
+}
+
+/* Contain layout for better performance */
+.contain-layout {
+  contain: layout;
+}
+
+/* Contain paint for better performance */
+.contain-paint {
+  contain: paint;
+}
+
+/* Contain all for isolated components */
+.contain-strict {
+  contain: strict;
+}
+
+/* ============================================================================
+   RESPONSIVE UTILITIES
+   ============================================================================ */
+
+/* Hide on mobile */
+@media (max-width: 600px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on desktop */
+@media (min-width: 601px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* Touch device only */
+@media (hover: none) {
+  .touch-only {
+    display: block;
+  }
+
+  .hover-only {
+    display: none;
+  }
+}
+
+/* Hover device only */
+@media (hover: hover) {
+  .touch-only {
+    display: none;
+  }
+
+  .hover-only {
+    display: block;
+  }
+}

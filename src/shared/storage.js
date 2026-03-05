@@ -9,7 +9,7 @@
  */
 
 const STORAGE_KEY = 'mobile-gaming-data';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 // Default profile structure
 const DEFAULT_PROFILE = {
@@ -26,8 +26,12 @@ const DEFAULT_PROFILE = {
     soundEnabled: true,
     hapticEnabled: true,
     reducedMotion: false,
+    reducedMotionSetByUser: false,
     zenMode: false,
-    colorblindMode: 'none'
+    colorblindMode: 'none',
+    highContrast: false,
+    highContrastSetByUser: false,
+    showPatterns: true
   },
   createdAt: new Date().toISOString(),
   lastPlayedAt: new Date().toISOString()
@@ -306,6 +310,7 @@ function validateProfile(data) {
 function migrate(profile) {
   let migrated = { ...profile };
 
+  // Version 1: Initial schema
   if (!migrated.version || migrated.version < 1) {
     migrated.version = 1;
 
@@ -319,6 +324,31 @@ function migrate(profile) {
         ...migrated.gamesPlayed[gameId]
       };
     });
+  }
+
+  // Version 2: Add accessibility settings
+  if (migrated.version < 2) {
+    migrated.version = 2;
+
+    // Ensure settings object exists with all accessibility fields
+    migrated.settings = {
+      ...DEFAULT_PROFILE.settings,
+      ...migrated.settings
+    };
+
+    // Add new accessibility fields if missing
+    if (migrated.settings.reducedMotionSetByUser === undefined) {
+      migrated.settings.reducedMotionSetByUser = false;
+    }
+    if (migrated.settings.highContrast === undefined) {
+      migrated.settings.highContrast = false;
+    }
+    if (migrated.settings.highContrastSetByUser === undefined) {
+      migrated.settings.highContrastSetByUser = false;
+    }
+    if (migrated.settings.showPatterns === undefined) {
+      migrated.settings.showPatterns = true;
+    }
   }
 
   return migrated;
