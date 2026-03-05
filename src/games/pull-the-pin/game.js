@@ -41,6 +41,8 @@ import {
   DIFFICULTY_CONFIG
 } from '../../shared/infinite-mode.js';
 
+import { createGenerator } from './generator.js';
+
 import {
   createInitialState,
   cloneState,
@@ -115,6 +117,9 @@ class PullThePinGame {
     this.history = createHistory(50);
     this.renderer = null;
     this.physics = new PhysicsEngine();
+
+    // Level generator for infinite mode
+    this.generator = createGenerator();
 
     // Animation state
     this.animating = false;
@@ -374,90 +379,23 @@ class PullThePinGame {
    * Generate daily challenge level
    */
   generateDailyLevel() {
-    const rng = createRNG(this.dailySeed);
-    const level = this.generateRandomLevel(rng, 0.5);
-    level.id = 'daily';
+    const level = this.generator.generateDaily(this.dailySeed);
     this.levels = [level];
   }
 
   /**
    * Generate random level using RNG and difficulty
+   * Uses the procedural generator for infinite mode
    */
   generateRandomLevel(rng, difficulty = 0.5) {
-    const difficultyConfig = getDifficultyConfig() || DIFFICULTY_CONFIG.medium;
-    
-    const gridWidth = 300;
-    const gridHeight = 400;
-    
-    // Generate balls
-    const ballCount = rng.int(difficultyConfig.ballCount.min, difficultyConfig.ballCount.max);
-    const balls = [];
-    const ballTypes = ['gold', 'silver', 'bronze'];
-    
-    for (let i = 0; i < ballCount; i++) {
-      balls.push({
-        id: `ball_${i}`,
-        x: rng.float(80, gridWidth - 80),
-        y: rng.float(40, 100),
-        radius: 12,
-        type: rng.pick(ballTypes)
-      });
-    }
+    // Get current difficulty from infinite mode settings
+    const currentDifficulty = getDifficulty();
 
-    // Generate pins
-    const pinCount = rng.int(difficultyConfig.pinCount.min, difficultyConfig.pinCount.max);
-    const pins = [];
-    
-    for (let i = 0; i < pinCount; i++) {
-      const y = 120 + i * 60;
-      pins.push({
-        id: `pin_${i}`,
-        x: rng.float(100, gridWidth - 100),
-        y: rng.float(y, y + 30),
-        length: rng.float(60, 100),
-        angle: rng.float(-0.3, 0.3)
-      });
-    }
+    // Use the seeded generator
+    const seed = getSeed() || Math.floor(Math.random() * 1000000000);
+    const level = this.generator.generate(seed, currentDifficulty);
 
-    // Generate hazards (optional)
-    const hazards = [];
-    if (rng.bool(difficultyConfig.hazardChance)) {
-      hazards.push({
-        id: 'hazard_1',
-        type: 'lava',
-        x: rng.float(50, gridWidth - 150),
-        y: rng.float(250, 300),
-        width: rng.float(60, 100),
-        height: 30
-      });
-    }
-
-    // Generate goal
-    const goal = {
-      id: 'goal_1',
-      x: gridWidth / 2 - 50,
-      y: gridHeight - 50,
-      width: 100,
-      height: 40,
-      required: ballCount
-    };
-
-    // Generate walls (boundary walls)
-    const walls = [
-      { x1: 30, y1: 30, x2: 30, y2: gridHeight - 60 },
-      { x1: gridWidth - 30, y1: 30, x2: gridWidth - 30, y2: gridHeight - 60 }
-    ];
-
-    return {
-      id: `infinite_${Date.now()}`,
-      grid: { width: gridWidth, height: gridHeight },
-      balls,
-      pins,
-      hazards,
-      goals: [goal],
-      walls,
-      requiredBalls: ballCount
-    };
+    return level;
   }
 
   /**
