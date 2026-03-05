@@ -5,29 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Mobile Gaming - Browser Puzzle Games</title>
 
+  <!-- Critical Meta Tags -->
+  <meta name="description" content="Browser puzzle games that deliver what the ads promised">
+  <meta name="theme-color" content="#0f0f23">
+
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f0f23">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mobile Gaming">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Mobile Gaming">
-  <meta name="description" content="Browser puzzle games that deliver what the ads promised">
+
+  <!-- iOS Safari optimizations -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- Performance hints -->
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+
+  <!-- Preconnect for external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+  <!-- Critical CSS - inline for fastest render -->
+  <style>
+    /* Critical above-the-fold styles */
+    html{background-color:#0f172a}
+    body{margin:0;font-family:system-ui,-apple-system,sans-serif;background-color:#0f172a;color:#f8fafc}
+    .container{max-width:1200px;margin:0 auto;padding:1.5rem;min-height:100vh}
+    header{text-align:center;margin-bottom:3rem}
+    h1{font-size:2rem;margin:0 0 0.5rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{color:#94a3b8;font-size:1.125rem}
+    .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);padding:0.75rem 1.5rem;background:#6366f1;color:#fff;border-radius:1rem;z-index:2000}
+    .skip-link:focus{top:1rem}
+  </style>
 
   <!-- Icons -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
-  <!-- Preconnect for performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <!-- Preload critical assets -->
+  <link rel="modulepreload" href="./main.js">
+  <link rel="modulepreload" href="./shared/storage.js">
+  <link rel="modulepreload" href="./shared/accessibility.js">
 
-  <!-- Styles -->
+  <!-- Styles - loaded async for non-critical -->
   <link rel="stylesheet" href="./styles/reset.css">
   <link rel="stylesheet" href="./styles/variables.css">
   <link rel="stylesheet" href="./styles/components.css">
   <link rel="stylesheet" href="./styles/index.css">
   <link rel="stylesheet" href="./styles/zen-mode.css">
+  <link rel="stylesheet" href="./styles/states.css">
+  <link rel="stylesheet" href="./styles/micro-interactions.css">
+  <link rel="stylesheet" href="./styles/cross-platform.css">
 </head>
 <body>
   <!-- Skip link for keyboard navigation -->

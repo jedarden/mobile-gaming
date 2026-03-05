@@ -7,6 +7,9 @@
 @import './variables.css';
 @import './accessibility.css';
 @import './utilities.css';
+@import './states.css';
+@import './micro-interactions.css';
+@import './cross-platform.css';
 
 /* Buttons */
 .game-btn {
