@@ -16,7 +16,7 @@ Build playable web-based versions of the 12 hyper-casual game types documented i
 | Physics (2D) | Custom per-game | Pull the Pin and Water Sort need deterministic gravity/flow; a generic engine adds unpredictability that breaks solvers |
 | Physics (3D) | Cannon-es (Cannon.js ES fork) | Lightweight rigid-body + soft-body for Jelly Shift's blob deformation |
 | Build | Vite | Fast HMR; native ES module support; trivial multi-page setup |
-| Hosting | Cloudflare Pages | Static hosting at `mobile-games.jedarden.com`; each game is a subpath (`/water-sort/`, `/pull-the-pin/`, etc.) |
+| Hosting | Cloudflare Pages | Static hosting at `mobile-gaming.pages.dev`; each game is a subpath (`/water-sort/`, `/pull-the-pin/`, etc.) |
 | CI/CD | Argo Events + Argo Workflows | GitHub webhook → `webhooks-build.ardenone.com/mobile-gaming` → `website-build` WorkflowTemplate → `wrangler pages deploy` |
 | Test runner | Vitest | Unit and integration tests for game logic and solvers |
 | E2E testing | Playwright | Browser-based playtest automation; screenshot comparison for visual validation |
@@ -1171,8 +1171,8 @@ Games that require 3D perspective, forward motion, and lane-based or arena-based
 ### Phase 4: Integration, Polish, and Cross-Game Testing
 
 **4.1 Hub Page Integration:**
-- Hub at `mobile-games.jedarden.com/` lists all 12 games as cards with name, thumbnail, and link
-- Each game lives at its own subpath: `mobile-games.jedarden.com/water-sort/`, etc.
+- Hub at `mobile-gaming.pages.dev/` lists all 12 games as cards with name, thumbnail, and link
+- Each game lives at its own subpath: `mobile-gaming.pages.dev/water-sort/`, etc.
 - Each game is fully standalone — playable directly at its URL without the hub
 - Consistent back-to-hub link in every game's UI
 - Touch-optimized: all targets ≥ 44×44px; no hover-dependent interactions
@@ -1208,8 +1208,8 @@ push to jedarden/mobile-gaming main
       → website-build-sensor matches push-to-main filter
         → submits website-build Workflow to argo-workflows namespace
           → Workflow: clone repo → npm ci → npm run build → wrangler pages deploy
-            → Cloudflare Pages project "mobile-games-jedarden"
-              → served at mobile-games.jedarden.com
+            → Cloudflare Pages project "mobile-gaming"
+              → served at mobile-gaming.pages.dev
 ```
 
 ### Vite Build Output
@@ -1301,7 +1301,7 @@ mobile-gaming:
                 - name: repo
                   value: jedarden/mobile-gaming
                 - name: cf-project
-                  value: mobile-games-jedarden
+                  value: mobile-gaming
                 - name: build-command
                   value: "npm ci && npm run build"
                 - name: output-dir
@@ -1312,8 +1312,8 @@ mobile-gaming:
 
 ### Cloudflare Pages Setup (One-Time)
 
-1. Create Cloudflare Pages project `mobile-games-jedarden` (first deploy creates it automatically via `wrangler pages deploy`)
-2. Add custom domain `mobile-games.jedarden.com` in Cloudflare Pages dashboard → Custom Domains
+1. Create Cloudflare Pages project `mobile-gaming` (first deploy creates it automatically via `wrangler pages deploy`)
+2. Add custom domain `mobile-gaming.pages.dev` in Cloudflare Pages dashboard → Custom Domains
 3. Cloudflare auto-provisions the DNS CNAME record since `jedarden.com` is already on Cloudflare
 
 ### GitHub Webhook Setup (One-Time)
