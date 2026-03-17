@@ -2,7 +2,7 @@
 
 ## Objective
 
-Build playable web-based versions of the 12 hyper-casual game types documented in `docs/research/`. Each game runs as a standalone HTML5 app within a shared shell. Every game includes automated playtesting that proves levels are completable and core mechanics function correctly.
+Build playable web-based versions of the 12 hyper-casual game types documented in `docs/research/`. Each game is deployed as its own standalone static site. A hub page links to all games but each game is fully self-contained — playable at its own URL with zero dependency on the hub or other games. Every game includes automated playtesting that proves levels are completable and core mechanics function correctly.
 
 ---
 
@@ -16,6 +16,8 @@ Build playable web-based versions of the 12 hyper-casual game types documented i
 | Physics (2D) | Custom per-game | Pull the Pin and Water Sort need deterministic gravity/flow; a generic engine adds unpredictability that breaks solvers |
 | Physics (3D) | Cannon-es (Cannon.js ES fork) | Lightweight rigid-body + soft-body for Jelly Shift's blob deformation |
 | Build | Vite | Fast HMR; native ES module support; trivial multi-page setup |
+| Hosting | Cloudflare Pages | Static hosting at `mobile-games.jedarden.com`; each game is a subpath (`/water-sort/`, `/pull-the-pin/`, etc.) |
+| CI/CD | Argo Events + Argo Workflows | GitHub webhook → `webhooks-build.ardenone.com/mobile-gaming` → `website-build` WorkflowTemplate → `wrangler pages deploy` |
 | Test runner | Vitest | Unit and integration tests for game logic and solvers |
 | E2E testing | Playwright | Browser-based playtest automation; screenshot comparison for visual validation |
 | Level format | JSON | Each game defines its own level schema; validated by JSON Schema |
@@ -30,18 +32,17 @@ mobile-gaming/
 │   ├── research/           # existing game-type research
 │   └── implementation/     # this plan + per-game specs as needed
 ├── src/
-│   ├── shell/              # shared game shell (menu, routing, score overlay, transitions)
-│   │   ├── index.html      # landing page / game selector
-│   │   ├── shell.js        # game lifecycle management (load, pause, resume, end)
-│   │   ├── router.js       # hash-based routing to individual games
-│   │   ├── score.js        # shared scoring + level-complete overlay
-│   │   └── styles.css      # shared CSS variables, reset, layout
-│   ├── shared/             # cross-game utilities
+│   ├── hub/                # hub page linking to all games (also a static site)
+│   │   ├── index.html      # landing page / game selector with links to each game's URL
+│   │   ├── hub.js          # game card rendering, filtering, link generation
+│   │   └── styles.css      # hub-specific styles
+│   ├── shared/             # cross-game utilities (tree-shaken into each game's bundle)
 │   │   ├── canvas.js       # Canvas 2D helper: setup, resize, DPR scaling
 │   │   ├── three-setup.js  # Three.js scene/camera/renderer bootstrap
 │   │   ├── input.js        # unified touch/mouse input (tap, drag, swipe)
 │   │   ├── audio.js        # Web Audio API: SFX triggering, gain control
 │   │   ├── colors.js       # shared 10-color accessible palette
+│   │   ├── score.js        # shared scoring + level-complete overlay
 │   │   └── rng.js          # seeded PRNG (Mulberry32) for deterministic level gen
 │   └── games/
 │       ├── pull-the-pin/
@@ -70,11 +71,11 @@ mobile-gaming/
 
 ### Per-Game Directory Structure (Template)
 
-Each game under `src/games/<name>/` follows:
+Each game under `src/games/<name>/` is a **self-contained static site**. After build, each game's output directory contains everything needed to serve it independently — no external runtime dependencies, no reliance on the hub or other games.
 
 ```
 <name>/
-├── index.html          # game-specific HTML entry point
+├── index.html          # game entry point — works standalone; includes meta tags, OG tags, favicon
 ├── game.js             # lifecycle: init, update loop, teardown
 ├── state.js            # pure-function game state (no rendering, no DOM)
 ├── renderer.js         # Canvas 2D or Three.js scene rendering
@@ -1169,26 +1170,155 @@ Games that require 3D perspective, forward motion, and lane-based or arena-based
 
 ### Phase 4: Integration, Polish, and Cross-Game Testing
 
-**4.1 Game Shell Integration:**
-- All 12 games accessible from the landing page
-- Consistent back-navigation, level select, score display
+**4.1 Hub Page Integration:**
+- Hub at `mobile-games.jedarden.com/` lists all 12 games as cards with name, thumbnail, and link
+- Each game lives at its own subpath: `mobile-games.jedarden.com/water-sort/`, etc.
+- Each game is fully standalone — playable directly at its URL without the hub
+- Consistent back-to-hub link in every game's UI
 - Touch-optimized: all targets ≥ 44×44px; no hover-dependent interactions
 
 **4.2 Cross-Game Test Suite:**
-- E2E: launch each game from shell → verify it loads without errors → play at least one level via solver → verify win → return to shell
+- E2E: launch each game from hub → verify it loads without errors → play at least one level via solver → verify win → return to hub
 - Performance: each game renders ≥ 30fps on a mid-range device (simulated via Playwright throttling)
 - Memory: no game leaks >10MB over 5 minutes of play (heap snapshot before/after)
 
 **4.3 Level Validation Pipeline:**
-- CI job: for every JSON file in `levels/`:
+- Runs in the Argo Workflow build step before deployment
+- For every JSON file in `levels/`:
   1. Validate against game-specific JSON Schema
   2. Run game-specific solver → assert solvable
   3. For puzzle games: verify optimal solution length matches declared difficulty
   4. For runner games: verify win is achievable and loss is possible
+- If any validation fails, the workflow exits non-zero and deployment does not proceed
 
 **4.4 Visual Regression:**
 - Playwright screenshot tests at key moments: initial state, mid-game, win state, lose state
 - Baseline screenshots committed to repo; CI diffs against baseline on each PR
+
+---
+
+## Deployment
+
+### Architecture
+
+```
+push to jedarden/mobile-gaming main
+  → GitHub webhook POST to webhooks-build.ardenone.com/mobile-gaming
+    → Argo Events EventSource receives webhook
+      → website-build-sensor matches push-to-main filter
+        → submits website-build Workflow to argo-workflows namespace
+          → Workflow: clone repo → npm ci → npm run build → wrangler pages deploy
+            → Cloudflare Pages project "mobile-games-jedarden"
+              → served at mobile-games.jedarden.com
+```
+
+### Vite Build Output
+
+Vite multi-page build produces a flat static site:
+
+```
+dist/
+├── index.html                    # hub page
+├── water-sort/index.html         # each game is a subpath
+├── pull-the-pin/index.html
+├── parking-escape/index.html
+├── brain-teaser/index.html
+├── save-the-character/index.html
+├── merge/index.html
+├── satisfying/index.html
+├── crowd-runner/index.html
+├── giant-runner/index.html
+├── bridge-race/index.html
+├── jelly-shift/index.html
+├── makeover-run/index.html
+└── assets/                       # shared JS/CSS chunks (hashed filenames)
+```
+
+### Argo Events CI Configuration
+
+Three manifests in `ardenone-cluster/cluster-configuration/apexalgo-iad/argo-events/` are modified:
+
+**1. EventSource** (`github-eventsource.yml`) — add `mobile-gaming` webhook:
+```yaml
+mobile-gaming:
+  repositories:
+    - owner: jedarden
+      names:
+        - mobile-gaming
+  webhook:
+    endpoint: /mobile-gaming
+    port: "12000"
+    method: POST
+    url: https://webhooks-build.ardenone.com
+  events:
+    - push
+  apiToken:
+    name: github-webhook-secret
+    key: token
+  webhookSecret:
+    name: github-webhook-secret
+    key: webhook-secret
+  insecure: false
+  active: true
+  contentType: json
+```
+
+**2. Sensor** (`website-build-sensor.yml`) — add dependency + trigger:
+```yaml
+# New dependency
+- name: mobile-gaming-push
+  eventSourceName: github-webhooks
+  eventName: mobile-gaming
+  filters:
+    data:
+      - path: headers.X-Github-Event
+        type: string
+        value:
+          - push
+      - path: body.ref
+        type: string
+        value:
+          - refs/heads/main
+
+# New trigger
+- template:
+    name: mobile-gaming-deploy
+    conditions: mobile-gaming-push
+    argoWorkflow:
+      operation: submit
+      source:
+        resource:
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: website-mobile-gaming-
+            namespace: argo-workflows
+          spec:
+            workflowTemplateRef:
+              name: website-build
+            arguments:
+              parameters:
+                - name: repo
+                  value: jedarden/mobile-gaming
+                - name: cf-project
+                  value: mobile-games-jedarden
+                - name: build-command
+                  value: "npm ci && npm run build"
+                - name: output-dir
+                  value: dist
+```
+
+**3. WorkflowTemplate** (`website-build-workflowtemplate.yml`) — no changes needed. The existing template already supports parameterized repo, build command, and output directory.
+
+### Cloudflare Pages Setup (One-Time)
+
+1. Create Cloudflare Pages project `mobile-games-jedarden` (first deploy creates it automatically via `wrangler pages deploy`)
+2. Add custom domain `mobile-games.jedarden.com` in Cloudflare Pages dashboard → Custom Domains
+3. Cloudflare auto-provisions the DNS CNAME record since `jedarden.com` is already on Cloudflare
+
+### GitHub Webhook Setup (One-Time)
+
+The EventSource controller auto-registers the webhook on the `jedarden/mobile-gaming` GitHub repo using the `github-webhook-secret` token. No manual webhook configuration is needed — Argo Events manages the webhook lifecycle.
 
 ---
 
