@@ -1359,3 +1359,78 @@ The phases above define logical groupings, but within each phase, games are impl
 | 10 | Makeover Run | Similar runner structure but with swappable character meshes |
 | 11 | Bridge Race | Most complex 3D — arena movement, AI, sabotage mechanic |
 | 12 | Jelly Shift | Most complex rendering — soft-body deformation, compound hole geometry |
+
+---
+
+## Phase 5: UX Polish
+
+UX polish is a continuous phase that begins after each game's base mechanics are complete and playtest-verified. It is not a one-time pass — each game receives iterative refinement as player-facing rough edges are identified. Polish work is deployed incrementally alongside new game development.
+
+### 5.1 Per-Game Polish (Applied After Each Game Passes Playtests)
+
+**Feedback and Juice:**
+- Haptic feedback on supported devices (Vibration API) for key events: pin pull, ball settling, merge, wall collision, boss defeat
+- Screen shake on failures (configurable intensity; 50ms for minor, 150ms for major)
+- Camera zoom-in on critical moments (boss fight, final pour, last pin)
+- Particle systems at success moments: confetti on win, sparkle on merge, water splash on pour
+- Sound design pass: distinct SFX per action type; volume ducking during rapid-fire events; mute toggle persistent across sessions
+
+**Animations and Transitions:**
+- Ease-in/ease-out on all state changes (no instant snaps)
+- Level-complete overlay: score/stars slide in, buttons fade in with stagger delay
+- Level transition: brief fade-to-white or iris wipe between levels
+- Tutorial hint animations on first play: pulsing glow on the first interactive element, finger-drag ghost showing expected input
+
+**Visual Clarity:**
+- Color-blind mode: pattern overlays on colored elements (stripes, dots, crosshatch) in addition to color; toggle in settings, persisted to localStorage
+- High-contrast outlines on interactive elements during touch proximity
+- Selected-state indicators: glow ring on selected tube (Water Sort), highlight border on selected vehicle (Parking Escape)
+- Score and move counter readable at all times: semi-transparent dark backdrop behind text overlaying gameplay
+
+### 5.2 Hub Page Polish
+
+- Game cards: thumbnail screenshot (auto-generated from Playwright), game name, one-line description, difficulty badge
+- Category filtering: Puzzle, Runner, Relaxation
+- "Recently played" section using localStorage history
+- Responsive grid: 1-column on small phones, 2 on large phones, 3 on tablets
+- Loading skeleton: card placeholders while game JS bundles load
+
+### 5.3 Mobile-First Interaction Polish
+
+- Touch targets: minimum 48×48px (exceeding the 44px minimum from Phase 4)
+- Drag dead-zone: 8px before drag registers (prevents accidental drags from taps)
+- Swipe velocity detection: fast swipe = full lane change, slow swipe = proportional steering
+- Pinch-to-zoom disabled on game canvas (prevents accidental browser zoom)
+- Viewport meta: `user-scalable=no, viewport-fit=cover` for full-screen feel
+- Safe area insets: respect `env(safe-area-inset-*)` for notch/home-bar devices
+- Orientation lock hint: show "rotate device" overlay if game requires landscape and device is portrait (or vice versa)
+
+### 5.4 Performance Polish
+
+- Asset lazy loading: Three.js and Cannon-es only loaded for 3D games, not bundled into 2D game entry points
+- Texture atlas for sprite-based games (Pull the Pin, Brain Teaser, Save the Character): single draw call per frame
+- Object pooling for particle systems and instanced meshes (Crowd Runner, Giant Runner) to avoid GC pauses
+- `requestAnimationFrame` with delta-time clamping: skip frames gracefully on slow devices rather than running game logic at half speed
+- Bundle size budget: each game's JS bundle ≤ 150KB gzipped (2D games), ≤ 400KB gzipped (3D games)
+
+### 5.5 Progressive Enhancement
+
+- Offline support: Service Worker caches each game's assets after first load; games playable without network
+- Add-to-homescreen: Web App Manifest with per-game `start_url`, appropriate icons, `display: fullscreen`
+- localStorage persistence: level progress, high scores, settings (color-blind mode, sound toggle, last-played level) survive browser close
+- `prefers-reduced-motion` media query: disable screen shake, particle effects, and non-essential animations when user has reduced-motion enabled
+- `prefers-color-scheme: dark`: dark background variant for hub and game chrome (gameplay colors unchanged)
+
+### 5.6 Polish Verification
+
+Polish items are validated through E2E tests and manual review:
+
+| Check | Method |
+|---|---|
+| Haptic fires on supported events | Playwright: mock `navigator.vibrate`, assert called at correct moments |
+| Screen shake does not displace gameplay elements | Screenshot diff: pre-shake and post-shake game state identical (only camera offset changes) |
+| Color-blind mode renders pattern overlays | Screenshot comparison: color-blind-on vs default, verify non-identical pixels on colored elements |
+| Touch dead-zone prevents accidental drags | Playwright: simulate 4px move → assert no drag event; simulate 10px move → assert drag event |
+| Bundle size within budget | CI check: `stat -c %s dist/assets/*.js` after gzip → fail if over limit |
+| Service Worker caches assets | Playwright: load game → go offline → reload → assert game still renders |
+| `prefers-reduced-motion` disables animations | Playwright: emulate reduced-motion → assert no particle elements in DOM/canvas |
