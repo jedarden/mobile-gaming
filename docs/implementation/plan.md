@@ -1872,3 +1872,176 @@ src/shared/adaptive.js
 - **Anti-gaming:** Difficulty adjustments are invisible and have no impact on scoring or share cards. Daily challenges are exempt from adaptive difficulty — everyone plays the same level regardless of skill.
 
 - **Override:** Settings page includes a hidden developer toggle (triple-tap the version number) that reveals the current difficulty tier and allows manual override — useful for testing and demonstration.
+
+---
+
+## Phase 7: Platform Features
+
+Features that extend the collection into a creator platform, a social object, and an infinitely replayable system.
+
+---
+
+### 7.1 Cross-Device Progress Sync via Paste-a-Code
+
+No accounts, no server, no database. Export all progress as a compact alphanumeric code; import on another device by pasting.
+
+**What syncs:**
+- Per-game: levels completed, best scores, best times, difficulty tier
+- Global: settings (color-blind mode, sound, dark mode), daily challenge history, Quick Play profile, psychology journal entries unlocked
+
+**Implementation:**
+
+```
+src/shared/sync.js
+```
+
+- `exportProgress()`:
+  1. Collect all relevant localStorage keys into a single JSON object
+  2. Strip ephemeral data (current in-progress state, session timers)
+  3. `JSON.stringify()` → `pako.deflateRaw()` → base62 encode
+  4. Prefix with version byte for forward compatibility
+  5. Chunk into 5-character groups for readability: `SYNC-X7K3M-PLNV-8QR2-JW6T`
+
+- `importProgress(code)`:
+  1. Strip dashes and whitespace
+  2. Base62 decode → `pako.inflateRaw()` → `JSON.parse()`
+  3. Validate schema version; migrate if older format
+  4. Merge into localStorage (imported data wins on conflict, except: keep the higher score if both devices have a score for the same level)
+  5. Reload game state from updated localStorage
+
+- **Code size estimate:** Typical progress (50 levels across 6 games, settings, journal) ≈ 2KB JSON → ~800 bytes compressed → ~1100 chars base62 → fits in a text message or written on paper as 22 groups of 5
+
+- **Share flow:**
+  1. Settings → "Sync Progress" → "Export" → code displayed + copied to clipboard
+  2. On new device: Settings → "Sync Progress" → "Import" → paste code → "Progress restored"
+
+- **Messaging integration:**
+  - "Send to myself" button uses the same platform-picker from Phase 6.5's share system
+  - Web Share API with `text` parameter (no files) for the simplest path:
+    ```js
+    navigator.share({
+      title: 'My game progress',
+      text: `Import this code in Settings → Sync:\n\n${syncCode}\n\nmobile-gaming.pages.dev`
+    })
+    ```
+  - This opens the native share sheet — user picks iMessage, WhatsApp, Telegram, Signal, email, Slack, or any messaging app installed on their device
+  - Platform-specific deep-link fallbacks for when Web Share API is unavailable:
+
+    | Platform | Method |
+    |---|---|
+    | **SMS** | `sms:?body=...` URI scheme (works on iOS and Android) |
+    | **WhatsApp** | `https://wa.me/?text=...` |
+    | **Telegram** | `https://t.me/share/url?text=...` |
+    | **Email** | `mailto:?subject=Game Progress&body=...` |
+    | **Copy** | Clipboard API (always available) |
+
+  - The message includes the sync code + a link to the site + brief instructions, so the recipient (even if it's the same person on another device) knows exactly what to do
+
+---
+
+### 7.2 "Design Your Own Ad" Compositor
+
+*Priority: low — implement after base games are delightful to play. This is a fun bonus feature that layers on top of the recording infrastructure from Phase 6.5.*
+
+A template-driven tool that turns gameplay recordings into fake mobile game ads. The player picks a template, the tool applies timing edits, text overlays, and the signature ad format, and exports a 15-second vertical video.
+
+**Templates:**
+
+| Template | Pattern | Auto-Applied Elements |
+|---|---|---|
+| **Fail Ad** | Show 2 wrong moves, cut before resolution | "NO!" text on fails, dramatic zoom, abrupt cut to black with "Download Now" |
+| **Challenge Ad** | "Only 1% can solve this!" | Challenge banner at top, IQ percentage overlay, timer, skeptical emoji reactions |
+| **Satisfying Ad** | Loop the most satisfying 3 seconds | Slow-motion, zoom on completion moment, seamless loop point, ASMR-style soft audio |
+| **Drama Ad** | Show the choice, pause, wrong answer | Dramatic pause (1.5s freeze), wrong choice with red X, sad trombone SFX, "Would YOU survive?" |
+| **Speedrun Ad** | Fast-forward through a solve | 4x speed with timer visible, abrupt stop at completion, "Can you beat 4.2s?" |
+
+**Implementation:**
+
+```
+src/shared/ad-compositor.js
+```
+
+- **Input:** A gameplay recording buffer from Phase 6.5's passive 30-second recorder
+- **Template definition format (JSON):**
+  ```json
+  {
+    "name": "Fail Ad",
+    "duration": 15,
+    "segments": [
+      { "source": "gameplay", "start": -8, "end": -5, "speed": 1, "label": "wrong-move-1" },
+      { "source": "gameplay", "start": -4, "end": -2, "speed": 1, "label": "wrong-move-2" },
+      { "source": "black", "duration": 0.5 },
+      { "source": "outro", "duration": 2 }
+    ],
+    "overlays": [
+      { "type": "text", "content": "NO!", "trigger": "wrong-move-1:end", "style": "comic-bold-red", "duration": 0.8 },
+      { "type": "text", "content": "TRY AGAIN!", "trigger": "wrong-move-2:end", "style": "comic-bold-red", "duration": 0.8 },
+      { "type": "text", "content": "Can YOU solve it?", "trigger": "outro:start", "style": "challenge-white", "duration": 2 },
+      { "type": "qr", "trigger": "outro:start", "url": "{{stateUrl}}", "position": "bottom-center" }
+    ]
+  }
+  ```
+- **Compositor renders the template** by seeking through the recorded buffer, applying speed changes, drawing text overlays onto a compositing canvas, and encoding to MP4 via the same pipeline from Phase 6.5
+- **UX flow:**
+  1. Complete (or fail) a level → "Create an Ad?" button appears alongside "Share"
+  2. Template picker: 5 templates shown as preview thumbnails (static mockups)
+  3. Tap a template → 3-second render → preview plays in-app
+  4. "Edit" → tweak the text overlays (change "Only 1% can solve this!" to custom text)
+  5. "Export" → MP4 saved / shared via platform picker
+- **Thematic payoff:** The project documents fake game ads. Now users create their own. The shared video IS a fake ad — with a QR code linking back to the actual playable game. Viral loop: see ad → scan QR → play game → make your own ad → share.
+
+---
+
+### 7.3 Endless Procedural Mode
+
+After the hand-crafted levels are exhausted, the game generates infinite levels at the player's current difficulty tier. Play until you quit. Score: levels completed in the session.
+
+**Implementation:**
+
+```
+src/shared/endless.js
+```
+
+- **Activation:** After completing the final hand-crafted level, the game offers "Keep going? Endless mode generates new puzzles forever." Also accessible from the level select screen as a dedicated "Endless" button.
+
+- **Level pipeline (per generated level):**
+  1. Read current difficulty tier from adaptive difficulty system (Phase 6.9)
+  2. Map tier to generator parameters:
+     | Tier | Water Sort | Parking Escape | Pull the Pin |
+     |---|---|---|---|
+     | 1 | 4 colors, 2 buffers | 4 vehicles, 4-move optimal | 3 pins, 2 colors |
+     | 5 | 6 colors, 1 buffer | 8 vehicles, 12-move optimal | 6 pins, 4 colors |
+     | 10 | 8 colors, 1 buffer | 12 vehicles, 25-move optimal | 8 pins, 5 colors |
+  3. Call `generator.js` with a session-sequential seed: `createRng(sessionSeed + levelIndex)` — ensures the sequence is reproducible for replay sharing
+  4. Run solver to verify solvability and compute difficulty metrics
+  5. If solver fails or difficulty is outside target range: increment seed, regenerate (max 5 attempts, then relax constraints)
+  6. Cache the generated level in memory (not localStorage — endless levels are ephemeral)
+
+- **Applicable games and their generator readiness:**
+
+  | Game | Generator Exists (from Phases 1-3) | Endless-Ready |
+  |---|---|---|
+  | Water Sort | Yes — shuffle-from-solved | Yes |
+  | Parking Escape | Yes — iterative blocker placement | Yes |
+  | Pull the Pin | Yes — channel routing + pin placement | Yes |
+  | Merge Games | Yes — task + seed grid | Yes |
+  | Crowd Runner | Yes — gate placement + boss sizing | Yes |
+  | Giant Runner | Yes — collectible + obstacle placement | Yes |
+  | Jelly Shift | Yes — wall shape + spacing | Yes |
+  | Makeover Run | Yes — station placement | Yes |
+  | Bridge Race | Yes — block + bridge placement | Yes |
+  | Brain Teaser | No — hand-crafted only | No (excluded) |
+  | Save the Character | No — hand-crafted only | No (excluded) |
+  | Satisfying/ASMR | Procedural dirt patterns | Yes (infinite by nature) |
+
+- **Scoring:**
+  - Levels completed in the session = primary score
+  - Bonus: streak multiplier for consecutive solves without hints (×1.0, ×1.2, ×1.5, ×2.0 — resets on hint use)
+  - Session score displayed prominently; personal best stored in localStorage
+  - "Endless run" shareable: session score + level count + game type as a share card
+
+- **Difficulty ratchet:**
+  - Every 5 levels, difficulty tier increments by 1 (independent of adaptive difficulty)
+  - This creates a natural difficulty curve within the endless session — early levels are approachable, later levels are punishing
+  - If the player fails (puzzle games: gives up after 3 retries; runners: loses), the session ends with final score
+  - "Continue?" option: restart the current level but the streak multiplier resets to ×1.0
