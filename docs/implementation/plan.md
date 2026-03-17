@@ -22,6 +22,72 @@ Build playable web-based versions of the 12 hyper-casual game types documented i
 | E2E testing | Playwright | Browser-based playtest automation; screenshot comparison for visual validation |
 | Level format | JSON | Each game defines its own level schema; validated by JSON Schema |
 
+### Vite Configuration
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import { readdirSync } from 'fs';
+import { resolve } from 'path';
+
+// Auto-discover game entry points — adding a new game means adding a directory, not editing config
+const gameEntries = Object.fromEntries(
+  readdirSync('src/games', { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => [d.name, resolve(__dirname, `src/games/${d.name}/index.html`)])
+);
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        hub: resolve(__dirname, 'src/hub/index.html'),
+        ...gameEntries   // auto-discovers all games
+      }
+    }
+  },
+  test: {
+    include: ['tests/**/*.test.js'],
+    environment: 'node'   // solvers are pure functions, no DOM needed
+  }
+});
+```
+
+Games are auto-discovered by globbing `src/games/*/index.html`. Adding a new game requires only creating its directory — no config file changes.
+
+### Dependencies
+
+```json
+{
+  "name": "mobile-gaming",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:levels": "node scripts/validate-levels.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "cannon-es": "^0.20.0",
+    "pako": "^2.1.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0",
+    "@playwright/test": "^1.49.0",
+    "eslint": "^9.0.0",
+    "mp4-muxer": "^5.0.0"
+  }
+}
+```
+
+Production dependencies are minimal: Three.js (3D games only, tree-shaken per entry point), cannon-es (Jelly Shift only), pako (state URL compression). mp4-muxer is dev-only — it's dynamically imported at runtime only when the user records a video, so it's code-split into its own chunk and never loaded unless needed.
+
 ---
 
 ## Project Structure
@@ -96,22 +162,180 @@ The critical architectural rule: **`state.js` must never import rendering or DOM
 Build the shared infrastructure before any individual game.
 
 **Deliverables:**
-- Vite config with multi-page entry points (one per game + shell)
-- Shared game shell: landing page listing all games, hash-based routing, back button
+- Vite config with auto-discovered multi-page entry points (see Vite Configuration above)
 - `shared/canvas.js`: Canvas element creation, DPR-aware resize, requestAnimationFrame loop wrapper
 - `shared/three-setup.js`: Scene + PerspectiveCamera + WebGLRenderer bootstrap, resize handler, RAF loop
 - `shared/input.js`: Unified pointer events — normalizes `touchstart`/`mousedown`, `touchmove`/`mousemove`, `touchend`/`mouseup` into `{ type, x, y, dx, dy }` streams; exposes `onTap`, `onDrag`, `onSwipe` with configurable thresholds
 - `shared/audio.js`: `playSound(name, volume)` using Web Audio API; sounds defined as short oscillator patterns (no audio file dependencies)
 - `shared/colors.js`: 10-color palette designed for color-blind accessibility (derived from Okabe-Ito); each color has `hex`, `name`, `darkVariant`, `lightVariant`
 - `shared/rng.js`: Mulberry32 seeded PRNG — `createRng(seed)` returns `{ next(), nextInt(min, max), shuffle(arr), pick(arr) }`
+- `shared/storage.js`: Namespaced localStorage manager (see localStorage Schema below)
+- `shared/lifecycle.js`: Game lifecycle — loading, pause/resume, error boundary (see below)
+- `shared/level-nav.js`: Level select strip and progression (see below)
+- `shared/settings.js`: Settings drawer UI and persistence (see below)
+- `shared/viewport.js`: Responsive canvas sizing (see below)
 - Vitest config, Playwright config, test helper stubs
 - JSON Schema files for level validation
+- `public/_redirects` and `public/_headers` for Cloudflare Pages (see Deployment)
+
+#### Responsive Canvas Sizing (`shared/viewport.js`)
+
+All games render at a fixed logical resolution and CSS-scale to fill the viewport. No per-game responsive layout logic.
+
+- **Logical resolution:** 390×844 logical pixels (portrait, matches iPhone 14 — the most common mobile viewport)
+- **Canvas creation:** `canvas.width = 390 * dpr; canvas.height = 844 * dpr; canvas.style.width = '390px'; canvas.style.height = '844px'`
+- **CSS scaling:** The canvas sits inside a flex container with `object-fit: contain`. The container fills the viewport. The canvas scales up or down uniformly with letterboxing on non-matching aspect ratios.
+- **Landscape games:** Runner games (Crowd Runner, Giant Runner, Bridge Race, Jelly Shift, Makeover Run) use 844×390 (landscape logical) — same approach, rotated
+- **DPR handling:** `window.devicePixelRatio` multiplied into canvas dimensions for crisp rendering; all game coordinates use logical pixels (390×844), never physical
+- **Resize handler:** `ResizeObserver` on the container recalculates scale on orientation change or window resize. No game logic changes — only the CSS transform updates.
+
+#### Game Lifecycle (`shared/lifecycle.js`)
+
+Every game follows the same lifecycle. The lifecycle manager handles loading states, pause/resume, and error recovery.
+
+**Loading:**
+- Each game's `index.html` contains an inline `<style>` block and a static loading shell (game name + CSS spinner) — renders in < 50ms with zero JS
+- The game's JS bundle loads via `<script type="module" async>`
+- On load, the module calls `lifecycle.ready()` which crossfades from the spinner to the game canvas over 200ms
+- If the bundle fails to load (network error), the spinner is replaced with "Couldn't load — tap to retry" with a retry button that reloads the module
+
+**Pause/Resume:**
+```js
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) lifecycle.pause();
+  else lifecycle.showResumeOverlay();
+});
+```
+- `lifecycle.pause()`: saves current state to localStorage via `storage.save(gameId, state)`, freezes the RAF loop, suspends Web Audio context
+- Resume: shows a semi-transparent "Tap to continue" overlay; tap calls `lifecycle.resume()` which restarts RAF and resumes audio
+- For untimed puzzle games (Water Sort, Parking Escape, Brain Teaser, Merge): no overlay on resume — state is persistent, player picks up where they left off
+- For timed/real-time games (runners, Jelly Shift): overlay is mandatory — resuming mid-run without the overlay would cause disorientation
+
+**Error boundary:**
+- `window.addEventListener('error')` and `window.addEventListener('unhandledrejection')` catch fatal errors
+- On error: freeze game, show "Something went wrong — tap to restart level" overlay
+- Error details logged to `console.error` with the serialized game state for debugging
+
+#### Game-Over and Retry Flow (`shared/retry.js`)
+
+Universal retry overlay that slides up from the bottom on win or loss.
+
+**On win:**
+- Overlay shows: level-complete animation, stats (moves, time, optimality %), "Next Level" button (primary), "Replay" button (secondary), "Share" button
+- "Next Level" auto-advances to the next level in the progression
+
+**On loss:**
+- Overlay shows: "Retry" button (primary, restarts same level), "Hint then Retry" button (shows first solver hint, then restarts — combines Phase 6.2 hints with retry), "Skip" button (unlocks after 3 failures on the same level — advances without completion credit)
+- For runner games: adds "Watch Replay" button showing the last 5 seconds in slow motion before the fail point
+
+**On stuck (puzzle games):**
+- If `isStuck(state)` returns true (no valid moves, not won): auto-show the loss overlay without waiting for the player to notice
+- "Undo to last good state" button: reverts to the most recent state that had ≥ 2 valid moves
+
+#### Level Select and Progression (`shared/level-nav.js`)
+
+Horizontal scrollable strip at the bottom of the game screen — always visible, no separate screen.
+
+- **Layout:** Row of 30px circular dots, one per level, horizontally scrollable. Fits ~8 levels on screen; finger-scroll to see more.
+- **States:** Completed (filled circle with checkmark), current (pulsing ring), locked (dimmed outline), skipped (open circle with dash)
+- **Unlock rule:** Linear — complete level N to unlock N+1. Skipped levels (via the retry "Skip" button) are marked but don't block progression.
+- **Tap behavior:** Tap any unlocked level → load it. Tap current level → restart.
+- **Endless mode indicator:** After the last hand-crafted level, an "∞" symbol with a right arrow indicates endless mode is available.
+- **Daily challenge:** A star-shaped indicator at the left end of the strip links to today's daily challenge. Gold if uncompleted, green if completed.
+- **Persistence:** Current level index stored in localStorage per game. On load, strip scrolls to show the current level centered.
+
+#### Settings Drawer (`shared/settings.js`)
+
+Gear icon in the top-right of every game and the hub. Tap opens a slide-out drawer from the right edge.
+
+- **Settings list (toggle switches):**
+  - Sound (on/off) — default on
+  - Haptic feedback (on/off) — default on; hidden on devices without Vibration API
+  - Color-blind mode (on/off) — default off; enables pattern overlays
+  - Dark mode (on/off) — default follows `prefers-color-scheme`
+  - Reduced motion (on/off) — default follows `prefers-reduced-motion`
+- **Actions:**
+  - "Sync Progress" → opens sync code export/import (Phase 7.1)
+  - "About" → version number, link to GitHub repo, credits
+- **Persistence:** All settings saved to `mg:global:settings` in localStorage
+- **Drawer behavior:** 280px wide, slides in/out with 200ms ease, tap outside or swipe right to dismiss. Game pauses while drawer is open.
+- **Developer mode:** Triple-tap the version number in "About" to reveal: adaptive difficulty tier display, localStorage inspector, capability matrix
+
+#### localStorage Schema (`shared/storage.js`)
+
+All localStorage access goes through a `StorageManager` that handles namespacing, serialization, quota management, and versioning.
+
+**Key namespace convention:**
+```
+mg:global:settings          → { sound, haptic, colorBlind, darkMode, reducedMotion }
+mg:global:sync              → { lastExport, lastImport }
+mg:global:daily             → { [date]: { [gameId]: { completed, moves, time } } }
+mg:global:quickplay         → { history: [{ gameId, timestamp, ... }] }
+mg:global:journal           → { unlockedEntries: ["reactance", "curiosity-gap", ...] }
+mg:[gameId]:progress        → { currentLevel, completedLevels: [id], bestScores: {[id]: score} }
+mg:[gameId]:adaptive        → { difficultyTier, ema, signalHistory: [...] }
+mg:[gameId]:state            → { ...serialized current game state for pause/resume }
+mg:[gameId]:replays          → { [levelId]: { inputs, seed } }  (capped at 5 per game)
+mg:[gameId]:endless          → { personalBest, lastSessionSeed }
+```
+
+**Schema version:** Every stored value is wrapped: `{ v: 1, data: ... }`. On read, if `v` doesn't match the current schema version, the migration pipeline runs.
+
+**Quota management:**
+- Total budget: 4MB (well within the 5-10MB localStorage limit on all browsers)
+- On `QuotaExceededError`: evict in priority order — replays (oldest first) → endless scores → per-level best scores → adaptive signal history. Never evict: settings, progress (completed levels), current state.
+- `storage.getUsage()` → returns bytes used; the developer mode dashboard shows this.
+
+**Migration pipeline (`shared/migrations.js`):**
+```js
+const migrations = [
+  { from: 1, to: 2, migrate: (data) => { /* transform */ return data; } },
+  { from: 2, to: 3, migrate: (data) => { ... } },
+];
+```
+- On every `storage.read(key)`, the wrapper checks `v` against `CURRENT_VERSION`
+- If stale, runs migrations sequentially: v1→v2→v3→...→current
+- Migrations are pure functions: `(oldData) → newData`
+- If migration fails (corrupt data), falls back to defaults and logs warning
+- Schema version is bumped in a single constant — all storage reads auto-migrate
+
+**Feature detection (`shared/capabilities.js`):**
+
+On first load, probe browser capabilities and cache the result:
+```js
+const caps = {
+  canvas2d:       !!document.createElement('canvas').getContext('2d'),
+  webgl:          !!document.createElement('canvas').getContext('webgl2'),
+  mediaRecorder:  typeof MediaRecorder !== 'undefined',
+  webWorker:      typeof Worker !== 'undefined',
+  localStorage:   (() => { try { localStorage.setItem('_t','1'); localStorage.removeItem('_t'); return true; } catch(e) { return false; } })(),
+  vibration:      'vibrate' in navigator,
+  shareApi:       'share' in navigator,
+  videoEncoder:   typeof VideoEncoder !== 'undefined',
+  webAudio:       typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined',
+};
+```
+
+**Per-game requirements:**
+
+| Game Category | Required | Optional (graceful degrade) |
+|---|---|---|
+| 2D puzzle games | `canvas2d`, `localStorage` | `webAudio` (silent if missing), `vibration` |
+| 3D runner games | `canvas2d`, `webgl`, `localStorage` | `webAudio`, `vibration` |
+| Video recording | `mediaRecorder` | `videoEncoder` (WebM fallback if missing) |
+| Hints | `webWorker` | runs on main thread if missing (may stutter on complex solves) |
+
+If a required capability is missing, the game shows a static message: "This game requires [WebGL / a modern browser]. Try Chrome, Firefox, or Safari." instead of crashing.
 
 **Automated test coverage for Phase 0:**
 - Unit test: RNG produces identical sequences for identical seeds
 - Unit test: input normalization returns consistent events for touch and mouse
 - Unit test: color palette has 10 distinct colors, all pass WCAG AA contrast against white and black
-- E2E test: shell loads, lists all 12 game links, each link navigates to the correct hash route
+- Unit test: `StorageManager` namespaces keys correctly, respects quota, runs migrations
+- Unit test: capability detection returns correct booleans in test environment
+- E2E test: hub loads, lists all 12 game links, each link navigates to the correct game
+- E2E test: game loading shell renders spinner → transitions to game canvas
+- E2E test: visibility change pauses game, tap resumes
 
 ---
 
@@ -1303,18 +1527,40 @@ mobile-gaming:
                 - name: cf-project
                   value: mobile-gaming
                 - name: build-command
-                  value: "npm ci && npm run build"
+                  value: "npm ci && npm test && npm run test:levels && npm run build"
                 - name: output-dir
                   value: dist
 ```
 
+The build command runs tests and level validation **before** the build. If any unit test, solver validation, or level schema check fails, the workflow exits non-zero and no deployment occurs. This gates every deploy on full test + solver coverage.
+
 **3. WorkflowTemplate** (`website-build-workflowtemplate.yml`) — no changes needed. The existing template already supports parameterized repo, build command, and output directory.
+
+### Static Files for Cloudflare Pages
+
+**`public/_redirects`:**
+```
+/* /index.html 404
+```
+
+All game subpaths (`/water-sort/`, `/pull-the-pin/`, etc.) resolve correctly because Vite outputs `game/index.html` files. The `_redirects` catches truly invalid paths and serves the hub's 404 page.
+
+**`public/_headers`:**
+```
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: vibrate=(self), fullscreen=(self)
+```
+
+No CSP header needed — no user-generated content is rendered as HTML, and all scripts are same-origin bundles with hashed filenames.
 
 ### Cloudflare Pages Setup (One-Time)
 
-1. Create Cloudflare Pages project `mobile-gaming` (first deploy creates it automatically via `wrangler pages deploy`)
-2. Add custom domain `mobile-gaming.pages.dev` in Cloudflare Pages dashboard → Custom Domains
-3. Cloudflare auto-provisions the DNS CNAME record since `jedarden.com` is already on Cloudflare
+1. The Cloudflare Pages project `mobile-gaming` already exists at `mobile-gaming.pages.dev`
+2. First deploy via the Argo Workflow will push to the existing project
+3. No custom domain configuration needed — `mobile-gaming.pages.dev` is the production URL
 
 ### GitHub Webhook Setup (One-Time)
 
@@ -1359,6 +1605,112 @@ The phases above define logical groupings, but within each phase, games are impl
 | 10 | Makeover Run | Similar runner structure but with swappable character meshes |
 | 11 | Bridge Race | Most complex 3D — arena movement, AI, sabotage mechanic |
 | 12 | Jelly Shift | Most complex rendering — soft-body deformation, compound hole geometry |
+
+---
+
+## Content Pipeline
+
+### Level Corpus Strategy
+
+Two-tier level system. Tier 1 ships in the repo; Tier 2 is generated at test time.
+
+**Tier 1 — Committed levels (`levels/<game>/*.json`):**
+
+| Game | Source | Count | Notes |
+|---|---|---|---|
+| Water Sort | Generator → solver-rank → hand-pick best | 30 (10 easy, 10 medium, 10 hard) | Generate 200, rank by solver move count, pick levels with interesting intermediate states |
+| Parking Escape | Generator → solver-rank → hand-pick | 30 | Same pipeline; rank by optimal move count |
+| Pull the Pin | Generator → solver-rank → hand-pick | 20 | Physics makes generation less reliable; more manual curation |
+| Brain Teaser | Hand-authored with LLM assistance | 25 | Claude generates scenario JSON given the schema + 5 examples as few-shot; human reviews for lateral-thinking quality and humor |
+| Save the Character | Hand-authored with LLM assistance | 20 | Claude generates scenario + choices + outcome descriptions; human reviews for tone, humor, no inappropriate content |
+| Merge Games | Generator | 15 | Task complexity drives difficulty; fewer levels needed since sessions are longer |
+| Satisfying/ASMR | Generator | 10 | Dirt patterns are procedural; variety comes from pattern type, not level count |
+| Crowd Runner | Generator → verify | 20 | Gate sequences generated, boss sized to optimal path |
+| Giant Runner | Generator → verify | 20 | Collectible layouts generated, boss sized to average path |
+| Jelly Shift | Generator → verify | 15 | Wall sequences generated with transition feasibility check |
+| Makeover Run | Generator → verify | 15 | Station layouts generated |
+| Bridge Race | Generator → verify | 15 | Arena layouts generated with block supply verification |
+
+**Total: ~235 hand-curated levels across all games.**
+
+**Tier 2 — CI-generated levels (not committed):**
+- `scripts/validate-levels.js` generates 100 additional levels per game at each difficulty tier using the game's `generator.js`
+- Each generated level is solver-verified
+- These test the generator's reliability, not the game's content — they are never shipped to users
+- CI fails if any generated level is unsolvable
+
+### LLM-Assisted Authoring Workflow (Brain Teaser, Save the Character)
+
+1. Provide Claude with: JSON schema, 5 example levels, design constraints ("solution must require lateral thinking, not domain knowledge", "failure animations should be slapstick, never cruel")
+2. Claude generates a batch of 10 candidate levels as JSON
+3. Human reviews each candidate: rate puzzle quality, edit text, adjust difficulty score
+4. Accepted levels are saved to `levels/<game>/` and committed
+5. CI validates all level JSON against the schema and runs the trivial solver (correct answer → solved, decoys → not solved)
+
+### Asset Pipeline
+
+All visual assets are procedural — zero bitmap files in the repo.
+
+**2D games (Canvas):**
+- All graphics drawn with Canvas path operations: `beginPath()`, `arc()`, `moveTo()`, `lineTo()`, `fill()`, `stroke()`
+- A `shared/shapes.js` module exports reusable drawing functions: `drawRoundedRect(ctx, x, y, w, h, r)`, `drawCircleWithHighlight(ctx, x, y, r, color)`, `drawArrow(ctx, from, to)`, `drawTube(ctx, x, y, w, h, segments)`, etc.
+- Each game's `renderer.js` composes these primitives into game-specific visuals
+- Colors always reference `shared/colors.js` palette entries — never hardcoded hex values
+
+**3D games (Three.js):**
+- All meshes use Three.js built-in geometries: `CapsuleGeometry`, `BoxGeometry`, `SphereGeometry`, `PlaneGeometry`, `CylinderGeometry`
+- Materials: `MeshStandardMaterial` for solid objects, `MeshPhysicalMaterial` with transmission for Jelly Shift's translucent blob
+- No external model files (.glb, .obj) — everything is constructed programmatically
+- Instanced rendering (`InstancedMesh`) for crowds, collectibles, and block piles
+
+**Sound:**
+- All SFX generated via Web Audio API oscillators and noise generators
+- `shared/audio.js` defines sound presets as parameter objects: `{ type: 'sine', frequency: 440, duration: 0.1, envelope: 'pluck' }`
+- Per-game sounds: `pop` (bubble pop, ball settle), `whoosh` (pour, swipe), `crunch` (collision, fail), `sparkle` (win, merge), `thud` (wall hit)
+- No audio file dependencies — entire sound design is < 2KB of JS
+
+**Icons and favicons:**
+- Single SVG favicon (`public/favicon.svg`) — a simple game controller silhouette
+- PWA icons generated at build time: `scripts/generate-icons.js` renders the SVG to 192px and 512px PNG using `sharp` (dev dependency, runs in CI only)
+- Per-game OG image: a 1200×630 Canvas-rendered thumbnail of the game's initial state, generated by Playwright during the screenshot test pass and committed to `public/og/`
+
+---
+
+## Phase Dependency Graph
+
+```
+Phase 0 (Scaffolding)
+  ↓
+Phase 1 (2D Puzzles) ──────────────────────┐
+  ↓                                         │
+Phase 2 (2D Interactive) ──────┐            │
+  ↓                            │            │
+Phase 3 (3D Runners) ─────────┤            │
+  ↓                            ↓            ↓
+Phase 4 (Integration) ← requires all games complete
+  ↓
+Phase 5 (UX Polish) ← continuous, starts per-game after each game passes tests
+  ↓
+Phase 6 (Power Features):
+  6.1 State URLs ← requires Phase 0 storage
+  6.2 Hints ← requires game solvers (Phases 1-3)
+  6.3 Daily Challenge ← requires generators + solvers (Phases 1-3) + 6.1
+  6.4 Quick Play ← requires Phase 0 storage + ≥3 games complete
+  6.5 Video Recording ← requires Phase 5 polish (games must look good)
+  6.6 Replays ← requires 6.1 (state URLs for sharing)
+  6.7 Fail Speedrun ← requires base games complete
+  6.8 Swipe Nav ← requires ≥2 games complete
+  6.9 Adaptive Difficulty ← requires Phase 0 storage + generators
+  ↓
+Phase 7 (Platform Features):
+  7.1 Sync ← requires Phase 0 storage schema
+  7.2 Ad Compositor ← requires 6.5 (video recording) — LOW PRIORITY
+  7.3 Endless Mode ← requires generators + solvers + 6.9 (adaptive difficulty)
+```
+
+**Critical path:** Phase 0 → Phase 1 (Water Sort) → Phase 2 → Phase 3 → Phase 4 → Phase 6.1 + 6.2
+
+Features on the critical path should be implemented first. Features not on the critical path (6.5 video recording, 7.2 ad compositor, 5.x polish) can be developed in parallel once Phase 0 is complete.
 
 ---
 
@@ -1416,7 +1768,7 @@ UX polish is a continuous phase that begins after each game's base mechanics are
 ### 5.5 Progressive Enhancement
 
 - Offline support: Service Worker caches each game's assets after first load; games playable without network
-- Add-to-homescreen: Web App Manifest with per-game `start_url`, appropriate icons, `display: fullscreen`
+- Add-to-homescreen: Web App Manifest at `/manifest.json` with `start_url: /`, `display: fullscreen`, `theme_color` matching the hub's primary color. Icons: `public/icons/icon-192.png` and `public/icons/icon-512.png` (generated at build time from `public/favicon.svg` by `scripts/generate-icons.js` using `sharp`). Each game subpath also has a `<link rel="manifest">` pointing to the hub's manifest — installing any game adds the full hub to the homescreen.
 - localStorage persistence: level progress, high scores, settings (color-blind mode, sound toggle, last-played level) survive browser close
 - `prefers-reduced-motion` media query: disable screen shake, particle effects, and non-essential animations when user has reduced-motion enabled
 - `prefers-color-scheme: dark`: dark background variant for hub and game chrome (gameplay colors unchanged)
@@ -2045,3 +2397,52 @@ src/shared/endless.js
   - This creates a natural difficulty curve within the endless session — early levels are approachable, later levels are punishing
   - If the player fails (puzzle games: gives up after 3 retries; runners: loses), the session ends with final score
   - "Continue?" option: restart the current level but the streak multiplier resets to ×1.0
+
+---
+
+## Observability
+
+### Client-Side Analytics (`shared/analytics.js`)
+
+Lightweight, privacy-respecting event logging. No server, no PII, no cookies, no third-party scripts. All data stays in localStorage.
+
+**Events recorded:**
+
+| Event | Data | Purpose |
+|---|---|---|
+| `game_start` | gameId, levelId, timestamp, source (hub/quickplay/daily/deeplink) | Know which games are played and how players arrive |
+| `level_complete` | gameId, levelId, moves, time, hintsUsed, optimalMoves, retries | Measure difficulty calibration and player skill |
+| `level_abandon` | gameId, levelId, movesAtAbandon, timeAtAbandon, reason (quit/skip/crash) | Identify where players churn |
+| `session_start` | timestamp, referrer, capabilities (from `capabilities.js`) | Understand device mix and entry points |
+| `session_end` | timestamp, gamesPlayed, levelsCompleted, totalTime | Measure session depth |
+| `feature_use` | feature (hint/undo/share/replay/daily/endless/failSpeedrun) | Track feature adoption |
+
+**Storage:** Events append to `mg:global:analytics` as a JSON array, capped at 500 entries with LRU eviction. Total budget: ~200KB.
+
+**Local dashboard:** In developer mode (triple-tap version number), a "Stats" tab shows:
+- Games played per day (bar chart, last 14 days)
+- Level completion rate per game (horizontal bars)
+- Average solve time trend per game
+- Most/least played games
+- Feature adoption counters
+
+All charts rendered with Canvas 2D — no charting library.
+
+**Optional external analytics:** A single-line integration with Cloudflare Web Analytics (privacy-first, no cookies, GDPR-compliant, free tier). Disabled by default; enabled by adding the `<script>` tag to `src/hub/index.html`. Provides aggregate page views and web vitals without any PII collection.
+
+### OG Meta Tags (`shared/meta.js`)
+
+Each game's `index.html` includes static OG tags for rich social previews when URLs are shared:
+
+```html
+<meta property="og:title" content="Water Sort Puzzle — mobile-gaming">
+<meta property="og:description" content="Sort the colored liquids. Can you solve it?">
+<meta property="og:image" content="/og/water-sort.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://mobile-gaming.pages.dev/water-sort/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+```
+
+OG images (`public/og/<game>.png`) are 1200×630 PNGs generated by the Playwright screenshot test pass — a headless browser renders each game's initial state into a branded frame and saves it. Generated images are committed to the repo so they're available at deploy time without requiring Playwright in the build step.
