@@ -1434,3 +1434,441 @@ Polish items are validated through E2E tests and manual review:
 | Bundle size within budget | CI check: `stat -c %s dist/assets/*.js` after gzip → fail if over limit |
 | Service Worker caches assets | Playwright: load game → go offline → reload → assert game still renders |
 | `prefers-reduced-motion` disables animations | Playwright: emulate reduced-motion → assert no particle elements in DOM/canvas |
+
+---
+
+## Phase 6: Power Features
+
+Features that transform the game collection from a set of standalone toys into a shareable, social, self-adjusting platform. Each feature exploits architectural decisions already made (pure-function state, deterministic physics, seeded PRNG, solver infrastructure) rather than introducing new foundational complexity.
+
+---
+
+### 6.1 Shareable Puzzle State URLs
+
+Encode the full game state into the URL hash. Every game's `state.js` is a pure serializable object — `JSON.stringify` → `btoa` → append to URL as `#s=...`. Any game, any moment, any half-solved puzzle becomes a link.
+
+**What this enables:**
+- "Can you finish this?" challenge links — send a friend a half-solved Water Sort
+- Bookmark mid-puzzle → resume later by reopening the URL
+- Bug reports contain the full state — click the URL, see the bug
+- Embedding a specific puzzle state in a blog post or social media
+
+**Implementation:**
+
+```
+src/shared/state-url.js
+```
+
+- `encodeState(gameId, state)` → URL hash string
+  - `JSON.stringify(state)` → `pako.deflateRaw()` (zlib compression, ~60-80% size reduction) → `btoa()` → URL-safe base64
+  - Prefix with game ID and version byte for forward compatibility: `#s=ws.1.<base64>`
+  - For states that exceed URL length limits (~2000 chars), fall back to a truncated "level + moves" encoding: store only the level ID and the move history, which is always compact
+- `decodeState(hash)` → `{ gameId, state }`
+  - Parse prefix → `atob()` → `pako.inflateRaw()` → `JSON.parse()`
+  - Validate decoded state against game-specific schema before applying
+- On game load: check `window.location.hash` → if valid state URL, hydrate directly instead of loading a fresh level
+- On every state change: debounced `replaceState()` updates the hash (no history spam — uses `replaceState`, not `pushState`)
+
+**State size estimates (compressed base64):**
+
+| Game | Typical State Size | Compressed URL Length |
+|---|---|---|
+| Water Sort (8 tubes) | ~200 bytes JSON | ~80 chars |
+| Parking Escape (10 vehicles) | ~400 bytes JSON | ~150 chars |
+| Pull the Pin (6 pins, 4 balls) | ~500 bytes JSON | ~180 chars |
+| Crowd Runner (full course) | ~800 bytes JSON | ~300 chars |
+
+All well within URL length limits.
+
+**Share flow:**
+1. Player taps "Share" button → state URL copied to clipboard
+2. Toast: "Link copied — paste anywhere to share this puzzle"
+3. On the receiving end: click link → game loads directly into that exact state
+
+---
+
+### 6.2 Solver-Powered Progressive Hints
+
+The solvers built for automated playtesting (`tests/solvers/`) run against `state.js` pure functions. Expose them as an in-game hint system.
+
+**UX flow:**
+1. Player taps lightbulb icon (visible after 30 seconds of no progress or 2 failed attempts)
+2. Solver runs against the current state → returns the first move of the optimal solution
+3. The hinted element animates: pulsing glow on the pin to pull, highlighted tube to pour from/to, arrow on the vehicle to slide
+4. Tap lightbulb again → next move revealed
+5. Each hint is "free" (no currency, no limit) — the goal is retention, not monetization
+
+**Implementation:**
+
+```
+src/shared/hints.js
+```
+
+- Import the game-specific solver from `tests/solvers/<game>-solver.js`
+  - Solvers are pure functions: `solve(state) → moveSequence | null`
+  - They already run in Node for tests; running in browser is identical since they have no Node dependencies
+- `getHint(gameId, currentState)`:
+  1. Run solver against current state (not initial state — player may have made partial progress or suboptimal moves)
+  2. Return `moveSequence[0]` — just the next move
+  3. Cache the full solution; subsequent hint requests return `moveSequence[1]`, `[2]`, etc. without re-running the solver
+  4. If state changes (player makes a move that isn't the hinted move), invalidate cache, re-solve from new state
+- For games without solvers (Satisfying/ASMR, Makeover Run): hint shows a pulsing indicator on the most impactful area to interact with (highest dirt density region, closest positive station)
+
+**Performance:**
+- Water Sort BFS: < 100ms for typical levels (< 50K states explored)
+- Parking Escape BFS: < 200ms for hard levels (< 50K states)
+- Pull the Pin permutation search: < 500ms for N ≤ 8 pins
+- Crowd Runner gate evaluation: < 1ms (2^10 = 1024 combinations)
+- If any solver exceeds 1 second, run in a Web Worker to avoid blocking the UI
+
+**Web Worker fallback (`src/shared/hint-worker.js`):**
+- Solver runs in a dedicated Worker
+- Main thread sends `{ gameId, state }` via `postMessage`
+- Worker returns `{ moves }` when complete
+- UI shows a brief "thinking..." spinner if solver takes > 200ms
+
+---
+
+### 6.3 Daily Seeded Challenge
+
+One procedurally generated level per game per day. Everyone worldwide plays the same puzzle. No server, no database, no accounts.
+
+**Implementation:**
+
+```
+src/shared/daily.js
+```
+
+- `getDailySeed(gameId)` → `hash(gameId + "2026-03-16")` → integer seed
+  - Uses the existing `createRng(seed)` from `shared/rng.js`
+  - Date is the user's local date (not UTC — let time zones create slight stagger, which generates social buzz: "Today's was hard!" "Mine was easy — different timezone!")
+- `generateDailyLevel(gameId)`:
+  1. Create RNG from daily seed
+  2. Call the game's `generator.js` with that RNG
+  3. Run the solver to verify solvability (should always pass since generators already guarantee this, but belt-and-suspenders)
+  4. Cache generated level in localStorage keyed by `daily-<gameId>-<date>` to avoid regenerating
+- Daily challenge appears as a special card at the top of the hub page and as a banner within each game
+
+**Results sharing (client-side share card generation):**
+
+```
+src/shared/daily-share.js
+```
+
+- On daily challenge completion, generate a share card using Canvas 2D:
+  - Game icon + name
+  - "Daily Challenge — March 16, 2026"
+  - Stats: moves used, time taken, hints used (0 = no hints badge)
+  - Spoiler-free: does NOT show the solution or the puzzle — just the performance
+  - Grid of colored/gray squares (Wordle-style) encoding move quality: green = optimal, yellow = suboptimal, gray = hint-assisted
+- `canvas.toBlob()` → share via Web Share API or download as PNG
+- Text-based fallback for platforms without image sharing:
+  ```
+  Water Sort Daily — Mar 16
+  🟩🟩🟨🟩🟩🟩 14 moves
+  mobile-gaming.pages.dev/water-sort/?daily=2026-03-16
+  ```
+
+---
+
+### 6.4 Zero-Friction Quick Play
+
+One tap → playing. No game selection, no level selection, no menus.
+
+**Implementation:**
+
+```
+src/shared/quick-play.js
+```
+
+- `pickGame()` algorithm:
+  1. Read localStorage play history: `{ gameId, lastPlayed, levelsCompleted, avgSolveTime, retryRate }`
+  2. Score each game: `score = recencyPenalty + varietyBonus + difficultyMatch`
+     - `recencyPenalty`: games played in the last hour score lower (encourage variety)
+     - `varietyBonus`: games never played score highest (encourage exploration)
+     - `difficultyMatch`: games where the player's retry rate is 10-30% score highest (in the flow zone — not too easy, not too hard)
+  3. Select the highest-scoring game
+  4. Within that game, pick the next unsolved level at the player's current difficulty tier
+- **Hub integration:** large "Quick Play" button at the top of the hub, above the game grid
+- **Instant load:** Quick Play preloads the top-2 candidate games' JS bundles on hub page load (`<link rel="modulepreload">`) so the transition is effectively instant
+- **Fallback:** if no play history exists (first visit), Quick Play starts with Water Sort level 1 (simplest game, highest retention)
+
+---
+
+### 6.5 Gameplay Video Recording and Social Sharing
+
+Record gameplay as a video and share directly to short-form video platforms.
+
+**Recording engine:**
+
+```
+src/shared/recorder.js
+```
+
+**Approach: Canvas capture → WebM → MP4 conversion**
+
+1. **Frame capture:** Use `canvas.captureStream(30)` (30fps) to create a `MediaStream` from the game's Canvas/WebGL element
+   - For Canvas 2D games: direct `captureStream()` on the game canvas
+   - For Three.js games: `captureStream()` on the WebGL renderer's canvas (`renderer.domElement`)
+   - Composite a UI overlay canvas (score, move counter, game name watermark) on top using a secondary `<canvas>` drawn into the stream via `MediaStream` mixing
+
+2. **Audio capture:** Merge game audio into the stream
+   - Create a `MediaStreamAudioDestinationNode` from the Web Audio context
+   - Connect the game's audio graph output to both the speakers and the destination node
+   - Combine audio track with video track: `new MediaStream([...videoStream.getTracks(), ...audioDestination.stream.getTracks()])`
+
+3. **Encoding:** `MediaRecorder` API with `mimeType: 'video/webm;codecs=vp9'`
+   - Record into chunks (`ondataavailable` every 1 second)
+   - On stop: assemble chunks into a single `Blob`
+
+4. **MP4 conversion (for platform compatibility):**
+   - Most social platforms require MP4/H.264, not WebM
+   - Use `mp4-muxer` (lightweight WASM-free MP4 muxer, ~15KB) to remux the WebM into MP4 container client-side
+   - If browser supports `VideoEncoder` API (Chrome 94+, Edge 94+, Safari 16.4+): encode directly to H.264 in MP4, skip WebM entirely
+   - Fallback for unsupported browsers: offer WebM download with note "Convert to MP4 for TikTok/Instagram"
+
+5. **Format optimization for short-form video:**
+   - Aspect ratio: 9:16 vertical (1080×1920) for TikTok/Reels/Shorts, or 1:1 (1080×1080) square as fallback
+   - Game canvas is rendered into the center of a 9:16 frame; top/bottom padding shows game name, challenge info, and QR code linking back to the game
+   - Duration cap: 60 seconds max recording; auto-stop with fade-out
+   - Auto-trim: if the player completes the level, recording ends 2 seconds after the win animation
+
+**Recording UX:**
+
+- **Passive recording (always-on):** The last 30 seconds of gameplay are always buffered in a circular buffer (30fps × 30s = 900 frames). When the player wins or does something share-worthy, the video is already captured — no need to have pressed "record" beforehand
+  - Implementation: `MediaRecorder` runs continuously; oldest chunks beyond 30s are discarded
+  - Memory budget: ~15MB for 30s of 720p WebM (acceptable on modern devices)
+- **On level complete:** "Share your solve?" prompt with video preview thumbnail
+- **On manual trigger:** record button in game chrome starts/stops explicit recording
+
+**Share card overlay (burned into video):**
+
+```
+src/shared/video-overlay.js
+```
+
+- Intro frame (1.5s): game name, "Daily Challenge — Mar 16" (if daily), difficulty badge
+- Gameplay: recorded frames with subtle watermark in corner (`mobile-gaming.pages.dev`)
+- Outro frame (2s): stats (moves, time, hints), QR code linking to the exact puzzle state URL (from 6.1), call-to-action "Can you beat this?"
+
+**Platform-specific sharing:**
+
+```
+src/shared/share.js
+```
+
+- **Web Share API (primary path):**
+  ```js
+  navigator.share({
+    title: 'Water Sort Daily — 14 moves',
+    text: 'Can you beat my solve?',
+    url: stateUrl,
+    files: [new File([mp4Blob], 'solve.mp4', { type: 'video/mp4' })]
+  })
+  ```
+  - On iOS Safari and Android Chrome, this opens the native share sheet which includes TikTok, Instagram, Snapchat, YouTube, and all installed apps
+  - The `files` parameter with a video file triggers the "share as video" path on platforms that support it
+
+- **Platform deep-link fallbacks (when Web Share API is unavailable or user wants a specific platform):**
+
+  | Platform | Method | Notes |
+  |---|---|---|
+  | **TikTok** | Download MP4 + open `tiktok://` deep link | TikTok doesn't support direct video upload from web; user saves video then uploads from TikTok app. Show instruction overlay: "Video saved — open TikTok and upload" |
+  | **Instagram Reels** | Download MP4 + open `instagram://library` | Same pattern as TikTok; Instagram's share API is app-only. Instruction: "Video saved — open Instagram → New Reel → select from gallery" |
+  | **YouTube Shorts** | Download MP4 + open `https://youtube.com/upload` | YouTube accepts browser uploads; can pre-fill title and description via URL params |
+  | **Snapchat** | Snapchat Creative Kit JS SDK (`snap-kit.js`) | Supports direct sticker/video share from web via `snapkit.creativekit.share()` |
+  | **X/Twitter** | `https://twitter.com/intent/tweet?text=...&url=...` | Text + state URL link; video must be uploaded natively (Twitter doesn't accept video via intent) |
+  | **Facebook/Messenger** | `https://www.facebook.com/sharer/sharer.php?u=...` | Link share with OG meta tags; video preview via OG video tag |
+  | **WhatsApp** | `https://wa.me/?text=...` | Text + state URL; user can attach downloaded video manually |
+  | **Copy Link** | Clipboard API | Always available as fallback; copies state URL |
+
+- **Platform picker UI:** Grid of platform icons (TikTok, Instagram, YouTube, Snapchat, X, Facebook, WhatsApp, Copy Link). Icons shown based on device detection:
+  - Mobile: all platforms shown (apps likely installed)
+  - Desktop: YouTube, X, Facebook, Copy Link (app-only platforms hidden)
+
+**Fail Speedrun video generation (6.8 specific):**
+
+Fail Speedrun mode (see 6.8 below) auto-generates a video with special treatment:
+- Dramatic slow-motion on the fail moment (2x slow-mo for 1 second around the fail frame)
+- "FAIL" text stamp with comic font at the moment of failure
+- Timer prominently displayed throughout: "FAIL TIME: 1.3s"
+- Outro: leaderboard position if applicable, "Beat my fail?" call-to-action
+- This directly recreates the "fail ad" format that the research documents — the shared video IS a fake game ad, created by the player
+
+**Deterministic replay video (from 6.7):**
+
+When sharing a replay (input sequence), the receiver can either:
+1. Play it back interactively (scrub through moves)
+2. Auto-render it as a video: replay the input sequence at 1.5x speed with the recorder capturing frames → produce an MP4 of the full solve
+
+This means a replay URL can be "rendered" into a video on the receiving device without the sender having recorded anything — the deterministic replay IS the video source.
+
+---
+
+### 6.6 Deterministic Replay Sharing
+
+Since physics and RNG are deterministic by design, storing only the player's input sequence reproduces the exact game. A replay is a few hundred bytes — far smaller than a state snapshot.
+
+**Implementation:**
+
+```
+src/shared/replay.js
+```
+
+- **Recording inputs:**
+  - Every game's `input.js` already normalizes inputs into `{ type, x, y, dx, dy, timestamp }` events
+  - `startRecording(levelId, seed)` → creates a `ReplayBuffer` that captures every input event
+  - Events are stored as deltas: `[dt, type, x, y]` where `dt` is milliseconds since last event
+  - Typical replay: 50-200 events for a puzzle game, 500-1000 for a runner game
+
+- **Encoding:**
+  - `encodeReplay(replay)` → compact binary format:
+    - Header: `gameId` (1 byte) + `levelId` (4 bytes) + `seed` (4 bytes) + `version` (1 byte)
+    - Events: varint-encoded deltas (1-3 bytes per field × 4 fields per event)
+    - Total: 20-80 bytes for puzzle games, 200-400 bytes for runner games
+  - Base64-encode → URL-safe string
+  - Embed in URL: `#r=<base64>` (separate prefix from state URLs `#s=`)
+  - Also encodable as a short alphanumeric "replay code": `WS-7K3M-XNPL` (game prefix + base36 encoded binary)
+
+- **Playback:**
+  - `decodeReplay(encoded)` → `{ gameId, levelId, seed, events }`
+  - Initialize game with `levelId` and `seed` (deterministic level generation reproduces the exact level)
+  - Feed events into the game engine with timing: `setTimeout` each event at its `dt` offset
+  - Playback speed control: 0.5×, 1×, 1.5×, 2× (adjust `dt` values proportionally)
+  - Scrubber: since the game is deterministic, seeking to any point means replaying events up to that timestamp (fast-forward in logic, render only the target frame)
+
+- **Replay viewer UI:**
+  - Play/pause button
+  - Speed selector
+  - Timeline scrubber bar
+  - "Play this level yourself" button → loads the same level fresh (clears replay mode)
+
+---
+
+### 6.7 Fail Speedrun Mode
+
+Race to trigger the fail state as fast as possible. This meta-game mirrors the fake-ad phenomenon: the ads deliberately show the wrong answer because failure is more engaging than success.
+
+**Implementation:**
+
+```
+src/shared/fail-speedrun.js
+```
+
+- **Activation:** toggle in game settings or swipe-up gesture on the level-complete screen → "Try Fail Speedrun?"
+- **Modified rules per game:**
+
+  | Game | Fail Speedrun Objective |
+  |---|---|
+  | Pull the Pin | First ball into wrong cup — fastest pin pull |
+  | Water Sort | Pour wrong color into a tube — fastest wrong pour |
+  | Parking Escape | N/A (no fail state) — instead: fewest moves to return to initial state (undo speedrun) |
+  | Brain Teaser | Tap the most obvious wrong answer — fastest wrong tap |
+  | Save the Character | Pick the worst choice — fastest tap |
+  | Merge Games | Fill the grid completely (gridlock) — fastest overflow |
+  | Crowd Runner | Reduce crowd to minimum before boss — lowest arrival count |
+  | Giant Runner | Arrive at boss as small as possible — lowest scale |
+  | Bridge Race | N/A — instead: let all opponents finish first (last place speedrun) |
+  | Jelly Shift | Splat on the first wall — fastest splat |
+  | Makeover Run | Hit every negative station — lowest score |
+  | Satisfying/ASMR | N/A (no fail state) — excluded from fail speedrun |
+
+- **Timer:** millisecond-precision timer starts on first input, stops on fail trigger
+- **Leaderboard:** localStorage per-level fastest fail times; displayed as a personal best
+- **Share integration:** Fail Speedrun completion triggers the video share flow (6.5) with fail-specific overlays (slow-motion fail moment, "FAIL" stamp, comic font timer)
+- **"Ad Recreation" badge:** Completing a Fail Speedrun in under 3 seconds on Pull the Pin or Save the Character earns a special badge: "You just made a fake ad" — linking back to the research doc explaining why fail ads cut CPI by 55%
+
+---
+
+### 6.8 Swipe Navigation Between Games
+
+Instead of returning to the hub to pick a new game, swipe left/right to switch games directly — like swiping between stories.
+
+**Implementation:**
+
+```
+src/shared/swipe-nav.js
+```
+
+- **Game ordering:** games are arranged in a horizontal ring; the order matches the hub's display order (customizable via drag-reorder on the hub, persisted to localStorage)
+- **Gesture detection:**
+  - Horizontal swipe from edge (within 40px of screen edge) OR two-finger horizontal swipe anywhere → triggers game switch
+  - This avoids conflicting with in-game horizontal swipe (steering in runners, dragging in puzzles) by requiring edge-initiation or two fingers
+  - Swipe threshold: 80px horizontal displacement + velocity > 0.5px/ms
+- **Transition animation:**
+  - Current game canvas slides out in swipe direction
+  - Next game's initial state slides in from the opposite side
+  - During transition: both canvases visible simultaneously (current shrinks slightly, next grows)
+  - Duration: 300ms ease-out
+- **Preloading:**
+  - Adjacent games (left and right neighbors in the ring) have their JS bundles preloaded via `<link rel="modulepreload">`
+  - On swipe start (before threshold is met), begin initializing the adjacent game's state in the background
+  - If swipe is cancelled (user swipes back), discard the pre-initialized state
+- **State preservation:**
+  - When swiping away from a game, its current state is saved to localStorage
+  - When swiping back, the game resumes from saved state (not from level start)
+  - Visual indicator: small dots at the top of the screen showing position in the game ring (like iOS page dots), with a filled dot for games with saved progress
+- **Game ring indicator:**
+  - Thin strip at top of screen: 12 small icons representing each game
+  - Current game's icon is highlighted
+  - Swiping scrolls the strip smoothly
+  - Tap any icon → jump directly to that game (equivalent to hub navigation but without leaving the current context)
+
+---
+
+### 6.9 Frustration-Aware Adaptive Difficulty
+
+Automatically adjust difficulty based on play signals. No settings menu, no "easy/medium/hard" — the game silently calibrates.
+
+**Implementation:**
+
+```
+src/shared/adaptive.js
+```
+
+- **Signal collection (per game session, stored in localStorage):**
+
+  | Signal | How Collected | What It Indicates |
+  |---|---|---|
+  | `retryCount` | Number of restarts on current level | Frustration (high) or exploration (low, with fast retries) |
+  | `hesitationTime` | Time between level load and first input | Confusion (>10s) or planning (5-10s) or confidence (<5s) |
+  | `undoRate` | Undos per move (puzzle games) | Uncertainty |
+  | `rapidTapBursts` | Clusters of >3 taps within 500ms | Frustration or panic |
+  | `solveTime` | Time to complete level | Skill calibration |
+  | `hintUsage` | Hints requested per level | Difficulty mismatch |
+  | `sessionLength` | Time since session start | Fatigue (long sessions → easier levels) |
+
+- **Difficulty adjustment algorithm:**
+  ```
+  difficultyScore = weighted_average(
+    retryCount     × -0.3,   // more retries → lower difficulty
+    hesitationTime × -0.1,   // more hesitation → lower difficulty
+    undoRate       × -0.2,   // more undos → lower difficulty
+    rapidTapBursts × -0.2,   // more frustration taps → lower difficulty
+    solveTime      × -0.1,   // slower solves → lower difficulty
+    hintUsage      × -0.3,   // more hints → lower difficulty
+    sessionLength  × -0.05   // longer sessions → slightly lower (fatigue)
+  )
+  ```
+  - Score is maintained as an exponential moving average (α = 0.3) so recent performance weighs more than historical
+  - Score maps to a difficulty tier: `tier = clamp(baseTier + round(difficultyScore), minTier, maxTier)`
+
+- **What changes per difficulty tier:**
+
+  | Game | Easier | Harder |
+  |---|---|---|
+  | Water Sort | Fewer colors, more empty tubes | More colors, fewer buffers |
+  | Pull the Pin | Fewer pins, simpler routing | More pins, crossing channels |
+  | Parking Escape | Fewer vehicles, lower optimal moves | More vehicles, higher optimal moves |
+  | Brain Teaser | More obvious hints in the puzzle visual | More misdirection layers |
+  | Crowd Runner | Better gate ratios, weaker boss | Worse gates, stronger boss |
+  | Giant Runner | More matching collectibles, smaller boss | Fewer collectibles, larger boss |
+  | Jelly Shift | Slower wall approach, simpler shapes | Faster walls, compound shapes |
+  | Makeover Run | More positive stations, fewer negatives | More negatives, tighter spacing |
+  | Bridge Race | Slower AI, more blocks | Faster AI, fewer blocks |
+
+- **Silent operation:** The player never sees difficulty numbers or tier labels. The game just feels right. If a player suddenly improves (watched a strategy video, had a eureka moment), the system responds within 2-3 levels, not 20.
+
+- **Anti-gaming:** Difficulty adjustments are invisible and have no impact on scoring or share cards. Daily challenges are exempt from adaptive difficulty — everyone plays the same level regardless of skill.
+
+- **Override:** Settings page includes a hidden developer toggle (triple-tap the version number) that reveals the current difficulty tier and allows manual override — useful for testing and demonstration.
