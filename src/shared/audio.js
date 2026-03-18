@@ -343,7 +343,7 @@ export function playBounce(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playCollect(volume = 1) {
-  playSound(SOUNDS.collect, volume);
+  playSoundPattern(SOUNDS.collect, volume);
 }
 
 /**
@@ -352,9 +352,9 @@ export function playCollect(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playLevelComplete(volume = 1) {
-  playSound(SOUNDS.levelComplete, volume);
+  playSoundPattern(SOUNDS.levelComplete, volume);
   // Follow with success chord
-  setTimeout(() => playSound(SOUNDS.successChord, volume * 0.6), 150);
+  setTimeout(() => playSoundPattern(SOUNDS.successChord, volume * 0.6), 150);
 }
 
 /**
