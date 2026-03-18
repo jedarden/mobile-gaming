@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/parking-escape.schema.json",
+  "title": "Parking Escape Level",
+  "description": "Schema for validating Parking Escape game levels",
+  "type": "object",
+  "required": ["version", "id", "title", "difficulty", "grid", "targetMoves"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version for migration support"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Unique level identifier"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Display title for the level"
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Difficulty rating from 1 (easy) to 10 (hard)"
+    },
+    "grid": {
+      "type": "object",
+      "required": ["width", "height", "vehicles", "exit"],
+      "description": "Parking grid configuration",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 8,
+          "description": "Grid width in cells"
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 8,
+          "description": "Grid height in cells"
+        },
+        "vehicles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "description": "Vehicles on the grid",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "x", "y", "width", "height", "orientation"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$",
+                "description": "Unique vehicle identifier"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["hero", "car", "truck"],
+                "description": "Vehicle type"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Vehicle X position (column)"
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Vehicle Y position (row)"
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Vehicle width in cells"
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Vehicle height in cells"
+              },
+              "orientation": {
+                "type": "string",
+                "enum": ["horizontal", "vertical"],
+                "description": "Vehicle orientation"
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Vehicle color"
+              }
+            }
+          }
+        },
+        "exit": {
+          "type": "object",
+          "required": ["x", "y"],
+          "description": "Exit position",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Exit X position"
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Exit Y position"
+            },
+            "direction": {
+              "type": "string",
+              "enum": ["left", "right", "up", "down"],
+              "description": "Exit direction"
+            }
+          }
+        },
+        "walls": {
+          "type": "array",
+          "description": "Optional internal walls",
+          "items": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "targetMoves": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optimal number of moves for completion"
+    },
+    "maxMoves": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum allowed moves for hint display"
+    },
+    "hints": {
+      "type": "array",
+      "description": "Optional hints for the player",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5
+    }
+  }
+}

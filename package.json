@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:levels": "node scripts/validate-levels.js",
+    "generate:icons": "node scripts/generate-icons.js",
     "lint": "eslint src/"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "vitest": "^3.0.0",
     "@playwright/test": "^1.49.0",
     "eslint": "^9.0.0",
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.0",
+    "jsonschema": "^1.4.1"
   }
 }

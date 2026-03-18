@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/brain-teaser.schema.json",
+  "title": "Brain Teaser Level",
+  "description": "Schema for validating Brain Teaser game levels",
+  "type": "object",
+  "required": ["version", "id", "title", "difficulty", "puzzle", "targetMoves"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version for migration support"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Unique level identifier"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Display title for the level"
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Difficulty rating from 1 (easy) to 10 (hard)"
+    },
+    "puzzle": {
+      "type": "object",
+      "required": ["type"],
+      "description": "Puzzle configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["connect", "uncross", "flow", "match", "sequence", "pattern"],
+          "description": "Type of brain teaser puzzle"
+        },
+        "elements": {
+          "type": "array",
+          "description": "Puzzle elements (nodes, items, etc.)",
+          "items": {
+            "type": "object",
+            "required": ["id", "x", "y"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Element identifier"
+              },
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Element X position"
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Element Y position"
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Element color"
+              },
+              "shape": {
+                "type": "string",
+                "enum": ["circle", "square", "triangle", "diamond", "star"],
+                "description": "Element shape"
+              },
+              "size": {
+                "type": "number",
+                "minimum": 1,
+                "description": "Element size"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 10,
+                "description": "Optional label text"
+              }
+            }
+          }
+        },
+        "connections": {
+          "type": "array",
+          "description": "Valid connections between elements",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Source element ID"
+              },
+              "to": {
+                "type": "string",
+                "description": "Target element ID"
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Connection color"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether this connection must be made"
+              }
+            }
+          }
+        },
+        "grid": {
+          "type": "object",
+          "description": "Grid-based puzzle configuration",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 10,
+              "description": "Grid width"
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 10,
+              "description": "Grid height"
+            },
+            "cells": {
+              "type": "array",
+              "description": "Grid cell values",
+              "items": {
+                "type": ["string", "integer", "null"]
+              }
+            }
+          }
+        },
+        "sequence": {
+          "type": "array",
+          "description": "Target sequence for sequence puzzles",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pairs": {
+          "type": "array",
+          "description": "Matching pairs for match-type puzzles",
+          "items": {
+            "type": "object",
+            "required": ["id", "matchId"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Item ID"
+              },
+              "matchId": {
+                "type": "string",
+                "description": "ID of matching item"
+              }
+            }
+          }
+        }
+      }
+    },
+    "targetMoves": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optimal number of moves for completion"
+    },
+    "maxMoves": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum allowed moves for completion"
+    },
+    "timeLimit": {
+      "type": "integer",
+      "minimum": 10,
+      "description": "Optional time limit in seconds"
+    },
+    "hints": {
+      "type": "array",
+      "description": "Optional hints for the player",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5
+    }
+  }
+}

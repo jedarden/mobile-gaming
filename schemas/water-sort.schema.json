@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/water-sort.schema.json",
+  "title": "Water Sort Level",
+  "description": "Schema for validating Water Sort game levels",
+  "type": "object",
+  "required": ["version", "id", "title", "difficulty", "tubes", "maxMoves"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version for migration support"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Unique level identifier"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Display title for the level"
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Difficulty rating from 1 (easy) to 10 (hard)"
+    },
+    "tubes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 15,
+      "description": "Array of test tubes containing colored water",
+      "items": {
+        "type": "object",
+        "required": ["colors", "capacity"],
+        "properties": {
+          "colors": {
+            "type": "array",
+            "description": "Array of color names from bottom to top",
+            "items": {
+              "type": "string",
+              "description": "Color name (should match palette)"
+            }
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 8,
+            "description": "Maximum number of color units in tube"
+          }
+        }
+      }
+    },
+    "maxMoves": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum allowed moves for completion"
+    },
+    "targetMoves": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optimal number of moves for completion"
+    },
+    "palette": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 12,
+      "description": "Color palette used in this level",
+      "items": {
+        "type": "string",
+        "description": "Color name"
+      }
+    },
+    "hasEmptyTubes": {
+      "type": "boolean",
+      "description": "Whether level starts with empty tubes"
+    },
+    "hints": {
+      "type": "array",
+      "description": "Optional hints for the player",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5
+    }
+  },
+  "if": {
+    "required": ["palette"]
+  },
+  "then": {
+    "properties": {
+      "tubes": {
+        "items": {
+          "properties": {
+            "colors": {
+              "items": {
+                "type": "string"
+              },
+              "description": "All colors must be in the palette"
+            }
+          }
+        }
+      }
+    }
+  }
+}
