@@ -1,0 +1,16 @@
+# Game routes
+/pull-the-pin/* /pull-the-pin/index.html 200
+/water-sort/* /water-sort/index.html 200
+/brain-teaser/* /brain-teaser/index.html 200
+/parking-escape/* /parking-escape/index.html 200
+/save-the-character/* /save-the-character/index.html 200
+/merge/* /merge/index.html 200
+/satisfying/* /satisfying/index.html 200
+/crowd-runner/* /crowd-runner/index.html 200
+/bridge-race/* /bridge-race/index.html 200
+/giant-runner/* /giant-runner/index.html 200
+/jelly-shift/* /jelly-shift/index.html 200
+/makeover-run/* /makeover-run/index.html 200
+
+# Hub fallback
+/* /hub/index.html 200
