@@ -1,0 +1,28 @@
+{
+  "name": "mobile-gaming",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:levels": "node scripts/validate-levels.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "cannon-es": "^0.20.0",
+    "pako": "^2.1.0",
+    "mp4-muxer": "^5.0.0",
+    "qrcode-generator": "^1.4.4"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0",
+    "@playwright/test": "^1.49.0",
+    "eslint": "^9.0.0",
+    "sharp": "^0.33.0"
+  }
+}
