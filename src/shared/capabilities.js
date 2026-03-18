@@ -5,12 +5,12 @@
  * Results are cached for fast subsequent access.
  */
 
-// Cached capability检测结果
+// Cached capability detection results
 let cachedCapabilities = null;
 
 /**
  * Run all capability checks and cache results
- * @returns {Object} Capability检测结果
+ * @returns {Object} Capability detection results
  */
 function detectCapabilities() {
   if (cachedCapabilities) {
@@ -252,7 +252,7 @@ function checkServiceWorker() {
 
 /**
  * Get all capabilities
- * @returns {Object} All capability检测结果
+ * @returns {Object} All capability detection results
  */
 export function getCapabilities() {
   return detectCapabilities();
