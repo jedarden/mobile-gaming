@@ -6,13 +6,15 @@ import { fileURLToPath } from 'url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-// Auto-discover game entry points — adding a new game means adding a directory, not editing config
+// Auto-discover game entry points by globbing src/games/*/index.html
+// Adding a new game means adding a directory with index.html, not editing config
 const gamesDir = resolve(__dirname, 'src/games');
 const gameEntries = existsSync(gamesDir)
   ? Object.fromEntries(
       readdirSync(gamesDir, { withFileTypes: true })
         .filter(d => d.isDirectory())
         .map(d => [d.name, resolve(gamesDir, d.name, 'index.html')])
+        .filter(([, htmlPath]) => existsSync(htmlPath))
     )
   : {};
 
