@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Games Hub</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Daily Challenge Banner -->
+    <a href="#" class="daily-challenge-banner" id="dailyChallengeBanner">
+      <div class="banner-icon">★</div>
+      <div class="banner-content">
+        <span class="banner-title">Daily Challenge</span>
+        <span class="banner-subtitle" id="dailyChallengeSubtitle">Loading...</span>
+      </div>
+      <span class="banner-arrow">→</span>
+    </a>
+
+    <!-- Quick Play Button -->
+    <button class="quick-play-btn" id="quickPlayBtn">
+      <span class="btn-icon">▶</span>
+      <span>Quick Play</span>
+    </button>
+
+    <!-- Section Header -->
+    <h1 class="games-title">All Games</h1>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs" role="tablist">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="puzzle">Puzzle</button>
+      <button class="filter-tab" data-filter="arcade">Arcade</button>
+      <button class="filter-tab" data-filter="simulation">Simulation</button>
+    </div>
+
+    <!-- Game Cards Grid -->
+    <div class="games-grid" id="gamesGrid">
+      <!-- Pull the Pin -->
+      <article class="game-card" data-game-id="pull-the-pin" data-category="puzzle">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect x="45" y="30" width="30" height="60" rx="4" fill="#e74c3c"/>
+            <circle cx="60" cy="50" r="8" fill="#f39c12"/>
+            <circle cx="60" cy="70" r="8" fill="#3498db"/>
+            <rect x="55" y="20" width="10" height="15" rx="2" fill="#95a5a6"/>
+            <circle cx="60" cy="15" r="6" fill="#7f8c8d"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Pull the Pin</h2>
+        <p class="game-description">Guide balls to the goal by pulling pins in the right order</p>
+        <a href="/pull-the-pin/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Water Sort -->
+      <article class="game-card" data-game-id="water-sort" data-category="puzzle">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect x="25" y="40" width="14" height="50" rx="3" fill="#ecf0f1" stroke="#34495e" stroke-width="2"/>
+            <rect x="53" y="40" width="14" height="50" rx="3" fill="#ecf0f1" stroke="#34495e" stroke-width="2"/>
+            <rect x="81" y="40" width="14" height="50" rx="3" fill="#ecf0f1" stroke="#34495e" stroke-width="2"/>
+            <ellipse cx="32" cy="55" rx="5" ry="8" fill="#e74c3c"/>
+            <ellipse cx="32" cy="68" rx="5" ry="8" fill="#3498db"/>
+            <ellipse cx="60" cy="60" rx="5" ry="8" fill="#2ecc71"/>
+            <ellipse cx="88" cy="55" rx="5" ry="8" fill="#e74c3c"/>
+            <ellipse cx="88" cy="68" rx="5" ry="8" fill="#2ecc71"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Water Sort</h2>
+        <p class="game-description">Sort colored liquids into separate tubes</p>
+        <a href="/water-sort/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Brain Teaser -->
+      <article class="game-card" data-game-id="brain-teaser" data-category="puzzle">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="50" r="30" fill="none" stroke="#9b59b6" stroke-width="3"/>
+            <circle cx="45" cy="40" r="3" fill="#34495e"/>
+            <circle cx="75" cy="40" r="3" fill="#34495e"/>
+            <path d="M45 60 Q60 75 75 60" fill="none" stroke="#34495e" stroke-width="2" stroke-linecap="round"/>
+            <text x="60" y="100" text-anchor="middle" font-size="16" fill="#9b59b6" font-weight="bold">?</text>
+          </svg>
+        </div>
+        <h2 class="game-title">Brain Teaser</h2>
+        <p class="game-description">Solve tricky puzzles that test your thinking</p>
+        <a href="/brain-teaser/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Parking Escape -->
+      <article class="game-card" data-game-id="parking-escape" data-category="puzzle">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect x="15" y="25" width="90" height="70" rx="4" fill="#ecf0f1" stroke="#34495e" stroke-width="2"/>
+            <rect x="25" y="35" width="30" height="18" rx="3" fill="#e74c3c"/>
+            <rect x="65" y="35" width="30" height="18" rx="3" fill="#3498db"/>
+            <rect x="25" y="65" width="30" height="18" rx="3" fill="#2ecc71"/>
+            <rect x="65" y="60" width="25" height="30" rx="3" fill="#f39c12"/>
+            <circle cx="65" cy="85" r="6" fill="#f1c40f"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Parking Escape</h2>
+        <p class="game-description">Move cars to clear a path to the exit</p>
+        <a href="/parking-escape/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Save the Character -->
+      <article class="game-card" data-game-id="save-the-character" data-category="puzzle">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="45" r="20" fill="#f39c12"/>
+            <circle cx="52" cy="40" r="3" fill="#34495e"/>
+            <circle cx="68" cy="40" r="3" fill="#34495e"/>
+            <path d="M50 52 Q60 62 70 52" fill="none" stroke="#34495e" stroke-width="2" stroke-linecap="round"/>
+            <rect x="45" y="70" width="30" height="35" rx="5" fill="#3498db"/>
+            <path d="M35 50 L25 40" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>
+            <path d="M85 50 L95 40" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Save the Character</h2>
+        <p class="game-description">Choose the right option to save the character</p>
+        <a href="/save-the-character/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Merge -->
+      <article class="game-card" data-game-id="merge" data-category="puzzle">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect x="20" y="35" width="20" height="20" rx="4" fill="#e74c3c"/>
+            <rect x="45" y="35" width="20" height="20" rx="4" fill="#e74c3c"/>
+            <rect x="70" y="35" width="20" height="20" rx="4" fill="#3498db"/>
+            <rect x="32" y="65" width="25" height="25" rx="5" fill="#f39c12"/>
+            <rect x="70" y="65" width="25" height="25" rx="5" fill="#2ecc71"/>
+            <text x="85" y="82" text-anchor="middle" font-size="14" fill="white" font-weight="bold">+</text>
+          </svg>
+        </div>
+        <h2 class="game-title">Merge</h2>
+        <p class="game-description">Combine matching items to create upgrades</p>
+        <a href="/merge/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Satisfying -->
+      <article class="game-card" data-game-id="satisfying" data-category="simulation">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect x="30" y="30" width="60" height="60" rx="8" fill="#95a5a6"/>
+            <ellipse cx="50" cy="50" rx="12" ry="8" fill="#3498db"/>
+            <ellipse cx="70" cy="65" rx="10" ry="6" fill="#2ecc71"/>
+            <circle cx="60" cy="45" r="5" fill="#e74c3c"/>
+            <path d="M40 75 Q60 85 80 75" stroke="#f1c40f" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Satisfying</h2>
+        <p class="game-description">Relaxing ASMR experiences and cleanup games</p>
+        <a href="/satisfying/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Crowd Runner -->
+      <article class="game-card" data-game-id="crowd-runner" data-category="arcade">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="30" cy="70" r="10" fill="#3498db"/>
+            <circle cx="50" cy="65" r="10" fill="#3498db"/>
+            <circle cx="70" cy="60" r="10" fill="#3498db"/>
+            <circle cx="90" cy="55" r="10" fill="#3498db"/>
+            <rect x="20" y="40" width="20" height="8" rx="2" fill="#e74c3c"/>
+            <rect x="50" y="35" width="20" height="8" rx="2" fill="#2ecc71"/>
+            <rect x="80" y="30" width="20" height="8" rx="2" fill="#e74c3c"/>
+            <text x="90" y="25" text-anchor="middle" font-size="12" fill="#2ecc71" font-weight="bold">×10</text>
+          </svg>
+        </div>
+        <h2 class="game-title">Crowd Runner</h2>
+        <p class="game-description">Gather crowds and pass through multiplication gates</p>
+        <a href="/crowd-runner/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Bridge Race -->
+      <article class="game-card" data-game-id="bridge-race" data-category="arcade">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect x="20" y="70" width="25" height="8" rx="2" fill="#e74c3c"/>
+            <rect x="47" y="70" width="25" height="8" rx="2" fill="#3498db"/>
+            <rect x="75" y="70" width="25" height="8" rx="2" fill="#e74c3c"/>
+            <circle cx="32" cy="62" r="8" fill="#f39c12"/>
+            <rect x="30" y="80" width="4" height="15" fill="#34495e"/>
+            <rect x="40" y="30" width="30" height="40" rx="3" fill="#95a5a6"/>
+            <rect x="55" y="25" width="10" height="5" fill="#f1c40f"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Bridge Race</h2>
+        <p class="game-description">Collect bricks and build bridges to reach platforms</p>
+        <a href="/bridge-race/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Giant Runner -->
+      <article class="game-card" data-game-id="giant-runner" data-category="arcade">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="35" cy="50" r="18" fill="#9b59b6"/>
+            <circle cx="65" cy="40" r="25" fill="#8e44ad"/>
+            <circle cx="95" cy="28" r="35" fill="#7d3c98"/>
+            <circle cx="88" cy="20" r="4" fill="#ecf0f1"/>
+            <circle cx="102" cy="25" r="3" fill="#ecf0f1"/>
+            <path d="M85 35 Q95 40 105 35" fill="none" stroke="#ecf0f1" stroke-width="2" stroke-linecap="round"/>
+            <rect x="20" y="70" width="80" height="8" rx="2" fill="#e74c3c"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Giant Runner</h2>
+        <p class="game-description">Grow giant and crush everything in your path</p>
+        <a href="/giant-runner/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Jelly Shift -->
+      <article class="game-card" data-game-id="jelly-shift" data-category="arcade">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <ellipse cx="40" cy="60" rx="18" ry="30" fill="#e74c3c"/>
+            <rect x="50" y="40" width="30" height="40" rx="8" fill="#3498db"/>
+            <circle cx="40" cy="55" r="4" fill="#ecf0f1"/>
+            <circle cx="40" cy="68" r="3" fill="#ecf0f1"/>
+            <path d="M35 75 Q40 82 45 75" fill="none" stroke="#ecf0f1" stroke-width="2" stroke-linecap="round"/>
+            <rect x="85" y="40" width="25" height="40" rx="4" fill="#95a5a6"/>
+            <rect x="85" y="55" width="25" height="10" fill="#34495e"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Jelly Shift</h2>
+        <p class="game-description">Squish through shapes by matching your form</p>
+        <a href="/jelly-shift/" class="play-btn">Play</a>
+      </article>
+
+      <!-- Makeover Run -->
+      <article class="game-card" data-game-id="makeover-run" data-category="arcade">
+        <div class="game-thumbnail">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <!-- Before -->
+            <circle cx="30" cy="55" r="18" fill="#bdc3c7"/>
+            <circle cx="24" cy="50" r="3" fill="#34495e"/>
+            <circle cx="36" cy="50" r="3" fill="#34495e"/>
+            <path d="M22 62 Q30 72 38 62" fill="none" stroke="#34495e" stroke-width="2"/>
+            <!-- After -->
+            <circle cx="90" cy="55" r="18" fill="#f39c12"/>
+            <ellipse cx="84" cy="50" rx="4" ry="3" fill="#34495e"/>
+            <ellipse cx="96" cy="50" rx="4" ry="3" fill="#34495e"/>
+            <path d="M82 60 Q90 68 98 60" fill="none" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/>
+            <path d="M50 55 L65 55" stroke="#2ecc71" stroke-width="3" stroke-dasharray="4,4"/>
+          </svg>
+        </div>
+        <h2 class="game-title">Makeover Run</h2>
+        <p class="game-description">Collect beauty items for amazing transformations</p>
+        <a href="/makeover-run/" class="play-btn">Play</a>
+      </article>
+    </div>
+  </div>
+
+  <script src="./hub.js" type="module"></script>
+</body>
+</html>
