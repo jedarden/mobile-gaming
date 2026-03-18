@@ -1,19 +1,38 @@
 /**
- * Seeded random number generator
+ * Seeded random number generator using Mulberry32
  *
- * Mulberry32 PRNG implementation for deterministic random sequences.
- * Useful for reproducible game states, level generation, and testing.
+ * Provides deterministic random sequences for level generation,
+ * daily challenges, and reproducible game states. Each instance
+ * maintains its own state, allowing multiple independent generators.
+ * Accepts both string and numeric seeds.
  */
+
+/**
+ * Convert a string seed to a 32-bit unsigned integer using FNV-1a hash
+ *
+ * @param {string|number} seed - Seed value (string or number)
+ * @returns {number} 32-bit unsigned integer hash
+ */
+function hashSeed(seed) {
+  if (typeof seed === 'number') return Math.floor(seed) >>> 0;
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
+}
 
 /**
  * Create a seeded random number generator using Mulberry32 algorithm
  *
- * @param {number} seed - The seed value (integer)
- * @returns {Object} RNG instance with next(), nextInt(), shuffle(), pick()
+ * Accepts both string and numeric seeds. String seeds are hashed via FNV-1a
+ * for good distribution across the 32-bit space.
+ *
+ * @param {string|number} seed - Seed value (string or number)
+ * @returns {{ next: Function, nextInt: Function, shuffle: Function, pick: Function }} RNG instance
  */
 export function createRng(seed) {
-  // Ensure seed is an integer
-  let state = Math.floor(seed) >>> 0;
+  let state = hashSeed(seed);
 
   /**
    * Get next random float in [0, 1)
@@ -39,6 +58,7 @@ export function createRng(seed) {
 
   /**
    * Shuffle an array (returns new array, does not mutate original)
+   * Uses Fisher-Yates algorithm
    * @param {Array} arr - Array to shuffle
    * @returns {Array} New shuffled array
    */
@@ -54,7 +74,7 @@ export function createRng(seed) {
   /**
    * Pick a random element from an array
    * @param {Array} arr - Array to pick from
-   * @returns {*} Random element from array
+   * @returns {*} Random element from array, or undefined if empty
    */
   function pick(arr) {
     if (arr.length === 0) return undefined;
@@ -63,43 +83,3 @@ export function createRng(seed) {
 
   return { next, nextInt, shuffle, pick };
 }
-
-/**
- * Create an RNG from a string seed
- * Converts string to numeric seed using simple hash
- *
- * @param {string} seedString - String to convert to seed
- * @returns {Object} RNG instance
- */
-export function createRngFromString(seedString) {
-  let hash = 0;
-  for (let i = 0; i < seedString.length; i++) {
-    const char = seedString.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash >>> 0; // Convert to unsigned 32-bit integer
-  }
-  return createRng(hash);
-}
-
-/**
- * Default RNG instance using current time as seed
- * Changes on each module load
- */
-export const defaultRng = createRng(Date.now());
-
-/**
- * Quick access to unseeded random values
- */
-export const random = {
-  /** @returns {number} Random float in [0, 1) */
-  next: () => defaultRng.next(),
-
-  /** @param {number} min @param {number} max @returns {number} Random integer */
-  int: (min, max) => defaultRng.nextInt(min, max),
-
-  /** @param {Array} arr @returns {Array} Shuffled copy */
-  shuffle: (arr) => defaultRng.shuffle(arr),
-
-  /** @param {Array} arr @returns {*} Random element */
-  pick: (arr) => defaultRng.pick(arr),
-};
