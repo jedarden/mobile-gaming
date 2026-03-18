@@ -86,7 +86,7 @@ export function getMasterVolume() {
  * @param {number} volume - Volume multiplier (0 to 1)
  * @returns {AudioNode|null} The gain node for this sound (or null if disabled)
  */
-function playSound(pattern, volume = 1) {
+function playSoundPattern(pattern, volume = 1) {
   if (!soundEnabled || volume <= 0) {
     return null;
   }
@@ -260,7 +260,7 @@ export function playSound(name, volume = 1) {
   if (!pattern) {
     return null;
   }
-  return playSound(pattern, volume);
+  return playSoundPattern(pattern, volume);
 }
 
 /**
@@ -269,7 +269,7 @@ export function playSound(name, volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playClick(volume = 1) {
-  playSound(SOUNDS.click, volume);
+  playSoundPattern(SOUNDS.click, volume);
 }
 
 /**
@@ -278,9 +278,9 @@ export function playClick(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playSuccess(volume = 1) {
-  playSound(SOUNDS.success, volume);
+  playSoundPattern(SOUNDS.success, volume);
   // Play chord after short delay
-  setTimeout(() => playSound(SOUNDS.successChord, volume * 0.7), 80);
+  setTimeout(() => playSoundPattern(SOUNDS.successChord, volume * 0.7), 80);
 }
 
 /**
@@ -289,7 +289,7 @@ export function playSuccess(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playFail(volume = 1) {
-  playSound(SOUNDS.fail, volume);
+  playSoundPattern(SOUNDS.fail, volume);
 }
 
 /**
@@ -298,7 +298,7 @@ export function playFail(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playWhoosh(volume = 1) {
-  playSound(SOUNDS.whoosh, volume);
+  playSoundPattern(SOUNDS.whoosh, volume);
 }
 
 /**
@@ -307,7 +307,7 @@ export function playWhoosh(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playPop(volume = 1) {
-  playSound(SOUNDS.pop, volume);
+  playSoundPattern(SOUNDS.pop, volume);
 }
 
 /**
@@ -316,7 +316,7 @@ export function playPop(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playTap(volume = 1) {
-  playSound(SOUNDS.tap, volume);
+  playSoundPattern(SOUNDS.tap, volume);
 }
 
 /**
@@ -325,7 +325,7 @@ export function playTap(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playSlide(volume = 1) {
-  playSound(SOUNDS.slide, volume);
+  playSoundPattern(SOUNDS.slide, volume);
 }
 
 /**
@@ -334,7 +334,7 @@ export function playSlide(volume = 1) {
  * @param {number} volume - Volume (0 to 1)
  */
 export function playBounce(volume = 1) {
-  playSound(SOUNDS.bounce, volume);
+  playSoundPattern(SOUNDS.bounce, volume);
 }
 
 /**
