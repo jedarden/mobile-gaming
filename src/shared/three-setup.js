@@ -112,7 +112,7 @@ export function resizeThreeRenderer(renderer, camera, logicalWidth, logicalHeigh
 /**
  * Start a Three.js animation loop
  *
- * @param {Function} callback - Render function called each frame (scene, camera, renderer, timestamp)
+ * @param {Function} callback - Render function called each frame (timestamp)
  * @param {string} id - Unique identifier for this loop
  * @returns {string} The loop ID for cancellation
  */
