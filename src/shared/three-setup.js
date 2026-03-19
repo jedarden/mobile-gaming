@@ -22,7 +22,11 @@ const DEFAULTS = {
   backgroundColor: 0x000000,
   antialias: true,
   alpha: false,
-  pixelRatio: Math.min(window.devicePixelRatio || 1, 2) // Cap at 2 for performance
+  get pixelRatio() {
+    // Lazy evaluation to avoid accessing window at module load time
+    const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+    return Math.min(dpr, 2); // Cap at 2 for performance
+  }
 };
 
 /**
