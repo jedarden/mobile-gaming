@@ -240,3 +240,99 @@ export function isStorageAvailable() {
     return false;
   }
 }
+
+// ===== Settings and Game Stats Helpers =====
+
+const SETTINGS_KEY = 'settings';
+const STATS_KEY = 'stats';
+
+/**
+ * Initialize storage (ensure default values exist)
+ * @returns {Promise<void>}
+ */
+export async function initStorage() {
+  // Initialize settings if not present
+  if (storage.get(SETTINGS_KEY) === null) {
+    storage.set(SETTINGS_KEY, {
+      soundEnabled: true,
+      hapticEnabled: true,
+      reducedMotion: false,
+      reducedMotionSetByUser: false
+    });
+  }
+
+  // Initialize stats if not present
+  if (storage.get(STATS_KEY) === null) {
+    storage.set(STATS_KEY, {});
+  }
+}
+
+/**
+ * Get user settings
+ * @returns {object} Settings object
+ */
+export function getSettings() {
+  return storage.get(SETTINGS_KEY, {
+    soundEnabled: true,
+    hapticEnabled: true,
+    reducedMotion: false,
+    reducedMotionSetByUser: false
+  });
+}
+
+/**
+ * Update user settings
+ * @param {object} updates - Settings to update
+ * @returns {boolean} Success
+ */
+export function updateSettings(updates) {
+  const current = getSettings();
+  return storage.set(SETTINGS_KEY, { ...current, ...updates });
+}
+
+/**
+ * Get game stats
+ * @param {string} gameId - Game identifier
+ * @returns {object} Game stats
+ */
+export function getGameStats(gameId) {
+  const allStats = storage.get(STATS_KEY, {});
+  return allStats[gameId] || {
+    played: 0,
+    completed: 0,
+    stars: 0,
+    lastLevel: 0,
+    highScores: {}
+  };
+}
+
+/**
+ * Update game stats
+ * @param {string} gameId - Game identifier
+ * @param {object} updates - Stats to update (will be merged/added)
+ * @returns {boolean} Success
+ */
+export function updateGameStats(gameId, updates) {
+  const allStats = storage.get(STATS_KEY, {});
+  const current = allStats[gameId] || {
+    played: 0,
+    completed: 0,
+    stars: 0,
+    lastLevel: 0,
+    highScores: {}
+  };
+
+  // Merge updates
+  const updated = { ...current };
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (typeof value === 'number' && (key === 'played' || key === 'completed' || key === 'stars')) {
+      updated[key] = (current[key] || 0) + value;
+    } else {
+      updated[key] = value;
+    }
+  }
+
+  allStats[gameId] = updated;
+  return storage.set(STATS_KEY, allStats);
+}

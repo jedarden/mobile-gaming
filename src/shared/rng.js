@@ -83,3 +83,9 @@ export function createRng(seed) {
 
   return { next, nextInt, shuffle, pick };
 }
+
+/**
+ * Alias for backward compatibility
+ * @deprecated Use createRng instead
+ */
+export const createRNG = createRng;

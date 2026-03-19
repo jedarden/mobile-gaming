@@ -1,0 +1,313 @@
+/* UI Components - Shared component styles for mobile gaming */
+
+/* ===== Buttons ===== */
+.game-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Primary button */
+.game-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.game-btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.game-btn-primary:active:not(:disabled) {
+  background: var(--color-primary-active);
+}
+
+/* Secondary button */
+.game-btn-secondary {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.game-btn-secondary:hover:not(:disabled) {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Ghost button */
+.game-btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.game-btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Icon button */
+.game-btn-icon {
+  padding: var(--space-sm);
+  min-width: 40px;
+  min-height: 40px;
+}
+
+/* ===== Stats Display ===== */
+.game-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+}
+
+.game-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.game-stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.game-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Stars Display ===== */
+.stars-display {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.stars-display .star {
+  font-size: var(--font-size-2xl);
+  opacity: 0.3;
+  transition: all var(--transition-normal);
+}
+
+.stars-display .star.filled {
+  opacity: 1;
+  color: var(--color-warning);
+}
+
+/* ===== Overlay/Modal ===== */
+.game-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  background: var(--color-bg-overlay);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.game-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.game-overlay[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+.game-overlay[aria-hidden="false"] {
+  pointer-events: auto;
+}
+
+.game-overlay-content {
+  background: var(--color-bg-secondary);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  max-width: 90vw;
+  width: 320px;
+  transform: scale(0.9);
+  transition: transform var(--transition-normal);
+}
+
+.game-overlay.active .game-overlay-content {
+  transform: scale(1);
+}
+
+.game-overlay-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-md);
+}
+
+.game-overlay-title.win {
+  color: var(--color-success);
+}
+
+.overlay-buttons {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  margin-top: var(--space-lg);
+}
+
+.overlay-buttons .game-btn {
+  flex: 1;
+}
+
+/* ===== Settings Modal ===== */
+.settings-content {
+  text-align: left;
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+  cursor: pointer;
+}
+
+.setting-item span {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+}
+
+.setting-item input[type="checkbox"] {
+  width: 44px;
+  height: 24px;
+  appearance: none;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.setting-item input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: var(--color-text-inverse);
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.setting-item input[type="checkbox"]:checked {
+  background: var(--color-primary);
+}
+
+.setting-item input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* ===== Skip Link ===== */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-md);
+  z-index: var(--z-toast);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: var(--space-md);
+}
+
+/* ===== Level Navigation ===== */
+.level-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+}
+
+.level-progress {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ===== Stats Summary ===== */
+.stats-summary {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+}
+
+/* ===== Loading States ===== */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-tertiary) 25%,
+    var(--color-border) 50%,
+    var(--color-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== Hint Active State ===== */
+.hint-active {
+  animation: hint-pulse 0.5s ease-in-out 3;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
