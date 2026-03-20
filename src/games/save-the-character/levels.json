@@ -1,0 +1,206 @@
+[
+  {
+    "id": "stc-001",
+    "title": "Character on a cliff",
+    "threat": "The character is standing on a crumbling cliff edge about to fall!",
+    "choices": [
+      { "id": "jump", "label": "Jump into the water below", "correct": true },
+      { "id": "climb", "label": "Climb up the loose rocks", "correct": false },
+      { "id": "stand", "label": "Stand still and wait for help", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-002",
+    "title": "Burning building",
+    "threat": "The character is trapped inside a burning building!",
+    "choices": [
+      { "id": "window", "label": "Crawl out through the window", "correct": true },
+      { "id": "elevator", "label": "Take the elevator down", "correct": false },
+      { "id": "hide", "label": "Hide under a desk", "correct": false },
+      { "id": "run", "label": "Run through the flames", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-003",
+    "title": "Rapid river",
+    "threat": "The character is being swept away in a raging river!",
+    "choices": [
+      { "id": "swim", "label": "Swim toward the riverbank", "correct": true },
+      { "id": "fight", "label": "Fight against the current", "correct": false },
+      { "id": "dive", "label": "Dive underwater", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-004",
+    "title": "Bee attack",
+    "threat": "A swarm of angry bees is chasing the character!",
+    "choices": [
+      { "id": "run", "label": "Run away in a straight line", "correct": false },
+      { "id": "water", "label": "Jump into nearby water", "correct": true },
+      { "id": "swat", "label": "Swat at the bees", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-005",
+    "title": "Lightning storm",
+    "threat": "A lightning storm is raging and the character is in an open field!",
+    "choices": [
+      { "id": "tree", "label": "Hide under a tall tree", "correct": false },
+      { "id": "crouch", "label": "Crouch low in the open", "correct": true },
+      { "id": "run", "label": "Run to the nearest building", "correct": false },
+      { "id": "metal", "label": "Stand by a metal fence", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-006",
+    "title": "Bear encounter",
+    "threat": "A grizzly bear is charging toward the character!",
+    "choices": [
+      { "id": "climb", "label": "Climb a tree", "correct": false },
+      { "id": "play", "label": "Play dead on the ground", "correct": true },
+      { "id": "run", "label": "Run away as fast as possible", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-007",
+    "title": "Quick sand",
+    "threat": "The character is sinking into quicksand!",
+    "choices": [
+      { "id": "struggle", "label": "Struggle violently to get out", "correct": false },
+      { "id": "back", "label": "Lean back and spread arms", "correct": true },
+      { "id": "scream", "label": "Scream for help", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-008",
+    "title": "Avalanche",
+    "threat": "An avalanche is coming down the mountain!",
+    "choices": [
+      { "id": "run", "label": "Run straight down the mountain", "correct": false },
+      { "id": "side", "label": "Move sideways to the edge", "correct": true },
+      { "id": "dig", "label": "Dig into the snow", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-009",
+    "title": "Rabid dog",
+    "threat": "A rabid dog is growling and preparing to attack!",
+    "choices": [
+      { "id": "stare", "label": "Stare into its eyes", "correct": false },
+      { "id": "back", "label": "Back away slowly without eye contact", "correct": true },
+      { "id": "hit", "label": "Throw something at it", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-010",
+    "title": "Tsunami",
+    "threat": "A tsunami warning is issued and the character is at the beach!",
+    "choices": [
+      { "id": "beach", "label": "Stay on the beach to watch", "correct": false },
+      { "id": "high", "label": "Move to higher ground immediately", "correct": true },
+      { "id": "swim", "label": "Swim out to sea", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-011",
+    "title": "Snake bite",
+    "threat": "A venomous snake just bit the character's leg!",
+    "choices": [
+      { "id": "suck", "label": "Suck out the poison", "correct": false },
+      { "id": "hospital", "label": "Keep calm and get to a hospital", "correct": true },
+      { "id": "cut", "label": "Cut the wound to drain blood", "correct": false },
+      { "id": "run", "label": "Run to increase blood circulation", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-012",
+    "title": "Freezing water",
+    "threat": "The character fell through ice into freezing water!",
+    "choices": [
+      { "id": "swim", "label": "Swim to the center of the hole", "correct": false },
+      { "id": "kick", "label": "Kick and use arms to pull onto ice", "correct": true },
+      { "id": "panic", "label": "Panic and thrash around", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-013",
+    "title": "Forest fire",
+    "threat": "A forest fire is approaching and the character is trapped!",
+    "choices": [
+      { "id": "upwind", "label": "Move perpendicular to wind direction", "correct": true },
+      { "id": "downwind", "label": "Run with the wind", "correct": false },
+      { "id": "water", "label": "Hide in a dry ditch", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-014",
+    "title": "Falling elevator",
+    "threat": "The elevator cable just snapped and it's falling!",
+    "choices": [
+      { "id": "jump", "label": "Jump right before impact", "correct": false },
+      { "id": "spread", "label": "Lie flat on the floor", "correct": true },
+      { "id": "stand", "label": "Stand in the corner", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-015",
+    "title": "Shark attack",
+    "threat": "A shark is circling the character in the ocean!",
+    "choices": [
+      { "id": "splash", "label": "Splash and make noise", "correct": false },
+      { "id": "defend", "label": "Defend yourself with a weapon", "correct": true },
+      { "id": "play", "label": "Play dead", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-016",
+    "title": "Sandstorm",
+    "threat": "A massive sandstorm is approaching in the desert!",
+    "choices": [
+      { "id": "run", "label": "Run away from the storm", "correct": false },
+      { "id": "cover", "label": "Find cover and protect breathing", "correct": true },
+      { "id": "high", "label": "Climb to the highest dune", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-017",
+    "title": "Riptide",
+    "threat": "The character is caught in a powerful riptide!",
+    "choices": [
+      { "id": "swim", "label": "Swim directly back to shore", "correct": false },
+      { "id": "parallel", "label": "Swim parallel to the shore", "correct": true },
+      { "id": "fight", "label": "Fight against the current", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-018",
+    "title": "Poison ivy",
+    "threat": "The character just touched poison ivy!",
+    "choices": [
+      { "id": "ignore", "label": "Ignore it, it will go away", "correct": false },
+      { "id": "wash", "label": "Wash the area immediately with soap", "correct": true },
+      { "id": "scratch", "label": "Scratch the area to relieve itch", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-019",
+    "title": "Earthquake",
+    "threat": "A massive earthquake just started while indoors!",
+    "choices": [
+      { "id": "doorway", "label": "Stand in a doorway", "correct": false },
+      { "id": "drop", "label": "Drop, cover, and hold on", "correct": true },
+      { "id": "outside", "label": "Run outside immediately", "correct": false },
+      { "id": "elevator", "label": "Take the elevator", "correct": false }
+    ]
+  },
+  {
+    "id": "stc-020",
+    "title": "Mountain lion",
+    "threat": "A mountain lion is stalking the character on a trail!",
+    "choices": [
+      { "id": "run", "label": "Run away as fast as possible", "correct": false },
+      { "id": "appear", "label": "Appear larger and make noise", "correct": true },
+      { "id": "hide", "label": "Hide behind a rock", "correct": false }
+    ]
+  }
+]
