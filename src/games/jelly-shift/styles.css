@@ -1,0 +1,188 @@
+/**
+ * Jelly Shift - Game Styles
+ */
+
+.game-container.jelly-shift {
+  --game-bg: #0a0a1a;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+}
+
+/* Stats bar customization */
+.jelly-shift .game-stats {
+  background: var(--color-game-header);
+  border-bottom: 1px solid rgba(124, 77, 255, 0.2);
+}
+
+.jelly-shift .stat-value {
+  color: #7c4dff;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Game board - full viewport for Three.js canvas */
+.jelly-shift .game-board {
+  background: #0a0a1a;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.jelly-shift .game-board canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Controls */
+.jelly-shift .game-controls {
+  background: var(--color-game-control);
+  border-top: 1px solid rgba(124, 77, 255, 0.2);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.jelly-shift .game-controls .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.jelly-shift .game-controls .btn:hover {
+  background: rgba(124, 77, 255, 0.1);
+  border-color: #7c4dff;
+  color: #7c4dff;
+}
+
+/* Level navigation */
+.jelly-shift .level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-game-control);
+}
+
+.jelly-shift .level-nav .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Overlay styles */
+.jelly-shift .overlay {
+  background: rgba(10, 10, 26, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.jelly-shift .overlay-title.win {
+  color: #4ecdc4;
+}
+
+.jelly-shift .overlay-title.lose {
+  color: #ff6b6b;
+}
+
+.jelly-shift .stars .star {
+  color: var(--color-text-muted);
+  font-size: 2rem;
+  margin: 0 var(--space-xs);
+  transition: color var(--transition-normal);
+}
+
+.jelly-shift .stars .star.filled {
+  color: #ffd93d;
+}
+
+.jelly-shift .stats-summary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-md) 0;
+}
+
+.jelly-shift .overlay-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.jelly-shift .overlay-actions .btn-primary {
+  background: #7c4dff;
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: background var(--transition-fast);
+}
+
+.jelly-shift .overlay-actions .btn-primary:hover {
+  background: #651fff;
+}
+
+.jelly-shift .overlay-actions .btn-secondary {
+  background: transparent;
+  color: #7c4dff;
+  border: 1px solid #7c4dff;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+}
+
+.jelly-shift .overlay-actions .btn-secondary:hover {
+  background: rgba(124, 77, 255, 0.1);
+}
+
+/* Settings */
+.jelly-shift .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.jelly-shift .setting-item label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .jelly-shift .star,
+  .jelly-shift .btn,
+  .jelly-shift .btn-icon {
+    transition: none;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .jelly-shift {
+    --game-bg: #050510;
+  }
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .jelly-shift .game-header {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .jelly-shift .game-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .jelly-shift .overlay-content {
+    margin: var(--space-md);
+    padding: var(--space-lg);
+  }
+}
