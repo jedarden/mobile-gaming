@@ -412,7 +412,12 @@ class BrainTeaserGame {
    */
   toggleSound() {
     const muted = audio.toggleMute();
-    this.btnSound.innerHTML = muted ? '<span aria-hidden="true">🔇</span>' : '<span aria-hidden="true">🔊</span>';
+    const span = this.btnSound.querySelector('span[aria-hidden="true"]') || document.createElement('span');
+    span.setAttribute('aria-hidden', 'true');
+    span.textContent = muted ? '🔇' : '🔊';
+    if (!span.parentElement) {
+      this.btnSound.appendChild(span);
+    }
     updateSettings({ soundEnabled: !muted });
   }
 
