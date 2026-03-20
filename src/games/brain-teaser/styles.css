@@ -1,0 +1,140 @@
+/**
+ * Brain Teaser - Game Styles
+ *
+ * Custom styles for the Brain Teaser puzzle game.
+ */
+
+/* Game container adjustments */
+.game-container {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+}
+
+/* Hint area */
+.hint-area {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  min-height: 2rem;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hint-area.visible {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
+/* Game board */
+.game-board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+#game-canvas {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Win overlay customization */
+.game-overlay-title.win {
+  color: var(--color-success);
+}
+
+.puzzle-title {
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* Stats display */
+.stats-summary {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  margin-bottom: 1.5rem;
+}
+
+/* Animation for shake effect */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Animation for celebration */
+@keyframes celebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.celebrate {
+  animation: celebrate 0.5s ease-in-out;
+}
+
+/* Level navigation */
+.level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  gap: 1rem;
+}
+
+.level-progress {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  flex: 1;
+  text-align: center;
+}
+
+/* Button states */
+.game-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Touch feedback */
+.game-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .game-container {
+    background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .shake,
+  .celebrate {
+    animation: none;
+  }
+
+  .hint-area {
+    transition: none;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 400px) {
+  .game-board {
+    min-height: 350px;
+  }
+
+  .level-nav {
+    padding: 0.5rem;
+  }
+
+  .level-progress {
+    font-size: 0.75rem;
+  }
+}

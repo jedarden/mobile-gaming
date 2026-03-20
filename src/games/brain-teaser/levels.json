@@ -1,0 +1,476 @@
+[
+  {
+    "id": "bt-001",
+    "title": "Find the Ball",
+    "prompt": "Which cup is hiding the ball?",
+    "type": "tap",
+    "elements": [
+      { "id": "cup1", "type": "cup", "x": 50, "y": 250, "w": 80, "h": 100, "clickable": true },
+      { "id": "cup2", "type": "cup", "x": 155, "y": 250, "w": 80, "h": 100, "clickable": true },
+      { "id": "cup3", "type": "cup", "x": 260, "y": 250, "w": 80, "h": 100, "clickable": true },
+      { "id": "ball", "type": "ball", "x": 180, "y": 330, "w": 30, "h": 30, "hidden": true, "zIndex": -1 }
+    ],
+    "solution": { "action": "tap", "targetId": "cup2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "cup1", "response": "shake", "message": "Not here!" },
+      { "action": "tap", "targetId": "cup3", "response": "shake", "message": "Try again!" }
+    ],
+    "hint": "Look for subtle differences",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-002",
+    "title": "Odd One Out",
+    "prompt": "Which shape doesn't belong?",
+    "type": "tap",
+    "elements": [
+      { "id": "shape1", "type": "circle", "x": 40, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7", "label": "A" },
+      { "id": "shape2", "type": "circle", "x": 120, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7", "label": "B" },
+      { "id": "shape3", "type": "circle", "x": 200, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7", "label": "C" },
+      { "id": "shape4", "type": "triangle", "x": 280, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7", "label": "D" }
+    ],
+    "solution": { "action": "tap", "targetId": "shape4" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "shape1", "response": "shake", "message": "Look at the shapes!" },
+      { "action": "tap", "targetId": "shape2", "response": "shake", "message": "Not this one" },
+      { "action": "tap", "targetId": "shape3", "response": "shake", "message": "Keep looking!" }
+    ],
+    "hint": "Count the sides",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-003",
+    "title": "Hidden Key",
+    "prompt": "Find the key to unlock the door",
+    "type": "tap",
+    "elements": [
+      { "id": "box1", "type": "box", "x": 40, "y": 220, "w": 80, "h": 80, "clickable": true, "color": "#8B4513" },
+      { "id": "box2", "type": "box", "x": 155, "y": 220, "w": 80, "h": 80, "clickable": true, "color": "#8B4513" },
+      { "id": "box3", "type": "box", "x": 270, "y": 220, "w": 80, "h": 80, "clickable": true, "color": "#8B4513" },
+      { "id": "key", "type": "key", "x": 290, "y": 270, "w": 40, "h": 40, "hidden": true, "zIndex": -1 },
+      { "id": "door", "type": "door", "x": 165, "y": 350, "w": 60, "h": 100 }
+    ],
+    "solution": { "action": "tap", "targetId": "box3" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "box1", "response": "shake", "message": "Empty!" },
+      { "action": "tap", "targetId": "box2", "response": "shake", "message": "Nothing here..." }
+    ],
+    "hint": "The last place you'd look",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-004",
+    "title": "Color Match",
+    "prompt": "Tap the shape that matches the color of the text",
+    "type": "tap",
+    "elements": [
+      { "id": "red1", "type": "circle", "x": 40, "y": 200, "w": 60, "h": 60, "clickable": true, "color": "#FF6B6B" },
+      { "id": "blue1", "type": "circle", "x": 120, "y": 200, "w": 60, "h": 60, "clickable": true, "color": "#4DABF7" },
+      { "id": "green1", "type": "circle", "x": 200, "y": 200, "w": 60, "h": 60, "clickable": true, "color": "#69DB7C" },
+      { "id": "yellow1", "type": "circle", "x": 280, "y": 200, "w": 60, "h": 60, "clickable": true, "color": "#FFD93D" },
+      { "id": "text", "type": "text", "x": 195, "y": 320, "w": 200, "h": 40, "color": "#4DABF7", "text": "BLUE", "fontSize": 32 }
+    ],
+    "solution": { "action": "tap", "targetId": "blue1" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "red1", "response": "shake", "message": "That's red!" },
+      { "action": "tap", "targetId": "green1", "response": "shake", "message": "That's green!" },
+      { "action": "tap", "targetId": "yellow1", "response": "shake", "message": "That's yellow!" }
+    ],
+    "hint": "Ignore the word, look at the color",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-005",
+    "title": "Big Button",
+    "prompt": "Press the button to win!",
+    "type": "tap",
+    "showBanner": true,
+    "elements": [
+      { "id": "bigButton", "type": "button", "x": 120, "y": 200, "w": 150, "h": 150, "clickable": true, "color": "#ef4444" },
+      { "id": "smallButton", "type": "button", "x": 170, "y": 400, "w": 50, "h": 50, "clickable": true, "color": "#22c55e" }
+    ],
+    "solution": { "action": "tap", "targetId": "smallButton" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "bigButton", "response": "shake", "message": "Too obvious!" }
+    ],
+    "hint": "Sometimes less is more",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-006",
+    "title": "Follow the Arrow",
+    "prompt": "Which way does the arrow point?",
+    "type": "tap",
+    "elements": [
+      { "id": "arrow", "type": "arrow", "x": 165, "y": 150, "w": 60, "h": 60, "color": "#ffffff" },
+      { "id": "left", "type": "rect", "x": 40, "y": 280, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "Left" },
+      { "id": "right", "type": "rect", "x": 250, "y": 280, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "Right" },
+      { "id": "up", "type": "rect", "x": 145, "y": 360, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "Up" },
+      { "id": "down", "type": "rect", "x": 145, "y": 440, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "Down" }
+    ],
+    "solution": { "action": "tap", "targetId": "right" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "left", "response": "shake", "message": "Look again!" },
+      { "action": "tap", "targetId": "up", "response": "shake", "message": "Not quite..." },
+      { "action": "tap", "targetId": "down", "response": "shake", "message": "Try again!" }
+    ],
+    "hint": "The arrow shows the way",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-007",
+    "title": "Count the Stars",
+    "prompt": "How many stars do you see?",
+    "type": "tap",
+    "elements": [
+      { "id": "star1", "type": "star", "x": 50, "y": 150, "w": 40, "h": 40 },
+      { "id": "star2", "type": "star", "x": 150, "y": 180, "w": 40, "h": 40 },
+      { "id": "star3", "type": "star", "x": 250, "y": 140, "w": 40, "h": 40 },
+      { "id": "star4", "type": "star", "x": 100, "y": 250, "w": 40, "h": 40 },
+      { "id": "star5", "type": "star", "x": 200, "y": 270, "w": 40, "h": 40 },
+      { "id": "opt3", "type": "rect", "x": 40, "y": 380, "w": 80, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "3" },
+      { "id": "opt4", "type": "rect", "x": 155, "y": 380, "w": 80, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "4" },
+      { "id": "opt5", "type": "rect", "x": 270, "y": 380, "w": 80, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "5" }
+    ],
+    "solution": { "action": "tap", "targetId": "opt5" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "opt3", "response": "shake", "message": "Count again!" },
+      { "action": "tap", "targetId": "opt4", "response": "shake", "message": "You missed one!" }
+    ],
+    "hint": "Count carefully, one by one",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-008",
+    "title": "Drag to Win",
+    "prompt": "Drag the key to the door",
+    "type": "drag",
+    "elements": [
+      { "id": "key", "type": "key", "x": 50, "y": 250, "w": 60, "h": 60, "draggable": true, "color": "#ffd700" },
+      { "id": "door", "type": "door", "x": 260, "y": 200, "w": 80, "h": 120 },
+      { "id": "fakeDoor", "type": "door", "x": 155, "y": 200, "w": 80, "h": 120, "color": "#2a1708" }
+    ],
+    "solution": { "action": "drag", "sourceId": "key", "targetId": "door" },
+    "decoyActions": [
+      { "action": "drag", "sourceId": "key", "targetId": "fakeDoor", "response": "shake", "message": "Wrong door!" }
+    ],
+    "hint": "The brighter door",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-009",
+    "title": "Pattern Match",
+    "prompt": "Complete the pattern: Circle, Square, Circle, ...",
+    "type": "tap",
+    "elements": [
+      { "id": "p1", "type": "circle", "x": 30, "y": 180, "w": 50, "h": 50, "color": "#4DABF7" },
+      { "id": "p2", "type": "rect", "x": 95, "y": 180, "w": 50, "h": 50, "color": "#FF6B6B" },
+      { "id": "p3", "type": "circle", "x": 160, "y": 180, "w": 50, "h": 50, "color": "#4DABF7" },
+      { "id": "p4", "type": "text", "x": 225, "y": 180, "w": 50, "h": 50, "text": "?", "fontSize": 40, "color": "#ffffff" },
+      { "id": "optCircle", "type": "circle", "x": 70, "y": 300, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7" },
+      { "id": "optRect", "type": "rect", "x": 160, "y": 300, "w": 70, "h": 70, "clickable": true, "color": "#FF6B6B" },
+      { "id": "optTriangle", "type": "triangle", "x": 250, "y": 300, "w": 70, "h": 70, "clickable": true, "color": "#69DB7C" }
+    ],
+    "solution": { "action": "tap", "targetId": "optRect" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "optCircle", "response": "shake", "message": "Check the pattern!" },
+      { "action": "tap", "targetId": "optTriangle", "response": "shake", "message": "Not in the pattern!" }
+    ],
+    "hint": "Circle, Square, Circle, ...",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-010",
+    "title": "Sequence Memory",
+    "prompt": "Tap in order: Red, Blue, Green",
+    "type": "sequence",
+    "elements": [
+      { "id": "red", "type": "circle", "x": 65, "y": 200, "w": 80, "h": 80, "clickable": true, "color": "#FF6B6B", "label": "1" },
+      { "id": "blue", "type": "circle", "x": 155, "y": 200, "w": 80, "h": 80, "clickable": true, "color": "#4DABF7", "label": "2" },
+      { "id": "green", "type": "circle", "x": 245, "y": 200, "w": 80, "h": 80, "clickable": true, "color": "#69DB7C", "label": "3" }
+    ],
+    "solution": { "action": "sequence", "steps": ["red", "blue", "green"] },
+    "decoyActions": [],
+    "hint": "The labels show the order",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-011",
+    "title": "Mirror Image",
+    "prompt": "Which shape is the mirror of the top one?",
+    "type": "tap",
+    "elements": [
+      { "id": "source", "type": "triangle", "x": 165, "y": 100, "w": 60, "h": 60, "color": "#9333ea" },
+      { "id": "mirror1", "type": "triangle", "x": 40, "y": 250, "w": 60, "h": 60, "clickable": true, "color": "#4a4a6a" },
+      { "id": "mirror2", "type": "triangle", "x": 165, "y": 250, "w": 60, "h": 60, "clickable": true, "color": "#4a4a6a" },
+      { "id": "mirror3", "type": "circle", "x": 290, "y": 250, "w": 60, "h": 60, "clickable": true, "color": "#4a4a6a" }
+    ],
+    "solution": { "action": "tap", "targetId": "mirror2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "mirror1", "response": "shake", "message": "That's rotated!" },
+      { "action": "tap", "targetId": "mirror3", "response": "shake", "message": "Different shape!" }
+    ],
+    "hint": "A mirror shows the same thing",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-012",
+    "title": "Spot the Difference",
+    "prompt": "Which circle is slightly larger?",
+    "type": "tap",
+    "elements": [
+      { "id": "c1", "type": "circle", "x": 50, "y": 220, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7" },
+      { "id": "c2", "type": "circle", "x": 150, "y": 215, "w": 80, "h": 80, "clickable": true, "color": "#4DABF7" },
+      { "id": "c3", "type": "circle", "x": 260, "y": 220, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7" }
+    ],
+    "solution": { "action": "tap", "targetId": "c2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "c1", "response": "shake", "message": "Look closer!" },
+      { "action": "tap", "targetId": "c3", "response": "shake", "message": "Compare sizes!" }
+    ],
+    "hint": "The middle one looks different",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-013",
+    "title": "Word Search",
+    "prompt": "Find the hidden word: What color is the sky?",
+    "type": "tap",
+    "elements": [
+      { "id": "word1", "type": "text", "x": 50, "y": 200, "w": 80, "h": 40, "clickable": true, "text": "RED", "fontSize": 24, "color": "#FF6B6B" },
+      { "id": "word2", "type": "text", "x": 155, "y": 200, "w": 80, "h": 40, "clickable": true, "text": "BLUE", "fontSize": 24, "color": "#4DABF7" },
+      { "id": "word3", "type": "text", "x": 260, "y": 200, "w": 80, "h": 40, "clickable": true, "text": "GREEN", "fontSize": 24, "color": "#69DB7C" },
+      { "id": "word4", "type": "text", "x": 100, "y": 280, "w": 80, "h": 40, "clickable": true, "text": "YELLOW", "fontSize": 24, "color": "#FFD93D" },
+      { "id": "word5", "type": "text", "x": 210, "y": 280, "w": 80, "h": 40, "clickable": true, "text": "PINK", "fontSize": 24, "color": "#FF69B4" }
+    ],
+    "solution": { "action": "tap", "targetId": "word2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "word1", "response": "shake", "message": "Is the sky red?" },
+      { "action": "tap", "targetId": "word3", "response": "shake", "message": "Is the sky green?" },
+      { "action": "tap", "targetId": "word4", "response": "shake", "message": "Is the sky yellow?" },
+      { "action": "tap", "targetId": "word5", "response": "shake", "message": "Is the sky pink?" }
+    ],
+    "hint": "Look up on a clear day",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-014",
+    "title": "Math Logic",
+    "prompt": "What is 2 + 2 x 2?",
+    "type": "tap",
+    "elements": [
+      { "id": "ans6", "type": "rect", "x": 40, "y": 250, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "6" },
+      { "id": "ans8", "type": "rect", "x": 145, "y": 250, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "8" },
+      { "id": "ans4", "type": "rect", "x": 250, "y": 250, "w": 100, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "4" }
+    ],
+    "solution": { "action": "tap", "targetId": "ans6" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "ans8", "response": "shake", "message": "Check order of operations!" },
+      { "action": "tap", "targetId": "ans4", "response": "shake", "message": "That's not right!" }
+    ],
+    "hint": "Multiply before adding",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-015",
+    "title": "Hidden Heart",
+    "prompt": "Find the hidden heart",
+    "type": "tap",
+    "elements": [
+      { "id": "shape1", "type": "circle", "x": 40, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4a4a6a" },
+      { "id": "shape2", "type": "star", "x": 120, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#ffd700" },
+      { "id": "shape3", "type": "heart", "x": 200, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4a4a6a" },
+      { "id": "shape4", "type": "diamond", "x": 280, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#9333ea" }
+    ],
+    "solution": { "action": "tap", "targetId": "shape3" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "shape1", "response": "shake", "message": "Not a heart!" },
+      { "action": "tap", "targetId": "shape2", "response": "shake", "message": "That's a star!" },
+      { "action": "tap", "targetId": "shape4", "response": "shake", "message": "That's a diamond!" }
+    ],
+    "hint": "Love is the answer",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-016",
+    "title": "Lightest Color",
+    "prompt": "Tap the lightest color",
+    "type": "tap",
+    "elements": [
+      { "id": "dark1", "type": "rect", "x": 40, "y": 220, "w": 80, "h": 80, "clickable": true, "color": "#1a1a2e" },
+      { "id": "mid", "type": "rect", "x": 155, "y": 220, "w": 80, "h": 80, "clickable": true, "color": "#4a4a6a" },
+      { "id": "light", "type": "rect", "x": 270, "y": 220, "w": 80, "h": 80, "clickable": true, "color": "#e0e0e0" }
+    ],
+    "solution": { "action": "tap", "targetId": "light" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "dark1", "response": "shake", "message": "That's the darkest!" },
+      { "action": "tap", "targetId": "mid", "response": "shake", "message": "Not the lightest!" }
+    ],
+    "hint": "White is lighter than gray",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-017",
+    "title": "Tap Order",
+    "prompt": "Tap the numbers in order: 1, 2, 3",
+    "type": "sequence",
+    "elements": [
+      { "id": "num3", "type": "rect", "x": 50, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4a4a6a", "label": "3" },
+      { "id": "num1", "type": "rect", "x": 160, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4a4a6a", "label": "1" },
+      { "id": "num2", "type": "rect", "x": 270, "y": 200, "w": 70, "h": 70, "clickable": true, "color": "#4a4a6a", "label": "2" }
+    ],
+    "solution": { "action": "sequence", "steps": ["num1", "num2", "num3"] },
+    "decoyActions": [],
+    "hint": "Start with the smallest",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-018",
+    "title": "Shadow Match",
+    "prompt": "Which shadow matches the shape?",
+    "type": "tap",
+    "elements": [
+      { "id": "source", "type": "star", "x": 165, "y": 100, "w": 60, "h": 60, "color": "#ffd700" },
+      { "id": "shadow1", "type": "circle", "x": 40, "y": 250, "w": 60, "h": 60, "clickable": true, "color": "#2a2a2a" },
+      { "id": "shadow2", "type": "star", "x": 165, "y": 250, "w": 60, "h": 60, "clickable": true, "color": "#2a2a2a" },
+      { "id": "shadow3", "type": "triangle", "x": 290, "y": 250, "w": 60, "h": 60, "clickable": true, "color": "#2a2a2a" }
+    ],
+    "solution": { "action": "tap", "targetId": "shadow2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "shadow1", "response": "shake", "message": "Wrong shape!" },
+      { "action": "tap", "targetId": "shadow3", "response": "shake", "message": "Not a match!" }
+    ],
+    "hint": "Shadows have the same shape",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-019",
+    "title": "Connect the Dots",
+    "prompt": "Tap the dots in order to form a square",
+    "type": "sequence",
+    "elements": [
+      { "id": "dot1", "type": "circle", "x": 100, "y": 180, "w": 30, "h": 30, "clickable": true, "color": "#4DABF7" },
+      { "id": "dot2", "type": "circle", "x": 260, "y": 180, "w": 30, "h": 30, "clickable": true, "color": "#4DABF7" },
+      { "id": "dot3", "type": "circle", "x": 260, "y": 340, "w": 30, "h": 30, "clickable": true, "color": "#4DABF7" },
+      { "id": "dot4", "type": "circle", "x": 100, "y": 340, "w": 30, "h": 30, "clickable": true, "color": "#4DABF7" }
+    ],
+    "solution": { "action": "sequence", "steps": ["dot1", "dot2", "dot3", "dot4"] },
+    "decoyActions": [],
+    "hint": "Go clockwise around",
+    "difficulty": 3
+  },
+  {
+    "id": "bt-020",
+    "title": "Quick Math",
+    "prompt": "What's the missing number? 2 + ? = 7",
+    "type": "tap",
+    "elements": [
+      { "id": "eq", "type": "text", "x": 120, "y": 180, "w": 150, "h": 40, "text": "2 + ? = 7", "fontSize": 32, "color": "#ffffff" },
+      { "id": "opt3", "type": "rect", "x": 40, "y": 280, "w": 80, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "3" },
+      { "id": "opt5", "type": "rect", "x": 155, "y": 280, "w": 80, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "5" },
+      { "id": "opt9", "type": "rect", "x": 270, "y": 280, "w": 80, "h": 60, "clickable": true, "color": "#4a4a6a", "label": "9" }
+    ],
+    "solution": { "action": "tap", "targetId": "opt5" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "opt3", "response": "shake", "message": "2 + 3 = 5, not 7!" },
+      { "action": "tap", "targetId": "opt9", "response": "shake", "message": "2 + 9 = 11, not 7!" }
+    ],
+    "hint": "7 minus 2",
+    "difficulty": 1
+  },
+  {
+    "id": "bt-021",
+    "title": "Color Mixing",
+    "prompt": "What color do you get when you mix red and blue?",
+    "type": "tap",
+    "elements": [
+      { "id": "red", "type": "circle", "x": 80, "y": 150, "w": 50, "h": 50, "color": "#FF6B6B" },
+      { "id": "plus", "type": "text", "x": 145, "y": 150, "w": 30, "h": 50, "text": "+", "fontSize": 32, "color": "#ffffff" },
+      { "id": "blue", "type": "circle", "x": 190, "y": 150, "w": 50, "h": 50, "color": "#4DABF7" },
+      { "id": "opt1", "type": "rect", "x": 40, "y": 280, "w": 80, "h": 60, "clickable": true, "color": "#69DB7C", "label": "Green" },
+      { "id": "opt2", "type": "rect", "x": 155, "y": 280, "w": 80, "h": 60, "clickable": true, "color": "#B197FC", "label": "Purple" },
+      { "id": "opt3", "type": "rect", "x": 270, "y": 280, "w": 80, "h": 60, "clickable": true, "color": "#FFA94D", "label": "Orange" }
+    ],
+    "solution": { "action": "tap", "targetId": "opt2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "opt1", "response": "shake", "message": "That's yellow + blue!" },
+      { "action": "tap", "targetId": "opt3", "response": "shake", "message": "That's red + yellow!" }
+    ],
+    "hint": "Think of grapes",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-022",
+    "title": "Drag the Ball",
+    "prompt": "Put the ball in the cup",
+    "type": "drag",
+    "elements": [
+      { "id": "ball", "type": "ball", "x": 50, "y": 300, "w": 40, "h": 40, "draggable": true, "color": "#FF6B6B" },
+      { "id": "cup1", "type": "cup", "x": 150, "y": 200, "w": 80, "h": 100 },
+      { "id": "cup2", "type": "cup", "x": 260, "y": 200, "w": 80, "h": 100 }
+    ],
+    "solution": { "action": "drag", "sourceId": "ball", "targetId": "cup1" },
+    "decoyActions": [
+      { "action": "drag", "sourceId": "ball", "targetId": "cup2", "response": "shake", "message": "Wrong cup!" }
+    ],
+    "hint": "The left cup",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-023",
+    "title": "Reverse Order",
+    "prompt": "Tap in reverse order: C, B, A",
+    "type": "sequence",
+    "elements": [
+      { "id": "a", "type": "rect", "x": 50, "y": 200, "w": 80, "h": 80, "clickable": true, "color": "#4a4a6a", "label": "A" },
+      { "id": "b", "type": "rect", "x": 155, "y": 200, "w": 80, "h": 80, "clickable": true, "color": "#4a4a6a", "label": "B" },
+      { "id": "c", "type": "rect", "x": 260, "y": 200, "w": 80, "h": 80, "clickable": true, "color": "#4a4a6a", "label": "C" }
+    ],
+    "solution": { "action": "sequence", "steps": ["c", "b", "a"] },
+    "decoyActions": [],
+    "hint": "Start from the end",
+    "difficulty": 2
+  },
+  {
+    "id": "bt-024",
+    "title": "Shape Rotation",
+    "prompt": "Which triangle would point up if rotated 180 degrees?",
+    "type": "tap",
+    "elements": [
+      { "id": "t1", "type": "triangle", "x": 40, "y": 220, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7" },
+      { "id": "t2", "type": "triangle", "x": 160, "y": 220, "w": 70, "h": 70, "clickable": true, "color": "#FF6B6B" },
+      { "id": "t3", "type": "triangle", "x": 280, "y": 220, "w": 70, "h": 70, "clickable": true, "color": "#69DB7C" }
+    ],
+    "solution": { "action": "tap", "targetId": "t2" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "t1", "response": "shake", "message": "Imagine it rotated!" },
+      { "action": "tap", "targetId": "t3", "response": "shake", "message": "That would point down!" }
+    ],
+    "hint": "Pointing down becomes pointing up",
+    "difficulty": 3
+  },
+  {
+    "id": "bt-025",
+    "title": "Final Challenge",
+    "prompt": "Complete the sequence: Red, Blue, Red, Blue, ...",
+    "type": "tap",
+    "showBanner": true,
+    "elements": [
+      { "id": "r1", "type": "circle", "x": 30, "y": 150, "w": 40, "h": 40, "color": "#FF6B6B" },
+      { "id": "b1", "type": "circle", "x": 80, "y": 150, "w": 40, "h": 40, "color": "#4DABF7" },
+      { "id": "r2", "type": "circle", "x": 130, "y": 150, "w": 40, "h": 40, "color": "#FF6B6B" },
+      { "id": "b2", "type": "circle", "x": 180, "y": 150, "w": 40, "h": 40, "color": "#4DABF7" },
+      { "id": "q", "type": "text", "x": 230, "y": 150, "w": 40, "h": 40, "text": "?", "fontSize": 32, "color": "#ffffff" },
+      { "id": "optRed", "type": "circle", "x": 80, "y": 280, "w": 70, "h": 70, "clickable": true, "color": "#FF6B6B" },
+      { "id": "optBlue", "type": "circle", "x": 160, "y": 280, "w": 70, "h": 70, "clickable": true, "color": "#4DABF7" },
+      { "id": "optGreen", "type": "circle", "x": 240, "y": 280, "w": 70, "h": 70, "clickable": true, "color": "#69DB7C" }
+    ],
+    "solution": { "action": "tap", "targetId": "optRed" },
+    "decoyActions": [
+      { "action": "tap", "targetId": "optBlue", "response": "shake", "message": "Check the pattern!" },
+      { "action": "tap", "targetId": "optGreen", "response": "shake", "message": "Green isn't in the pattern!" }
+    ],
+    "hint": "Red, Blue, Red, Blue, Red...",
+    "difficulty": 2
+  }
+]
