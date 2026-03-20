@@ -8,11 +8,10 @@
  * - Progress tracking via shared storage module
  */
 
-import { getGameStats, updateGameStats } from '../shared/storage.js';
+import { getGameStats } from '../shared/storage.js';
 import {
   getDailyChallenge,
-  isDailyCompleted,
-  completeDailyChallenge
+  isDailyCompleted
 } from '../shared/daily.js';
 
 // Game metadata for quick play and daily challenge
@@ -130,7 +129,7 @@ function initDailyChallenge() {
 
   // Update banner style based on completion
   if (isCompleted) {
-    banner.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+    banner.classList.add('completed');
     const icon = banner.querySelector('.banner-icon');
     if (icon) icon.textContent = '✓';
   }
