@@ -5,11 +5,19 @@
  * - Game card filtering by category
  * - Quick Play: opens random uncompleted level from any game
  * - Daily Challenge banner with dynamic link
- * - Progress tracking via localStorage
+ * - Progress tracking via shared storage module
  */
+
+import { getGameStats, updateGameStats } from '../shared/storage.js';
+import {
+  getDailyChallenge,
+  isDailyCompleted,
+  completeDailyChallenge
+} from '../shared/daily.js';
 
 // Game metadata for quick play and daily challenge
 const GAMES = [
+  { id: 'bus-jam', title: 'Bus Jam', category: 'puzzle' },
   { id: 'pull-the-pin', title: 'Pull the Pin', category: 'puzzle' },
   { id: 'water-sort', title: 'Water Sort', category: 'puzzle' },
   { id: 'brain-teaser', title: 'Brain Teaser', category: 'puzzle' },
@@ -24,96 +32,17 @@ const GAMES = [
   { id: 'makeover-run', title: 'Makeover Run', category: 'arcade' }
 ];
 
-// Storage key prefix
-const STORAGE_PREFIX = 'mg:hub:';
-
 /**
- * Get a value from localStorage
- */
-function storageGet(key) {
-  try {
-    const value = localStorage.getItem(STORAGE_PREFIX + key);
-    return value ? JSON.parse(value) : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Set a value in localStorage
- */
-function storageSet(key, value) {
-  try {
-    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
-  } catch {
-    // Quota exceeded or disabled
-  }
-}
-
-/**
- * Get today's daily challenge seed
- * Uses date string as seed for consistent daily challenge
- */
-function getDailyChallengeSeed() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Simple seeded PRNG for daily challenge selection
- * Mulberry32 algorithm
- */
-function seededRandom(seed) {
-  // Convert string seed to numeric
-  let h = 2166136261 >>> 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
-  }
-
-  // Mulberry32
-  let t = h += 0x6D2B79F5;
-  t = Math.imul(t ^ (t >>> 15), t | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-}
-
-/**
- * Get today's daily challenge game
- */
-function getDailyChallengeGame() {
-  const seed = getDailyChallengeSeed();
-  const random = seededRandom(seed);
-  const index = Math.floor(random * GAMES.length);
-  return GAMES[index];
-}
-
-/**
- * Check if daily challenge is completed today
- */
-function isDailyChallengeCompleted() {
-  const completedDate = storageGet('dailyChallengeCompleted');
-  const today = getDailyChallengeSeed();
-  return completedDate === today;
-}
-
-/**
- * Mark daily challenge as completed
- */
-function markDailyChallengeCompleted() {
-  storageSet('dailyChallengeCompleted', getDailyChallengeSeed());
-}
-
-/**
- * Get all games with uncompleted levels
+ * Get games with uncompleted levels
+ * Uses shared storage to check progress
  */
 function getGamesWithUncompletedLevels() {
   const result = [];
   for (const game of GAMES) {
-    const progress = storageGet(`progress:${game.id}`);
-    if (!progress || progress.completedLevels < progress.totalLevels) {
+    const stats = getGameStats(game.id);
+    // Game is "uncompleted" if played count is less than some threshold
+    // or if we track total levels vs completed levels
+    if (stats.played === 0 || stats.completed < stats.played) {
       result.push(game);
     }
   }
@@ -160,6 +89,7 @@ function initFilterTabs() {
 
 /**
  * Initialize Quick Play button
+ * Opens random uncompleted level from any game
  */
 function initQuickPlay() {
   const btn = document.getElementById('quickPlayBtn');
@@ -169,18 +99,13 @@ function initQuickPlay() {
     const availableGames = getGamesWithUncompletedLevels();
 
     if (availableGames.length === 0) {
-      // All games completed, pick random
+      // All games have been played, pick random
       const randomGame = GAMES[Math.floor(Math.random() * GAMES.length)];
       navigateToGame(randomGame.id);
     } else {
       // Pick random from available games
       const randomGame = availableGames[Math.floor(Math.random() * availableGames.length)];
-
-      // Try to find next uncompleted level
-      const progress = storageGet(`progress:${randomGame.id}`);
-      const nextLevel = progress ? progress.completedLevels + 1 : 1;
-
-      navigateToGame(randomGame.id, nextLevel);
+      navigateToGame(randomGame.id);
     }
   });
 }
@@ -194,16 +119,20 @@ function initDailyChallenge() {
 
   if (!banner || !subtitle) return;
 
-  const game = getDailyChallengeGame();
-  const isCompleted = isDailyChallengeCompleted();
+  const challenge = getDailyChallenge();
+  const game = GAMES.find(g => g.id === challenge.gameId);
+  const isCompleted = isDailyCompleted();
 
-  subtitle.textContent = `${game.title} - ${isCompleted ? 'Completed!' : 'Play now'}`;
-  banner.href = `/${game.id}/?daily=${getDailyChallengeSeed()}`;
+  if (game) {
+    subtitle.textContent = `${game.title} - ${isCompleted ? 'Completed!' : 'Play now'}`;
+    banner.href = `/${challenge.gameId}/?daily=${challenge.seed}`;
+  }
 
   // Update banner style based on completion
   if (isCompleted) {
     banner.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
-    banner.querySelector('.banner-icon').textContent = '✓';
+    const icon = banner.querySelector('.banner-icon');
+    if (icon) icon.textContent = '✓';
   }
 }
 
