@@ -1,0 +1,228 @@
+/**
+ * Save the Character - Game Styles
+ *
+ * Custom styles for the Save the Character puzzle game
+ */
+
+/* ===== Canvas Sizing ===== */
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: var(--radius-lg);
+}
+
+/* ===== Loading Shell ===== */
+.loading-shell {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--color-text-muted);
+}
+
+.loading-shell p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-bg-card);
+  border-top-color: var(--color-brand-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hide loading shell when game is ready */
+.game-board:not(:empty) .loading-shell {
+  display: none;
+}
+
+/* ===== Level Navigation ===== */
+.level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.level-progress {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* ===== Result Overlay ===== */
+.result-message {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+/* ===== Result States ===== */
+.result-win .game-overlay-title {
+  color: #22c55e;
+}
+
+.result-lose .game-overlay-title {
+  color: #ef4444;
+}
+
+/* ===== Stats Display ===== */
+.game-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+}
+
+.game-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-inverse);
+}
+
+.game-stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Overlay Buttons ===== */
+.overlay-buttons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+/* ===== Character Animation ===== */
+.character-saved {
+  animation: character-celebrate 0.5s ease-out;
+}
+
+.character-lost {
+  animation: character-fall 0.5s ease-in;
+}
+
+@keyframes character-celebrate {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes character-fall {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(20px); opacity: 0.5; }
+}
+
+/* ===== Choice Button States ===== */
+.choice-correct {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  border-color: #22c55e !important;
+}
+
+.choice-incorrect {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  border-color: #ef4444 !important;
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 400px) {
+  .game-container {
+    padding: var(--space-2);
+  }
+
+  .game-stats {
+    gap: var(--space-md);
+  }
+
+  .game-stat-value {
+    font-size: var(--font-size-xl);
+  }
+
+  .level-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+/* ===== Dark Mode Enhancements ===== */
+@media (prefers-color-scheme: dark) {
+  .game-overlay-content {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-bg-card);
+  }
+
+  #game-canvas {
+    background-color: #0f0f1a;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner,
+  .character-saved,
+  .character-lost {
+    animation: none;
+  }
+}
+
+.reduced-motion .loading-spinner,
+.reduced-motion .character-saved,
+.reduced-motion .character-lost {
+  animation: none;
+}
+
+/* ===== High Contrast Mode ===== */
+.high-contrast .game-btn {
+  border: 2px solid var(--color-text-primary);
+}
+
+.high-contrast #game-canvas {
+  border: 2px solid var(--color-text-primary);
+}
+
+/* ===== Touch Feedback ===== */
+@media (hover: none) {
+  .game-btn:active {
+    transform: scale(0.95);
+  }
+
+  #game-canvas:active {
+    opacity: 0.9;
+  }
+}
+
+/* ===== Landscape Mode ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  .game-stats {
+    flex-direction: row;
+    margin: 0;
+    padding: var(--space-xs);
+  }
+
+  .level-nav {
+    width: 100%;
+    margin: 0 var(--space-sm) var(--space-sm);
+  }
+}
