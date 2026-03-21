@@ -13,6 +13,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { initSwipeNav, saveGameState, getSavedGameState } from '../../shared/swipe-nav.js';
 
 import {
   createInitialState,
@@ -28,11 +29,6 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
-
-// Game constants
-const GAME_ID = 'jelly-shift';
-const LEVELS_URL = './levels.json';
-const FIXED_DT = 1 / 60;
 
 class JellyShiftGame {
   constructor() {
@@ -64,6 +60,9 @@ class JellyShiftGame {
     this.accumulator = 0;
     this.animationId = null;
     this.isRunning = false;
+
+    // Swipe navigation cleanup
+    this.cleanupSwipeNav = null;
   }
 
   /**
@@ -88,6 +87,21 @@ class JellyShiftGame {
 
       this.loadProgress();
       this.setupEventListeners();
+
+      // Initialize swipe navigation
+      this.cleanupSwipeNav = initSwipeNav({
+        currentGameId: GAME_ID,
+        container: document.body,
+        onSaveState: () => this.getStateForSwipeNav(),
+        onLoadGame: (gameId) => this.handleSwipeNavLoad(gameId),
+        onRestoreState: (state) => this.restoreStateFromSwipeNav(state)
+      });
+
+      // Check for saved state from swipe navigation
+      const savedState = getSavedGameState(GAME_ID);
+      if (savedState) {
+        this.restoreStateFromSwipeNav(savedState);
+      }
 
       this.startLevel(this.currentLevelIndex);
 
@@ -446,6 +460,46 @@ class JellyShiftGame {
     }
     if (this.renderer) {
       this.renderer.destroy();
+    }
+    if (this.cleanupSwipeNav) {
+      this.cleanupSwipeNav();
+    }
+  }
+
+  /**
+   * Get current state for swipe navigation
+   */
+  getStateForSwipeNav() {
+    if (!this.state) return null;
+    return {
+      levelIndex: this.currentLevelIndex,
+      score: this.state.score,
+      speed: this.state.speed,
+      wallsPassed: this.state.wallsPassed,
+      blobShape: {
+        width: this.state.blob.width,
+        height: this.state.blob.height
+      }
+    };
+  }
+
+  /**
+   * Restore state from swipe navigation
+   */
+  restoreStateFromSwipeNav(savedState) {
+    if (!savedState) return;
+    this.currentLevelIndex = savedState.levelIndex || 0;
+    // State will be restored when startLevel is called
+  }
+
+  /**
+   * Handle swipe navigation load (navigate to another game)
+   */
+  handleSwipeNavLoad(gameId) {
+    // Save current state before navigating away
+    const state = this.getStateForSwipeNav();
+    if (state) {
+      saveGameState(GAME_ID, state);
     }
   }
 }
