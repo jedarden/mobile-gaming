@@ -3,7 +3,7 @@
  *
  * Features:
  * - Game card filtering by category
- * - Quick Play: opens random uncompleted level from any game
+ * - Quick Play: intelligent game selection based on play history
  * - Daily Challenge banner with dynamic link
  * - Progress tracking via shared storage module
  */
@@ -13,8 +13,14 @@ import {
   getDailyChallenge,
   isDailyCompleted
 } from '../shared/daily.js';
+import {
+  pickGame,
+  getTopCandidates,
+  getGameUrl,
+  getAvailableGames
+} from '../shared/quick-play.js';
 
-// Game metadata for quick play and daily challenge
+// Game metadata for daily challenge (full list)
 const GAMES = [
   { id: 'bus-jam', title: 'Bus Jam', category: 'puzzle' },
   { id: 'pull-the-pin', title: 'Pull the Pin', category: 'puzzle' },
@@ -32,31 +38,19 @@ const GAMES = [
 ];
 
 /**
- * Get games with uncompleted levels
- * Uses shared storage to check progress
+ * Preload top candidate games for instant Quick Play
+ * Adds modulepreload links for the top 2 games
  */
-function getGamesWithUncompletedLevels() {
-  const result = [];
-  for (const game of GAMES) {
-    const stats = getGameStats(game.id);
-    // Game is "uncompleted" if played count is less than some threshold
-    // or if we track total levels vs completed levels
-    if (stats.played === 0 || stats.completed < stats.played) {
-      result.push(game);
-    }
-  }
-  return result;
-}
+function preloadTopCandidates() {
+  const candidates = getTopCandidates();
 
-/**
- * Navigate to a game with optional level parameter
- */
-function navigateToGame(gameId, level = null) {
-  let url = `/${gameId}/`;
-  if (level !== null) {
-    url += `?level=${level}`;
-  }
-  window.location.href = url;
+  candidates.forEach(({ gameId }) => {
+    // Create preload link for game module
+    const link = document.createElement('link');
+    link.rel = 'modulepreload';
+    link.href = `/src/games/${gameId}/game.js`;
+    document.head.appendChild(link);
+  });
 }
 
 /**
@@ -88,24 +82,15 @@ function initFilterTabs() {
 
 /**
  * Initialize Quick Play button
- * Opens random uncompleted level from any game
+ * Uses intelligent game selection based on play history
  */
 function initQuickPlay() {
   const btn = document.getElementById('quickPlayBtn');
   if (!btn) return;
 
   btn.addEventListener('click', () => {
-    const availableGames = getGamesWithUncompletedLevels();
-
-    if (availableGames.length === 0) {
-      // All games have been played, pick random
-      const randomGame = GAMES[Math.floor(Math.random() * GAMES.length)];
-      navigateToGame(randomGame.id);
-    } else {
-      // Pick random from available games
-      const randomGame = availableGames[Math.floor(Math.random() * availableGames.length)];
-      navigateToGame(randomGame.id);
-    }
+    const { gameId, level } = pickGame();
+    window.location.href = getGameUrl(gameId, level);
   });
 }
 
@@ -139,6 +124,7 @@ function initDailyChallenge() {
  * Initialize all features
  */
 function init() {
+  preloadTopCandidates();
   initFilterTabs();
   initQuickPlay();
   initDailyChallenge();
