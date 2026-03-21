@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a4a1a">
+  <meta name="description" content="Giant Runner - Collect matching orbs to grow and defeat the boss in this thrilling auto-runner!">
+  <title>Giant Runner</title>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../../styles/reset.css">
+  <link rel="stylesheet" href="../../styles/variables.css">
+  <link rel="stylesheet" href="../../styles/components.css">
+  <link rel="stylesheet" href="../../styles/game-shell.css">
+
+  <!-- Game-specific styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#game-container" class="skip-link">Skip to game</a>
+
+  <div class="game-container giant-runner">
+    <!-- Header -->
+    <header class="game-header">
+      <a href="../../" class="back-link" aria-label="Back to games">
+        <span aria-hidden="true">&larr;</span> Back
+      </a>
+      <h1 class="game-title">Giant Runner</h1>
+      <button id="btn-settings" class="btn-icon" aria-label="Settings">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Stats bar -->
+    <div class="game-stats">
+      <div class="stat">
+        <span class="stat-label">Level</span>
+        <span id="level-display" class="stat-value">1</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Scale</span>
+        <span id="scale-display" class="stat-value">1.00</span>
+      </div>
+      <div class="stat">
+        <span id="level-progress" class="stat-text">Level 1 / 20</span>
+      </div>
+    </div>
+
+    <!-- Game board (Three.js canvas) -->
+    <main id="game-container" class="game-board" role="application" aria-label="Giant Runner game area">
+    </main>
+
+    <!-- Controls -->
+    <div class="game-controls">
+      <button id="btn-restart" class="btn" aria-label="Restart level">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Restart
+      </button>
+    </div>
+
+    <!-- Level navigation -->
+    <nav class="level-nav" aria-label="Level navigation">
+      <button id="btn-prev" class="btn-icon" aria-label="Previous level">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <button id="btn-next" class="btn-icon" aria-label="Next level">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Win/Lose overlay -->
+    <div id="win-overlay" class="overlay" role="dialog" aria-labelledby="win-title" aria-hidden="true">
+      <div class="overlay-content">
+        <h2 id="win-title" class="overlay-title win">Level Complete!</h2>
+        <div id="stars-display" class="stars" aria-label="Stars earned">
+          <span class="star" aria-hidden="true">&#9733;</span>
+          <span class="star" aria-hidden="true">&#9733;</span>
+          <span class="star" aria-hidden="true">&#9733;</span>
+        </div>
+        <p id="stats-summary" class="stats-summary"></p>
+        <div class="overlay-actions">
+          <button id="btn-replay" class="btn btn-primary">Play Again</button>
+          <button id="btn-next-level" class="btn btn-secondary">Next Level</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings overlay -->
+    <div id="settings-overlay" class="overlay" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
+      <div class="overlay-content">
+        <h2 id="settings-title" class="overlay-title">Settings</h2>
+        <div class="setting-item">
+          <label for="setting-sound">Sound</label>
+          <input type="checkbox" id="setting-sound" checked>
+        </div>
+        <div class="setting-item">
+          <label for="setting-haptic">Haptic Feedback</label>
+          <input type="checkbox" id="setting-haptic" checked>
+        </div>
+        <div class="setting-item">
+          <label for="setting-motion">Reduced Motion</label>
+          <input type="checkbox" id="setting-motion">
+        </div>
+        <button id="btn-close-settings" class="btn btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pull the Pin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="game-container">
+    <header id="game-header">
+      <a href="../../" class="back-link" aria-label="Back to games"><span aria-hidden="true">&larr;</span> Back</a>
+      <h1>Pull the Pin</h1>
+      <button id="reset-btn" aria-label="Reset level">↺</button>
+    </header>
+
+    <main id="game-main">
+      <canvas id="game-canvas" width="320" height="480"></canvas>
+    </main>
+
+    <div id="overlay" class="hidden">
+      <div id="overlay-content">
+        <h2 id="overlay-title"></h2>
+        <p id="overlay-message"></p>
+        <div id="overlay-buttons">
+          <button id="overlay-retry">Retry</button>
+          <button id="overlay-next" class="primary">Next Level</button>
+        </div>
+      </div>
+    </div>
+
+    <footer id="game-footer">
+      <span id="level-indicator">Level 1</span>
+      <span id="pin-count">Pins: 3</span>
+    </footer>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>

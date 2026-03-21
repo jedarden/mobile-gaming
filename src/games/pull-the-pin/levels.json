@@ -1,0 +1,126 @@
+[
+  {
+    "id": "ptp-001",
+    "pins": [
+      { "id": "p1", "x": 160, "y": 180 }
+    ],
+    "balls": [
+      { "id": "b1", "x": 100, "y": 40, "color": "red" }
+    ],
+    "cups": [
+      { "id": "c1", "x": 70, "y": 400, "width": 60, "height": 60, "acceptColor": "red" }
+    ],
+    "channels": [
+      {
+        "segments": [[100, 60, 100, 180], [100, 180, 100, 400]],
+        "blockedByPin": "p1"
+      }
+    ],
+    "difficulty": 1
+  },
+  {
+    "id": "ptp-002",
+    "pins": [
+      { "id": "p1", "x": 120, "y": 150 },
+      { "id": "p2", "x": 200, "y": 250 }
+    ],
+    "balls": [
+      { "id": "b1", "x": 80, "y": 40, "color": "red" },
+      { "id": "b2", "x": 240, "y": 40, "color": "blue" }
+    ],
+    "cups": [
+      { "id": "c1", "x": 50, "y": 400, "width": 60, "height": 60, "acceptColor": "red" },
+      { "id": "c2", "x": 210, "y": 400, "width": 60, "height": 60, "acceptColor": "blue" }
+    ],
+    "channels": [
+      {
+        "segments": [[80, 60, 80, 150], [80, 150, 80, 400]],
+        "blockedByPin": "p1"
+      },
+      {
+        "segments": [[240, 60, 240, 250], [240, 250, 240, 400]],
+        "blockedByPin": "p2"
+      }
+    ],
+    "difficulty": 1
+  },
+  {
+    "id": "ptp-003",
+    "pins": [
+      { "id": "p1", "x": 160, "y": 120 },
+      { "id": "p2", "x": 160, "y": 220 },
+      { "id": "p3", "x": 160, "y": 320 }
+    ],
+    "balls": [
+      { "id": "b1", "x": 160, "y": 40, "color": "green" }
+    ],
+    "cups": [
+      { "id": "c1", "x": 130, "y": 400, "width": 60, "height": 60, "acceptColor": "green" }
+    ],
+    "channels": [
+      {
+        "segments": [[160, 60, 160, 400]],
+        "blockedByPin": "p1"
+      }
+    ],
+    "difficulty": 1
+  },
+  {
+    "id": "ptp-004",
+    "pins": [
+      { "id": "p1", "x": 100, "y": 200 },
+      { "id": "p2", "x": 220, "y": 200 }
+    ],
+    "balls": [
+      { "id": "b1", "x": 80, "y": 40, "color": "red" },
+      { "id": "b2", "x": 240, "y": 40, "color": "red" }
+    ],
+    "cups": [
+      { "id": "c1", "x": 130, "y": 400, "width": 60, "height": 60, "acceptColor": "red" }
+    ],
+    "channels": [
+      {
+        "segments": [[80, 60, 80, 200], [80, 200, 160, 400]],
+        "blockedByPin": "p1"
+      },
+      {
+        "segments": [[240, 60, 240, 200], [240, 200, 160, 400]],
+        "blockedByPin": "p2"
+      }
+    ],
+    "difficulty": 2
+  },
+  {
+    "id": "ptp-005",
+    "pins": [
+      { "id": "p1", "x": 100, "y": 150 },
+      { "id": "p2", "x": 220, "y": 150 },
+      { "id": "p3", "x": 160, "y": 280 }
+    ],
+    "balls": [
+      { "id": "b1", "x": 80, "y": 40, "color": "red" },
+      { "id": "b2", "x": 240, "y": 40, "color": "blue" },
+      { "id": "b3", "x": 160, "y": 40, "color": "green" }
+    ],
+    "cups": [
+      { "id": "c1", "x": 50, "y": 400, "width": 50, "height": 60, "acceptColor": "red" },
+      { "id": "c2", "x": 135, "y": 400, "width": 50, "height": 60, "acceptColor": "green" },
+      { "id": "c3", "x": 220, "y": 400, "width": 50, "height": 60, "acceptColor": "blue" }
+    ],
+    "channels": [
+      {
+        "segments": [[80, 60, 80, 150], [80, 150, 75, 400]],
+        "blockedByPin": "p1"
+      },
+      {
+        "segments": [[240, 60, 240, 150], [240, 150, 245, 400]],
+        "blockedByPin": "p2"
+      },
+      {
+        "segments": [[160, 60, 160, 280], [160, 280, 160, 400]],
+        "blockedByPin": "p3"
+      }
+    ],
+    "difficulty": 2
+  }
+]

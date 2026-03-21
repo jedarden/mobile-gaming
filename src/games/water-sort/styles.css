@@ -1,0 +1,138 @@
+/**
+ * Water Sort - Game Styles
+ *
+ * Custom styles for the Water Sort puzzle game
+ */
+
+/* Game Board Canvas */
+#game-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Stars Display */
+.stars-display {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.stars-display .star {
+  font-size: 2rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.3;
+}
+
+.stars-display .star.filled {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Stats Summary */
+.stats-summary {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* Overlay Buttons */
+.overlay-buttons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+/* Settings Content */
+.settings-content {
+  min-width: 280px;
+}
+
+.settings-group {
+  margin-bottom: var(--space-4);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-bg-card);
+  cursor: pointer;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-brand-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .game-container {
+    padding: var(--space-2);
+  }
+
+  .game-controls {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .game-btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .level-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .game-overlay-content {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-bg-card);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .stars-display .star {
+    animation: none;
+    transition: none;
+  }
+}
+
+.reduced-motion .stars-display .star {
+  animation: none;
+  transition: none;
+}
+
+/* High contrast mode */
+.high-contrast .game-btn {
+  border: 2px solid var(--color-text-primary);
+}
+
+.high-contrast #game-canvas {
+  border: 2px solid var(--color-text-primary);
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .game-btn:active {
+    transform: scale(0.95);
+  }
+
+  #game-canvas:active {
+    opacity: 0.9;
+  }
+}

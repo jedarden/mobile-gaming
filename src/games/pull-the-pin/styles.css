@@ -1,0 +1,262 @@
+/* Pull the Pin - Styles */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game-container {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+#game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+#game-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+#game-header .back-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+#game-header .back-link:active {
+  background: #e9ecef;
+}
+
+#game-header button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #e9ecef;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+#game-header button:hover {
+  background: #dee2e6;
+}
+
+#game-header button:active {
+  transform: scale(0.95);
+}
+
+#game-main {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: #f1f3f4;
+}
+
+#game-canvas {
+  display: block;
+  background: #e8f4f8;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+}
+
+#game-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Overlay */
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+#overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#overlay-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  max-width: 280px;
+  transform: scale(1);
+  transition: transform 0.3s;
+}
+
+#overlay.hidden #overlay-content {
+  transform: scale(0.9);
+}
+
+#overlay-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+#overlay-message {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+#overlay-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+#overlay-buttons button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#overlay-retry {
+  background: #e9ecef;
+  color: #333;
+}
+
+#overlay-retry:hover {
+  background: #dee2e6;
+}
+
+#overlay-next {
+  background: #4CAF50;
+  color: #fff;
+}
+
+#overlay-next:hover {
+  background: #43A047;
+}
+
+#overlay-buttons button:active {
+  transform: scale(0.95);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+
+  #game-container {
+    background: #1e1e2e;
+  }
+
+  #game-header {
+    background: #252536;
+    border-color: #3a3a4a;
+  }
+
+  #game-header h1 {
+    color: #e0e0e0;
+  }
+
+  #game-header button {
+    background: #3a3a4a;
+    color: #e0e0e0;
+  }
+
+  #game-header button:hover {
+    background: #4a4a5a;
+  }
+
+  #game-main {
+    background: #1a1a2a;
+  }
+
+  #game-canvas {
+    background: #252536;
+  }
+
+  #game-footer {
+    background: #252536;
+    border-color: #3a3a4a;
+    color: #a0a0a0;
+  }
+
+  #overlay-content {
+    background: #2a2a3a;
+  }
+
+  #overlay-title {
+    color: #e0e0e0;
+  }
+
+  #overlay-message {
+    color: #a0a0a0;
+  }
+
+  #overlay-retry {
+    background: #3a3a4a;
+    color: #e0e0e0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 420px) {
+  #game-container {
+    max-width: 100%;
+    border-radius: 0;
+  }
+}

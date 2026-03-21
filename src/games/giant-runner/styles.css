@@ -1,0 +1,188 @@
+/**
+ * Giant Runner - Game Styles
+ */
+
+.game-container.giant-runner {
+  --game-bg: #1a4a1a;
+  background: linear-gradient(135deg, #1a4a1a 0%, #2d5a27 50%, #1a4a1a 100%);
+}
+
+/* Stats bar customization */
+.giant-runner .game-stats {
+  background: var(--color-game-header);
+  border-bottom: 1px solid rgba(77, 171, 247, 0.2);
+}
+
+.giant-runner .stat-value {
+  color: #4DABF7;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Game board - full viewport for Three.js canvas */
+.giant-runner .game-board {
+  background: #1a4a1a;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.giant-runner .game-board canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Controls */
+.giant-runner .game-controls {
+  background: var(--color-game-control);
+  border-top: 1px solid rgba(77, 171, 247, 0.2);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.giant-runner .game-controls .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.giant-runner .game-controls .btn:hover {
+  background: rgba(77, 171, 247, 0.1);
+  border-color: #4DABF7;
+  color: #4DABF7;
+}
+
+/* Level navigation */
+.giant-runner .level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-game-control);
+}
+
+.giant-runner .level-nav .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Overlay styles */
+.giant-runner .overlay {
+  background: rgba(26, 74, 26, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.giant-runner .overlay-title.win {
+  color: #69DB7C;
+}
+
+.giant-runner .overlay-title.lose {
+  color: #FF6B6B;
+}
+
+.giant-runner .stars .star {
+  color: var(--color-text-muted);
+  font-size: 2rem;
+  margin: 0 var(--space-xs);
+  transition: color var(--transition-normal);
+}
+
+.giant-runner .stars .star.filled {
+  color: #FFD93D;
+}
+
+.giant-runner .stats-summary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-md) 0;
+}
+
+.giant-runner .overlay-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.giant-runner .overlay-actions .btn-primary {
+  background: #4DABF7;
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: background var(--transition-fast);
+}
+
+.giant-runner .overlay-actions .btn-primary:hover {
+  background: #3a9be0;
+}
+
+.giant-runner .overlay-actions .btn-secondary {
+  background: transparent;
+  color: #4DABF7;
+  border: 1px solid #4DABF7;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+}
+
+.giant-runner .overlay-actions .btn-secondary:hover {
+  background: rgba(77, 171, 247, 0.1);
+}
+
+/* Settings */
+.giant-runner .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.giant-runner .setting-item label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .giant-runner .star,
+  .giant-runner .btn,
+  .giant-runner .btn-icon {
+    transition: none;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .giant-runner {
+    --game-bg: #0a2a0a;
+  }
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .giant-runner .game-header {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .giant-runner .game-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .giant-runner .overlay-content {
+    margin: var(--space-md);
+    padding: var(--space-lg);
+  }
+}
