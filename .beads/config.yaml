@@ -1,4 +1,1 @@
-# Beads Project Configuration
-# issue_prefix: mobile-gaming
-# default_priority: 2
-# default_type: task
+prefix: mobile-gaming
