@@ -939,6 +939,18 @@
         "z": 75,
         "color": "blue",
         "count": 2
+      },
+      {
+        "x": 0,
+        "z": 140,
+        "color": "blue",
+        "count": 15
+      },
+      {
+        "x": 6,
+        "z": 205,
+        "color": "blue",
+        "count": 15
       }
     ]
   },
