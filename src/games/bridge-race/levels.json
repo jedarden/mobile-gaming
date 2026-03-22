@@ -1,0 +1,242 @@
+[
+  {
+    "id": "br-001",
+    "arenaWidth": 24,
+    "finishZ": 80,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red", "x": 6, "ai": "random" }
+    ],
+    "bridges": [
+      { "z": 30, "required": 3 },
+      { "z": 60, "required": 3 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 10, "color": "blue", "count": 4 },
+      { "x": 8,  "z": 10, "color": "red",  "count": 5 },
+      { "x": 0,  "z": 15, "color": "blue", "count": 4 },
+      { "x": -8, "z": 40, "color": "blue", "count": 2 },
+      { "x": 8,  "z": 40, "color": "red",  "count": 5 }
+    ]
+  },
+  {
+    "id": "br-002",
+    "arenaWidth": 24,
+    "finishZ": 90,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red", "x": 6, "ai": "random" }
+    ],
+    "bridges": [
+      { "z": 35, "required": 3 },
+      { "z": 70, "required": 3 }
+    ],
+    "blockPiles": [
+      { "x": -6, "z": 8,  "color": "blue", "count": 4 },
+      { "x": 6,  "z": 8,  "color": "red",  "count": 4 },
+      { "x": 2,  "z": 18, "color": "blue", "count": 4 },
+      { "x": -4, "z": 45, "color": "blue", "count": 2 },
+      { "x": 6,  "z": 45, "color": "red",  "count": 4 }
+    ]
+  },
+  {
+    "id": "br-003",
+    "arenaWidth": 24,
+    "finishZ": 100,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red", "x": 8, "ai": "random" }
+    ],
+    "bridges": [
+      { "z": 35, "required": 3 },
+      { "z": 65, "required": 3 },
+      { "z": 90, "required": 3 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue", "count": 4 },
+      { "x": 8,  "z": 8,  "color": "red",  "count": 4 },
+      { "x": 0,  "z": 20, "color": "blue", "count": 4 },
+      { "x": -6, "z": 45, "color": "blue", "count": 4 },
+      { "x": 6,  "z": 45, "color": "red",  "count": 4 },
+      { "x": 0,  "z": 75, "color": "blue", "count": 2 }
+    ]
+  },
+  {
+    "id": "br-004",
+    "arenaWidth": 24,
+    "finishZ": 110,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red", "x": 7, "ai": "random" }
+    ],
+    "bridges": [
+      { "z": 30, "required": 3 },
+      { "z": 60, "required": 3 },
+      { "z": 90, "required": 3 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 10, "color": "blue", "count": 3 },
+      { "x": 8,  "z": 10, "color": "red",  "count": 4 },
+      { "x": 0,  "z": 20, "color": "blue", "count": 4 },
+      { "x": -6, "z": 40, "color": "blue", "count": 3 },
+      { "x": 6,  "z": 40, "color": "red",  "count": 4 },
+      { "x": 2,  "z": 70, "color": "blue", "count": 2 },
+      { "x": -4, "z": 70, "color": "red",  "count": 4 }
+    ]
+  },
+  {
+    "id": "br-005",
+    "arenaWidth": 24,
+    "finishZ": 130,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red",   "x": 6,  "ai": "random" },
+      { "color": "green", "x": -6, "ai": "greedy" }
+    ],
+    "bridges": [
+      { "z": 35, "required": 3 },
+      { "z": 65, "required": 3 },
+      { "z": 100, "required": 3 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue",  "count": 4 },
+      { "x": 8,  "z": 8,  "color": "red",   "count": 4 },
+      { "x": 0,  "z": 8,  "color": "green", "count": 4 },
+      { "x": 2,  "z": 22, "color": "blue",  "count": 4 },
+      { "x": -4, "z": 45, "color": "blue",  "count": 4 },
+      { "x": 6,  "z": 45, "color": "red",   "count": 4 },
+      { "x": -6, "z": 45, "color": "green", "count": 4 },
+      { "x": 0,  "z": 78, "color": "blue",  "count": 2 }
+    ]
+  },
+  {
+    "id": "br-006",
+    "arenaWidth": 24,
+    "finishZ": 140,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red",   "x": 6,  "ai": "random" },
+      { "color": "green", "x": -6, "ai": "greedy" }
+    ],
+    "bridges": [
+      { "z": 35, "required": 4 },
+      { "z": 70, "required": 4 },
+      { "z": 110, "required": 4 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue",  "count": 5 },
+      { "x": 8,  "z": 8,  "color": "red",   "count": 5 },
+      { "x": 0,  "z": 8,  "color": "green", "count": 5 },
+      { "x": 2,  "z": 22, "color": "blue",  "count": 5 },
+      { "x": -4, "z": 48, "color": "blue",  "count": 5 },
+      { "x": 6,  "z": 48, "color": "red",   "count": 5 },
+      { "x": -7, "z": 48, "color": "green", "count": 5 },
+      { "x": 0,  "z": 85, "color": "blue",  "count": 2 }
+    ]
+  },
+  {
+    "id": "br-007",
+    "arenaWidth": 24,
+    "finishZ": 160,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red",   "x": 6,  "ai": "random" },
+      { "color": "green", "x": -6, "ai": "greedy" }
+    ],
+    "bridges": [
+      { "z": 40, "required": 4 },
+      { "z": 80, "required": 4 },
+      { "z": 120, "required": 4 },
+      { "z": 150, "required": 4 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue",  "count": 5 },
+      { "x": 8,  "z": 8,  "color": "red",   "count": 5 },
+      { "x": 0,  "z": 8,  "color": "green", "count": 5 },
+      { "x": 2,  "z": 22, "color": "blue",  "count": 5 },
+      { "x": -5, "z": 55, "color": "blue",  "count": 5 },
+      { "x": 7,  "z": 55, "color": "red",   "count": 5 },
+      { "x": -7, "z": 55, "color": "green", "count": 5 },
+      { "x": 4,  "z": 55, "color": "blue",  "count": 5 },
+      { "x": 0,  "z": 100,"color": "blue",  "count": 2 }
+    ]
+  },
+  {
+    "id": "br-008",
+    "arenaWidth": 24,
+    "finishZ": 180,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red",   "x": 6,  "ai": "greedy" },
+      { "color": "green", "x": -6, "ai": "greedy" }
+    ],
+    "bridges": [
+      { "z": 40, "required": 4 },
+      { "z": 80, "required": 4 },
+      { "z": 120, "required": 4 },
+      { "z": 160, "required": 4 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue",  "count": 6 },
+      { "x": 8,  "z": 8,  "color": "red",   "count": 6 },
+      { "x": 0,  "z": 8,  "color": "green", "count": 6 },
+      { "x": 2,  "z": 25, "color": "blue",  "count": 6 },
+      { "x": -5, "z": 58, "color": "blue",  "count": 6 },
+      { "x": 7,  "z": 58, "color": "red",   "count": 6 },
+      { "x": -7, "z": 58, "color": "green", "count": 6 },
+      { "x": 4,  "z": 58, "color": "blue",  "count": 2 }
+    ]
+  },
+  {
+    "id": "br-009",
+    "arenaWidth": 24,
+    "finishZ": 200,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red",   "x": 6,  "ai": "greedy" },
+      { "color": "green", "x": -6, "ai": "greedy" }
+    ],
+    "bridges": [
+      { "z": 40,  "required": 5 },
+      { "z": 80,  "required": 5 },
+      { "z": 130, "required": 5 },
+      { "z": 175, "required": 5 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue",  "count": 7 },
+      { "x": 8,  "z": 8,  "color": "red",   "count": 7 },
+      { "x": 0,  "z": 8,  "color": "green", "count": 7 },
+      { "x": 2,  "z": 25, "color": "blue",  "count": 7 },
+      { "x": -6, "z": 58, "color": "blue",  "count": 7 },
+      { "x": 7,  "z": 58, "color": "red",   "count": 7 },
+      { "x": -7, "z": 58, "color": "green", "count": 7 },
+      { "x": 4,  "z": 58, "color": "blue",  "count": 3 }
+    ]
+  },
+  {
+    "id": "br-010",
+    "arenaWidth": 24,
+    "finishZ": 220,
+    "playerColor": "blue",
+    "opponents": [
+      { "color": "red",   "x": 6,  "ai": "greedy" },
+      { "color": "green", "x": -6, "ai": "greedy" }
+    ],
+    "bridges": [
+      { "z": 45,  "required": 5 },
+      { "z": 90,  "required": 5 },
+      { "z": 140, "required": 5 },
+      { "z": 195, "required": 5 }
+    ],
+    "blockPiles": [
+      { "x": -8, "z": 8,  "color": "blue",  "count": 8 },
+      { "x": 8,  "z": 8,  "color": "red",   "count": 8 },
+      { "x": 0,  "z": 8,  "color": "green", "count": 8 },
+      { "x": 2,  "z": 28, "color": "blue",  "count": 8 },
+      { "x": -6, "z": 65, "color": "blue",  "count": 8 },
+      { "x": 7,  "z": 65, "color": "red",   "count": 8 },
+      { "x": -7, "z": 65, "color": "green", "count": 8 },
+      { "x": 4,  "z": 65, "color": "blue",  "count": 2 }
+    ]
+  }
+]

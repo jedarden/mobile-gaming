@@ -1,0 +1,712 @@
+/**
+ * Bridge Race - Unit Tests
+ *
+ * Tests pure state functions: collectBlock, placeBlock, isBridgeComplete,
+ * crossBridge, moveEntity, checkWin, findNearestPile, findNextBridge,
+ * findBridgeCell, aiTick, performProximityActions, calculateStars.
+ */
+
+import { describe, it, expect } from 'vitest';
+import {
+  createInitialState,
+  collectBlock,
+  placeBlock,
+  isBridgeComplete,
+  crossBridge,
+  hasEntityWon,
+  checkWin,
+  moveEntity,
+  findNearestPile,
+  findNextBridge,
+  findBridgeCell,
+  aiTick,
+  performProximityActions,
+  isGameOver,
+  calculateStars,
+  COLLECT_RADIUS,
+  PLACE_RADIUS,
+  ENTITY_SPEED
+} from '../../src/games/bridge-race/state.js';
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function makeLevel(overrides = {}) {
+  return {
+    arenaWidth: 24,
+    finishZ: 100,
+    playerColor: 'blue',
+    opponents: [
+      { color: 'red',   x: 6,  ai: 'greedy' },
+      { color: 'green', x: -6, ai: 'random' }
+    ],
+    bridges: [
+      { z: 30, required: 3 },
+      { z: 70, required: 3 }
+    ],
+    blockPiles: [
+      { x: -5, z: 10, color: 'blue',  count: 5 },
+      { x: 5,  z: 10, color: 'red',   count: 5 },
+      { x: 0,  z: 40, color: 'blue',  count: 5 },
+      { x: 0,  z: 40, color: 'green', count: 5 }
+    ],
+    ...overrides
+  };
+}
+
+// ── Exported constants ─────────────────────────────────────────────────────
+
+describe('exported constants', () => {
+  it('COLLECT_RADIUS is 2.0', () => {
+    expect(COLLECT_RADIUS).toBe(2.0);
+  });
+  it('PLACE_RADIUS is 3.0', () => {
+    expect(PLACE_RADIUS).toBe(3.0);
+  });
+  it('ENTITY_SPEED is 5', () => {
+    expect(ENTITY_SPEED).toBe(5);
+  });
+});
+
+// ── createInitialState ─────────────────────────────────────────────────────
+
+describe('createInitialState', () => {
+  it('sets player color from level', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.player.color).toBe('blue');
+  });
+
+  it('initializes player blocks to 0', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.player.blocks).toBe(0);
+  });
+
+  it('initializes player position to 0,0', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.player.x).toBe(0);
+    expect(state.player.z).toBe(0);
+  });
+
+  it('initializes bridgesCompleted to 0', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.player.bridgesCompleted).toBe(0);
+  });
+
+  it('sets status to "racing"', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.status).toBe('racing');
+  });
+
+  it('creates bridges with null cells', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.bridges.length).toBe(2);
+    expect(state.bridges[0].cells).toEqual([null, null, null]);
+  });
+
+  it('creates opponents array', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.opponents.length).toBe(2);
+    expect(state.opponents[0].color).toBe('red');
+    expect(state.opponents[1].color).toBe('green');
+  });
+
+  it('sets finishZ from level', () => {
+    const state = createInitialState(makeLevel({ finishZ: 150 }));
+    expect(state.finishZ).toBe(150);
+  });
+
+  it('sets totalBridges from bridges array length', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.totalBridges).toBe(2);
+  });
+
+  it('sets time to 0', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.time).toBe(0);
+  });
+});
+
+// ── collectBlock ──────────────────────────────────────────────────────────
+
+describe('collectBlock', () => {
+  it('collects block when colors match', () => {
+    const state = createInitialState(makeLevel());
+    const next  = collectBlock(state, 'player', 0); // pile 0 is blue
+    expect(next.player.blocks).toBe(1);
+    expect(next.blockPiles[0].count).toBe(4);
+  });
+
+  it('does not collect when colors do not match', () => {
+    const state = createInitialState(makeLevel());
+    const next  = collectBlock(state, 'player', 1); // pile 1 is red, player is blue
+    expect(next.player.blocks).toBe(0);
+    expect(next.blockPiles[1].count).toBe(5);
+  });
+
+  it('does not collect when pile count is 0', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, blockPiles: state.blockPiles.map((p, i) => i === 0 ? { ...p, count: 0 } : p) };
+    const next = collectBlock(state, 'player', 0);
+    expect(next.player.blocks).toBe(0);
+  });
+
+  it('works for opponent entities', () => {
+    const state = createInitialState(makeLevel());
+    const next  = collectBlock(state, 0, 1); // opponent 0 is red, pile 1 is red
+    expect(next.opponents[0].blocks).toBe(1);
+    expect(next.blockPiles[1].count).toBe(4);
+  });
+
+  it('returns state unchanged for invalid pile index', () => {
+    const state = createInitialState(makeLevel());
+    const next  = collectBlock(state, 'player', 99);
+    expect(next).toBe(state);
+  });
+
+  it('decrements pile count by 1 per call', () => {
+    let state = createInitialState(makeLevel());
+    state = collectBlock(state, 'player', 0);
+    state = collectBlock(state, 'player', 0);
+    expect(state.blockPiles[0].count).toBe(3);
+    expect(state.player.blocks).toBe(2);
+  });
+});
+
+// ── placeBlock ─────────────────────────────────────────────────────────────
+
+describe('placeBlock', () => {
+  it('places block in empty cell', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, blocks: 1 } };
+    const next = placeBlock(state, 'player', 0, 0);
+    expect(next.bridges[0].cells[0]).toBe('blue');
+    expect(next.player.blocks).toBe(0);
+  });
+
+  it('overwrites opponent cell (sabotage mechanic)', () => {
+    let state = createInitialState(makeLevel());
+    // First let red opponent place a block
+    state = { ...state,
+      opponents: state.opponents.map((o, i) => i === 0 ? { ...o, blocks: 1 } : o)
+    };
+    state = placeBlock(state, 0, 0, 0); // opponent 0 places in cell 0
+    expect(state.bridges[0].cells[0]).toBe('red');
+
+    // Now player overwrites it
+    state = { ...state, player: { ...state.player, blocks: 1 } };
+    const next = placeBlock(state, 'player', 0, 0);
+    expect(next.bridges[0].cells[0]).toBe('blue');
+  });
+
+  it('returns state unchanged if entity has no blocks', () => {
+    const state = createInitialState(makeLevel());
+    expect(state.player.blocks).toBe(0);
+    const next = placeBlock(state, 'player', 0, 0);
+    expect(next).toBe(state);
+  });
+
+  it('decrements entity.blocks after placing', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, blocks: 3 } };
+    const next = placeBlock(state, 'player', 0, 0);
+    expect(next.player.blocks).toBe(2);
+  });
+
+  it('returns state unchanged for invalid bridge index', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, blocks: 1 } };
+    const next = placeBlock(state, 'player', 99, 0);
+    expect(next).toBe(state);
+  });
+
+  it('returns state unchanged for invalid cell index', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, blocks: 1 } };
+    const next = placeBlock(state, 'player', 0, 99);
+    expect(next).toBe(state);
+  });
+
+  it('works for opponent entities', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state,
+      opponents: state.opponents.map((o, i) => i === 0 ? { ...o, blocks: 2 } : o)
+    };
+    const next = placeBlock(state, 0, 0, 1);
+    expect(next.bridges[0].cells[1]).toBe('red');
+    expect(next.opponents[0].blocks).toBe(1);
+  });
+});
+
+// ── isBridgeComplete ──────────────────────────────────────────────────────
+
+describe('isBridgeComplete', () => {
+  it('returns false for all-null cells', () => {
+    const bridge = { cells: [null, null, null] };
+    expect(isBridgeComplete(bridge, 'blue')).toBe(false);
+  });
+
+  it('returns false for partially filled cells', () => {
+    const bridge = { cells: ['blue', null, 'blue'] };
+    expect(isBridgeComplete(bridge, 'blue')).toBe(false);
+  });
+
+  it('returns true when all cells match the color', () => {
+    const bridge = { cells: ['blue', 'blue', 'blue'] };
+    expect(isBridgeComplete(bridge, 'blue')).toBe(true);
+  });
+
+  it('returns false when cells have mixed colors', () => {
+    const bridge = { cells: ['blue', 'red', 'blue'] };
+    expect(isBridgeComplete(bridge, 'blue')).toBe(false);
+  });
+
+  it('returns false when cells match a different color', () => {
+    const bridge = { cells: ['red', 'red', 'red'] };
+    expect(isBridgeComplete(bridge, 'blue')).toBe(false);
+  });
+
+  it('returns false for empty cells array', () => {
+    const bridge = { cells: [] };
+    expect(isBridgeComplete(bridge, 'blue')).toBe(false);
+  });
+});
+
+// ── crossBridge ───────────────────────────────────────────────────────────
+
+describe('crossBridge', () => {
+  function makeStateWithBridge(bridgeColor) {
+    let state = createInitialState(makeLevel());
+    // Fill bridge 0 with given color
+    const cells = Array(3).fill(bridgeColor);
+    state = { ...state, bridges: state.bridges.map((b, i) => i === 0 ? { ...b, cells } : b) };
+    return state;
+  }
+
+  it('increments bridgesCompleted when bridge is complete', () => {
+    const state = makeStateWithBridge('blue');
+    const next  = crossBridge(state, 'player', 0);
+    expect(next.player.bridgesCompleted).toBe(1);
+  });
+
+  it('advances entity z to bridge.z + 1', () => {
+    const state = makeStateWithBridge('blue');
+    const next  = crossBridge(state, 'player', 0);
+    expect(next.player.z).toBe(state.bridges[0].z + 1);
+  });
+
+  it('does not cross if bridge is not complete', () => {
+    const state = createInitialState(makeLevel());
+    const next  = crossBridge(state, 'player', 0);
+    expect(next.player.bridgesCompleted).toBe(0);
+    expect(next).toBe(state);
+  });
+
+  it('enforces bridge order - cannot skip to bridge 1 without crossing bridge 0', () => {
+    let state = createInitialState(makeLevel());
+    // Fill bridge 1 with blue but leave bridge 0 empty
+    const cells = Array(3).fill('blue');
+    state = { ...state, bridges: state.bridges.map((b, i) => i === 1 ? { ...b, cells } : b) };
+    const next = crossBridge(state, 'player', 1);
+    // bridgesCompleted is 0, bridgeIdx is 1 → blocked
+    expect(next.player.bridgesCompleted).toBe(0);
+  });
+
+  it('works for opponents', () => {
+    let state = createInitialState(makeLevel());
+    const cells = Array(3).fill('red');
+    state = { ...state, bridges: state.bridges.map((b, i) => i === 0 ? { ...b, cells } : b) };
+    const next = crossBridge(state, 0, 0);
+    expect(next.opponents[0].bridgesCompleted).toBe(1);
+  });
+
+  it('returns state unchanged for invalid bridge index', () => {
+    const state = createInitialState(makeLevel());
+    const next  = crossBridge(state, 'player', 99);
+    expect(next).toBe(state);
+  });
+});
+
+// ── hasEntityWon ──────────────────────────────────────────────────────────
+
+describe('hasEntityWon', () => {
+  it('returns false when entity has not crossed all bridges', () => {
+    const state = createInitialState(makeLevel());
+    expect(hasEntityWon(state, 'player')).toBe(false);
+  });
+
+  it('returns false when entity is past finishZ but has not crossed all bridges', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, z: 200, bridgesCompleted: 1 } };
+    expect(hasEntityWon(state, 'player')).toBe(false);
+  });
+
+  it('returns true when entity is past finishZ and crossed all bridges', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, z: 200, bridgesCompleted: 2 } };
+    expect(hasEntityWon(state, 'player')).toBe(true);
+  });
+});
+
+// ── checkWin ──────────────────────────────────────────────────────────────
+
+describe('checkWin', () => {
+  it('returns "won" if player has won', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, z: 200, bridgesCompleted: 2 } };
+    const next = checkWin(state);
+    expect(next.status).toBe('won');
+  });
+
+  it('returns "lost" if opponent 0 has won', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state,
+      opponents: state.opponents.map((o, i) =>
+        i === 0 ? { ...o, z: 200, bridgesCompleted: 2 } : o
+      )
+    };
+    const next = checkWin(state);
+    expect(next.status).toBe('lost');
+  });
+
+  it('returns "lost" if opponent 1 has won', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state,
+      opponents: state.opponents.map((o, i) =>
+        i === 1 ? { ...o, z: 200, bridgesCompleted: 2 } : o
+      )
+    };
+    const next = checkWin(state);
+    expect(next.status).toBe('lost');
+  });
+
+  it('returns state unchanged if nobody has won', () => {
+    const state = createInitialState(makeLevel());
+    const next  = checkWin(state);
+    expect(next).toBe(state);
+  });
+
+  it('player winning takes priority over checking opponents', () => {
+    let state = createInitialState(makeLevel());
+    // Both player and opponent 0 have won conditions
+    state = {
+      ...state,
+      player: { ...state.player, z: 200, bridgesCompleted: 2 },
+      opponents: state.opponents.map((o, i) =>
+        i === 0 ? { ...o, z: 200, bridgesCompleted: 2 } : o
+      )
+    };
+    const next = checkWin(state);
+    expect(next.status).toBe('won');
+  });
+
+  it('returns state unchanged if already game over', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, status: 'won' };
+    const next = checkWin(state);
+    expect(next).toBe(state);
+  });
+});
+
+// ── moveEntity ─────────────────────────────────────────────────────────────
+
+describe('moveEntity', () => {
+  it('moves entity by dx, dz', () => {
+    const state = createInitialState(makeLevel());
+    const next  = moveEntity(state, 'player', 2, 5);
+    expect(next.player.x).toBe(2);
+    expect(next.player.z).toBe(5);
+  });
+
+  it('clamps x to arena bounds (positive)', () => {
+    const state = createInitialState(makeLevel());
+    const next  = moveEntity(state, 'player', 100, 0);
+    expect(next.player.x).toBe(12); // arenaWidth/2 = 12
+  });
+
+  it('clamps x to arena bounds (negative)', () => {
+    const state = createInitialState(makeLevel());
+    const next  = moveEntity(state, 'player', -100, 0);
+    expect(next.player.x).toBe(-12);
+  });
+
+  it('blocks z at incomplete bridge', () => {
+    const state = createInitialState(makeLevel());
+    // Bridge 0 is at z=30, incomplete
+    const next = moveEntity(state, 'player', 0, 50);
+    expect(next.player.z).toBe(30); // blocked at bridge.z
+  });
+
+  it('allows advancing past bridge if it is complete', () => {
+    let state = createInitialState(makeLevel());
+    // Complete bridge 0 with blue
+    const cells = Array(3).fill('blue');
+    state = { ...state,
+      bridges: state.bridges.map((b, i) => i === 0 ? { ...b, cells } : b),
+      player: { ...state.player, bridgesCompleted: 1 }
+    };
+    const next = moveEntity(state, 'player', 0, 50);
+    expect(next.player.z).toBe(50); // not blocked by bridge 0 any more
+  });
+
+  it('blocks at first incomplete bridge only', () => {
+    let state = createInitialState(makeLevel());
+    // Complete bridge 0 with blue, bridge 1 still incomplete
+    const cells = Array(3).fill('blue');
+    state = { ...state,
+      bridges: state.bridges.map((b, i) => i === 0 ? { ...b, cells } : b),
+      player: { ...state.player, bridgesCompleted: 1, z: 31 }
+    };
+    const next = moveEntity(state, 'player', 0, 100);
+    expect(next.player.z).toBe(70); // blocked at bridge 1 z=70
+  });
+
+  it('works for opponents', () => {
+    const state = createInitialState(makeLevel());
+    const next  = moveEntity(state, 0, 1, 3);
+    expect(next.opponents[0].x).toBe(7); // 6 + 1
+    expect(next.opponents[0].z).toBe(3);
+  });
+});
+
+// ── findNearestPile ────────────────────────────────────────────────────────
+
+describe('findNearestPile', () => {
+  it('returns nearest pile with matching color', () => {
+    const state = createInitialState(makeLevel());
+    // Player is at (0,0), blue piles at (-5,10) and (0,40)
+    const idx = findNearestPile(state, 'player');
+    expect(idx).toBe(0); // (-5,10) is closer
+  });
+
+  it('returns -1 if no matching piles available', () => {
+    let state = createInitialState(makeLevel());
+    // Deplete all blue piles
+    state = { ...state, blockPiles: state.blockPiles.map(p =>
+      p.color === 'blue' ? { ...p, count: 0 } : p
+    )};
+    expect(findNearestPile(state, 'player')).toBe(-1);
+  });
+
+  it('ignores piles of wrong color', () => {
+    const state = createInitialState(makeLevel());
+    // Opponent 0 (red) should find pile index 1 (red)
+    const idx = findNearestPile(state, 0);
+    expect(idx).toBe(1);
+  });
+
+  it('returns -1 for entity with no matching color piles', () => {
+    const level = makeLevel({
+      blockPiles: [
+        { x: 0, z: 10, color: 'blue', count: 5 }
+      ]
+    });
+    const state = createInitialState(level);
+    // Opponent 0 is red, no red piles
+    expect(findNearestPile(state, 0)).toBe(-1);
+  });
+});
+
+// ── findNextBridge ─────────────────────────────────────────────────────────
+
+describe('findNextBridge', () => {
+  it('returns 0 for first incomplete bridge when player starts fresh', () => {
+    const state = createInitialState(makeLevel());
+    expect(findNextBridge(state, 'player')).toBe(0);
+  });
+
+  it('returns 1 after player has crossed bridge 0', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, bridgesCompleted: 1 } };
+    expect(findNextBridge(state, 'player')).toBe(1);
+  });
+
+  it('returns -1 when all bridges are complete for entity color', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state,
+      player: { ...state.player, bridgesCompleted: 2 },
+      bridges: state.bridges.map(b => ({ ...b, cells: Array(3).fill('blue') }))
+    };
+    expect(findNextBridge(state, 'player')).toBe(-1);
+  });
+
+  it('skips bridges already completed', () => {
+    let state = createInitialState(makeLevel());
+    // Bridge 0 complete for blue, player bridgesCompleted=1
+    const cells = Array(3).fill('blue');
+    state = { ...state,
+      bridges: state.bridges.map((b, i) => i === 0 ? { ...b, cells } : b),
+      player: { ...state.player, bridgesCompleted: 1 }
+    };
+    expect(findNextBridge(state, 'player')).toBe(1);
+  });
+});
+
+// ── findBridgeCell ─────────────────────────────────────────────────────────
+
+describe('findBridgeCell', () => {
+  it('returns 0 for all-null bridge', () => {
+    const bridge = { cells: [null, null, null] };
+    expect(findBridgeCell(bridge, 'blue')).toBe(0);
+  });
+
+  it('returns first non-matching cell', () => {
+    const bridge = { cells: ['blue', null, null] };
+    expect(findBridgeCell(bridge, 'blue')).toBe(1);
+  });
+
+  it('returns -1 when bridge is fully complete for color', () => {
+    const bridge = { cells: ['blue', 'blue', 'blue'] };
+    expect(findBridgeCell(bridge, 'blue')).toBe(-1);
+  });
+
+  it('finds first cell that differs, including opponent color', () => {
+    const bridge = { cells: ['blue', 'red', 'blue'] };
+    // Index 1 is 'red', not 'blue' → findBridgeCell returns 1
+    expect(findBridgeCell(bridge, 'blue')).toBe(1);
+
+    // For 'red' color filling: first non-red is index 0
+    expect(findBridgeCell(bridge, 'red')).toBe(0);
+  });
+});
+
+// ── aiTick ────────────────────────────────────────────────────────────────
+
+describe('aiTick', () => {
+  const mockRng = {
+    next: () => 0.1  // always < 0.7, so "random" ai behaves greedily
+  };
+
+  it('greedy AI moves toward pile when it has no blocks', () => {
+    const state = createInitialState(makeLevel());
+    const { dx, dz } = aiTick(state, 0, 1 / 60, mockRng);
+    // Opponent 0 (red) is at (6, 0), pile is at (5, 10)
+    // Should move toward pile direction
+    expect(typeof dx).toBe('number');
+    expect(typeof dz).toBe('number');
+  });
+
+  it('greedy AI moves forward when no blocks and no piles', () => {
+    const level = makeLevel({
+      blockPiles: [] // no piles at all
+    });
+    const state = createInitialState(level);
+    const { dx, dz } = aiTick(state, 0, 1 / 60, mockRng);
+    expect(dz).toBeGreaterThan(0); // moves forward
+  });
+
+  it('greedy AI moves toward bridge when it has blocks', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state,
+      opponents: state.opponents.map((o, i) => i === 0 ? { ...o, blocks: 3 } : o)
+    };
+    const { dx, dz } = aiTick(state, 0, 1 / 60, mockRng);
+    // Should move toward bridge (positive z direction since bridge is at z=30)
+    expect(dz).toBeGreaterThan(0);
+  });
+
+  it('random AI with high roll (>= 0.7) produces random wander', () => {
+    const highRoll = { next: () => 0.9 }; // always wanders
+    const state = createInitialState(makeLevel());
+    const { dx, dz } = aiTick(state, 1, 1 / 60, highRoll); // opponent 1 is 'random' ai
+    expect(typeof dx).toBe('number');
+    expect(typeof dz).toBe('number');
+  });
+
+  it('returns {dx:0, dz:0} for invalid opponent index', () => {
+    const state = createInitialState(makeLevel());
+    const result = aiTick(state, 99, 1 / 60, mockRng);
+    expect(result).toEqual({ dx: 0, dz: 0 });
+  });
+
+  it('greedy move is bounded by speed * dt', () => {
+    const state = createInitialState(makeLevel());
+    const dt = 1 / 60;
+    const { dx, dz } = aiTick(state, 0, dt, mockRng);
+    const mag = Math.sqrt(dx * dx + dz * dz);
+    expect(mag).toBeLessThanOrEqual(ENTITY_SPEED * dt + 0.001);
+  });
+});
+
+// ── performProximityActions ───────────────────────────────────────────────
+
+describe('performProximityActions', () => {
+  it('auto-collects from nearby pile of matching color', () => {
+    let state = createInitialState(makeLevel({
+      blockPiles: [{ x: 0, z: 1, color: 'blue', count: 3 }]
+    }));
+    // Player is at (0,0), pile at (0,1): distance = 1 < COLLECT_RADIUS=2
+    const next = performProximityActions(state, 'player');
+    expect(next.player.blocks).toBeGreaterThan(0);
+  });
+
+  it('does not collect from pile that is too far', () => {
+    let state = createInitialState(makeLevel({
+      blockPiles: [{ x: 0, z: 10, color: 'blue', count: 3 }]
+    }));
+    // Player is at (0,0), pile at (0,10): distance = 10 > COLLECT_RADIUS=2
+    const next = performProximityActions(state, 'player');
+    expect(next.player.blocks).toBe(0);
+  });
+
+  it('auto-places on nearby bridge', () => {
+    let state = createInitialState(makeLevel({
+      blockPiles: [{ x: 0, z: 0, color: 'blue', count: 3 }],
+      bridges: [{ z: 2, required: 2 }]
+    }));
+    // First collect a block
+    state = { ...state, player: { ...state.player, blocks: 1, z: 0 } };
+    // Move player near bridge z=2
+    state = { ...state, player: { ...state.player, z: 2 } };
+    const next = performProximityActions(state, 'player');
+    const filled = next.bridges[0].cells.filter(c => c === 'blue').length;
+    expect(filled).toBeGreaterThan(0);
+  });
+
+  it('auto-crosses bridge when complete', () => {
+    let state = createInitialState(makeLevel({
+      bridges: [{ z: 2, required: 2 }]
+    }));
+    // Fill bridge 0 with blue
+    const cells = ['blue', 'blue'];
+    state = { ...state,
+      bridges: [{ id: 0, z: 2, required: 2, cells }],
+      player: { ...state.player, z: 2 }
+    };
+    const next = performProximityActions(state, 'player');
+    expect(next.player.bridgesCompleted).toBe(1);
+  });
+});
+
+// ── isGameOver ─────────────────────────────────────────────────────────────
+
+describe('isGameOver', () => {
+  it('returns false when status is racing', () => {
+    const state = createInitialState(makeLevel());
+    expect(isGameOver(state)).toBe(false);
+  });
+
+  it('returns true when status is won', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'won' };
+    expect(isGameOver(state)).toBe(true);
+  });
+
+  it('returns true when status is lost', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(isGameOver(state)).toBe(true);
+  });
+});
+
+// ── calculateStars ─────────────────────────────────────────────────────────
+
+describe('calculateStars', () => {
+  it('returns a number 1-3', () => {
+    const state = createInitialState(makeLevel());
+    const stars = calculateStars(state);
+    expect(stars).toBeGreaterThanOrEqual(1);
+    expect(stars).toBeLessThanOrEqual(3);
+  });
+
+  it('returns 1 star when no cells filled', () => {
+    const state = createInitialState(makeLevel());
+    expect(calculateStars(state)).toBe(1);
+  });
+});

@@ -1,0 +1,178 @@
+/**
+ * Bridge Race - Game Styles
+ */
+
+.game-container.bridge-race {
+  --game-accent: #FFA94D;
+  background: linear-gradient(135deg, #1a0e00 0%, #3d2800 50%, #1a0e00 100%);
+}
+
+/* Stats bar */
+.bridge-race .game-stats {
+  background: var(--color-game-header);
+  border-bottom: 1px solid rgba(255, 169, 77, 0.2);
+}
+
+.bridge-race .stat-value {
+  color: #FFA94D;
+  font-weight: var(--font-weight-bold);
+}
+
+.bridge-race .block-count {
+  font-size: 1.4rem;
+  color: #4DABF7;
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+
+/* Game board */
+.bridge-race .game-board {
+  background: #1a0e00;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.bridge-race .game-board canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Controls */
+.bridge-race .game-controls {
+  background: var(--color-game-control);
+  border-top: 1px solid rgba(255, 169, 77, 0.2);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.bridge-race .game-controls .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.bridge-race .game-controls .btn:hover {
+  background: rgba(255, 169, 77, 0.1);
+  border-color: #FFA94D;
+  color: #FFA94D;
+}
+
+/* Level nav */
+.bridge-race .level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-game-control);
+}
+
+.bridge-race .level-nav .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Overlay */
+.bridge-race .overlay {
+  background: rgba(26, 14, 0, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.bridge-race .overlay-title.win  { color: #69DB7C; }
+.bridge-race .overlay-title.lose { color: #FF6B6B; }
+
+.bridge-race .stars .star {
+  color: var(--color-text-muted);
+  font-size: 2rem;
+  margin: 0 var(--space-xs);
+  transition: color var(--transition-normal);
+}
+
+.bridge-race .stars .star.filled { color: #FFD93D; }
+
+.bridge-race .stats-summary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-md) 0;
+}
+
+.bridge-race .overlay-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.bridge-race .overlay-actions .btn-primary {
+  background: #FFA94D;
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: background var(--transition-fast);
+}
+
+.bridge-race .overlay-actions .btn-primary:hover { background: #e8922a; }
+
+.bridge-race .overlay-actions .btn-secondary {
+  background: transparent;
+  color: #FFA94D;
+  border: 1px solid #FFA94D;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+}
+
+.bridge-race .overlay-actions .btn-secondary:hover {
+  background: rgba(255, 169, 77, 0.1);
+}
+
+/* Settings */
+.bridge-race .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bridge-race .setting-item label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bridge-race .star,
+  .bridge-race .btn,
+  .bridge-race .btn-icon,
+  .bridge-race .block-count {
+    transition: none;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .bridge-race { --game-bg: #0a0700; }
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .bridge-race .game-header { padding: var(--space-xs) var(--space-sm); }
+  .bridge-race .game-title  { font-size: var(--font-size-lg); }
+}
