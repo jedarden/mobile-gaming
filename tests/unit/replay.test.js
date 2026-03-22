@@ -20,6 +20,7 @@ import {
   isReplayUrl,
   createPlayback,
   createReplayBuffer,
+  createReplayRenderer,
   REPLAY_VERSION
 } from '../../src/shared/replay.js';
 
@@ -986,5 +987,85 @@ describe('Replay Scrubber', () => {
     // seek(150): events at t=0 and t=100 fire (0 < 150, 100 < 150)
     playback.seek(150);
     expect(playback.getCurrentIndex()).toBe(2);
+  });
+});
+
+// ===== Replay Renderer Tests =====
+
+describe('createReplayRenderer', () => {
+  let mockCanvas, mockMediaRecorder, mockStream;
+
+  beforeEach(() => {
+    // Mock MediaRecorder
+    mockMediaRecorder = {
+      state: 'inactive',
+      ondataavailable: null,
+      onstop: null,
+      onerror: null,
+      start: vi.fn(function() {
+        this.state = 'recording';
+      }),
+      stop: vi.fn(function() {
+        this.state = 'inactive';
+        if (this.onstop) this.onstop();
+      }),
+    };
+
+    mockStream = {};
+    mockCanvas = {
+      captureStream: vi.fn(() => mockStream),
+    };
+
+    globalThis.MediaRecorder = vi.fn(() => mockMediaRecorder);
+    globalThis.Blob = Blob;
+  });
+
+  it('returns an object with a start() method', () => {
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(),
+      feedEvent: vi.fn(),
+    });
+    expect(typeof renderer.start).toBe('function');
+  });
+
+  it('start() calls initGame with levelId and seed', async () => {
+    const initGame = vi.fn();
+    const replay = { gameId: 'water-sort', levelId: 3, seed: 42, version: REPLAY_VERSION, events: [] };
+
+    const renderer = createReplayRenderer({
+      replay,
+      canvas: mockCanvas,
+      initGame,
+      feedEvent: vi.fn(),
+    });
+
+    // Trigger start and immediately stop to resolve
+    const startPromise = renderer.start();
+    // Let the MediaRecorder trigger onstop
+    mockMediaRecorder.onstop();
+
+    await startPromise;
+    expect(initGame).toHaveBeenCalledWith(3, 42);
+  });
+
+  it('start() rejects if called while already rendering', async () => {
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(),
+      feedEvent: vi.fn(),
+    });
+
+    // Start once (don't await)
+    const first = renderer.start();
+
+    // Second call should reject immediately
+    await expect(renderer.start()).rejects.toThrow('Already rendering');
+
+    // Resolve first
+    mockMediaRecorder.onstop();
+    await first;
   });
 });

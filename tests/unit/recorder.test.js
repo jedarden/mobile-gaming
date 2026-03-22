@@ -365,6 +365,13 @@ describe('recorder', () => {
     });
   });
 
+  describe('encodeToMP4', () => {
+    it('throws when VideoEncoder is not supported', async () => {
+      // In test environment VideoEncoder is not defined, so encodeToMP4 should throw
+      await expect(recorderModule.encodeToMP4(null, [])).rejects.toThrow('VideoEncoder API not supported');
+    });
+  });
+
   describe('getSupportedFormat', () => {
     it('returns format info', () => {
       const format = recorderModule.getSupportedFormat();
