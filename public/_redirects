@@ -13,5 +13,6 @@
 /save-the-character/* /save-the-character/index.html 200
 /water-sort/* /water-sort/index.html 200
 
-# Hub fallback
+# Hub
+/ /hub/index.html 200
 /* /hub/index.html 200

@@ -1,6 +1,6 @@
 // vite.config.js
 import { defineConfig } from 'vite';
-import { readdirSync, existsSync, renameSync, rmSync } from 'fs';
+import { readdirSync, existsSync, renameSync, rmSync, copyFileSync } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -46,6 +46,12 @@ function flattenSrcOutput() {
 
       // Clean up empty dist/src
       rmSync(distSrc, { recursive: true, force: true });
+
+      // Copy hub/index.html to root index.html so / serves the hub directly
+      const hubIndex = resolve(__dirname, 'dist/hub/index.html');
+      if (existsSync(hubIndex)) {
+        copyFileSync(hubIndex, resolve(__dirname, 'dist/index.html'));
+      }
     }
   };
 }
