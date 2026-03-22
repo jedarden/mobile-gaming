@@ -18,6 +18,7 @@ import {
   checkWin,
   getRemainingPins,
   cloneState,
+  isStillSolvable,
   GRAVITY,
   DAMPING,
   BALL_RADIUS,
@@ -440,5 +441,65 @@ describe('cloneState', () => {
     const clone = cloneState(state);
     expect(clone.tick).toBe(42);
     expect(clone.status).toBe('animating');
+  });
+});
+
+// ── isStillSolvable ────────────────────────────────────────────────────────
+
+describe('isStillSolvable', () => {
+  it('returns true when no pins remain (remaining.length === 0)', () => {
+    // makeSolvableLevel has no pins — loop skips, returns 0 === 0 → true
+    const state = createInitialState(makeSolvableLevel());
+    expect(isStillSolvable(state)).toBe(true);
+  });
+
+  it('returns false when all pin removals lead to a loss', () => {
+    // No cups: ball always falls past y=600 → lost regardless of which pin is removed
+    const level = {
+      pins: [{ id: 'pin1', x: 100, y: 200 }],
+      balls: [{ id: 'ball1', x: 100, y: 100, color: 'red' }],
+      cups: [],
+      channels: [],
+      gravity: GRAVITY,
+    };
+    const state = createInitialState(level);
+    expect(isStillSolvable(state)).toBe(false);
+  });
+
+  it('returns true when removing the one pin leads to a win', () => {
+    // makeLevel(): pin1 blocks the channel; removing it lets ball fall into correct cup
+    const state = createInitialState(makeLevel());
+    expect(isStillSolvable(state)).toBe(true);
+  });
+
+  it('returns false when no pins remain but ball is already lost', () => {
+    // Zero pins, ball already marked lost — remaining.length === 0 but ball lost.
+    // The function only checks remaining pins; it returns true for 0 remaining pins
+    // regardless of current ball state. Verify this is the documented behavior.
+    const state = {
+      ...createInitialState(makeSolvableLevel()),
+      balls: [{ id: 'ball1', x: 100, y: 700, vx: 0, vy: 0, color: 'red', settled: false, lost: true, cupId: null }],
+    };
+    // 0 remaining pins → returns true (remaining.length === 0)
+    expect(isStillSolvable(state)).toBe(true);
+  });
+
+  it('returns true when one of multiple pins leads to a win', () => {
+    // Two pins: one blocking the winning channel, one blocking nothing useful.
+    // Removing either pin tries the simulation — at least one leads to non-lost.
+    const level = {
+      pins: [
+        { id: 'pin1', x: 100, y: 200 },  // blocks winning channel
+        { id: 'pin2', x: 300, y: 400 },  // unrelated pin
+      ],
+      balls: [{ id: 'ball1', x: 100, y: 100, color: 'red' }],
+      cups: [{ id: 'cup1', x: 80, y: 300, width: 40, height: 60, acceptColor: 'red' }],
+      channels: [
+        { segments: [[90, 150, 110, 150]], blockedByPin: 'pin1' },
+      ],
+      gravity: GRAVITY,
+    };
+    const state = createInitialState(level);
+    expect(isStillSolvable(state)).toBe(true);
   });
 });

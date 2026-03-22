@@ -86,11 +86,11 @@ describe('levels.json validity', () => {
 // gracefully if the export is absent.
 
 // Excluded games and reasons:
-//   water-sort:    Vitest doesn't support async describe callbacks → "No test found"
-//   giant-runner:  validateLevel uses unseeded Math.random() → non-deterministic failures
+//   water-sort:    validateLevel is a private (unexported) function in generator.js
 const GAMES_WITH_VALIDATORS = [
   'bridge-race',
   'crowd-runner',
+  'giant-runner',
   'jelly-shift',
   'makeover-run',
   'merge-games',
