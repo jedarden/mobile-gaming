@@ -193,6 +193,110 @@ describe('generateLevel', () => {
     const hard = generateLevel(1, 'hard');
     expect(hard.walls.length).toBeGreaterThanOrEqual(easy.walls.length);
   });
+
+  it('easy wall count is in [6, 8]', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const level = generateLevel(seed, 'easy');
+      expect(level.walls.length).toBeGreaterThanOrEqual(6);
+      expect(level.walls.length).toBeLessThanOrEqual(8);
+    }
+  });
+
+  it('medium wall count is in [8, 12]', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const level = generateLevel(seed, 'medium');
+      expect(level.walls.length).toBeGreaterThanOrEqual(8);
+      expect(level.walls.length).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('hard wall count is in [10, 15]', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const level = generateLevel(seed, 'hard');
+      expect(level.walls.length).toBeGreaterThanOrEqual(10);
+      expect(level.walls.length).toBeLessThanOrEqual(15);
+    }
+  });
+
+  it('easy speed is 1.8', () => {
+    expect(generateLevel(1, 'easy').speed).toBe(1.8);
+  });
+
+  it('medium speed is 2.0', () => {
+    expect(generateLevel(1, 'medium').speed).toBe(2.0);
+  });
+
+  it('hard speed is 2.2', () => {
+    expect(generateLevel(1, 'hard').speed).toBe(2.2);
+  });
+
+  it('wall z-positions are strictly increasing', () => {
+    const level = generateLevel(7, 'medium');
+    for (let i = 1; i < level.walls.length; i++) {
+      expect(level.walls[i].z).toBeGreaterThan(level.walls[i - 1].z);
+    }
+  });
+
+  it('first wall z is at least 20 (not right at the start)', () => {
+    const level = generateLevel(1, 'easy');
+    expect(level.walls[0].z).toBeGreaterThanOrEqual(20);
+  });
+
+  it('each wall has a z and hole property', () => {
+    const level = generateLevel(3, 'medium');
+    for (const wall of level.walls) {
+      expect(wall).toHaveProperty('z');
+      expect(wall).toHaveProperty('hole');
+      expect(typeof wall.z).toBe('number');
+      expect(typeof wall.hole).toBe('object');
+    }
+  });
+
+  it('each hole has a shape property', () => {
+    const level = generateLevel(5, 'hard');
+    for (const wall of level.walls) {
+      expect(['tall', 'wide', 'plus']).toContain(wall.hole.shape);
+    }
+  });
+
+  it('hard levels can include plus-shaped holes', () => {
+    // Hard difficulty sets usePlusHoles=true; run many seeds to encounter one
+    let foundPlus = false;
+    for (let seed = 1; seed <= 50; seed++) {
+      const level = generateLevel(seed, 'hard');
+      if (level.walls.some(w => w.hole.shape === 'plus')) {
+        foundPlus = true;
+        break;
+      }
+    }
+    expect(foundPlus).toBe(true);
+  });
+
+  it('easy levels never contain plus-shaped holes', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const level = generateLevel(seed, 'easy');
+      expect(level.walls.every(w => w.hole.shape !== 'plus')).toBe(true);
+    }
+  });
+
+  it('level id encodes difficulty and seed', () => {
+    const level = generateLevel(42, 'hard', 3);
+    expect(level.id).toContain('hard');
+    expect(level.id).toContain('42');
+  });
+
+  it('unknown difficulty defaults to medium config', () => {
+    const medium = generateLevel(1, 'medium');
+    const unknown = generateLevel(1, 'unknown');
+    expect(unknown.speed).toBe(medium.speed);
+    expect(unknown.difficulty).toBe(medium.difficulty);
+  });
+
+  it('different seeds produce different levels', () => {
+    const a = generateLevel(100, 'medium');
+    const b = generateLevel(200, 'medium');
+    expect(JSON.stringify(a)).not.toBe(JSON.stringify(b));
+  });
 });
 
 // ── validateLevel ──────────────────────────────────────────────────────────
@@ -220,6 +324,50 @@ describe('validateLevel', () => {
     const result = validateLevel(level);
     expect(result.valid).toBe(false);
   });
+
+  it('returns errors array on invalid level', () => {
+    const level = {
+      id: 'bad',
+      speed: 2.0,
+      walls: [{ z: 10, hole: { shape: 'tall', width: 0.1, height: 0.1 } }]
+    };
+    const result = validateLevel(level);
+    expect(Array.isArray(result.errors)).toBe(true);
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  it('returns empty errors array on valid level', () => {
+    const level = generateLevel(5, 'easy');
+    const result = validateLevel(level);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('accepts a level with zero walls', () => {
+    const result = validateLevel({ id: 'empty', speed: 2.0, walls: [] });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects a level with impossible transition between consecutive walls', () => {
+    // wall 1: tall narrow (max ~0.4), wall 2: wide narrow (min ~2.5) — spacing=1 too tight
+    const level = {
+      id: 'tight-transition',
+      speed: 2.0,
+      walls: [
+        { z: 10, hole: { shape: 'tall', width: 0.4, height: 2.5 } },
+        { z: 11, hole: { shape: 'wide', width: 2.5, height: 0.4 } },
+      ]
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(false);
+  });
+
+  it('all 10 hand-crafted levels pass validateLevel', async () => {
+    const { default: levels } = await import('../../src/games/jelly-shift/levels.json', { with: { type: 'json' } });
+    for (const level of levels) {
+      const result = validateLevel(level);
+      expect(result.valid, `level ${level.id}: ${result.errors?.join(', ')}`).toBe(true);
+    }
+  });
 });
 
 // ── generateBatch ──────────────────────────────────────────────────────────
@@ -242,5 +390,28 @@ describe('generateBatch', () => {
     const a = generateBatch(5000, 'easy', 3);
     const b = generateBatch(5000, 'easy', 3);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
+  it('count=0 returns empty array', () => {
+    expect(generateBatch(1, 'easy', 0)).toEqual([]);
+  });
+
+  it('all levels in batch have unique ids', () => {
+    const levels = generateBatch(300, 'medium', 5);
+    const ids = levels.map(l => l.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('hard batch contains valid levels with high wall counts', () => {
+    const levels = generateBatch(700, 'hard', 3);
+    for (const level of levels) {
+      expect(level.walls.length).toBeGreaterThanOrEqual(10);
+    }
+  });
+
+  it('different difficulties produce different batches', () => {
+    const easy = generateBatch(1, 'easy', 3);
+    const hard = generateBatch(1, 'hard', 3);
+    expect(JSON.stringify(easy)).not.toBe(JSON.stringify(hard));
   });
 });

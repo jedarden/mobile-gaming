@@ -156,5 +156,164 @@ describe('generateLevel', () => {
         }
       }
     });
+
+    it('each stop has at least 1 waiting passenger', () => {
+      for (let seed = 1; seed <= 10; seed++) {
+        const level = generateLevel(seed, 0.5);
+        for (const stop of level.stops) {
+          expect(stop.waiting.length).toBeGreaterThanOrEqual(1);
+        }
+      }
+    });
+
+    it('stop waiting count does not exceed bus capacity', () => {
+      // capacity=3 for easy/medium; stops should have ≤ capacity waiting
+      const level = generateLevel(5, 0.1); // easy: capacity=3
+      for (const stop of level.stops) {
+        expect(stop.waiting.length).toBeLessThanOrEqual(3);
+      }
+    });
+  });
+
+  describe('position uniqueness', () => {
+    it('no two buses share the same grid cell', () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const level = generateLevel(seed, 0.8); // hard: 4 buses
+        const positions = level.buses.map(b => `${b.x},${b.y}`);
+        expect(new Set(positions).size).toBe(positions.length);
+      }
+    });
+
+    it('no two stops share the same grid cell', () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const level = generateLevel(seed, 0.8); // hard: 4 stops
+        const positions = level.stops.map(s => `${s.x},${s.y}`);
+        expect(new Set(positions).size).toBe(positions.length);
+      }
+    });
+
+    it('buses and stops never share the same grid cell', () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const level = generateLevel(seed, 0.5);
+        const busPositions = new Set(level.buses.map(b => `${b.x},${b.y}`));
+        for (const stop of level.stops) {
+          expect(busPositions.has(`${stop.x},${stop.y}`)).toBe(false);
+        }
+      }
+    });
+  });
+
+  describe('colors', () => {
+    it('easy uses 2 distinct colors', () => {
+      const level = generateLevel(1, 0.1);
+      const busColors = new Set(level.buses.map(b => b.color));
+      expect(busColors.size).toBeLessThanOrEqual(2);
+    });
+
+    it('hard uses 4 distinct colors', () => {
+      // 4 buses, each assigned color by index → 4 distinct colors
+      const level = generateLevel(1, 0.8);
+      const busColors = level.buses.map(b => b.color);
+      expect(new Set(busColors).size).toBe(4);
+    });
+
+    it('every bus color has at least one matching stop', () => {
+      for (let seed = 1; seed <= 10; seed++) {
+        const level = generateLevel(seed, 0.5);
+        const stopColors = new Set(level.stops.map(s => s.color));
+        for (const bus of level.buses) {
+          expect(stopColors.has(bus.color), `bus color ${bus.color} has no matching stop`).toBe(true);
+        }
+      }
+    });
+
+    it('bus colors are from the allowed COLORS palette', () => {
+      const ALLOWED = new Set(['red', 'blue', 'green', 'yellow', 'purple', 'orange']);
+      const level = generateLevel(3, 0.8);
+      for (const bus of level.buses) {
+        expect(ALLOWED.has(bus.color)).toBe(true);
+      }
+    });
+  });
+
+  describe('road completeness', () => {
+    it('every (x,y) in grid appears exactly once in roads', () => {
+      const level = generateLevel(7, 0.5);
+      const { cols, rows } = level.grid;
+      const roadSet = new Set(level.roads.map(([x, y]) => `${x},${y}`));
+      expect(roadSet.size).toBe(cols * rows);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          expect(roadSet.has(`${x},${y}`), `missing road cell (${x},${y})`).toBe(true);
+        }
+      }
+    });
+  });
+
+  describe('exit placement', () => {
+    it('exit coords are within grid bounds', () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const level = generateLevel(seed, 0.5);
+        const { x, y } = level.exits[0];
+        const { cols, rows } = level.grid;
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThan(cols);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y).toBeLessThan(rows);
+      }
+    });
+
+    it('exit is on a border row or column (x=0, x=cols-1, y=0, or y=rows-1)', () => {
+      for (let seed = 1; seed <= 30; seed++) {
+        const level = generateLevel(seed, 0.5);
+        const { x, y } = level.exits[0];
+        const { cols, rows } = level.grid;
+        const onBorder = x === 0 || x === cols - 1 || y === 0 || y === rows - 1;
+        expect(onBorder, `exit (${x},${y}) is not on border of ${cols}x${rows} grid`).toBe(true);
+      }
+    });
+  });
+
+  describe('bus IDs', () => {
+    it('all bus ids are unique within a level', () => {
+      const level = generateLevel(1, 0.8);
+      const ids = level.buses.map(b => b.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('bus ids follow bus1, bus2, ... pattern', () => {
+      const level = generateLevel(1, 0.5);
+      const ids = level.buses.map(b => b.id);
+      expect(ids).toEqual(['bus1', 'bus2', 'bus3']);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('seed=0 generates a valid level', () => {
+      const level = generateLevel(0);
+      expect(level).toBeDefined();
+      expect(level.buses.length).toBeGreaterThan(0);
+      expect(level.exits.length).toBe(1);
+    });
+
+    it('difficulty boundary at 0.33 selects medium', () => {
+      const level = generateLevel(1, 0.33);
+      expect(level.buses.length).toBe(3);
+      expect(level.grid.cols).toBe(6);
+    });
+
+    it('difficulty boundary at 0.66 selects hard', () => {
+      const level = generateLevel(1, 0.66);
+      expect(level.buses.length).toBe(4);
+      expect(level.grid.cols).toBe(7);
+    });
+
+    it('optimal field is set to busCount × 3', () => {
+      const easy = generateLevel(1, 0.1);
+      expect(easy.optimal).toBe(2 * 3);
+
+      const hard = generateLevel(1, 0.8);
+      expect(hard.optimal).toBe(4 * 3);
+    });
   });
 });
