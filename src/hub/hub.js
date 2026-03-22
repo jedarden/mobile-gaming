@@ -19,6 +19,8 @@ import {
   getGameUrl,
   getAvailableGames
 } from '../shared/quick-play.js';
+import { createSettings, getSettings } from '../shared/settings.js';
+import { renderDashboard } from '../shared/analytics.js';
 
 // Game metadata for daily challenge (full list)
 const GAMES = [
@@ -120,6 +122,63 @@ function initDailyChallenge() {
   }
 }
 
+// Dev dashboard overlay element
+let devOverlay = null;
+
+/**
+ * Show the analytics dev dashboard as a full-screen overlay
+ */
+function showDevDashboard() {
+  if (!devOverlay) {
+    devOverlay = document.createElement('div');
+    devOverlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '\u2715  Close Dev Dashboard';
+    closeBtn.style.cssText = 'flex-shrink:0;padding:10px 16px;background:#222;color:#eee;border:none;border-bottom:1px solid #333;font-family:monospace;font-size:12px;cursor:pointer;text-align:left;';
+    closeBtn.addEventListener('click', hideDevDashboard);
+
+    const dashContainer = document.createElement('div');
+    dashContainer.style.cssText = 'flex:1;overflow-y:auto;';
+
+    devOverlay.appendChild(closeBtn);
+    devOverlay.appendChild(dashContainer);
+    document.body.appendChild(devOverlay);
+  } else {
+    devOverlay.style.display = 'flex';
+    // Re-render with latest data
+    const dashContainer = devOverlay.querySelector('div');
+    renderDashboard(dashContainer);
+    return;
+  }
+
+  renderDashboard(devOverlay.querySelector('div'));
+}
+
+/**
+ * Hide the analytics dev dashboard
+ */
+function hideDevDashboard() {
+  if (devOverlay) devOverlay.style.display = 'none';
+}
+
+/**
+ * Initialize settings drawer with dev mode dashboard support
+ */
+function initSettings() {
+  createSettings({
+    container: document.body,
+    onDevMode() {
+      const { devMode } = getSettings();
+      if (devMode) {
+        showDevDashboard();
+      } else {
+        hideDevDashboard();
+      }
+    },
+  });
+}
+
 /**
  * Initialize all features
  */
@@ -128,6 +187,7 @@ function init() {
   initFilterTabs();
   initQuickPlay();
   initDailyChallenge();
+  initSettings();
 }
 
 // Run initialization when DOM is ready
