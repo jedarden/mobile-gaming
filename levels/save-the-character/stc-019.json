@@ -1,0 +1,27 @@
+{
+  "id": "stc-019",
+  "title": "Earthquake",
+  "threat": "A massive earthquake just started while indoors!",
+  "choices": [
+    {
+      "id": "doorway",
+      "label": "Stand in a doorway",
+      "correct": false
+    },
+    {
+      "id": "drop",
+      "label": "Drop, cover, and hold on",
+      "correct": true
+    },
+    {
+      "id": "outside",
+      "label": "Run outside immediately",
+      "correct": false
+    },
+    {
+      "id": "elevator",
+      "label": "Take the elevator",
+      "correct": false
+    }
+  ]
+}

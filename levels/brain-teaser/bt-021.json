@@ -1,0 +1,90 @@
+{
+  "id": "bt-021",
+  "title": "Color Mixing",
+  "prompt": "What color do you get when you mix red and blue?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "red",
+      "type": "circle",
+      "x": 80,
+      "y": 150,
+      "w": 50,
+      "h": 50,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "plus",
+      "type": "text",
+      "x": 145,
+      "y": 150,
+      "w": 30,
+      "h": 50,
+      "text": "+",
+      "fontSize": 32,
+      "color": "#ffffff"
+    },
+    {
+      "id": "blue",
+      "type": "circle",
+      "x": 190,
+      "y": 150,
+      "w": 50,
+      "h": 50,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "opt1",
+      "type": "rect",
+      "x": 40,
+      "y": 280,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#69DB7C",
+      "label": "Green"
+    },
+    {
+      "id": "opt2",
+      "type": "rect",
+      "x": 155,
+      "y": 280,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#B197FC",
+      "label": "Purple"
+    },
+    {
+      "id": "opt3",
+      "type": "rect",
+      "x": 270,
+      "y": 280,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#FFA94D",
+      "label": "Orange"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "opt2"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "opt1",
+      "response": "shake",
+      "message": "That's yellow + blue!"
+    },
+    {
+      "action": "tap",
+      "targetId": "opt3",
+      "response": "shake",
+      "message": "That's red + yellow!"
+    }
+  ],
+  "hint": "Think of grapes",
+  "difficulty": 2
+}

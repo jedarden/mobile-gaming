@@ -1,0 +1,106 @@
+{
+  "id": "bt-025",
+  "title": "Final Challenge",
+  "prompt": "Complete the sequence: Red, Blue, Red, Blue, ...",
+  "type": "tap",
+  "showBanner": true,
+  "elements": [
+    {
+      "id": "r1",
+      "type": "circle",
+      "x": 30,
+      "y": 150,
+      "w": 40,
+      "h": 40,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "b1",
+      "type": "circle",
+      "x": 80,
+      "y": 150,
+      "w": 40,
+      "h": 40,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "r2",
+      "type": "circle",
+      "x": 130,
+      "y": 150,
+      "w": 40,
+      "h": 40,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "b2",
+      "type": "circle",
+      "x": 180,
+      "y": 150,
+      "w": 40,
+      "h": 40,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "q",
+      "type": "text",
+      "x": 230,
+      "y": 150,
+      "w": 40,
+      "h": 40,
+      "text": "?",
+      "fontSize": 32,
+      "color": "#ffffff"
+    },
+    {
+      "id": "optRed",
+      "type": "circle",
+      "x": 80,
+      "y": 280,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "optBlue",
+      "type": "circle",
+      "x": 160,
+      "y": 280,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "optGreen",
+      "type": "circle",
+      "x": 240,
+      "y": 280,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#69DB7C"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "optRed"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "optBlue",
+      "response": "shake",
+      "message": "Check the pattern!"
+    },
+    {
+      "action": "tap",
+      "targetId": "optGreen",
+      "response": "shake",
+      "message": "Green isn't in the pattern!"
+    }
+  ],
+  "hint": "Red, Blue, Red, Blue, Red...",
+  "difficulty": 2
+}

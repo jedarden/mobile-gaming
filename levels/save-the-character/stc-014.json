@@ -1,0 +1,22 @@
+{
+  "id": "stc-014",
+  "title": "Falling elevator",
+  "threat": "The elevator cable just snapped and it's falling!",
+  "choices": [
+    {
+      "id": "jump",
+      "label": "Jump right before impact",
+      "correct": false
+    },
+    {
+      "id": "spread",
+      "label": "Lie flat on the floor",
+      "correct": true
+    },
+    {
+      "id": "stand",
+      "label": "Stand in the corner",
+      "correct": false
+    }
+  ]
+}

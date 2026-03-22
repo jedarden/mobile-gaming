@@ -1,0 +1,85 @@
+{
+  "id": "bt-004",
+  "title": "Color Match",
+  "prompt": "Tap the shape that matches the color of the text",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "red1",
+      "type": "circle",
+      "x": 40,
+      "y": 200,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "blue1",
+      "type": "circle",
+      "x": 120,
+      "y": 200,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "green1",
+      "type": "circle",
+      "x": 200,
+      "y": 200,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#69DB7C"
+    },
+    {
+      "id": "yellow1",
+      "type": "circle",
+      "x": 280,
+      "y": 200,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#FFD93D"
+    },
+    {
+      "id": "text",
+      "type": "text",
+      "x": 195,
+      "y": 320,
+      "w": 200,
+      "h": 40,
+      "color": "#4DABF7",
+      "text": "BLUE",
+      "fontSize": 32
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "blue1"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "red1",
+      "response": "shake",
+      "message": "That's red!"
+    },
+    {
+      "action": "tap",
+      "targetId": "green1",
+      "response": "shake",
+      "message": "That's green!"
+    },
+    {
+      "action": "tap",
+      "targetId": "yellow1",
+      "response": "shake",
+      "message": "That's yellow!"
+    }
+  ],
+  "hint": "Ignore the word, look at the color",
+  "difficulty": 2
+}

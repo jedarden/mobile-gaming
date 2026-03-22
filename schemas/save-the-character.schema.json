@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/save-the-character.schema.json",
+  "title": "Save the Character Scenario",
+  "description": "Schema for validating Save the Character game scenarios",
+  "type": "object",
+  "required": ["id", "title", "threat", "choices"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^stc-[0-9]{3}$",
+      "description": "Unique scenario identifier (e.g. stc-001)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Short title describing the scenario"
+    },
+    "threat": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "description": "Description of the threat the character faces"
+    },
+    "choices": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "description": "Available choices for the player (exactly one must be correct)",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "correct"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "description": "Choice identifier (lowercase, no spaces)"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Text shown to the player for this choice"
+          },
+          "correct": {
+            "type": "boolean",
+            "description": "Whether this choice saves the character"
+          }
+        }
+      }
+    }
+  }
+}

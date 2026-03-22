@@ -1,0 +1,22 @@
+{
+  "id": "stc-013",
+  "title": "Forest fire",
+  "threat": "A forest fire is approaching and the character is trapped!",
+  "choices": [
+    {
+      "id": "upwind",
+      "label": "Move perpendicular to wind direction",
+      "correct": true
+    },
+    {
+      "id": "downwind",
+      "label": "Run with the wind",
+      "correct": false
+    },
+    {
+      "id": "water",
+      "label": "Hide in a dry ditch",
+      "correct": false
+    }
+  ]
+}

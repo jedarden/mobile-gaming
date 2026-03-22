@@ -1,0 +1,22 @@
+{
+  "id": "stc-010",
+  "title": "Tsunami",
+  "threat": "A tsunami warning is issued and the character is at the beach!",
+  "choices": [
+    {
+      "id": "beach",
+      "label": "Stay on the beach to watch",
+      "correct": false
+    },
+    {
+      "id": "high",
+      "label": "Move to higher ground immediately",
+      "correct": true
+    },
+    {
+      "id": "swim",
+      "label": "Swim out to sea",
+      "correct": false
+    }
+  ]
+}

@@ -24,7 +24,7 @@ const GAME_SCHEMAS = {
   'water-sort': 'water-sort.schema.json',
   'brain-teaser': 'brain-teaser.schema.json',
   'parking-escape': 'parking-escape.schema.json',
-  'save-the-character': 'pull-the-pin.schema.json',
+  'save-the-character': 'save-the-character.schema.json',
   'merge': 'water-sort.schema.json',
   'satisfying': 'pull-the-pin.schema.json',
   'crowd-runner': 'pull-the-pin.schema.json',

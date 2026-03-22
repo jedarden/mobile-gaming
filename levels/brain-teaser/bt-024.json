@@ -1,0 +1,58 @@
+{
+  "id": "bt-024",
+  "title": "Shape Rotation",
+  "prompt": "Which triangle would point up if rotated 180 degrees?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "t1",
+      "type": "triangle",
+      "x": 40,
+      "y": 220,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "t2",
+      "type": "triangle",
+      "x": 160,
+      "y": 220,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "t3",
+      "type": "triangle",
+      "x": 280,
+      "y": 220,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#69DB7C"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "t2"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "t1",
+      "response": "shake",
+      "message": "Imagine it rotated!"
+    },
+    {
+      "action": "tap",
+      "targetId": "t3",
+      "response": "shake",
+      "message": "That would point down!"
+    }
+  ],
+  "hint": "Pointing down becomes pointing up",
+  "difficulty": 3
+}

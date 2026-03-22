@@ -1,0 +1,58 @@
+{
+  "id": "bt-016",
+  "title": "Lightest Color",
+  "prompt": "Tap the lightest color",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "dark1",
+      "type": "rect",
+      "x": 40,
+      "y": 220,
+      "w": 80,
+      "h": 80,
+      "clickable": true,
+      "color": "#1a1a2e"
+    },
+    {
+      "id": "mid",
+      "type": "rect",
+      "x": 155,
+      "y": 220,
+      "w": 80,
+      "h": 80,
+      "clickable": true,
+      "color": "#4a4a6a"
+    },
+    {
+      "id": "light",
+      "type": "rect",
+      "x": 270,
+      "y": 220,
+      "w": 80,
+      "h": 80,
+      "clickable": true,
+      "color": "#e0e0e0"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "light"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "dark1",
+      "response": "shake",
+      "message": "That's the darkest!"
+    },
+    {
+      "action": "tap",
+      "targetId": "mid",
+      "response": "shake",
+      "message": "Not the lightest!"
+    }
+  ],
+  "hint": "White is lighter than gray",
+  "difficulty": 1
+}

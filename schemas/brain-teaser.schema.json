@@ -1,191 +1,131 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://mobile-gaming.example.com/schemas/brain-teaser.schema.json",
-  "title": "Brain Teaser Level",
-  "description": "Schema for validating Brain Teaser game levels",
+  "title": "Brain Teaser Puzzle",
+  "description": "Schema for validating Brain Teaser tap/drag/sequence puzzles",
   "type": "object",
-  "required": ["version", "id", "title", "difficulty", "puzzle", "targetMoves"],
+  "required": ["id", "title", "prompt", "type", "elements", "solution", "decoyActions", "hint", "difficulty"],
   "properties": {
-    "version": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Schema version for migration support"
-    },
     "id": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+$",
-      "minLength": 1,
-      "maxLength": 100,
-      "description": "Unique level identifier"
+      "pattern": "^bt-[0-9]{3}$",
+      "description": "Unique puzzle identifier (e.g. bt-001)"
     },
     "title": {
       "type": "string",
       "minLength": 1,
       "maxLength": 100,
-      "description": "Display title for the level"
+      "description": "Display title for the puzzle"
     },
-    "difficulty": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 10,
-      "description": "Difficulty rating from 1 (easy) to 10 (hard)"
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "The question or instruction shown to the player"
     },
-    "puzzle": {
+    "type": {
+      "type": "string",
+      "enum": ["tap", "drag", "sequence"],
+      "description": "Interaction type for the puzzle"
+    },
+    "showBanner": {
+      "type": "boolean",
+      "description": "Whether to show a banner overlay (used for misdirection puzzles)"
+    },
+    "elements": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Visual elements that make up the puzzle",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "x", "y", "w", "h"],
+        "properties": {
+          "id": { "type": "string", "description": "Element identifier" },
+          "type": { "type": "string", "description": "Visual type (circle, rect, text, cup, key, etc.)" },
+          "x": { "type": "number", "minimum": 0, "description": "X position in logical pixels" },
+          "y": { "type": "number", "minimum": 0, "description": "Y position in logical pixels" },
+          "w": { "type": "number", "minimum": 1, "description": "Width in logical pixels" },
+          "h": { "type": "number", "minimum": 1, "description": "Height in logical pixels" },
+          "color": { "type": "string", "description": "CSS color value" },
+          "label": { "type": "string", "description": "Text label rendered inside the element" },
+          "text": { "type": "string", "description": "Text content (for text elements)" },
+          "fontSize": { "type": "number", "minimum": 1, "description": "Font size in pixels" },
+          "clickable": { "type": "boolean", "description": "Whether the element accepts tap actions" },
+          "draggable": { "type": "boolean", "description": "Whether the element can be dragged" },
+          "hidden": { "type": "boolean", "description": "Whether the element starts hidden" },
+          "zIndex": { "type": "integer", "description": "Rendering layer order" }
+        }
+      }
+    },
+    "solution": {
       "type": "object",
-      "required": ["type"],
-      "description": "Puzzle configuration",
+      "required": ["action"],
+      "description": "The correct action that solves the puzzle",
       "properties": {
-        "type": {
+        "action": {
           "type": "string",
-          "enum": ["connect", "uncross", "flow", "match", "sequence", "pattern"],
-          "description": "Type of brain teaser puzzle"
+          "enum": ["tap", "drag", "sequence"],
+          "description": "Action type"
         },
-        "elements": {
+        "targetId": {
+          "type": "string",
+          "description": "Target element ID (for tap actions)"
+        },
+        "sourceId": {
+          "type": "string",
+          "description": "Source element ID (for drag actions)"
+        },
+        "steps": {
           "type": "array",
-          "description": "Puzzle elements (nodes, items, etc.)",
-          "items": {
-            "type": "object",
-            "required": ["id", "x", "y"],
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "Element identifier"
-              },
-              "x": {
-                "type": "number",
-                "minimum": 0,
-                "description": "Element X position"
-              },
-              "y": {
-                "type": "number",
-                "minimum": 0,
-                "description": "Element Y position"
-              },
-              "color": {
-                "type": "string",
-                "pattern": "^#[0-9A-Fa-f]{6}$",
-                "description": "Element color"
-              },
-              "shape": {
-                "type": "string",
-                "enum": ["circle", "square", "triangle", "diamond", "star"],
-                "description": "Element shape"
-              },
-              "size": {
-                "type": "number",
-                "minimum": 1,
-                "description": "Element size"
-              },
-              "label": {
-                "type": "string",
-                "maxLength": 10,
-                "description": "Optional label text"
-              }
-            }
-          }
-        },
-        "connections": {
-          "type": "array",
-          "description": "Valid connections between elements",
-          "items": {
-            "type": "object",
-            "required": ["from", "to"],
-            "properties": {
-              "from": {
-                "type": "string",
-                "description": "Source element ID"
-              },
-              "to": {
-                "type": "string",
-                "description": "Target element ID"
-              },
-              "color": {
-                "type": "string",
-                "pattern": "^#[0-9A-Fa-f]{6}$",
-                "description": "Connection color"
-              },
-              "required": {
-                "type": "boolean",
-                "description": "Whether this connection must be made"
-              }
-            }
-          }
-        },
-        "grid": {
-          "type": "object",
-          "description": "Grid-based puzzle configuration",
-          "properties": {
-            "width": {
-              "type": "integer",
-              "minimum": 2,
-              "maximum": 10,
-              "description": "Grid width"
-            },
-            "height": {
-              "type": "integer",
-              "minimum": 2,
-              "maximum": 10,
-              "description": "Grid height"
-            },
-            "cells": {
-              "type": "array",
-              "description": "Grid cell values",
-              "items": {
-                "type": ["string", "integer", "null"]
-              }
-            }
-          }
-        },
-        "sequence": {
-          "type": "array",
-          "description": "Target sequence for sequence puzzles",
-          "items": {
-            "type": "string"
-          }
-        },
-        "pairs": {
-          "type": "array",
-          "description": "Matching pairs for match-type puzzles",
-          "items": {
-            "type": "object",
-            "required": ["id", "matchId"],
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "Item ID"
-              },
-              "matchId": {
-                "type": "string",
-                "description": "ID of matching item"
-              }
-            }
+          "items": { "type": "string" },
+          "minItems": 2,
+          "description": "Ordered element IDs to tap (for sequence actions)"
+        }
+      }
+    },
+    "decoyActions": {
+      "type": "array",
+      "description": "Actions that look correct but are wrong (tap and drag only)",
+      "items": {
+        "type": "object",
+        "required": ["action", "response", "message"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["tap", "drag"],
+            "description": "Decoy action type"
+          },
+          "targetId": {
+            "type": "string",
+            "description": "Target element ID for tap decoys"
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "Source element ID for drag decoys"
+          },
+          "response": {
+            "type": "string",
+            "description": "Animation to play (e.g. shake)"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Feedback message shown to the player"
           }
         }
       }
     },
-    "targetMoves": {
+    "hint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Hint text shown when the player requests help"
+    },
+    "difficulty": {
       "type": "integer",
       "minimum": 1,
-      "description": "Optimal number of moves for completion"
-    },
-    "maxMoves": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Maximum allowed moves for completion"
-    },
-    "timeLimit": {
-      "type": "integer",
-      "minimum": 10,
-      "description": "Optional time limit in seconds"
-    },
-    "hints": {
-      "type": "array",
-      "description": "Optional hints for the player",
-      "items": {
-        "type": "string",
-        "maxLength": 200
-      },
-      "maxItems": 5
+      "maximum": 5,
+      "description": "Difficulty rating from 1 (easy) to 5 (hard)"
     }
   }
 }

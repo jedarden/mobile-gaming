@@ -1,0 +1,22 @@
+{
+  "id": "stc-009",
+  "title": "Rabid dog",
+  "threat": "A rabid dog is growling and preparing to attack!",
+  "choices": [
+    {
+      "id": "stare",
+      "label": "Stare into its eyes",
+      "correct": false
+    },
+    {
+      "id": "back",
+      "label": "Back away slowly without eye contact",
+      "correct": true
+    },
+    {
+      "id": "hit",
+      "label": "Throw something at it",
+      "correct": false
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "stc-017",
+  "title": "Riptide",
+  "threat": "The character is caught in a powerful riptide!",
+  "choices": [
+    {
+      "id": "swim",
+      "label": "Swim directly back to shore",
+      "correct": false
+    },
+    {
+      "id": "parallel",
+      "label": "Swim parallel to the shore",
+      "correct": true
+    },
+    {
+      "id": "fight",
+      "label": "Fight against the current",
+      "correct": false
+    }
+  ]
+}

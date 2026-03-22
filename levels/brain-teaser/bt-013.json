@@ -1,0 +1,100 @@
+{
+  "id": "bt-013",
+  "title": "Word Search",
+  "prompt": "Find the hidden word: What color is the sky?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "word1",
+      "type": "text",
+      "x": 50,
+      "y": 200,
+      "w": 80,
+      "h": 40,
+      "clickable": true,
+      "text": "RED",
+      "fontSize": 24,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "word2",
+      "type": "text",
+      "x": 155,
+      "y": 200,
+      "w": 80,
+      "h": 40,
+      "clickable": true,
+      "text": "BLUE",
+      "fontSize": 24,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "word3",
+      "type": "text",
+      "x": 260,
+      "y": 200,
+      "w": 80,
+      "h": 40,
+      "clickable": true,
+      "text": "GREEN",
+      "fontSize": 24,
+      "color": "#69DB7C"
+    },
+    {
+      "id": "word4",
+      "type": "text",
+      "x": 100,
+      "y": 280,
+      "w": 80,
+      "h": 40,
+      "clickable": true,
+      "text": "YELLOW",
+      "fontSize": 24,
+      "color": "#FFD93D"
+    },
+    {
+      "id": "word5",
+      "type": "text",
+      "x": 210,
+      "y": 280,
+      "w": 80,
+      "h": 40,
+      "clickable": true,
+      "text": "PINK",
+      "fontSize": 24,
+      "color": "#FF69B4"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "word2"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "word1",
+      "response": "shake",
+      "message": "Is the sky red?"
+    },
+    {
+      "action": "tap",
+      "targetId": "word3",
+      "response": "shake",
+      "message": "Is the sky green?"
+    },
+    {
+      "action": "tap",
+      "targetId": "word4",
+      "response": "shake",
+      "message": "Is the sky yellow?"
+    },
+    {
+      "action": "tap",
+      "targetId": "word5",
+      "response": "shake",
+      "message": "Is the sky pink?"
+    }
+  ],
+  "hint": "Look up on a clear day",
+  "difficulty": 1
+}

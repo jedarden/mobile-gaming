@@ -1,0 +1,72 @@
+{
+  "id": "bt-020",
+  "title": "Quick Math",
+  "prompt": "What's the missing number? 2 + ? = 7",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "eq",
+      "type": "text",
+      "x": 120,
+      "y": 180,
+      "w": 150,
+      "h": 40,
+      "text": "2 + ? = 7",
+      "fontSize": 32,
+      "color": "#ffffff"
+    },
+    {
+      "id": "opt3",
+      "type": "rect",
+      "x": 40,
+      "y": 280,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a",
+      "label": "3"
+    },
+    {
+      "id": "opt5",
+      "type": "rect",
+      "x": 155,
+      "y": 280,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a",
+      "label": "5"
+    },
+    {
+      "id": "opt9",
+      "type": "rect",
+      "x": 270,
+      "y": 280,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a",
+      "label": "9"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "opt5"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "opt3",
+      "response": "shake",
+      "message": "2 + 3 = 5, not 7!"
+    },
+    {
+      "action": "tap",
+      "targetId": "opt9",
+      "response": "shake",
+      "message": "2 + 9 = 11, not 7!"
+    }
+  ],
+  "hint": "7 minus 2",
+  "difficulty": 1
+}

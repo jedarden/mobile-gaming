@@ -1,0 +1,67 @@
+{
+  "id": "bt-011",
+  "title": "Mirror Image",
+  "prompt": "Which shape is the mirror of the top one?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "source",
+      "type": "triangle",
+      "x": 165,
+      "y": 100,
+      "w": 60,
+      "h": 60,
+      "color": "#9333ea"
+    },
+    {
+      "id": "mirror1",
+      "type": "triangle",
+      "x": 40,
+      "y": 250,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a"
+    },
+    {
+      "id": "mirror2",
+      "type": "triangle",
+      "x": 165,
+      "y": 250,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a"
+    },
+    {
+      "id": "mirror3",
+      "type": "circle",
+      "x": 290,
+      "y": 250,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "mirror2"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "mirror1",
+      "response": "shake",
+      "message": "That's rotated!"
+    },
+    {
+      "action": "tap",
+      "targetId": "mirror3",
+      "response": "shake",
+      "message": "Different shape!"
+    }
+  ],
+  "hint": "A mirror shows the same thing",
+  "difficulty": 2
+}

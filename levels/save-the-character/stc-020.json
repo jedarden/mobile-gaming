@@ -1,0 +1,22 @@
+{
+  "id": "stc-020",
+  "title": "Mountain lion",
+  "threat": "A mountain lion is stalking the character on a trail!",
+  "choices": [
+    {
+      "id": "run",
+      "label": "Run away as fast as possible",
+      "correct": false
+    },
+    {
+      "id": "appear",
+      "label": "Appear larger and make noise",
+      "correct": true
+    },
+    {
+      "id": "hide",
+      "label": "Hide behind a rock",
+      "correct": false
+    }
+  ]
+}

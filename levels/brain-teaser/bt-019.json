@@ -1,0 +1,60 @@
+{
+  "id": "bt-019",
+  "title": "Connect the Dots",
+  "prompt": "Tap the dots in order to form a square",
+  "type": "sequence",
+  "elements": [
+    {
+      "id": "dot1",
+      "type": "circle",
+      "x": 100,
+      "y": 180,
+      "w": 30,
+      "h": 30,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "dot2",
+      "type": "circle",
+      "x": 260,
+      "y": 180,
+      "w": 30,
+      "h": 30,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "dot3",
+      "type": "circle",
+      "x": 260,
+      "y": 340,
+      "w": 30,
+      "h": 30,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "dot4",
+      "type": "circle",
+      "x": 100,
+      "y": 340,
+      "w": 30,
+      "h": 30,
+      "clickable": true,
+      "color": "#4DABF7"
+    }
+  ],
+  "solution": {
+    "action": "sequence",
+    "steps": [
+      "dot1",
+      "dot2",
+      "dot3",
+      "dot4"
+    ]
+  },
+  "decoyActions": [],
+  "hint": "Go clockwise around",
+  "difficulty": 3
+}

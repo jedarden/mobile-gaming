@@ -1,0 +1,67 @@
+{
+  "id": "bt-018",
+  "title": "Shadow Match",
+  "prompt": "Which shadow matches the shape?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "source",
+      "type": "star",
+      "x": 165,
+      "y": 100,
+      "w": 60,
+      "h": 60,
+      "color": "#ffd700"
+    },
+    {
+      "id": "shadow1",
+      "type": "circle",
+      "x": 40,
+      "y": 250,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#2a2a2a"
+    },
+    {
+      "id": "shadow2",
+      "type": "star",
+      "x": 165,
+      "y": 250,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#2a2a2a"
+    },
+    {
+      "id": "shadow3",
+      "type": "triangle",
+      "x": 290,
+      "y": 250,
+      "w": 60,
+      "h": 60,
+      "clickable": true,
+      "color": "#2a2a2a"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "shadow2"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "shadow1",
+      "response": "shake",
+      "message": "Wrong shape!"
+    },
+    {
+      "action": "tap",
+      "targetId": "shadow3",
+      "response": "shake",
+      "message": "Not a match!"
+    }
+  ],
+  "hint": "Shadows have the same shape",
+  "difficulty": 1
+}

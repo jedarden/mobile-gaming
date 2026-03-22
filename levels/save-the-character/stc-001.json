@@ -1,0 +1,22 @@
+{
+  "id": "stc-001",
+  "title": "Character on a cliff",
+  "threat": "The character is standing on a crumbling cliff edge about to fall!",
+  "choices": [
+    {
+      "id": "jump",
+      "label": "Jump into the water below",
+      "correct": true
+    },
+    {
+      "id": "climb",
+      "label": "Climb up the loose rocks",
+      "correct": false
+    },
+    {
+      "id": "stand",
+      "label": "Stand still and wait for help",
+      "correct": false
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "bt-005",
+  "title": "Big Button",
+  "prompt": "Press the button to win!",
+  "type": "tap",
+  "showBanner": true,
+  "elements": [
+    {
+      "id": "bigButton",
+      "type": "button",
+      "x": 120,
+      "y": 200,
+      "w": 150,
+      "h": 150,
+      "clickable": true,
+      "color": "#ef4444"
+    },
+    {
+      "id": "smallButton",
+      "type": "button",
+      "x": 170,
+      "y": 400,
+      "w": 50,
+      "h": 50,
+      "clickable": true,
+      "color": "#22c55e"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "smallButton"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "bigButton",
+      "response": "shake",
+      "message": "Too obvious!"
+    }
+  ],
+  "hint": "Sometimes less is more",
+  "difficulty": 2
+}

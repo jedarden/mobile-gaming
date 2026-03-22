@@ -1,0 +1,76 @@
+{
+  "id": "bt-003",
+  "title": "Hidden Key",
+  "prompt": "Find the key to unlock the door",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "box1",
+      "type": "box",
+      "x": 40,
+      "y": 220,
+      "w": 80,
+      "h": 80,
+      "clickable": true,
+      "color": "#8B4513"
+    },
+    {
+      "id": "box2",
+      "type": "box",
+      "x": 155,
+      "y": 220,
+      "w": 80,
+      "h": 80,
+      "clickable": true,
+      "color": "#8B4513"
+    },
+    {
+      "id": "box3",
+      "type": "box",
+      "x": 270,
+      "y": 220,
+      "w": 80,
+      "h": 80,
+      "clickable": true,
+      "color": "#8B4513"
+    },
+    {
+      "id": "key",
+      "type": "key",
+      "x": 290,
+      "y": 270,
+      "w": 40,
+      "h": 40,
+      "hidden": true,
+      "zIndex": -1
+    },
+    {
+      "id": "door",
+      "type": "door",
+      "x": 165,
+      "y": 350,
+      "w": 60,
+      "h": 100
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "box3"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "box1",
+      "response": "shake",
+      "message": "Empty!"
+    },
+    {
+      "action": "tap",
+      "targetId": "box2",
+      "response": "shake",
+      "message": "Nothing here..."
+    }
+  ],
+  "hint": "The last place you'd look",
+  "difficulty": 1
+}

@@ -1,0 +1,22 @@
+{
+  "id": "stc-018",
+  "title": "Poison ivy",
+  "threat": "The character just touched poison ivy!",
+  "choices": [
+    {
+      "id": "ignore",
+      "label": "Ignore it, it will go away",
+      "correct": false
+    },
+    {
+      "id": "wash",
+      "label": "Wash the area immediately with soap",
+      "correct": true
+    },
+    {
+      "id": "scratch",
+      "label": "Scratch the area to relieve itch",
+      "correct": false
+    }
+  ]
+}

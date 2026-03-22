@@ -1,0 +1,22 @@
+{
+  "id": "stc-007",
+  "title": "Quick sand",
+  "threat": "The character is sinking into quicksand!",
+  "choices": [
+    {
+      "id": "struggle",
+      "label": "Struggle violently to get out",
+      "correct": false
+    },
+    {
+      "id": "back",
+      "label": "Lean back and spread arms",
+      "correct": true
+    },
+    {
+      "id": "scream",
+      "label": "Scream for help",
+      "correct": false
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "bt-001",
+  "title": "Find the Ball",
+  "prompt": "Which cup is hiding the ball?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "cup1",
+      "type": "cup",
+      "x": 50,
+      "y": 250,
+      "w": 80,
+      "h": 100,
+      "clickable": true
+    },
+    {
+      "id": "cup2",
+      "type": "cup",
+      "x": 155,
+      "y": 250,
+      "w": 80,
+      "h": 100,
+      "clickable": true
+    },
+    {
+      "id": "cup3",
+      "type": "cup",
+      "x": 260,
+      "y": 250,
+      "w": 80,
+      "h": 100,
+      "clickable": true
+    },
+    {
+      "id": "ball",
+      "type": "ball",
+      "x": 180,
+      "y": 330,
+      "w": 30,
+      "h": 30,
+      "hidden": true,
+      "zIndex": -1
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "cup2"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "cup1",
+      "response": "shake",
+      "message": "Not here!"
+    },
+    {
+      "action": "tap",
+      "targetId": "cup3",
+      "response": "shake",
+      "message": "Try again!"
+    }
+  ],
+  "hint": "Look for subtle differences",
+  "difficulty": 1
+}

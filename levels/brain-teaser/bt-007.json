@@ -1,0 +1,101 @@
+{
+  "id": "bt-007",
+  "title": "Count the Stars",
+  "prompt": "How many stars do you see?",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "star1",
+      "type": "star",
+      "x": 50,
+      "y": 150,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "id": "star2",
+      "type": "star",
+      "x": 150,
+      "y": 180,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "id": "star3",
+      "type": "star",
+      "x": 250,
+      "y": 140,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "id": "star4",
+      "type": "star",
+      "x": 100,
+      "y": 250,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "id": "star5",
+      "type": "star",
+      "x": 200,
+      "y": 270,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "id": "opt3",
+      "type": "rect",
+      "x": 40,
+      "y": 380,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a",
+      "label": "3"
+    },
+    {
+      "id": "opt4",
+      "type": "rect",
+      "x": 155,
+      "y": 380,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a",
+      "label": "4"
+    },
+    {
+      "id": "opt5",
+      "type": "rect",
+      "x": 270,
+      "y": 380,
+      "w": 80,
+      "h": 60,
+      "clickable": true,
+      "color": "#4a4a6a",
+      "label": "5"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "opt5"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "opt3",
+      "response": "shake",
+      "message": "Count again!"
+    },
+    {
+      "action": "tap",
+      "targetId": "opt4",
+      "response": "shake",
+      "message": "You missed one!"
+    }
+  ],
+  "hint": "Count carefully, one by one",
+  "difficulty": 1
+}

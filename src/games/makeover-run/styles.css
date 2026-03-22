@@ -1,0 +1,217 @@
+/**
+ * Makeover Run - Game Styles
+ */
+
+.game-container.makeover-run {
+  --game-accent: #FF69B4;
+  background: linear-gradient(135deg, #2d0a1a 0%, #4a1030 50%, #2d0a1a 100%);
+}
+
+/* Stats bar */
+.makeover-run .game-stats {
+  background: var(--color-game-header);
+  border-bottom: 1px solid rgba(255, 105, 180, 0.25);
+}
+
+.makeover-run .stat-value {
+  color: #FF69B4;
+  font-weight: var(--font-weight-bold);
+}
+
+.makeover-run .score-count {
+  font-size: 1.4rem;
+  color: #FFD700;
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+
+/* Game board */
+.makeover-run .game-board {
+  background: #2d0a1a;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.makeover-run .game-board canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Controls */
+.makeover-run .game-controls {
+  background: var(--color-game-control);
+  border-top: 1px solid rgba(255, 105, 180, 0.2);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.makeover-run .game-controls .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.makeover-run .game-controls .btn:hover {
+  background: rgba(255, 105, 180, 0.1);
+  border-color: #FF69B4;
+  color: #FF69B4;
+}
+
+/* Level nav */
+.makeover-run .level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-game-control);
+}
+
+.makeover-run .level-nav .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Overlay */
+.makeover-run .overlay {
+  background: rgba(45, 10, 26, 0.93);
+  backdrop-filter: blur(10px);
+}
+
+.makeover-run .overlay-title.win  { color: #FF69B4; }
+.makeover-run .overlay-title.lose { color: #FF6B6B; }
+
+.makeover-run .stars .star {
+  color: var(--color-text-muted);
+  font-size: 2rem;
+  margin: 0 var(--space-xs);
+  transition: color var(--transition-normal);
+}
+
+.makeover-run .stars .star.filled { color: #FFD700; }
+
+.makeover-run .stats-summary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-sm) 0;
+  text-align: center;
+}
+
+/* Before/after comparison */
+.makeover-run .before-after {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  margin-top: var(--space-sm);
+}
+
+.makeover-run .ba-col {
+  flex: 1;
+  max-width: 120px;
+}
+
+.makeover-run .ba-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-xs);
+  text-align: center;
+}
+
+.makeover-run .ba-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  padding: 2px 0;
+  color: var(--color-text-secondary);
+}
+
+.makeover-run .ba-row.improved {
+  color: #FF69B4;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Overlay actions */
+.makeover-run .overlay-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin-top: var(--space-md);
+}
+
+.makeover-run .overlay-actions .btn-primary {
+  background: #FF69B4;
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: background var(--transition-fast);
+}
+
+.makeover-run .overlay-actions .btn-primary:hover { background: #e05090; }
+
+.makeover-run .overlay-actions .btn-secondary {
+  background: transparent;
+  color: #FF69B4;
+  border: 1px solid #FF69B4;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+}
+
+.makeover-run .overlay-actions .btn-secondary:hover {
+  background: rgba(255, 105, 180, 0.1);
+}
+
+/* Settings */
+.makeover-run .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.makeover-run .setting-item label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .makeover-run .star,
+  .makeover-run .btn,
+  .makeover-run .btn-icon,
+  .makeover-run .score-count {
+    transition: none;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .makeover-run { --game-bg: #1a0510; }
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .makeover-run .game-header { padding: var(--space-xs) var(--space-sm); }
+  .makeover-run .game-title  { font-size: var(--font-size-lg); }
+  .makeover-run .before-after { gap: var(--space-sm); }
+}

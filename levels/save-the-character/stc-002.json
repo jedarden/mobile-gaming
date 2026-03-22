@@ -1,0 +1,27 @@
+{
+  "id": "stc-002",
+  "title": "Burning building",
+  "threat": "The character is trapped inside a burning building!",
+  "choices": [
+    {
+      "id": "window",
+      "label": "Crawl out through the window",
+      "correct": true
+    },
+    {
+      "id": "elevator",
+      "label": "Take the elevator down",
+      "correct": false
+    },
+    {
+      "id": "hide",
+      "label": "Hide under a desk",
+      "correct": false
+    },
+    {
+      "id": "run",
+      "label": "Run through the flames",
+      "correct": false
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "bt-009",
+  "title": "Pattern Match",
+  "prompt": "Complete the pattern: Circle, Square, Circle, ...",
+  "type": "tap",
+  "elements": [
+    {
+      "id": "p1",
+      "type": "circle",
+      "x": 30,
+      "y": 180,
+      "w": 50,
+      "h": 50,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "p2",
+      "type": "rect",
+      "x": 95,
+      "y": 180,
+      "w": 50,
+      "h": 50,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "p3",
+      "type": "circle",
+      "x": 160,
+      "y": 180,
+      "w": 50,
+      "h": 50,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "p4",
+      "type": "text",
+      "x": 225,
+      "y": 180,
+      "w": 50,
+      "h": 50,
+      "text": "?",
+      "fontSize": 40,
+      "color": "#ffffff"
+    },
+    {
+      "id": "optCircle",
+      "type": "circle",
+      "x": 70,
+      "y": 300,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#4DABF7"
+    },
+    {
+      "id": "optRect",
+      "type": "rect",
+      "x": 160,
+      "y": 300,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#FF6B6B"
+    },
+    {
+      "id": "optTriangle",
+      "type": "triangle",
+      "x": 250,
+      "y": 300,
+      "w": 70,
+      "h": 70,
+      "clickable": true,
+      "color": "#69DB7C"
+    }
+  ],
+  "solution": {
+    "action": "tap",
+    "targetId": "optRect"
+  },
+  "decoyActions": [
+    {
+      "action": "tap",
+      "targetId": "optCircle",
+      "response": "shake",
+      "message": "Check the pattern!"
+    },
+    {
+      "action": "tap",
+      "targetId": "optTriangle",
+      "response": "shake",
+      "message": "Not in the pattern!"
+    }
+  ],
+  "hint": "Circle, Square, Circle, ...",
+  "difficulty": 2
+}

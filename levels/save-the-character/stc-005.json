@@ -1,0 +1,27 @@
+{
+  "id": "stc-005",
+  "title": "Lightning storm",
+  "threat": "A lightning storm is raging and the character is in an open field!",
+  "choices": [
+    {
+      "id": "tree",
+      "label": "Hide under a tall tree",
+      "correct": false
+    },
+    {
+      "id": "crouch",
+      "label": "Crouch low in the open",
+      "correct": true
+    },
+    {
+      "id": "run",
+      "label": "Run to the nearest building",
+      "correct": false
+    },
+    {
+      "id": "metal",
+      "label": "Stand by a metal fence",
+      "correct": false
+    }
+  ]
+}

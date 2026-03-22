@@ -1,0 +1,27 @@
+{
+  "id": "stc-011",
+  "title": "Snake bite",
+  "threat": "A venomous snake just bit the character's leg!",
+  "choices": [
+    {
+      "id": "suck",
+      "label": "Suck out the poison",
+      "correct": false
+    },
+    {
+      "id": "hospital",
+      "label": "Keep calm and get to a hospital",
+      "correct": true
+    },
+    {
+      "id": "cut",
+      "label": "Cut the wound to drain blood",
+      "correct": false
+    },
+    {
+      "id": "run",
+      "label": "Run to increase blood circulation",
+      "correct": false
+    }
+  ]
+}
