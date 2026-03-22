@@ -1,0 +1,357 @@
+{
+  "id": 30,
+  "difficulty": 0.78,
+  "optimal": 20,
+  "grid": {
+    "cols": 10,
+    "rows": 10
+  },
+  "buses": [
+    {
+      "id": "bus1",
+      "x": 0,
+      "y": 2,
+      "color": "orange",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus2",
+      "x": 0,
+      "y": 7,
+      "color": "red",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus3",
+      "x": 9,
+      "y": 3,
+      "color": "blue",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "left"
+    },
+    {
+      "id": "bus4",
+      "x": 9,
+      "y": 6,
+      "color": "green",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "left"
+    },
+    {
+      "id": "bus5",
+      "x": 5,
+      "y": 0,
+      "color": "yellow",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "down"
+    },
+    {
+      "id": "bus6",
+      "x": 4,
+      "y": 9,
+      "color": "purple",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "up"
+    }
+  ],
+  "stops": [
+    {
+      "x": 2,
+      "y": 1,
+      "color": "orange",
+      "waiting": [
+        "orange",
+        "orange",
+        "orange",
+        "orange"
+      ]
+    },
+    {
+      "x": 2,
+      "y": 8,
+      "color": "red",
+      "waiting": [
+        "red",
+        "red",
+        "red",
+        "red"
+      ]
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "color": "blue",
+      "waiting": [
+        "blue",
+        "blue",
+        "blue",
+        "blue"
+      ]
+    },
+    {
+      "x": 7,
+      "y": 7,
+      "color": "green",
+      "waiting": [
+        "green",
+        "green",
+        "green",
+        "green"
+      ]
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "color": "yellow",
+      "waiting": [
+        "yellow",
+        "yellow",
+        "yellow",
+        "yellow"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "color": "purple",
+      "waiting": [
+        "purple",
+        "purple",
+        "purple",
+        "purple"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "x": 9,
+      "y": 2
+    },
+    {
+      "x": 9,
+      "y": 7
+    },
+    {
+      "x": 5,
+      "y": 9
+    },
+    {
+      "x": 4,
+      "y": 0
+    }
+  ],
+  "roads": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      7,
+      2
+    ],
+    [
+      8,
+      2
+    ],
+    [
+      9,
+      2
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      0,
+      7
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      2,
+      7
+    ],
+    [
+      3,
+      7
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      5,
+      7
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      7
+    ],
+    [
+      8,
+      7
+    ],
+    [
+      9,
+      7
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      9,
+      3
+    ],
+    [
+      8,
+      3
+    ],
+    [
+      7,
+      3
+    ],
+    [
+      7,
+      2
+    ],
+    [
+      9,
+      6
+    ],
+    [
+      8,
+      6
+    ],
+    [
+      7,
+      6
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      5,
+      1
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      5,
+      3
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      5,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      7
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      5,
+      9
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      4,
+      9
+    ],
+    [
+      4,
+      8
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      4,
+      1
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      3,
+      5
+    ]
+  ]
+}

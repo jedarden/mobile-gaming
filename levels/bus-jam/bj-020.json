@@ -1,0 +1,197 @@
+{
+  "id": 20,
+  "difficulty": 0.52,
+  "optimal": 15,
+  "grid": {
+    "cols": 9,
+    "rows": 9
+  },
+  "buses": [
+    {
+      "id": "bus1",
+      "x": 0,
+      "y": 4,
+      "color": "red",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus2",
+      "x": 8,
+      "y": 4,
+      "color": "blue",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "left"
+    },
+    {
+      "id": "bus3",
+      "x": 4,
+      "y": 0,
+      "color": "green",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "down"
+    },
+    {
+      "id": "bus4",
+      "x": 4,
+      "y": 8,
+      "color": "yellow",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "up"
+    }
+  ],
+  "stops": [
+    {
+      "x": 2,
+      "y": 3,
+      "color": "red",
+      "waiting": [
+        "red",
+        "red",
+        "red",
+        "red"
+      ]
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "color": "blue",
+      "waiting": [
+        "blue",
+        "blue",
+        "blue",
+        "blue"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "color": "green",
+      "waiting": [
+        "green",
+        "green",
+        "green",
+        "green"
+      ]
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "color": "yellow",
+      "waiting": [
+        "yellow",
+        "yellow",
+        "yellow",
+        "yellow"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "x": 8,
+      "y": 4
+    },
+    {
+      "x": 0,
+      "y": 4
+    },
+    {
+      "x": 4,
+      "y": 0
+    },
+    {
+      "x": 4,
+      "y": 8
+    }
+  ],
+  "roads": [
+    [
+      0,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      7,
+      4
+    ],
+    [
+      8,
+      4
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      6,
+      5
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      4,
+      1
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      4,
+      8
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      5,
+      6
+    ]
+  ]
+}

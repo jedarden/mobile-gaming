@@ -1,0 +1,68 @@
+{
+  "id": 1,
+  "difficulty": 0.05,
+  "optimal": 2,
+  "grid": {
+    "cols": 5,
+    "rows": 5
+  },
+  "buses": [
+    {
+      "id": "bus1",
+      "x": 1,
+      "y": 2,
+      "color": "red",
+      "passengers": 0,
+      "capacity": 3,
+      "direction": "right"
+    }
+  ],
+  "stops": [
+    {
+      "x": 2,
+      "y": 1,
+      "color": "red",
+      "waiting": [
+        "red",
+        "red",
+        "red"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "x": 4,
+      "y": 2
+    }
+  ],
+  "roads": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      3
+    ]
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "id": 12,
+  "difficulty": 0.32,
+  "optimal": 11,
+  "grid": {
+    "cols": 8,
+    "rows": 7
+  },
+  "buses": [
+    {
+      "id": "bus1",
+      "x": 0,
+      "y": 3,
+      "color": "red",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus2",
+      "x": 2,
+      "y": 5,
+      "color": "blue",
+      "passengers": 0,
+      "capacity": 3,
+      "direction": "up"
+    },
+    {
+      "id": "bus3",
+      "x": 6,
+      "y": 1,
+      "color": "green",
+      "passengers": 0,
+      "capacity": 3,
+      "direction": "down"
+    }
+  ],
+  "stops": [
+    {
+      "x": 3,
+      "y": 2,
+      "color": "red",
+      "waiting": [
+        "red",
+        "red",
+        "red",
+        "red"
+      ]
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "color": "blue",
+      "waiting": [
+        "blue",
+        "blue",
+        "blue"
+      ]
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "color": "green",
+      "waiting": [
+        "green",
+        "green",
+        "green"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "x": 7,
+      "y": 3
+    }
+  ],
+  "roads": [
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      5,
+      3
+    ],
+    [
+      6,
+      3
+    ],
+    [
+      7,
+      3
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      2,
+      5
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      6,
+      1
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      4,
+      4
+    ]
+  ]
+}

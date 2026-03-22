@@ -1,0 +1,180 @@
+{
+  "id": 21,
+  "difficulty": 0.55,
+  "optimal": 16,
+  "grid": {
+    "cols": 9,
+    "rows": 9
+  },
+  "buses": [
+    {
+      "id": "bus1",
+      "x": 0,
+      "y": 2,
+      "color": "purple",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus2",
+      "x": 0,
+      "y": 6,
+      "color": "orange",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus3",
+      "x": 8,
+      "y": 4,
+      "color": "red",
+      "passengers": 0,
+      "capacity": 3,
+      "direction": "left"
+    }
+  ],
+  "stops": [
+    {
+      "x": 2,
+      "y": 1,
+      "color": "purple",
+      "waiting": [
+        "purple",
+        "purple",
+        "purple",
+        "purple"
+      ]
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "color": "orange",
+      "waiting": [
+        "orange",
+        "orange",
+        "orange",
+        "orange"
+      ]
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "color": "red",
+      "waiting": [
+        "red",
+        "red",
+        "red"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "x": 8,
+      "y": 2
+    },
+    {
+      "x": 8,
+      "y": 6
+    }
+  ],
+  "roads": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      7,
+      2
+    ],
+    [
+      8,
+      2
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      0,
+      6
+    ],
+    [
+      1,
+      6
+    ],
+    [
+      2,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      6
+    ],
+    [
+      7,
+      6
+    ],
+    [
+      8,
+      6
+    ],
+    [
+      2,
+      7
+    ],
+    [
+      8,
+      4
+    ],
+    [
+      7,
+      4
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      6,
+      5
+    ]
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "id": 9,
+  "difficulty": 0.25,
+  "optimal": 9,
+  "grid": {
+    "cols": 7,
+    "rows": 7
+  },
+  "buses": [
+    {
+      "id": "bus1",
+      "x": 0,
+      "y": 3,
+      "color": "orange",
+      "passengers": 0,
+      "capacity": 4,
+      "direction": "right"
+    },
+    {
+      "id": "bus2",
+      "x": 3,
+      "y": 1,
+      "color": "purple",
+      "passengers": 0,
+      "capacity": 3,
+      "direction": "down"
+    }
+  ],
+  "stops": [
+    {
+      "x": 2,
+      "y": 2,
+      "color": "orange",
+      "waiting": [
+        "orange",
+        "orange",
+        "orange",
+        "orange"
+      ]
+    },
+    {
+      "x": 5,
+      "y": 5,
+      "color": "purple",
+      "waiting": [
+        "purple",
+        "purple",
+        "purple"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "x": 6,
+      "y": 3
+    },
+    {
+      "x": 3,
+      "y": 6
+    }
+  ],
+  "roads": [
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      5,
+      3
+    ],
+    [
+      6,
+      3
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      5,
+      5
+    ],
+    [
+      4,
+      5
+    ]
+  ]
+}
