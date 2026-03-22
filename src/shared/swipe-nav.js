@@ -37,8 +37,8 @@ const DEFAULT_GAME_RING = [
   { id: 'giant-runner', title: 'Giant Runner', icon: 'giant' }
 ];
 
-// State - initialize with default ring immediately
-let gameRing = loadGameRing();
+// State - lazy-initialized on first access to avoid module-load-time storage calls
+let gameRing = null;
 let currentGameIndex = 0;
 let isTransitioning = false;
 let gestureState = null;
@@ -100,7 +100,7 @@ export function initSwipeNav(options = {}) {
  * Load game ring order from storage
  * @returns {Array} Game ring array
  */
-function loadGameRing() {
+export function loadGameRing() {
   const stored = storage.get(GAME_RING_KEY, null);
   if (stored && Array.isArray(stored) && stored.length > 0) {
     // Merge stored order with default (in case new games added)
@@ -125,6 +125,7 @@ export function saveGameRing(ring) {
  * @returns {Array} Game ring array
  */
 export function getGameRing() {
+  if (!gameRing) gameRing = loadGameRing();
   return [...gameRing];
 }
 
@@ -134,6 +135,7 @@ export function getGameRing() {
  * @returns {Object} { left, right } indices
  */
 export function getAdjacentIndices(index) {
+  if (!gameRing) gameRing = loadGameRing();
   const len = gameRing.length;
   return {
     left: (index - 1 + len) % len,
@@ -238,7 +240,7 @@ function updateIndicatorHighlight() {
 
   // Scroll active icon into view
   const activeIcon = indicatorElement.querySelector('.swipe-nav-icon.active');
-  if (activeIcon) {
+  if (activeIcon && activeIcon.scrollIntoView) {
     activeIcon.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
 }
@@ -763,6 +765,7 @@ export function isTwoFingerHorizontalSwipe(event) {
  * @param {number} toIndex - Target index
  */
 export function reorderGame(fromIndex, toIndex) {
+  if (!gameRing) gameRing = loadGameRing();
   if (fromIndex === toIndex) return;
   if (fromIndex < 0 || fromIndex >= gameRing.length) return;
   if (toIndex < 0 || toIndex >= gameRing.length) return;

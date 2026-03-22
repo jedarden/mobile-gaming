@@ -39,6 +39,7 @@ vi.mock('../../src/shared/storage.js', () => ({
 import {
   initSwipeNav,
   saveGameRing,
+  loadGameRing,
   getGameRing,
   getAdjacentIndices,
   saveGameState,
@@ -102,12 +103,12 @@ describe('Swipe Navigation', () => {
     });
 
     it('should merge new games with stored ring', () => {
-      // Store partial ring
+      // Store partial ring (only water-sort), then loadGameRing should add missing defaults
       mockStorageInstance.data['gameRing'] = [
         { id: 'water-sort', title: 'Water Sort', icon: 'droplet' }
       ];
 
-      const ring = getGameRing();
+      const ring = loadGameRing();
       expect(ring.length).toBeGreaterThan(1);
       expect(ring.find(g => g.id === 'water-sort')).toBeDefined();
     });

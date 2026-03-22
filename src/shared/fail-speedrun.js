@@ -18,8 +18,8 @@
 
 import { storage } from './storage.js';
 
-/** Storage key prefix for fail speedrun leaderboard */
-const LEADERBOARD_KEY_PREFIX = 'fail-speedrun:';
+/** Storage key prefix for fail speedrun personal bests (per game, all levels) */
+const BESTS_KEY_PREFIX = 'fail-speedrun:bests:';
 
 /** Storage key for badge awards */
 const BADGES_KEY = 'fail-speedrun:badges';
@@ -129,13 +129,12 @@ export function getGameConfig(gameId) {
 }
 
 /**
- * Get storage key for a game level's leaderboard
+ * Get storage key for a game's consolidated personal bests
  * @param {string} gameId - Game identifier
- * @param {number} levelIndex - Level index
  * @returns {string}
  */
-function getLeaderboardKey(gameId, levelIndex) {
-  return `${LEADERBOARD_KEY_PREFIX}${gameId}:${levelIndex}`;
+function getGameBestsKey(gameId) {
+  return `${BESTS_KEY_PREFIX}${gameId}`;
 }
 
 /**
@@ -145,8 +144,8 @@ function getLeaderboardKey(gameId, levelIndex) {
  * @returns {number|null} Best time in ms or null
  */
 export function getPersonalBest(gameId, levelIndex) {
-  const key = getLeaderboardKey(gameId, levelIndex);
-  return storage.get(key, null);
+  const bests = storage.get(getGameBestsKey(gameId), {});
+  return bests[levelIndex] ?? null;
 }
 
 /**
@@ -155,49 +154,7 @@ export function getPersonalBest(gameId, levelIndex) {
  * @returns {Object} Map of levelIndex to best time
  */
 export function getAllPersonalBests(gameId) {
-  const prefix = `${LEADERBOARD_KEY_PREFIX}${gameId}:`;
-  const bests = {};
-
-  try {
-    // Use storage module's internal key enumeration if available
-    // Fall back to direct localStorage access
-    const storageObj = storage.storage || storage;
-    const keys = storageObj._getAllKeys ? storageObj._getAllKeys() : getStorageKeys();
-
-    for (const key of keys) {
-      // Handle both namespaced and non-namespaced keys
-      const fullKey = key.startsWith('mg:') ? key.slice(3) : key;
-      if (fullKey.startsWith(prefix.slice(3))) { // Remove 'mg:' from prefix
-        const levelIndex = parseInt(fullKey.slice(prefix.slice(3).length), 10);
-        if (!isNaN(levelIndex)) {
-          bests[levelIndex] = storage.get(fullKey);
-        }
-      }
-    }
-  } catch {
-    // Storage unavailable
-  }
-
-  return bests;
-}
-
-/**
- * Get all storage keys (fallback for direct localStorage access)
- * @returns {string[]} Array of keys without namespace prefix
- */
-function getStorageKeys() {
-  const keys = [];
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const fullKey = localStorage.key(i);
-      if (fullKey && fullKey.startsWith('mg:')) {
-        keys.push(fullKey.slice(3));
-      }
-    }
-  } catch {
-    // Storage unavailable
-  }
-  return keys;
+  return storage.get(getGameBestsKey(gameId), {});
 }
 
 /**
@@ -208,11 +165,13 @@ function getStorageKeys() {
  * @returns {boolean} True if this is a new personal best
  */
 export function savePersonalBest(gameId, levelIndex, timeMs) {
-  const key = getLeaderboardKey(gameId, levelIndex);
-  const currentBest = storage.get(key, null);
+  const key = getGameBestsKey(gameId);
+  const bests = storage.get(key, {});
+  const currentBest = bests[levelIndex] ?? null;
 
   if (currentBest === null || timeMs < currentBest) {
-    storage.set(key, timeMs);
+    bests[levelIndex] = timeMs;
+    storage.set(key, bests);
     return true;
   }
 
