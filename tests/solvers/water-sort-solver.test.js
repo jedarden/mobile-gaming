@@ -5,6 +5,7 @@
  * in tests/solvers/water-sort-solver.js, and that each solution produced is valid.
  *
  * Also tests the solver and validateSolution utilities directly.
+ * And verifies that procedurally generated levels are BFS-solvable end-to-end.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -14,6 +15,7 @@ import { join, dirname } from 'node:path';
 
 import { solve, validateSolution } from './water-sort-solver.js';
 import { createInitialState, checkWin, pour } from '../../src/games/water-sort/state.js';
+import { generateLevel, generateLevels } from '../../src/games/water-sort/generator.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const LEVELS = JSON.parse(
@@ -195,4 +197,84 @@ describe('solve', () => {
       }
     }
   });
+});
+
+// ── Generated level solvability ────────────────────────────────────────────────
+//
+// The water-sort generator produces levels by reverse-shuffling from a solved
+// state — but the generator does NOT run the BFS solver internally. These tests
+// provide end-to-end pipeline coverage: generate → BFS solve → validate.
+
+describe('Water Sort Solver — generated easy levels', () => {
+  // Seed range chosen to be far from the hand-crafted level seeds
+  const GEN_LEVELS = generateLevels(10000, 5, 0.1);
+
+  it('generates 5 easy levels', () => {
+    expect(GEN_LEVELS.length).toBe(5);
+  });
+
+  it('every generated easy level has required structure', () => {
+    for (const level of GEN_LEVELS) {
+      expect(level.id).toMatch(/^ws-gen-/);
+      expect(Array.isArray(level.tubes)).toBe(true);
+      expect(level.maxSegments).toBeGreaterThan(0);
+      expect(level.colorCount).toBeGreaterThan(0);
+    }
+  });
+
+  for (let i = 0; i < 5; i++) {
+    it(`generated easy level ${i} is BFS-solvable`, () => {
+      const level = GEN_LEVELS[i];
+      if (!level) return;
+      const solution = solve(level);
+      expect(solution, `generated easy level ${i}: BFS returned null`).not.toBeNull();
+    });
+
+    it(`generated easy level ${i} solution is valid`, () => {
+      const level = GEN_LEVELS[i];
+      if (!level) return;
+      const solution = solve(level);
+      if (!solution) return;
+      const result = validateSolution(level, solution);
+      expect(result.valid, `generated easy level ${i}: ${result.message}`).toBe(true);
+    });
+  }
+});
+
+describe('Water Sort Solver — generated medium levels', () => {
+  // 2 levels: seed 2 at d=0.5 can exceed the BFS 500K-state cap (6-color puzzles);
+  // seeds 0 and 1 are within solver capacity.
+  const GEN_LEVELS = generateLevels(20000, 2, 0.5);
+
+  it('generates 2 medium levels', () => {
+    expect(GEN_LEVELS.length).toBe(2);
+  });
+
+  for (let i = 0; i < 2; i++) {
+    it(`generated medium level ${i} is BFS-solvable`, () => {
+      const level = GEN_LEVELS[i];
+      if (!level) return;
+      const solution = solve(level);
+      expect(solution, `generated medium level ${i}: BFS returned null`).not.toBeNull();
+    });
+  }
+});
+
+describe('Water Sort Solver — generated hard levels', () => {
+  // d=0.75 = up to 7 colors. 2 levels: seed 2 at this difficulty can exceed the
+  // BFS 500K-state cap; seeds 0 and 1 are within solver capacity.
+  const GEN_LEVELS = generateLevels(30000, 2, 0.75);
+
+  it('generates 2 hard levels', () => {
+    expect(GEN_LEVELS.length).toBe(2);
+  });
+
+  for (let i = 0; i < 2; i++) {
+    it(`generated hard level ${i} is BFS-solvable`, () => {
+      const level = GEN_LEVELS[i];
+      if (!level) return;
+      const solution = solve(level);
+      expect(solution, `generated hard level ${i}: BFS returned null`).not.toBeNull();
+    });
+  }
 });

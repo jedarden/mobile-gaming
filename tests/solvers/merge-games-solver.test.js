@@ -1,5 +1,8 @@
 /**
  * Merge Games - Solver Tests
+ *
+ * Verifies hand-crafted levels are solvable via DFS (isSolvable) and greedy solver,
+ * and that procedurally generated levels are also solvable end-to-end.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -7,6 +10,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import { createInitialState, applyMerge, getMerges, isComplete, isSolvable } from '../../src/games/merge-games/state.js';
+import { generateBatch } from '../../src/games/merge-games/generator.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const levels = JSON.parse(
@@ -108,4 +112,77 @@ describe('Merge Games Solver', () => {
     };
     expect(isSolvable(trivial)).toBe(true);
   });
+});
+
+// ── Generated level solvability ────────────────────────────────────────────────
+//
+// The merge-games generator calls isSolvable() internally, so generated levels
+// are guaranteed solvable by construction. These tests verify the full pipeline:
+// generateBatch → isSolvable → greedy solver.
+
+describe('Merge Games — generated easy levels', () => {
+  const GEN_LEVELS = generateBatch(50000, 'easy', 5);
+
+  it('generates 5 easy levels', () => {
+    expect(GEN_LEVELS.length).toBe(5);
+  });
+
+  it('every generated easy level has task and grid', () => {
+    for (const level of GEN_LEVELS) {
+      expect(level.task).toBeDefined();
+      expect(level.task.targetTier).toBeGreaterThan(0);
+      const items = level.grid.flat().filter(v => v > 0);
+      expect(items.length).toBeGreaterThan(0);
+    }
+  });
+
+  for (let i = 0; i < 5; i++) {
+    it(`generated easy level ${i} passes isSolvable`, () => {
+      const level = GEN_LEVELS[i];
+      expect(isSolvable(level)).toBe(true);
+    });
+
+    it(`generated easy level ${i} greedy solver wins`, () => {
+      const level = GEN_LEVELS[i];
+      let state = createInitialState(level);
+      let iterations = 0;
+      while (!isComplete(state) && iterations < 200) {
+        const merges = getMerges(state);
+        if (merges.length === 0) break;
+        const best = merges.reduce((a, b) =>
+          state.grid[a.r1][a.c1] >= state.grid[b.r1][b.c1] ? a : b);
+        state = applyMerge(state, best.r1, best.c1, best.r2, best.c2);
+        iterations++;
+      }
+      expect(isComplete(state)).toBe(true);
+    });
+  }
+});
+
+describe('Merge Games — generated medium levels', () => {
+  const GEN_LEVELS = generateBatch(60000, 'medium', 5);
+
+  it('generates 5 medium levels', () => {
+    expect(GEN_LEVELS.length).toBe(5);
+  });
+
+  for (let i = 0; i < 5; i++) {
+    it(`generated medium level ${i} passes isSolvable`, () => {
+      expect(isSolvable(GEN_LEVELS[i])).toBe(true);
+    });
+  }
+});
+
+describe('Merge Games — generated hard levels', () => {
+  const GEN_LEVELS = generateBatch(70000, 'hard', 3);
+
+  it('generates 3 hard levels', () => {
+    expect(GEN_LEVELS.length).toBe(3);
+  });
+
+  for (let i = 0; i < 3; i++) {
+    it(`generated hard level ${i} passes isSolvable`, () => {
+      expect(isSolvable(GEN_LEVELS[i])).toBe(true);
+    });
+  }
 });
