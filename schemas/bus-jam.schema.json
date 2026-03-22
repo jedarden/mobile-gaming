@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/bus-jam.schema.json",
+  "title": "Bus Jam Level",
+  "description": "Schema for validating Bus Jam game levels",
+  "type": "object",
+  "required": ["id", "difficulty", "optimal", "grid", "buses", "stops", "exits", "roads"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Unique numeric level identifier"
+    },
+    "difficulty": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Difficulty factor (0=easiest, 1=hardest)"
+    },
+    "optimal": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optimal number of moves to solve the level"
+    },
+    "grid": {
+      "type": "object",
+      "required": ["cols", "rows"],
+      "additionalProperties": false,
+      "properties": {
+        "cols": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 12,
+          "description": "Number of grid columns"
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 12,
+          "description": "Number of grid rows"
+        }
+      }
+    },
+    "buses": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "description": "Array of buses on the grid",
+      "items": {
+        "type": "object",
+        "required": ["id", "x", "y", "color", "passengers", "capacity", "direction"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique bus identifier"
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Bus X position on grid"
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Bus Y position on grid"
+          },
+          "color": {
+            "type": "string",
+            "description": "Bus color"
+          },
+          "passengers": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current number of passengers"
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6,
+            "description": "Maximum passenger capacity"
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["right", "left", "up", "down"],
+            "description": "Bus travel direction"
+          }
+        }
+      }
+    },
+    "stops": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Array of bus stops with waiting passengers",
+      "items": {
+        "type": "object",
+        "required": ["x", "y", "color", "waiting"],
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Stop X position on grid"
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Stop Y position on grid"
+          },
+          "color": {
+            "type": "string",
+            "description": "Stop color (matches bus color)"
+          },
+          "waiting": {
+            "type": "array",
+            "description": "Colors of passengers waiting at this stop",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "exits": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Array of exit positions",
+      "items": {
+        "type": "object",
+        "required": ["x", "y"],
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Exit X position on grid"
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Exit Y position on grid"
+          }
+        }
+      }
+    },
+    "roads": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Array of road cell coordinates [x, y]",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

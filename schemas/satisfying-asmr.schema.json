@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/satisfying-asmr.schema.json",
+  "title": "Satisfying ASMR Level",
+  "description": "Schema for validating Satisfying/ASMR game levels",
+  "type": "object",
+  "required": ["id", "width", "height", "cells"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^asmr-",
+      "description": "Unique level identifier (asmr-... format)"
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 64,
+      "description": "Grid width in cells"
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 64,
+      "description": "Grid height in cells"
+    },
+    "cells": {
+      "type": "array",
+      "description": "Flat array of cell states (0 = clean, 1 = dirty), length must equal width * height",
+      "items": {
+        "type": "integer",
+        "enum": [0, 1]
+      }
+    }
+  }
+}

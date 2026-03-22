@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/crowd-runner.schema.json",
+  "title": "Crowd Runner Level",
+  "description": "Schema for validating Crowd Runner game levels",
+  "type": "object",
+  "required": ["id", "startingCrowd", "courseLength", "speed", "gates", "boss", "difficulty"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^cr-[0-9]{3,}$",
+      "description": "Unique level identifier (cr-NNN format)"
+    },
+    "startingCrowd": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Number of crowd members at start"
+    },
+    "courseLength": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 2000,
+      "description": "Length of the course in world units"
+    },
+    "speed": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 10,
+      "description": "Player movement speed"
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "description": "Array of math gates the crowd must choose between",
+      "items": {
+        "type": "object",
+        "required": ["z", "left", "right"],
+        "additionalProperties": false,
+        "properties": {
+          "z": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Z position of the gate along the course"
+          },
+          "left": {
+            "$ref": "#/definitions/gateOption"
+          },
+          "right": {
+            "$ref": "#/definitions/gateOption"
+          }
+        }
+      }
+    },
+    "boss": {
+      "type": "object",
+      "required": ["size"],
+      "additionalProperties": false,
+      "properties": {
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "description": "Boss crowd size to defeat"
+        }
+      }
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
+      "description": "Difficulty tier"
+    }
+  },
+  "definitions": {
+    "gateOption": {
+      "type": "object",
+      "required": ["op", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": ["+", "−", "×", "÷"],
+          "description": "Mathematical operator"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Operand value"
+        }
+      }
+    }
+  }
+}

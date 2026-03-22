@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/bridge-race.schema.json",
+  "title": "Bridge Race Level",
+  "description": "Schema for validating Bridge Race game levels",
+  "type": "object",
+  "required": ["id", "arenaWidth", "finishZ", "playerColor", "opponents", "bridges", "blockPiles"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^br-[0-9]{3,}$",
+      "description": "Unique level identifier (br-NNN format)"
+    },
+    "arenaWidth": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 100,
+      "description": "Width of the arena in world units"
+    },
+    "finishZ": {
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 500,
+      "description": "Z position of the finish line"
+    },
+    "playerColor": {
+      "type": "string",
+      "description": "Player's block color"
+    },
+    "opponents": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "description": "AI opponent configurations",
+      "items": {
+        "type": "object",
+        "required": ["color", "x", "ai"],
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Opponent color"
+          },
+          "x": {
+            "type": "number",
+            "description": "Opponent starting X position"
+          },
+          "ai": {
+            "type": "string",
+            "enum": ["random", "aggressive", "defensive", "balanced"],
+            "description": "AI behavior strategy"
+          }
+        }
+      }
+    },
+    "bridges": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "description": "Bridge gaps that must be filled with blocks",
+      "items": {
+        "type": "object",
+        "required": ["z", "required"],
+        "additionalProperties": false,
+        "properties": {
+          "z": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Z position of the bridge gap"
+          },
+          "required": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Number of blocks required to complete the bridge"
+          }
+        }
+      }
+    },
+    "blockPiles": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Piles of blocks scattered around the arena",
+      "items": {
+        "type": "object",
+        "required": ["x", "z", "color", "count"],
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "type": "number",
+            "description": "X position of the block pile"
+          },
+          "z": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Z position of the block pile"
+          },
+          "color": {
+            "type": "string",
+            "description": "Color of blocks in this pile"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "description": "Number of blocks in the pile"
+          }
+        }
+      }
+    }
+  }
+}

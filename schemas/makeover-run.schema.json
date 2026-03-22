@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mobile-gaming.example.com/schemas/makeover-run.schema.json",
+  "title": "Makeover Run Level",
+  "description": "Schema for validating Makeover Run game levels",
+  "type": "object",
+  "required": ["id", "courseLength", "speed", "stations"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^mr-[0-9]{3,}$",
+      "description": "Unique level identifier (mr-NNN format)"
+    },
+    "courseLength": {
+      "type": "integer",
+      "minimum": 50,
+      "maximum": 2000,
+      "description": "Length of the course in world units"
+    },
+    "speed": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 15,
+      "description": "Player movement speed"
+    },
+    "stations": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Makeover stations along the course",
+      "items": {
+        "type": "object",
+        "required": ["z", "x", "type", "positive"],
+        "additionalProperties": false,
+        "properties": {
+          "z": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Z position of the station along the course"
+          },
+          "x": {
+            "type": "number",
+            "description": "X position (lateral lane)"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["hair", "mud", "outfit", "makeup", "accessories"],
+            "description": "Type of makeover station"
+          },
+          "positive": {
+            "type": "boolean",
+            "description": "Whether this station is beneficial (true) or harmful (false)"
+          },
+          "upgrade": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of upgrade levels granted (positive stations)"
+          },
+          "downgrade": {
+            "type": "string",
+            "description": "Category to downgrade (negative stations)"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Amount of downgrade (negative stations)"
+          }
+        }
+      }
+    }
+  }
+}
