@@ -1,0 +1,119 @@
+{
+  "id": "ptp-012",
+  "pins": [
+    {
+      "id": "p1",
+      "x": 90,
+      "y": 110
+    },
+    {
+      "id": "p2",
+      "x": 230,
+      "y": 110
+    },
+    {
+      "id": "p3",
+      "x": 90,
+      "y": 260
+    },
+    {
+      "id": "p4",
+      "x": 230,
+      "y": 260
+    }
+  ],
+  "balls": [
+    {
+      "id": "b1",
+      "x": 70,
+      "y": 40,
+      "color": "red"
+    },
+    {
+      "id": "b2",
+      "x": 250,
+      "y": 40,
+      "color": "blue"
+    },
+    {
+      "id": "b3",
+      "x": 160,
+      "y": 40,
+      "color": "green"
+    }
+  ],
+  "cups": [
+    {
+      "id": "c1",
+      "x": 40,
+      "y": 400,
+      "width": 50,
+      "height": 60,
+      "acceptColor": "red"
+    },
+    {
+      "id": "c2",
+      "x": 225,
+      "y": 400,
+      "width": 50,
+      "height": 60,
+      "acceptColor": "blue"
+    },
+    {
+      "id": "c3",
+      "x": 130,
+      "y": 400,
+      "width": 50,
+      "height": 60,
+      "acceptColor": "green"
+    }
+  ],
+  "channels": [
+    {
+      "segments": [
+        [
+          70,
+          60,
+          70,
+          110
+        ],
+        [
+          70,
+          110,
+          70,
+          400
+        ]
+      ],
+      "blockedByPin": "p1"
+    },
+    {
+      "segments": [
+        [
+          250,
+          60,
+          250,
+          110
+        ],
+        [
+          250,
+          110,
+          250,
+          400
+        ]
+      ],
+      "blockedByPin": "p2"
+    },
+    {
+      "segments": [
+        [
+          160,
+          60,
+          160,
+          400
+        ]
+      ],
+      "blockedByPin": "p3"
+    }
+  ],
+  "difficulty": 3
+}

@@ -6,6 +6,7 @@
  * Ensures consecutive transitions are achievable given reshape speed.
  */
 
+import { createRng } from '../../shared/rng.js';
 import { MIN_WIDTH, MAX_WIDTH, RESHAPE_SPEED, BASE_SPEED } from './state.js';
 
 // Hole templates
@@ -32,13 +33,20 @@ const PLUS_HOLES = [
   { shape: 'plus', widthH: 0.8, heightH: 1.5, widthV: 1.5, heightV: 0.8 },
 ];
 
+// Difficulty tiers
+const DIFFICULTY_CONFIG = {
+  easy:   { wallCount: [6,  8],  startInterval: 35, minInterval: 22, speed: 1.8, difficulty: 0.2, usePlusHoles: false },
+  medium: { wallCount: [8,  12], startInterval: 30, minInterval: 15, speed: 2.0, difficulty: 0.4, usePlusHoles: false },
+  hard:   { wallCount: [10, 15], startInterval: 25, minInterval: 12, speed: 2.2, difficulty: 0.6, usePlusHoles: true  }
+};
+
 /**
  * Compute valid width range for a given hole
  * For simple shapes: width must satisfy w <= holeW AND 1/w <= holeH
  * So w <= holeW AND w >= 1/holeH
  * For plus shapes: w must fit in either H or V rectangle
  */
-function getValidWidthRange(hole) {
+export function getValidWidthRange(hole) {
   if (hole.shape === 'tall' || hole.shape === 'wide') {
     const minW = 1 / hole.height;
     const maxW = hole.width;
@@ -77,7 +85,7 @@ function getValidWidthRange(hole) {
 /**
  * Check if a hole is achievable within [MIN_WIDTH, MAX_WIDTH]
  */
-function isHoleAchievable(hole) {
+export function isHoleAchievable(hole) {
   const range = getValidWidthRange(hole);
   return range.min <= range.max;
 }
@@ -86,7 +94,7 @@ function isHoleAchievable(hole) {
  * Check if transition between two holes is achievable
  * Given wall spacing and game speed, is there enough time to reshape?
  */
-function isTransitionAchievable(holeA, holeB, wallSpacing, speed) {
+export function isTransitionAchievable(holeA, holeB, wallSpacing, speed) {
   const rangeA = getValidWidthRange(holeA);
   const rangeB = getValidWidthRange(holeB);
 
@@ -114,18 +122,19 @@ function isTransitionAchievable(holeA, holeB, wallSpacing, speed) {
 }
 
 /**
- * Generate a level
+ * Generate a single level deterministically from a seed.
+ *
+ * @param {number} seed - PRNG seed
+ * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {number} index - Level index
+ * @returns {Object} Level object
  */
-export function generateLevel(config = {}) {
-  const {
-    id = 1,
-    wallCount = 10,
-    startInterval = 30,
-    minInterval = 15,
-    speed = BASE_SPEED,
-    difficulty = 0.3,
-    usePlusHoles = false
-  } = config;
+export function generateLevel(seed, difficulty = 'medium', index = 0) {
+  const rng = createRng(seed);
+  const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
+
+  const wallCount = rng.nextInt(config.wallCount[0], config.wallCount[1]);
+  const { startInterval, minInterval, speed, difficulty: diffFactor, usePlusHoles } = config;
 
   const walls = [];
   let currentZ = 30; // First wall distance
@@ -146,13 +155,11 @@ export function generateLevel(config = {}) {
       // Alternate between tall and wide shapes
       if (usePlusHoles && i > 0 && i % 3 === 0) {
         // Every 3rd wall is a plus shape at higher difficulty
-        const idx = Math.floor(Math.random() * PLUS_HOLES.length);
-        hole = { ...PLUS_HOLES[idx] };
+        hole = { ...rng.pick(PLUS_HOLES) };
       } else {
         // Pick from tall or wide based on toggle
         const pool = shapeToggle ? TALL_HOLES : WIDE_HOLES;
-        const idx = Math.floor(Math.random() * pool.length);
-        hole = { ...pool[idx] };
+        hole = { ...rng.pick(pool) };
       }
       shapeToggle = !shapeToggle;
       attempts++;
@@ -171,16 +178,16 @@ export function generateLevel(config = {}) {
     lastHole = hole;
 
     // Decrease interval for difficulty escalation
-    const intervalDecrease = difficulty * 0.5;
+    const intervalDecrease = diffFactor * 0.5;
     interval = Math.max(minInterval, interval - intervalDecrease);
     currentZ += interval;
   }
 
   return {
-    id,
+    id: `js-gen-${difficulty}-${index}-${seed}`,
     walls,
     speed,
-    difficulty
+    difficulty: diffFactor
   };
 }
 
@@ -211,6 +218,31 @@ export function validateLevel(level) {
   return { valid: errors.length === 0, errors };
 }
 
-export { getValidWidthRange, isHoleAchievable, isTransitionAchievable };
+/**
+ * Generate a batch of validated levels.
+ *
+ * @param {number} baseSeed
+ * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {number} count
+ * @returns {Object[]}
+ */
+export function generateBatch(baseSeed, difficulty, count) {
+  const levels = [];
+  let seed = baseSeed;
+  let attempts = 0;
+  const maxAttempts = count * 5;
 
-export default { generateLevel, validateLevel, getValidWidthRange, isHoleAchievable, isTransitionAchievable };
+  while (levels.length < count && attempts < maxAttempts) {
+    const level = generateLevel(seed, difficulty, levels.length);
+    const { valid } = validateLevel(level);
+    if (valid) {
+      levels.push(level);
+    }
+    seed += 1;
+    attempts++;
+  }
+
+  return levels;
+}
+
+export default { generateLevel, generateBatch, validateLevel, getValidWidthRange, isHoleAchievable, isTransitionAchievable };

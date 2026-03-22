@@ -1,0 +1,58 @@
+/**
+ * Parking Escape - Game Styles
+ */
+
+#game-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.stars-display {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.stars-display .star {
+  font-size: 2rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.3;
+}
+
+.stars-display .star.filled {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.stats-summary {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.overlay-buttons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.settings-content {
+  text-align: left;
+}
+
+.settings-group {
+  margin: var(--space-4) 0;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}

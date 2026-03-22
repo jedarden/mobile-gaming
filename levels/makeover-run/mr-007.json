@@ -1,0 +1,128 @@
+{
+  "id": "mr-007",
+  "courseLength": 350,
+  "speed": 2.3,
+  "stations": [
+    {
+      "z": 45,
+      "x": 1,
+      "type": "hair",
+      "upgrade": 1,
+      "positive": true
+    },
+    {
+      "z": 45,
+      "x": -1,
+      "type": "mud",
+      "downgrade": "outfit",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 90,
+      "x": -1,
+      "type": "outfit",
+      "upgrade": 1,
+      "positive": true
+    },
+    {
+      "z": 90,
+      "x": 1,
+      "type": "mud",
+      "downgrade": "hair",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 135,
+      "x": 1,
+      "type": "hair",
+      "upgrade": 2,
+      "positive": true
+    },
+    {
+      "z": 135,
+      "x": -1,
+      "type": "mud",
+      "downgrade": "makeup",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 180,
+      "x": -1,
+      "type": "makeup",
+      "upgrade": 2,
+      "positive": true
+    },
+    {
+      "z": 180,
+      "x": 1,
+      "type": "mud",
+      "downgrade": "accessories",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 225,
+      "x": -1,
+      "type": "outfit",
+      "upgrade": 2,
+      "positive": true
+    },
+    {
+      "z": 225,
+      "x": 1,
+      "type": "mud",
+      "downgrade": "hair",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 270,
+      "x": 1,
+      "type": "accessories",
+      "upgrade": 2,
+      "positive": true
+    },
+    {
+      "z": 270,
+      "x": -1,
+      "type": "mud",
+      "downgrade": "outfit",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 315,
+      "x": 1,
+      "type": "hair",
+      "upgrade": 3,
+      "positive": true
+    },
+    {
+      "z": 315,
+      "x": -1,
+      "type": "mud",
+      "downgrade": "makeup",
+      "amount": 1,
+      "positive": false
+    },
+    {
+      "z": 335,
+      "x": -1,
+      "type": "makeup",
+      "upgrade": 3,
+      "positive": true
+    },
+    {
+      "z": 335,
+      "x": 1,
+      "type": "mud",
+      "downgrade": "accessories",
+      "amount": 2,
+      "positive": false
+    }
+  ],
+  "difficulty": "medium"
+}

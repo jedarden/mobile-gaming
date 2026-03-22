@@ -1,0 +1,52 @@
+{
+  "id": "pe-006",
+  "difficulty": 2,
+  "targetMoves": 5,
+  "grid": {
+    "width": 6,
+    "height": 6,
+    "vehicles": [
+      {
+        "id": "h",
+        "type": "hero",
+        "x": 0,
+        "y": 2,
+        "width": 2,
+        "height": 1,
+        "orientation": "horizontal"
+      },
+      {
+        "id": "a",
+        "type": "car",
+        "x": 3,
+        "y": 2,
+        "width": 1,
+        "height": 2,
+        "orientation": "vertical"
+      },
+      {
+        "id": "b",
+        "type": "car",
+        "x": 3,
+        "y": 4,
+        "width": 2,
+        "height": 1,
+        "orientation": "horizontal"
+      },
+      {
+        "id": "c",
+        "type": "car",
+        "x": 4,
+        "y": 0,
+        "width": 1,
+        "height": 2,
+        "orientation": "vertical"
+      }
+    ],
+    "exit": {
+      "x": 5,
+      "y": 2,
+      "direction": "right"
+    }
+  }
+}

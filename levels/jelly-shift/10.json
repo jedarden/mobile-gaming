@@ -1,0 +1,145 @@
+{
+  "id": 10,
+  "walls": [
+    {
+      "z": 30,
+      "hole": {
+        "shape": "wide",
+        "width": 1.25,
+        "height": 0.8
+      }
+    },
+    {
+      "z": 59.8,
+      "hole": {
+        "shape": "tall",
+        "width": 0.4,
+        "height": 2.5
+      }
+    },
+    {
+      "z": 89.3,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 118.5,
+      "hole": {
+        "shape": "plus",
+        "widthH": 0.6,
+        "heightH": 2,
+        "widthV": 2,
+        "heightV": 0.6
+      }
+    },
+    {
+      "z": 147.5,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 176.3,
+      "hole": {
+        "shape": "tall",
+        "width": 0.5,
+        "height": 2
+      }
+    },
+    {
+      "z": 204.8,
+      "hole": {
+        "shape": "plus",
+        "widthH": 0.5,
+        "heightH": 2.5,
+        "widthV": 2.5,
+        "heightV": 0.5
+      }
+    },
+    {
+      "z": 233,
+      "hole": {
+        "shape": "tall",
+        "width": 0.5,
+        "height": 2
+      }
+    },
+    {
+      "z": 261,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 288.8,
+      "hole": {
+        "shape": "plus",
+        "widthH": 0.8,
+        "heightH": 1.5,
+        "widthV": 1.5,
+        "heightV": 0.8
+      }
+    },
+    {
+      "z": 316.3,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 343.5,
+      "hole": {
+        "shape": "tall",
+        "width": 0.6,
+        "height": 1.67
+      }
+    },
+    {
+      "z": 370.5,
+      "hole": {
+        "shape": "plus",
+        "widthH": 0.7,
+        "heightH": 1.8,
+        "widthV": 1.8,
+        "heightV": 0.7
+      }
+    },
+    {
+      "z": 397.3,
+      "hole": {
+        "shape": "tall",
+        "width": 0.7,
+        "height": 1.43
+      }
+    },
+    {
+      "z": 423.8,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 450,
+      "hole": {
+        "shape": "plus",
+        "widthH": 0.8,
+        "heightH": 1.5,
+        "widthV": 1.5,
+        "heightV": 0.8
+      }
+    }
+  ],
+  "speed": 3,
+  "difficulty": 0.5
+}

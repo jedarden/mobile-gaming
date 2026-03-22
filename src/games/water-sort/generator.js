@@ -49,12 +49,13 @@ const DIFFICULTY = {
  * Pick a difficulty preset based on 0-1 value
  *
  * @param {number} d - Difficulty between 0 and 1
+ * @param {Object} rng - Seeded RNG instance
  * @returns {Array} [colorCount, bufferTubes, maxSegments, shuffleRounds]
  */
-function presetFromDifficulty(d) {
-  if (d < 0.33) return DIFFICULTY.easy[Math.floor(Math.random() * DIFFICULTY.easy.length)];
-  if (d < 0.66) return DIFFICULTY.medium[Math.floor(Math.random() * DIFFICULTY.medium.length)];
-  return DIFFICULTY.hard[Math.floor(Math.random() * DIFFICULTY.hard.length)];
+function presetFromDifficulty(d, rng) {
+  if (d < 0.33) return rng.pick(DIFFICULTY.easy);
+  if (d < 0.66) return rng.pick(DIFFICULTY.medium);
+  return rng.pick(DIFFICULTY.hard);
 }
 
 /**
@@ -179,7 +180,7 @@ function validateLevel(tubes, maxSegments) {
  */
 export function generateLevel(seed, difficulty = 0.5) {
   const rng = createRng(seed);
-  const [colorCount, bufferTubes, maxSegments, shuffleRounds] = presetFromDifficulty(difficulty);
+  const [colorCount, bufferTubes, maxSegments, shuffleRounds] = presetFromDifficulty(difficulty, rng);
 
   const usedColors = COLORS.slice(0, colorCount);
 

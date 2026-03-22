@@ -9,6 +9,7 @@
  * 5. Verify solvability with solver
  */
 
+import { createRng } from '../../shared/rng.js';
 import { createInitialState, simulateToCompletion, checkWin, removePin } from './state.js';
 
 // Generation parameters
@@ -16,18 +17,27 @@ const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 480;
 const BALL_COLORS = ['red', 'blue', 'green', 'yellow'];
 
+const DIFFICULTY_CONFIG = {
+  easy:   { numColors: 2, numPins: 2 },
+  medium: { numColors: 3, numPins: 3 },
+  hard:   { numColors: 4, numPins: 4 }
+};
+
 /**
  * Generate a level with specified difficulty
  *
- * @param {number} difficulty - 1 (easy) to 3 (hard)
- * @param {Object} rng - Random number generator with random() method
+ * @param {number} seed - RNG seed for reproducibility
+ * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {number} index - Level index (used in ID)
  * @returns {Object|null} Level definition or null if generation failed
  */
-export function generateLevel(difficulty = 1, rng = Math) {
-  const attempts = 10;
+export function generateLevel(seed, difficulty = 'medium', index = 0) {
+  const rng = createRng(seed);
+  const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
+  const difficultyNum = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
 
-  for (let i = 0; i < attempts; i++) {
-    const level = tryGenerateLevel(difficulty, rng);
+  for (let i = 0; i < 10; i++) {
+    const level = tryGenerateLevel(difficultyNum, rng, seed, index);
     if (level && isLevelSolvable(level)) {
       return level;
     }
@@ -39,7 +49,7 @@ export function generateLevel(difficulty = 1, rng = Math) {
 /**
  * Attempt to generate a level
  */
-function tryGenerateLevel(difficulty, rng) {
+function tryGenerateLevel(difficulty, rng, seed, index) {
   const numColors = Math.min(2 + difficulty, 4);
   const numPins = 2 + difficulty;
 
@@ -65,7 +75,7 @@ function tryGenerateLevel(difficulty, rng) {
     balls.push({
       id: `ball-${i}`,
       x: ballSpacing * (i + 1),
-      y: 30 + rng.random() * 30,
+      y: 30 + rng.next() * 30,
       color: color
     });
   });
@@ -107,7 +117,7 @@ function tryGenerateLevel(difficulty, rng) {
   });
 
   return {
-    id: `ptp-gen-${Date.now()}`,
+    id: `ptp-gen-${seed}-${index}`,
     pins,
     balls,
     cups,
@@ -127,15 +137,15 @@ function generateChannelPath(ball, cup, rng, index) {
   let y = ball.y;
 
   // Create waypoints
-  const numWaypoints = 2 + Math.floor(rng.random() * 2);
+  const numWaypoints = 2 + Math.floor(rng.next() * 2);
   const stepY = (cup.y - ball.y) / (numWaypoints + 1);
 
   // Add horizontal offset based on index to create crossings
-  const baseOffset = (index % 2 === 0 ? -1 : 1) * (30 + rng.random() * 40);
+  const baseOffset = (index % 2 === 0 ? -1 : 1) * (30 + rng.next() * 40);
 
   for (let i = 1; i <= numWaypoints; i++) {
     const nextY = ball.y + stepY * i;
-    const nextX = x + (i === 1 ? baseOffset : (rng.random() - 0.5) * 60);
+    const nextX = x + (i === 1 ? baseOffset : (rng.next() - 0.5) * 60);
 
     segments.push([x, y, nextX, nextY]);
     x = nextX;
@@ -203,8 +213,8 @@ function selectPinPositions(candidates, count, rng) {
     const pins = [];
     for (let i = 0; i < count; i++) {
       pins.push({
-        x: 80 + rng.random() * (CANVAS_WIDTH - 160),
-        y: 100 + rng.random() * 200
+        x: 80 + rng.next() * (CANVAS_WIDTH - 160),
+        y: 100 + rng.next() * 200
       });
     }
     return pins;
@@ -314,18 +324,64 @@ export function findSolution(level) {
 }
 
 /**
- * Shuffle an array using Fisher-Yates
+ * Validate a generated level
+ *
+ * @param {Object} level
+ * @returns {{ valid: boolean, reason: string }}
+ */
+export function validateLevel(level) {
+  if (!level.pins || !level.balls || !level.cups) {
+    return { valid: false, reason: 'Missing required fields' };
+  }
+  const solvable = isLevelSolvable(level);
+  if (!solvable) {
+    return { valid: false, reason: 'Level is unsolvable' };
+  }
+  return { valid: true, reason: 'OK' };
+}
+
+/**
+ * Generate a batch of validated levels.
+ *
+ * @param {number} baseSeed
+ * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {number} count
+ * @returns {Object[]}
+ */
+export function generateBatch(baseSeed, difficulty, count) {
+  const levels = [];
+  let seed = baseSeed;
+  let attempts = 0;
+  const maxAttempts = count * 20;
+
+  while (levels.length < count && attempts < maxAttempts) {
+    const level = generateLevel(seed, difficulty, levels.length);
+    if (level) {
+      levels.push(level);
+    }
+    seed += 1;
+    attempts++;
+  }
+
+  return levels;
+}
+
+/**
+ * Shuffle an array using Fisher-Yates (uses seeded rng)
  */
 function shuffle(array, rng) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = rng.nextInt(0, i);
+    [result[i], result[j]] = [result[j], result[i]];
   }
-  return array;
+  return result;
 }
 
 export default {
   generateLevel,
+  generateBatch,
+  validateLevel,
   isLevelSolvable,
   findSolution
 };

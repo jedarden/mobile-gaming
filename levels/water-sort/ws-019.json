@@ -1,0 +1,68 @@
+{
+  "id": "ws-019",
+  "difficulty": 0.6,
+  "optimal": 18,
+  "tubes": [
+    [
+      "red",
+      "yellow",
+      "purple",
+      "orange"
+    ],
+    [
+      "blue",
+      "green",
+      "red",
+      "yellow"
+    ],
+    [
+      "purple",
+      "orange",
+      "blue",
+      "green"
+    ],
+    [
+      "green",
+      "red",
+      "yellow",
+      "blue"
+    ],
+    [
+      "yellow",
+      "blue",
+      "green",
+      "orange"
+    ],
+    [
+      "orange",
+      "purple",
+      "red",
+      "green"
+    ],
+    [
+      "blue",
+      "orange",
+      "yellow",
+      "purple"
+    ],
+    [
+      "green",
+      "yellow",
+      "blue",
+      "red"
+    ],
+    [
+      "purple",
+      "green",
+      "orange",
+      "blue"
+    ],
+    [
+      "yellow",
+      "red",
+      "purple",
+      "green"
+    ]
+  ],
+  "maxSegments": 4
+}

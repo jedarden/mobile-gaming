@@ -1,0 +1,85 @@
+{
+  "id": 4,
+  "courseLength": 275,
+  "startScale": 1,
+  "playerColor": "yellow",
+  "speed": 3.3,
+  "collectibles": [
+    {
+      "x": 0,
+      "z": 27,
+      "color": "yellow",
+      "value": 0.11
+    },
+    {
+      "x": 1,
+      "z": 55,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": -1,
+      "z": 82,
+      "color": "red",
+      "value": 0.05
+    },
+    {
+      "x": 0,
+      "z": 110,
+      "color": "yellow",
+      "value": 0.12
+    },
+    {
+      "x": 1,
+      "z": 137,
+      "color": "yellow",
+      "value": 0.13
+    },
+    {
+      "x": -1,
+      "z": 165,
+      "color": "green",
+      "value": 0.05
+    },
+    {
+      "x": 0,
+      "z": 192,
+      "color": "yellow",
+      "value": 0.11
+    },
+    {
+      "x": 1,
+      "z": 220,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": -1,
+      "z": 247,
+      "color": "purple",
+      "value": 0.05
+    }
+  ],
+  "obstacles": [
+    {
+      "x": 1,
+      "z": 68,
+      "width": 1.5
+    },
+    {
+      "x": -1,
+      "z": 152,
+      "width": 1.5
+    },
+    {
+      "x": 0,
+      "z": 205,
+      "width": 1.5
+    }
+  ],
+  "boss": {
+    "z": 275,
+    "scale": 2.25
+  },
+  "difficulty": 0.175
+}

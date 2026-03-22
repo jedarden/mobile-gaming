@@ -1,0 +1,67 @@
+{
+  "id": "cr-003",
+  "startingCrowd": 10,
+  "courseLength": 450,
+  "speed": 1.7,
+  "gates": [
+    {
+      "z": 70,
+      "left": {
+        "op": "+",
+        "value": 15
+      },
+      "right": {
+        "op": "−",
+        "value": 5
+      }
+    },
+    {
+      "z": 140,
+      "left": {
+        "op": "×",
+        "value": 2
+      },
+      "right": {
+        "op": "+",
+        "value": 3
+      }
+    },
+    {
+      "z": 210,
+      "left": {
+        "op": "+",
+        "value": 20
+      },
+      "right": {
+        "op": "÷",
+        "value": 3
+      }
+    },
+    {
+      "z": 280,
+      "left": {
+        "op": "×",
+        "value": 2
+      },
+      "right": {
+        "op": "−",
+        "value": 10
+      }
+    },
+    {
+      "z": 350,
+      "left": {
+        "op": "+",
+        "value": 10
+      },
+      "right": {
+        "op": "÷",
+        "value": 2
+      }
+    }
+  ],
+  "boss": {
+    "size": 80
+  },
+  "difficulty": "easy"
+}

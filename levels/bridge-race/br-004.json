@@ -1,0 +1,71 @@
+{
+  "id": "br-004",
+  "arenaWidth": 24,
+  "finishZ": 110,
+  "playerColor": "blue",
+  "opponents": [
+    {
+      "color": "red",
+      "x": 7,
+      "ai": "random"
+    }
+  ],
+  "bridges": [
+    {
+      "z": 30,
+      "required": 3
+    },
+    {
+      "z": 60,
+      "required": 3
+    },
+    {
+      "z": 90,
+      "required": 3
+    }
+  ],
+  "blockPiles": [
+    {
+      "x": -8,
+      "z": 10,
+      "color": "blue",
+      "count": 3
+    },
+    {
+      "x": 8,
+      "z": 10,
+      "color": "red",
+      "count": 4
+    },
+    {
+      "x": 0,
+      "z": 20,
+      "color": "blue",
+      "count": 4
+    },
+    {
+      "x": -6,
+      "z": 40,
+      "color": "blue",
+      "count": 3
+    },
+    {
+      "x": 6,
+      "z": 40,
+      "color": "red",
+      "count": 4
+    },
+    {
+      "x": 2,
+      "z": 70,
+      "color": "blue",
+      "count": 2
+    },
+    {
+      "x": -4,
+      "z": 70,
+      "color": "red",
+      "count": 4
+    }
+  ]
+}

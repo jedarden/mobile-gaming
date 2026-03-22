@@ -1,0 +1,80 @@
+{
+  "id": "ws-021",
+  "difficulty": 0.72,
+  "optimal": 22,
+  "tubes": [
+    [
+      "pink",
+      "cyan",
+      "blue",
+      "green"
+    ],
+    [
+      "red",
+      "green",
+      "yellow",
+      "purple"
+    ],
+    [
+      "yellow",
+      "pink",
+      "cyan",
+      "red"
+    ],
+    [
+      "blue",
+      "purple",
+      "red",
+      "green"
+    ],
+    [
+      "green",
+      "yellow",
+      "pink",
+      "blue"
+    ],
+    [
+      "cyan",
+      "red",
+      "purple",
+      "yellow"
+    ],
+    [
+      "purple",
+      "blue",
+      "green",
+      "pink"
+    ],
+    [
+      "red",
+      "yellow",
+      "blue",
+      "cyan"
+    ],
+    [
+      "blue",
+      "pink",
+      "green",
+      "purple"
+    ],
+    [
+      "yellow",
+      "cyan",
+      "purple",
+      "red"
+    ],
+    [
+      "green",
+      "red",
+      "cyan",
+      "pink"
+    ],
+    [
+      "pink",
+      "purple",
+      "yellow",
+      "blue"
+    ]
+  ],
+  "maxSegments": 4
+}

@@ -477,7 +477,7 @@ export function drawCheckmark(ctx, x, y, size, color, lineWidth = 3) {
 export function drawX(ctx, x, y, size, color, lineWidth = 3) {
   const s = size / 2;
   const offset = s * 0.4;
-  
+
   ctx.beginPath();
   ctx.moveTo(x - offset, y - offset);
   ctx.lineTo(x + offset, y + offset);
@@ -486,6 +486,101 @@ export function drawX(ctx, x, y, size, color, lineWidth = 3) {
   setStrokeColor(ctx, color, lineWidth);
   ctx.lineCap = 'round';
   ctx.stroke();
-  
+
   ctx.lineCap = 'butt';
+}
+
+/**
+ * Draw a filled rounded rectangle (named convenience for drawRect with radius)
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas context
+ * @param {number} x - X position in logical pixels
+ * @param {number} y - Y position in logical pixels
+ * @param {number} w - Rectangle width in logical pixels
+ * @param {number} h - Rectangle height in logical pixels
+ * @param {number} r - Corner radius in pixels
+ * @param {string|Object} color - Fill color
+ */
+export function drawRoundedRect(ctx, x, y, w, h, r, color) {
+  drawRect(ctx, x, y, w, h, color, r);
+}
+
+/**
+ * Draw a circle with a specular highlight (lighter arc in the upper-left quadrant)
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas context
+ * @param {number} x - Center X position
+ * @param {number} y - Center Y position
+ * @param {number} radius - Circle radius in logical pixels
+ * @param {string|Object} color - Base fill color
+ */
+export function drawCircleWithHighlight(ctx, x, y, radius, color) {
+  // Draw base circle
+  drawCircle(ctx, x, y, radius, color);
+
+  // Draw specular highlight: a small white arc in the upper-left
+  const hlRadius = radius * 0.45;
+  const hlX = x - radius * 0.25;
+  const hlY = y - radius * 0.25;
+
+  ctx.beginPath();
+  ctx.arc(hlX, hlY, hlRadius, Math.PI, Math.PI * 1.75);
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = radius * 0.18;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+}
+
+/**
+ * Draw a tube (vertical cylinder cross-section) with optional fill segments
+ *
+ * Renders a rounded-rect tube outline and optionally fills it with colored
+ * liquid segments from the bottom up, as used in water-sort style games.
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas context
+ * @param {number} x - Left edge X position
+ * @param {number} y - Top edge Y position
+ * @param {number} w - Tube width in logical pixels
+ * @param {number} h - Tube height in logical pixels
+ * @param {Array<{color: string|Object, fill: number}>} segments - Fill segments,
+ *   each with a color and fill fraction (0–1) of the tube height, ordered
+ *   bottom-to-top. Total fill should not exceed 1.
+ * @param {string|Object} borderColor - Tube outline color (default: '#888')
+ * @param {number} borderWidth - Outline width in pixels (default: 2)
+ * @param {number} r - Corner radius (default: w * 0.35)
+ */
+export function drawTube(ctx, x, y, w, h, segments = [], borderColor = '#888', borderWidth = 2, r = undefined) {
+  const radius = r !== undefined ? r : w * 0.35;
+
+  // Fill segments from bottom up
+  if (segments.length > 0) {
+    let bottomY = y + h;
+    for (const seg of segments) {
+      const segH = h * seg.fill;
+      const segY = bottomY - segH;
+      ctx.save();
+      // Clip to tube shape so fills respect rounded corners
+      ctx.beginPath();
+      const cr = Math.min(radius, w / 2, h / 2);
+      ctx.moveTo(x + cr, y);
+      ctx.lineTo(x + w - cr, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + cr);
+      ctx.lineTo(x + w, y + h - cr);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - cr, y + h);
+      ctx.lineTo(x + cr, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - cr);
+      ctx.lineTo(x, y + cr);
+      ctx.quadraticCurveTo(x, y, x + cr, y);
+      ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = typeof seg.color === 'string' ? seg.color : seg.color.hex || seg.color;
+      ctx.fillRect(x, segY, w, segH);
+      ctx.restore();
+      bottomY = segY;
+    }
+  }
+
+  // Draw tube outline
+  strokeRect(ctx, x, y, w, h, borderColor, radius, borderWidth);
 }

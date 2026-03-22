@@ -1,0 +1,52 @@
+{
+  "id": "ptp-003",
+  "pins": [
+    {
+      "id": "p1",
+      "x": 160,
+      "y": 120
+    },
+    {
+      "id": "p2",
+      "x": 160,
+      "y": 220
+    },
+    {
+      "id": "p3",
+      "x": 160,
+      "y": 320
+    }
+  ],
+  "balls": [
+    {
+      "id": "b1",
+      "x": 160,
+      "y": 40,
+      "color": "green"
+    }
+  ],
+  "cups": [
+    {
+      "id": "c1",
+      "x": 130,
+      "y": 400,
+      "width": 60,
+      "height": 60,
+      "acceptColor": "green"
+    }
+  ],
+  "channels": [
+    {
+      "segments": [
+        [
+          160,
+          60,
+          160,
+          400
+        ]
+      ],
+      "blockedByPin": "p1"
+    }
+  ],
+  "difficulty": 1
+}

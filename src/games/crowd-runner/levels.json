@@ -5,12 +5,54 @@
     "courseLength": 400,
     "speed": 1.5,
     "gates": [
-      { "z": 80,  "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 3 } },
-      { "z": 160, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 5 } },
-      { "z": 240, "left": { "op": "+", "value": 15 }, "right": { "op": "−", "value": 8 } },
-      { "z": 320, "left": { "op": "+", "value": 20 }, "right": { "op": "÷", "value": 2 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 3
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      }
     ],
-    "boss": { "size": 40 },
+    "boss": {
+      "size": 40
+    },
     "difficulty": "easy"
   },
   {
@@ -19,12 +61,54 @@
     "courseLength": 400,
     "speed": 1.6,
     "gates": [
-      { "z": 80,  "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 5 } },
-      { "z": 160, "left": { "op": "+", "value": 12 }, "right": { "op": "−", "value": 4 } },
-      { "z": 240, "left": { "op": "×", "value": 2 },  "right": { "op": "÷", "value": 2 } },
-      { "z": 320, "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 6 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 12
+        },
+        "right": {
+          "op": "−",
+          "value": 4
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 6
+        }
+      }
     ],
-    "boss": { "size": 50 },
+    "boss": {
+      "size": 50
+    },
     "difficulty": "easy"
   },
   {
@@ -33,13 +117,65 @@
     "courseLength": 450,
     "speed": 1.7,
     "gates": [
-      { "z": 70,  "left": { "op": "+", "value": 15 }, "right": { "op": "−", "value": 5 } },
-      { "z": 140, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 3 } },
-      { "z": 210, "left": { "op": "+", "value": 20 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 280, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 10 } },
-      { "z": 350, "left": { "op": "+", "value": 10 }, "right": { "op": "÷", "value": 2 } }
+      {
+        "z": 70,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 140,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 3
+        }
+      },
+      {
+        "z": 210,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 280,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 350,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      }
     ],
-    "boss": { "size": 80 },
+    "boss": {
+      "size": 80
+    },
     "difficulty": "easy"
   },
   {
@@ -48,13 +184,65 @@
     "courseLength": 500,
     "speed": 1.8,
     "gates": [
-      { "z": 80,  "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 5 } },
-      { "z": 160, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 8 } },
-      { "z": 240, "left": { "op": "+", "value": 15 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 320, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 15 } },
-      { "z": 400, "left": { "op": "+", "value": 30 }, "right": { "op": "÷", "value": 2 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 15
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      }
     ],
-    "boss": { "size": 90 },
+    "boss": {
+      "size": 90
+    },
     "difficulty": "medium"
   },
   {
@@ -63,30 +251,154 @@
     "courseLength": 560,
     "speed": 1.9,
     "gates": [
-      { "z": 80,  "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 8 } },
-      { "z": 160, "left": { "op": "+", "value": 15 }, "right": { "op": "−", "value": 8 } },
-      { "z": 240, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 10 } },
-      { "z": 320, "left": { "op": "+", "value": 20 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 400, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 10 } },
-      { "z": 480, "left": { "op": "+", "value": 25 }, "right": { "op": "÷", "value": 3 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      }
     ],
-    "boss": { "size": 120 },
+    "boss": {
+      "size": 120
+    },
     "difficulty": "medium"
   },
   {
     "id": "cr-006",
     "startingCrowd": 12,
     "courseLength": 600,
-    "speed": 2.0,
+    "speed": 2,
     "gates": [
-      { "z": 80,  "left": { "op": "+", "value": 8 },  "right": { "op": "−", "value": 4 } },
-      { "z": 160, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 5 } },
-      { "z": 240, "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 8 } },
-      { "z": 320, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 12 } },
-      { "z": 400, "left": { "op": "−", "value": 5 },  "right": { "op": "+", "value": 30 } },
-      { "z": 500, "left": { "op": "+", "value": 20 }, "right": { "op": "×", "value": 2 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 8
+        },
+        "right": {
+          "op": "−",
+          "value": 4
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 12
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "−",
+          "value": 5
+        },
+        "right": {
+          "op": "+",
+          "value": 30
+        }
+      },
+      {
+        "z": 500,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "×",
+          "value": 2
+        }
+      }
     ],
-    "boss": { "size": 110 },
+    "boss": {
+      "size": 110
+    },
     "difficulty": "medium"
   },
   {
@@ -95,15 +407,87 @@
     "courseLength": 650,
     "speed": 2.1,
     "gates": [
-      { "z": 80,  "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 5 } },
-      { "z": 160, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 8 } },
-      { "z": 240, "left": { "op": "+", "value": 20 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 320, "left": { "op": "×", "value": 3 },  "right": { "op": "−", "value": 12 } },
-      { "z": 400, "left": { "op": "+", "value": 15 }, "right": { "op": "÷", "value": 4 } },
-      { "z": 480, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 10 } },
-      { "z": 560, "left": { "op": "+", "value": 25 }, "right": { "op": "−", "value": 20 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 12
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      }
     ],
-    "boss": { "size": 150 },
+    "boss": {
+      "size": 150
+    },
     "difficulty": "medium"
   },
   {
@@ -112,15 +496,87 @@
     "courseLength": 700,
     "speed": 2.2,
     "gates": [
-      { "z": 80,  "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 3 } },
-      { "z": 160, "left": { "op": "+", "value": 12 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 240, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 8 } },
-      { "z": 320, "left": { "op": "+", "value": 20 }, "right": { "op": "−", "value": 15 } },
-      { "z": 400, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 5 } },
-      { "z": 480, "left": { "op": "+", "value": 15 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 580, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 10 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 3
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 12
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 15
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 580,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      }
     ],
-    "boss": { "size": 180 },
+    "boss": {
+      "size": 180
+    },
     "difficulty": "hard"
   },
   {
@@ -129,16 +585,98 @@
     "courseLength": 750,
     "speed": 2.3,
     "gates": [
-      { "z": 80,  "left": { "op": "+", "value": 15 }, "right": { "op": "−", "value": 5 } },
-      { "z": 160, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 10 } },
-      { "z": 240, "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 8 } },
-      { "z": 320, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 5 } },
-      { "z": 400, "left": { "op": "+", "value": 20 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 480, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 10 } },
-      { "z": 560, "left": { "op": "+", "value": 25 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 640, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 15 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 640,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      }
     ],
-    "boss": { "size": 250 },
+    "boss": {
+      "size": 250
+    },
     "difficulty": "hard"
   },
   {
@@ -147,16 +685,98 @@
     "courseLength": 800,
     "speed": 2.4,
     "gates": [
-      { "z": 80,  "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 8 } },
-      { "z": 160, "left": { "op": "+", "value": 15 }, "right": { "op": "−", "value": 10 } },
-      { "z": 240, "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 12 } },
-      { "z": 320, "left": { "op": "+", "value": 25 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 400, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 5 } },
-      { "z": 480, "left": { "op": "+", "value": 30 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 560, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 10 } },
-      { "z": 660, "left": { "op": "+", "value": 20 }, "right": { "op": "−", "value": 15 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 12
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 660,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 15
+        }
+      }
     ],
-    "boss": { "size": 300 },
+    "boss": {
+      "size": 300
+    },
     "difficulty": "hard"
   },
   {
@@ -165,17 +785,109 @@
     "courseLength": 850,
     "speed": 2.5,
     "gates": [
-      { "z": 80,  "left": { "op": "+", "value": 20 }, "right": { "op": "−", "value": 5 } },
-      { "z": 160, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 10 } },
-      { "z": 240, "left": { "op": "+", "value": 15 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 320, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 20 } },
-      { "z": 400, "left": { "op": "+", "value": 30 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 480, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 15 } },
-      { "z": 560, "left": { "op": "+", "value": 25 }, "right": { "op": "÷", "value": 4 } },
-      { "z": 640, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 25 } },
-      { "z": 720, "left": { "op": "+", "value": 40 }, "right": { "op": "÷", "value": 3 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 640,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 25
+        }
+      },
+      {
+        "z": 720,
+        "left": {
+          "op": "+",
+          "value": 40
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      }
     ],
-    "boss": { "size": 400 },
+    "boss": {
+      "size": 400
+    },
     "difficulty": "hard"
   },
   {
@@ -184,18 +896,1096 @@
     "courseLength": 900,
     "speed": 2.6,
     "gates": [
-      { "z": 80,  "left": { "op": "×", "value": 2 },  "right": { "op": "+", "value": 5 } },
-      { "z": 160, "left": { "op": "+", "value": 10 }, "right": { "op": "−", "value": 7 } },
-      { "z": 240, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 8 } },
-      { "z": 320, "left": { "op": "+", "value": 20 }, "right": { "op": "÷", "value": 2 } },
-      { "z": 400, "left": { "op": "×", "value": 2 },  "right": { "op": "−", "value": 10 } },
-      { "z": 480, "left": { "op": "+", "value": 25 }, "right": { "op": "÷", "value": 3 } },
-      { "z": 560, "left": { "op": "×", "value": 3 },  "right": { "op": "+", "value": 15 } },
-      { "z": 640, "left": { "op": "+", "value": 30 }, "right": { "op": "−", "value": 20 } },
-      { "z": 720, "left": { "op": "×", "value": 2 },  "right": { "op": "÷", "value": 4 } },
-      { "z": 810, "left": { "op": "+", "value": 50 }, "right": { "op": "−", "value": 30 } }
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 7
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 640,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      },
+      {
+        "z": 720,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 810,
+        "left": {
+          "op": "+",
+          "value": 50
+        },
+        "right": {
+          "op": "−",
+          "value": 30
+        }
+      }
     ],
-    "boss": { "size": 500 },
+    "boss": {
+      "size": 500
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-013",
+    "startingCrowd": 10,
+    "courseLength": 950,
+    "speed": 2.7,
+    "gates": [
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 640,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      },
+      {
+        "z": 720,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 820,
+        "left": {
+          "op": "+",
+          "value": 40
+        },
+        "right": {
+          "op": "−",
+          "value": 25
+        }
+      }
+    ],
+    "boss": {
+      "size": 600
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-014",
+    "startingCrowd": 12,
+    "courseLength": 1000,
+    "speed": 2.8,
+    "gates": [
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 6
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 12
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "−",
+          "value": 15
+        }
+      },
+      {
+        "z": 640,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 20
+        }
+      },
+      {
+        "z": 720,
+        "left": {
+          "op": "+",
+          "value": 35
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 830,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 30
+        }
+      }
+    ],
+    "boss": {
+      "size": 700
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-015",
+    "startingCrowd": 15,
+    "courseLength": 1050,
+    "speed": 2.9,
+    "gates": [
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 12
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 20
+        }
+      },
+      {
+        "z": 640,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "−",
+          "value": 18
+        }
+      },
+      {
+        "z": 730,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 840,
+        "left": {
+          "op": "+",
+          "value": 40
+        },
+        "right": {
+          "op": "÷",
+          "value": 5
+        }
+      }
+    ],
+    "boss": {
+      "size": 800
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-016",
+    "startingCrowd": 10,
+    "courseLength": 1100,
+    "speed": 3,
+    "gates": [
+      {
+        "z": 80,
+        "left": {
+          "op": "+",
+          "value": 12
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "+",
+          "value": 18
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 320,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 400,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 480,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 560,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 650,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      },
+      {
+        "z": 750,
+        "left": {
+          "op": "+",
+          "value": 50
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 860,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 30
+        }
+      }
+    ],
+    "boss": {
+      "size": 900
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-017",
+    "startingCrowd": 10,
+    "courseLength": 1150,
+    "speed": 3.1,
+    "gates": [
+      {
+        "z": 80,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 160,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 240,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 12
+        }
+      },
+      {
+        "z": 330,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 420,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 510,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "−",
+          "value": 15
+        }
+      },
+      {
+        "z": 600,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 20
+        }
+      },
+      {
+        "z": 690,
+        "left": {
+          "op": "+",
+          "value": 40
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 780,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 25
+        }
+      },
+      {
+        "z": 880,
+        "left": {
+          "op": "+",
+          "value": 60
+        },
+        "right": {
+          "op": "÷",
+          "value": 5
+        }
+      }
+    ],
+    "boss": {
+      "size": 1000
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-018",
+    "startingCrowd": 10,
+    "courseLength": 1200,
+    "speed": 3.2,
+    "gates": [
+      {
+        "z": 90,
+        "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "−",
+          "value": 4
+        }
+      },
+      {
+        "z": 180,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 6
+        }
+      },
+      {
+        "z": 270,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 360,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 450,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 540,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 12
+        }
+      },
+      {
+        "z": 630,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 720,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 810,
+        "left": {
+          "op": "+",
+          "value": 45
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      },
+      {
+        "z": 900,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 25
+        }
+      }
+    ],
+    "boss": {
+      "size": 1100
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-019",
+    "startingCrowd": 10,
+    "courseLength": 1250,
+    "speed": 3.3,
+    "gates": [
+      {
+        "z": 90,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 8
+        }
+      },
+      {
+        "z": 180,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 270,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 5
+        }
+      },
+      {
+        "z": 370,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 460,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 15
+        }
+      },
+      {
+        "z": 555,
+        "left": {
+          "op": "+",
+          "value": 35
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 650,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 20
+        }
+      },
+      {
+        "z": 745,
+        "left": {
+          "op": "+",
+          "value": 40
+        },
+        "right": {
+          "op": "−",
+          "value": 25
+        }
+      },
+      {
+        "z": 840,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 30
+        }
+      },
+      {
+        "z": 950,
+        "left": {
+          "op": "+",
+          "value": 50
+        },
+        "right": {
+          "op": "÷",
+          "value": 5
+        }
+      }
+    ],
+    "boss": {
+      "size": 1200
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "cr-020",
+    "startingCrowd": 10,
+    "courseLength": 1300,
+    "speed": 3.5,
+    "gates": [
+      {
+        "z": 90,
+        "left": {
+          "op": "+",
+          "value": 15
+        },
+        "right": {
+          "op": "−",
+          "value": 5
+        }
+      },
+      {
+        "z": 190,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 10
+        }
+      },
+      {
+        "z": 290,
+        "left": {
+          "op": "+",
+          "value": 25
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 390,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 20
+        }
+      },
+      {
+        "z": 490,
+        "left": {
+          "op": "+",
+          "value": 40
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 590,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 15
+        }
+      },
+      {
+        "z": 690,
+        "left": {
+          "op": "+",
+          "value": 30
+        },
+        "right": {
+          "op": "−",
+          "value": 25
+        }
+      },
+      {
+        "z": 790,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 35
+        }
+      },
+      {
+        "z": 890,
+        "left": {
+          "op": "+",
+          "value": 50
+        },
+        "right": {
+          "op": "÷",
+          "value": 4
+        }
+      },
+      {
+        "z": 1000,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 30
+        }
+      }
+    ],
+    "boss": {
+      "size": 1400
+    },
     "difficulty": "hard"
   }
 ]

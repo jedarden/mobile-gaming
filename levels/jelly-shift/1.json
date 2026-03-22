@@ -1,0 +1,71 @@
+{
+  "id": 1,
+  "walls": [
+    {
+      "z": 30,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 69,
+      "hole": {
+        "shape": "tall",
+        "width": 0.4,
+        "height": 2.5
+      }
+    },
+    {
+      "z": 107.9,
+      "hole": {
+        "shape": "wide",
+        "width": 1.67,
+        "height": 0.6
+      }
+    },
+    {
+      "z": 146.9,
+      "hole": {
+        "shape": "tall",
+        "width": 0.6,
+        "height": 1.67
+      }
+    },
+    {
+      "z": 185.8,
+      "hole": {
+        "shape": "wide",
+        "width": 1.43,
+        "height": 0.7
+      }
+    },
+    {
+      "z": 224.6,
+      "hole": {
+        "shape": "tall",
+        "width": 0.4,
+        "height": 2.5
+      }
+    },
+    {
+      "z": 263.5,
+      "hole": {
+        "shape": "wide",
+        "width": 1.67,
+        "height": 0.6
+      }
+    },
+    {
+      "z": 302.3,
+      "hole": {
+        "shape": "tall",
+        "width": 0.4,
+        "height": 2.5
+      }
+    }
+  ],
+  "speed": 2.1,
+  "difficulty": 0.05
+}

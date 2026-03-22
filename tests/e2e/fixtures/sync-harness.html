@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sync Test Harness</title>
+  <style>
+    body { margin: 0; padding: 20px; font-family: -apple-system, sans-serif; background: #1a1a2e; color: white; }
+    #status { margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>Sync Test Harness</h1>
+  <div id="status">Ready</div>
+
+  <script type="module">
+    import * as sync from '../../src/shared/sync.js';
+    window.sync = sync;
+    document.getElementById('status').textContent = 'Loaded';
+  </script>
+</body>
+</html>

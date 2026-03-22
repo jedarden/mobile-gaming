@@ -8,6 +8,7 @@
  * - Validates that average-case (70% collection) > boss
  */
 
+import { createRng } from '../../shared/rng.js';
 import { MIN_SCALE, DEFAULT_START_SCALE, LANE_MIN, LANE_MAX } from './state.js';
 
 // Lane positions for collectibles/obstacles
@@ -21,19 +22,14 @@ const WRONG_COLOR_VALUE = 0.05;
 // Obstacle penalty
 const OBSTACLE_PENALTY = 0.2;
 
-/**
- * Random number between min and max
- */
-function randomBetween(min, max) {
-  return min + Math.random() * (max - min);
-}
+// Difficulty tiers
+const DIFFICULTY_CONFIG = {
+  easy:   { courseLength: [200, 300], bossScale: [1.5, 3.0],  diffFactor: [0.1, 0.25], speed: [2.5, 3.0] },
+  medium: { courseLength: [300, 450], bossScale: [3.0, 5.0],  diffFactor: [0.25, 0.4], speed: [3.0, 3.5] },
+  hard:   { courseLength: [450, 600], bossScale: [5.0, 8.0],  diffFactor: [0.4, 0.6],  speed: [3.5, 4.0] }
+};
 
-/**
- * Pick a random element from array
- */
-function randomPick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+const PLAYER_COLORS = ['blue', 'red', 'green', 'yellow', 'purple', 'orange'];
 
 /**
  * Calculate the maximum possible scale from a level
@@ -53,7 +49,7 @@ export function calculateOptimalScale(level, startScale = DEFAULT_START_SCALE) {
 
 /**
  * Calculate average scale with 70% collection rate
- * Monte Carlo simulation
+ * Monte Carlo simulation (intentionally uses Math.random — statistical estimate)
  */
 export function calculateAverageScale(level, startScale = DEFAULT_START_SCALE, runs = 100) {
   let totalScale = 0;
@@ -62,21 +58,17 @@ export function calculateAverageScale(level, startScale = DEFAULT_START_SCALE, r
     let scale = startScale;
 
     for (const collectible of level.collectibles) {
-      // 70% chance to collect matching, 30% chance to hit wrong-color
       if (collectible.color === level.playerColor) {
         if (Math.random() < 0.7) {
           scale += collectible.value;
         }
-        // Otherwise, missed the matching orb
       } else {
-        // Wrong color - 30% chance of accidentally hitting it
         if (Math.random() < 0.3) {
           scale = Math.max(MIN_SCALE, scale - collectible.value);
         }
       }
     }
 
-    // 20% chance to hit each obstacle
     for (const obstacle of (level.obstacles || [])) {
       if (Math.random() < 0.2) {
         scale = Math.max(MIN_SCALE, scale - OBSTACLE_PENALTY);
@@ -101,13 +93,11 @@ export function validateLevel(level) {
   const averageScale = calculateAverageScale(level);
   const bossScale = level.boss.scale;
 
-  // Optimal must exceed boss by 30%
   const optimalThreshold = bossScale * 1.3;
   if (optimalScale < optimalThreshold) {
     errors.push(`Optimal scale ${optimalScale.toFixed(2)} does not exceed boss ${bossScale} by 30% (need ${optimalThreshold.toFixed(2)})`);
   }
 
-  // Average must beat boss (80% win rate threshold)
   if (averageScale <= bossScale) {
     errors.push(`Average scale ${averageScale.toFixed(2)} does not beat boss ${bossScale}`);
   }
@@ -122,28 +112,31 @@ export function validateLevel(level) {
 }
 
 /**
- * Generate a level
+ * Generate a level deterministically from a seed.
+ *
+ * @param {number} seed - PRNG seed
+ * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {number} index - Level index
+ * @returns {Object} Level object
  */
-export function generateLevel(config = {}) {
-  const {
-    id = 1,
-    courseLength = 400,
-    startScale = DEFAULT_START_SCALE,
-    playerColor = 'blue',
-    speed = 3,
-    difficulty = 0.3,
-    bossScale = 3.0
-  } = config;
+export function generateLevel(seed, difficulty = 'medium', index = 0) {
+  const rng = createRng(seed);
+  const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
 
+  const courseLength = rng.nextInt(config.courseLength[0], config.courseLength[1]);
+  const bossScale = config.bossScale[0] + rng.next() * (config.bossScale[1] - config.bossScale[0]);
+  const diffFactor = config.diffFactor[0] + rng.next() * (config.diffFactor[1] - config.diffFactor[0]);
+  const speed = config.speed[0] + rng.next() * (config.speed[1] - config.speed[0]);
+  const playerColor = rng.pick(PLAYER_COLORS);
+
+  const startScale = DEFAULT_START_SCALE;
   const collectibles = [];
   const obstacles = [];
 
   // Calculate how many matching orbs we need to beat the boss
-  // Need to achieve at least bossScale * 1.3 + some buffer
   const targetScale = bossScale * 1.35;
   const scaleNeeded = targetScale - startScale;
 
-  // Average value per matching orb
   const avgValue = (MATCHING_VALUE_MIN + MATCHING_VALUE_MAX) / 2;
   const matchingOrbCount = Math.ceil(scaleNeeded / avgValue);
 
@@ -153,8 +146,8 @@ export function generateLevel(config = {}) {
   // Generate matching color collectibles
   for (let i = 0; i < matchingOrbCount; i++) {
     const z = spacing * (i + 1);
-    const x = randomPick(LANES);
-    const value = randomBetween(MATCHING_VALUE_MIN, MATCHING_VALUE_MAX);
+    const x = rng.pick(LANES);
+    const value = MATCHING_VALUE_MIN + rng.next() * (MATCHING_VALUE_MAX - MATCHING_VALUE_MIN);
 
     collectibles.push({
       x,
@@ -165,28 +158,28 @@ export function generateLevel(config = {}) {
   }
 
   // Add wrong-color collectibles (20-30% of matching count)
-  const wrongColorCount = Math.floor(matchingOrbCount * (0.2 + difficulty * 0.1));
-  const wrongColors = ['red', 'green', 'yellow', 'purple', 'orange'].filter(c => c !== playerColor);
+  const wrongColors = PLAYER_COLORS.filter(c => c !== playerColor);
+  const wrongColorCount = Math.floor(matchingOrbCount * (0.2 + diffFactor * 0.1));
 
   for (let i = 0; i < wrongColorCount; i++) {
-    const matchingIdx = Math.floor(Math.random() * collectibles.length);
+    const matchingIdx = rng.nextInt(0, collectibles.length - 1);
     const baseCollectible = collectibles[matchingIdx];
 
-    // Place wrong-color near matching, but offset
+    const availableLanes = LANES.filter(l => l !== baseCollectible.x);
     collectibles.push({
-      x: randomPick(LANES.filter(l => l !== baseCollectible.x)),
-      z: baseCollectible.z + randomBetween(-5, 5),
-      color: randomPick(wrongColors),
+      x: rng.pick(availableLanes),
+      z: baseCollectible.z + Math.round((rng.next() - 0.5) * 10),
+      color: rng.pick(wrongColors),
       value: WRONG_COLOR_VALUE
     });
   }
 
   // Add obstacles (10-20% of matching count)
-  const obstacleCount = Math.floor(matchingOrbCount * (0.1 + difficulty * 0.1));
+  const obstacleCount = Math.floor(matchingOrbCount * (0.1 + diffFactor * 0.1));
 
   for (let i = 0; i < obstacleCount; i++) {
-    const z = spacing * (0.5 + i * (matchingOrbCount / obstacleCount));
-    const x = randomPick(LANES);
+    const z = spacing * (0.5 + i * (matchingOrbCount / Math.max(1, obstacleCount)));
+    const x = rng.pick(LANES);
 
     obstacles.push({
       x,
@@ -199,72 +192,66 @@ export function generateLevel(config = {}) {
   collectibles.sort((a, b) => a.z - b.z);
   obstacles.sort((a, b) => a.z - b.z);
 
-  const level = {
-    id,
+  return {
+    id: `gr-gen-${difficulty}-${index}-${seed}`,
     courseLength,
     startScale,
     playerColor,
-    speed,
+    speed: Math.round(speed * 10) / 10,
     collectibles,
     obstacles,
     boss: {
       z: courseLength,
-      scale: bossScale
+      scale: Math.round(bossScale * 10) / 10
     },
     difficulty
   };
-
-  // Validate and adjust if needed
-  const validation = validateLevel(level);
-  if (!validation.valid) {
-    console.warn(`Level ${id} validation issues:`, validation.errors);
-  }
-
-  return level;
 }
 
 /**
- * Generate a set of levels with increasing difficulty
+ * Generate a batch of validated levels.
+ *
+ * @param {number} baseSeed
+ * @param {'easy'|'medium'|'hard'} difficulty
+ * @param {number} count
+ * @returns {Object[]}
+ */
+export function generateBatch(baseSeed, difficulty, count) {
+  const levels = [];
+  let seed = baseSeed;
+  let attempts = 0;
+  const maxAttempts = count * 10;
+
+  while (levels.length < count && attempts < maxAttempts) {
+    const level = generateLevel(seed, difficulty, levels.length);
+    const validation = validateLevel(level);
+    if (validation.valid) {
+      levels.push(level);
+    }
+    seed += 1;
+    attempts++;
+  }
+
+  return levels;
+}
+
+/**
+ * Generate a set of levels with increasing difficulty (legacy interface).
  */
 export function generateLevels(count = 20) {
   const levels = [];
-
-  // Difficulty tiers
   const tiers = [
-    { levels: 5, difficulty: [0.1, 0.2], bossScale: [1.5, 2.5], courseLength: [200, 300] },
-    { levels: 5, difficulty: [0.2, 0.4], bossScale: [2.5, 4.0], courseLength: [300, 400] },
-    { levels: 5, difficulty: [0.3, 0.5], bossScale: [4.0, 6.0], courseLength: [400, 500] },
-    { levels: 5, difficulty: [0.4, 0.6], bossScale: [6.0, 8.0], courseLength: [500, 600] }
+    { difficulty: 'easy',   levelCount: Math.ceil(count / 4) },
+    { difficulty: 'medium', levelCount: Math.ceil(count / 4) },
+    { difficulty: 'medium', levelCount: Math.ceil(count / 4) },
+    { difficulty: 'hard',   levelCount: Math.floor(count / 4) }
   ];
 
-  let levelId = 1;
-  const playerColors = ['blue', 'red', 'green', 'yellow', 'purple', 'orange'];
-
+  let seed = 1;
   for (const tier of tiers) {
-    for (let i = 0; i < tier.levels; i++) {
-      const progress = i / (tier.levels - 1);
-
-      const difficulty = tier.difficulty[0] + progress * (tier.difficulty[1] - tier.difficulty[0]);
-      const bossScale = tier.bossScale[0] + progress * (tier.bossScale[1] - tier.bossScale[0]);
-      const courseLength = Math.round(tier.courseLength[0] + progress * (tier.courseLength[1] - tier.courseLength[0]));
-
-      // Regenerate until valid
-      let level;
-      let attempts = 0;
-      do {
-        level = generateLevel({
-          id: levelId,
-          courseLength,
-          bossScale,
-          difficulty,
-          playerColor: playerColors[levelId % playerColors.length],
-          speed: 3 + (levelId - 1) * 0.1
-        });
-        attempts++;
-      } while (!validateLevel(level).valid && attempts < 10);
-
-      levels.push(level);
-      levelId++;
+    for (let i = 0; i < tier.levelCount && levels.length < count; i++) {
+      levels.push(generateLevel(seed, tier.difficulty, levels.length));
+      seed++;
     }
   }
 
@@ -274,6 +261,7 @@ export function generateLevels(count = 20) {
 export default {
   generateLevel,
   generateLevels,
+  generateBatch,
   validateLevel,
   calculateOptimalScale,
   calculateAverageScale

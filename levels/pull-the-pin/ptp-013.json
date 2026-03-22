@@ -1,0 +1,89 @@
+{
+  "id": "ptp-013",
+  "pins": [
+    {
+      "id": "p1",
+      "x": 100,
+      "y": 160
+    },
+    {
+      "id": "p2",
+      "x": 220,
+      "y": 160
+    },
+    {
+      "id": "p3",
+      "x": 160,
+      "y": 300
+    }
+  ],
+  "balls": [
+    {
+      "id": "b1",
+      "x": 100,
+      "y": 40,
+      "color": "yellow"
+    },
+    {
+      "id": "b2",
+      "x": 220,
+      "y": 40,
+      "color": "purple"
+    }
+  ],
+  "cups": [
+    {
+      "id": "c1",
+      "x": 70,
+      "y": 400,
+      "width": 60,
+      "height": 60,
+      "acceptColor": "yellow"
+    },
+    {
+      "id": "c2",
+      "x": 190,
+      "y": 400,
+      "width": 60,
+      "height": 60,
+      "acceptColor": "purple"
+    }
+  ],
+  "channels": [
+    {
+      "segments": [
+        [
+          100,
+          60,
+          100,
+          160
+        ],
+        [
+          100,
+          160,
+          100,
+          400
+        ]
+      ],
+      "blockedByPin": "p1"
+    },
+    {
+      "segments": [
+        [
+          220,
+          60,
+          220,
+          160
+        ],
+        [
+          220,
+          160,
+          220,
+          400
+        ]
+      ],
+      "blockedByPin": "p2"
+    }
+  ],
+  "difficulty": 3
+}
