@@ -4,7 +4,7 @@
   "title": "Merge Games Level",
   "description": "Schema for validating Merge Games puzzle levels",
   "type": "object",
-  "required": ["id", "width", "height", "grid", "task", "difficulty", "title"],
+  "required": ["id", "width", "height", "grid", "task", "difficulty"],
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -56,8 +56,8 @@
       }
     },
     "difficulty": {
-      "type": "string",
-      "enum": ["easy", "medium", "hard"],
+      "type": "integer",
+      "minimum": 1,
       "description": "Difficulty tier"
     },
     "title": {

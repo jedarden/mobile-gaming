@@ -8,13 +8,8 @@
 import { createRng } from '../../shared/rng.js';
 import {
   createInitialState,
-  canPour,
-  pour,
   checkWin,
   getValidMoves,
-  isTubeComplete,
-  topColor,
-  topGroupSize
 } from './state.js';
 
 /** Available colors for level generation */
@@ -65,84 +60,45 @@ function presetFromDifficulty(d, rng) {
  * @param {number} maxSegments - Segments per tube
  * @returns {string[][]} Array of tube arrays
  */
-function createSolvedTubes(colorCount, maxSegments) {
-  const tubes = [];
-  for (let i = 0; i < colorCount; i++) {
-    tubes.push(Array(maxSegments).fill(COLORS[i]));
+/**
+ * Shuffle tubes by randomly relocating single color segments.
+ * This creates genuinely mixed states regardless of color-matching rules,
+ * and the result is always solvable because colors are fully traceable.
+ *
+ * @param {number} colorCount - Number of distinct colors
+ * @param {number} bufferTubes - Number of empty buffer tubes
+ * @param {number} maxSegments - Capacity per tube
+ * @param {number} shuffleRounds - Number of random segment moves
+ * @param {Object} rng - Seeded RNG
+ * @returns {string[][]} Shuffled tube arrays
+ */
+function shuffleTubes(colorCount, bufferTubes, maxSegments, shuffleRounds, rng) {
+  const COLORS_USED = COLORS.slice(0, colorCount);
+
+  // Flat list of all color segments (colorCount * maxSegments total)
+  const allSegments = [];
+  for (const color of COLORS_USED) {
+    for (let i = 0; i < maxSegments; i++) allSegments.push(color);
   }
-  return tubes;
-}
 
-/**
- * Shuffle-specific canPour that allows pouring from complete tubes
- * (needed to un-shuffle from solved state)
- */
-function canPourShuffle(state, fromIdx, toIdx) {
-  if (fromIdx === toIdx) return false;
-  if (fromIdx < 0 || fromIdx >= state.tubes.length) return false;
-  if (toIdx < 0 || toIdx >= state.tubes.length) return false;
+  // Randomly shuffle segments using Fisher-Yates
+  for (let i = allSegments.length - 1; i > 0; i--) {
+    const j = rng.nextInt(0, i);
+    [allSegments[i], allSegments[j]] = [allSegments[j], allSegments[i]];
+  }
 
-  const from = state.tubes[fromIdx];
-  const to = state.tubes[toIdx];
-
-  if (from.segments.length === 0) return false;
-  if (to.segments.length >= state.maxSegments) return false;
-
-  const fromTop = topColor(from);
-  const toTop = topColor(to);
-  if (toTop !== null && toTop !== fromTop) return false;
-
-  return true;
-}
-
-/**
- * Get all valid shuffle moves (including from complete tubes)
- */
-function getShuffleMoves(state) {
-  const moves = [];
-  for (let from = 0; from < state.tubes.length; from++) {
-    for (let to = 0; to < state.tubes.length; to++) {
-      if (canPourShuffle(state, from, to)) {
-        moves.push([from, to]);
-      }
+  // Distribute segments into colorCount + bufferTubes tubes, each holding up to maxSegments
+  const tubeCount = colorCount + bufferTubes;
+  const tubes = Array.from({ length: tubeCount }, () => []);
+  let segIdx = 0;
+  for (let t = 0; t < colorCount; t++) {
+    for (let s = 0; s < maxSegments; s++) {
+      tubes[t].push(allSegments[segIdx++]);
     }
   }
-  return moves;
-}
+  // Buffer tubes remain empty
 
-/**
- * Shuffle a solved state by performing random valid pours
- * This guarantees solvability by reversibility
- *
- * @param {Object} state - Game state (starting from solved)
- * @param {number} rounds - Number of shuffle iterations
- * @param {Object} rng - RNG instance
- * @returns {Object} Shuffled state
- */
-function shuffleState(state, rounds, rng) {
-  let current = state;
-  let lastFrom = -1;
-  let lastTo = -1;
-
-  for (let r = 0; r < rounds; r++) {
-    const moves = getShuffleMoves(current);
-
-    // Filter out trivial reverse moves
-    const filtered = moves.filter(([f, t]) => {
-      if (f === lastTo && t === lastFrom) return false;
-      return true;
-    });
-
-    const pool = filtered.length > 0 ? filtered : moves;
-    if (pool.length === 0) break;
-
-    const [fromIdx, toIdx] = rng.pick(pool);
-    lastFrom = fromIdx;
-    lastTo = toIdx;
-    current = pour(current, fromIdx, toIdx);
-  }
-
-  return current;
+  return tubes;
 }
 
 /**
@@ -182,25 +138,10 @@ export function generateLevel(seed, difficulty = 0.5) {
   const rng = createRng(seed);
   const [colorCount, bufferTubes, maxSegments, shuffleRounds] = presetFromDifficulty(difficulty, rng);
 
-  const usedColors = COLORS.slice(0, colorCount);
-
   // Try up to 10 times to generate a valid level
   for (let attempt = 0; attempt < 10; attempt++) {
-    // Create solved state
-    const solvedTubes = createSolvedTubes(colorCount, maxSegments);
-    const solvedState = createInitialState({
-      tubes: solvedTubes,
-      maxSegments
-    });
-
-    // Shuffle by reverse-pouring
-    const shuffled = shuffleState(solvedState, shuffleRounds, rng);
-
-    // Add buffer tubes
-    const tubes = shuffled.tubes.map(t => t.segments);
-    for (let i = 0; i < bufferTubes; i++) {
-      tubes.push([]);
-    }
+    // Randomly distribute all color segments across tubes (Fisher-Yates shuffle)
+    const tubes = shuffleTubes(colorCount, bufferTubes, maxSegments, shuffleRounds, rng);
 
     // Validate
     if (validateLevel(tubes, maxSegments)) {

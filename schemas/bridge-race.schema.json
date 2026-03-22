@@ -48,7 +48,7 @@
           },
           "ai": {
             "type": "string",
-            "enum": ["random", "aggressive", "defensive", "balanced"],
+            "enum": ["random", "aggressive", "defensive", "balanced", "greedy"],
             "description": "AI behavior strategy"
           }
         }

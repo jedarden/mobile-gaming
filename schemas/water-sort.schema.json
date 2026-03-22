@@ -4,13 +4,8 @@
   "title": "Water Sort Level",
   "description": "Schema for validating Water Sort game levels",
   "type": "object",
-  "required": ["version", "id", "title", "difficulty", "tubes", "maxMoves"],
+  "required": ["id", "difficulty", "tubes", "maxSegments"],
   "properties": {
-    "version": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Schema version for migration support"
-    },
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
@@ -18,95 +13,33 @@
       "maxLength": 100,
       "description": "Unique level identifier"
     },
-    "title": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 100,
-      "description": "Display title for the level"
-    },
     "difficulty": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Difficulty rating (0.0-1.0 normalized)"
+    },
+    "optimal": {
       "type": "integer",
       "minimum": 1,
-      "maximum": 10,
-      "description": "Difficulty rating from 1 (easy) to 10 (hard)"
+      "description": "Optimal number of moves to solve"
     },
     "tubes": {
       "type": "array",
       "minItems": 2,
       "maxItems": 15,
-      "description": "Array of test tubes containing colored water",
+      "description": "Array of test tubes; each tube is an array of color strings (empty = empty tube)",
       "items": {
-        "type": "object",
-        "required": ["colors", "capacity"],
-        "properties": {
-          "colors": {
-            "type": "array",
-            "description": "Array of color names from bottom to top",
-            "items": {
-              "type": "string",
-              "description": "Color name (should match palette)"
-            }
-          },
-          "capacity": {
-            "type": "integer",
-            "minimum": 2,
-            "maximum": 8,
-            "description": "Maximum number of color units in tube"
-          }
-        }
-      }
-    },
-    "maxMoves": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Maximum allowed moves for completion"
-    },
-    "targetMoves": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Optimal number of moves for completion"
-    },
-    "palette": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 12,
-      "description": "Color palette used in this level",
-      "items": {
-        "type": "string",
-        "description": "Color name"
-      }
-    },
-    "hasEmptyTubes": {
-      "type": "boolean",
-      "description": "Whether level starts with empty tubes"
-    },
-    "hints": {
-      "type": "array",
-      "description": "Optional hints for the player",
-      "items": {
-        "type": "string",
-        "maxLength": 200
-      },
-      "maxItems": 5
-    }
-  },
-  "if": {
-    "required": ["palette"]
-  },
-  "then": {
-    "properties": {
-      "tubes": {
+        "type": "array",
         "items": {
-          "properties": {
-            "colors": {
-              "items": {
-                "type": "string"
-              },
-              "description": "All colors must be in the palette"
-            }
-          }
+          "type": "string",
+          "description": "Color name"
         }
       }
+    },
+    "maxSegments": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum tube capacity (segment count per tube)"
     }
   }
 }

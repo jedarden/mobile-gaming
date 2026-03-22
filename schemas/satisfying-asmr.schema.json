@@ -31,6 +31,20 @@
         "type": "integer",
         "enum": [0, 1]
       }
+    },
+    "patternType": {
+      "type": "string",
+      "description": "Pattern type used to generate the dirt layout"
+    },
+    "totalDirt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of dirty cells in the level"
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Difficulty rating"
     }
   }
 }

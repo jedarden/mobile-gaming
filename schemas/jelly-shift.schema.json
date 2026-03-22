@@ -28,25 +28,48 @@
           },
           "hole": {
             "type": "object",
-            "required": ["shape", "width", "height"],
-            "additionalProperties": false,
+            "required": ["shape"],
             "properties": {
               "shape": {
                 "type": "string",
-                "enum": ["wide", "tall"],
-                "description": "Shape orientation of the hole"
+                "enum": ["wide", "tall", "plus"],
+                "description": "Shape of the hole"
               },
               "width": {
                 "type": "number",
                 "minimum": 0.1,
                 "maximum": 5,
-                "description": "Width of the hole"
+                "description": "Width (for wide/tall shapes)"
               },
               "height": {
                 "type": "number",
                 "minimum": 0.1,
                 "maximum": 5,
-                "description": "Height of the hole"
+                "description": "Height (for wide/tall shapes)"
+              },
+              "widthH": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 5,
+                "description": "Horizontal arm width (for plus shape)"
+              },
+              "heightH": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 5,
+                "description": "Horizontal arm height (for plus shape)"
+              },
+              "widthV": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 5,
+                "description": "Vertical arm width (for plus shape)"
+              },
+              "heightV": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 5,
+                "description": "Vertical arm height (for plus shape)"
               }
             }
           }

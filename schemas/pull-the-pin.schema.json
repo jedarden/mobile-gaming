@@ -4,13 +4,8 @@
   "title": "Pull the Pin Level",
   "description": "Schema for validating Pull the Pin game levels",
   "type": "object",
-  "required": ["version", "id", "title", "difficulty", "hero", "goal", "goblin"],
+  "required": ["id", "pins", "balls", "cups", "channels", "difficulty"],
   "properties": {
-    "version": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Schema version for migration support"
-    },
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
@@ -18,196 +13,76 @@
       "maxLength": 100,
       "description": "Unique level identifier"
     },
-    "title": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 100,
-      "description": "Display title for the level"
-    },
     "difficulty": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 10,
-      "description": "Difficulty rating from 1 (easy) to 10 (hard)"
+      "type": "number",
+      "minimum": 0,
+      "description": "Difficulty rating"
     },
-    "hero": {
-      "type": "object",
-      "required": ["x", "y", "radius"],
-      "properties": {
-        "x": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Hero X position in logical pixels"
-        },
-        "y": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Hero Y position in logical pixels"
-        },
-        "radius": {
-          "type": "number",
-          "minimum": 5,
-          "maximum": 50,
-          "description": "Hero collision radius"
-        }
-      }
-    },
-    "goal": {
-      "type": "object",
-      "required": ["x", "y", "type", "width", "height"],
-      "properties": {
-        "x": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Goal X position"
-        },
-        "y": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Goal Y position"
-        },
-        "type": {
-          "type": "string",
-          "enum": ["bucket", "portal", "zone"],
-          "description": "Type of goal container"
-        },
-        "width": {
-          "type": "number",
-          "minimum": 10,
-          "description": "Goal width"
-        },
-        "height": {
-          "type": "number",
-          "minimum": 10,
-          "description": "Goal height"
-        }
-      }
-    },
-    "goblin": {
-      "type": "object",
-      "required": ["x", "y", "radius"],
-      "properties": {
-        "x": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Goblin X position"
-        },
-        "y": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Goblin Y position"
-        },
-        "radius": {
-          "type": "number",
-          "minimum": 5,
-          "maximum": 50,
-          "description": "Goblin collision radius"
-        }
-      }
-    },
-    "elements": {
+    "pins": {
       "type": "array",
-      "description": "Array of game elements (balls, pins, platforms, etc.)",
+      "description": "Pins that block flow through channels",
       "items": {
         "type": "object",
-        "required": ["type", "x", "y"],
+        "required": ["id", "x", "y"],
         "properties": {
-          "type": {
+          "id": { "type": "string" },
+          "x": { "type": "number" },
+          "y": { "type": "number" }
+        }
+      }
+    },
+    "balls": {
+      "type": "array",
+      "description": "Balls that flow through channels to cups",
+      "items": {
+        "type": "object",
+        "required": ["id", "x", "y", "color"],
+        "properties": {
+          "id": { "type": "string" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "color": { "type": "string" }
+        }
+      }
+    },
+    "cups": {
+      "type": "array",
+      "description": "Goal containers that catch colored balls",
+      "items": {
+        "type": "object",
+        "required": ["id", "x", "y", "width", "height", "acceptColor"],
+        "properties": {
+          "id": { "type": "string" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "acceptColor": { "type": "string" }
+        }
+      }
+    },
+    "channels": {
+      "type": "array",
+      "description": "Paths that balls flow through",
+      "items": {
+        "type": "object",
+        "required": ["segments"],
+        "properties": {
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "blockedByPin": {
             "type": "string",
-            "enum": ["ball", "pin", "platform", "wall", "spike", "bomb", "portal"],
-            "description": "Element type"
-          },
-          "id": {
-            "type": "string",
-            "description": "Optional element identifier"
-          },
-          "x": {
-            "type": "number",
-            "minimum": 0,
-            "description": "Element X position"
-          },
-          "y": {
-            "type": "number",
-            "minimum": 0,
-            "description": "Element Y position"
-          },
-          "radius": {
-            "type": "number",
-            "minimum": 1,
-            "description": "Radius for circular elements"
-          },
-          "width": {
-            "type": "number",
-            "minimum": 1,
-            "description": "Width for rectangular elements"
-          },
-          "height": {
-            "type": "number",
-            "minimum": 1,
-            "description": "Height for rectangular elements"
-          },
-          "color": {
-            "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$",
-            "description": "Element color in hex"
-          },
-          "pinOrientation": {
-            "type": "string",
-            "enum": ["horizontal", "vertical", "diagonal"],
-            "description": "Pin orientation (for pin elements)"
-          },
-          "pinLength": {
-            "type": "number",
-            "minimum": 10,
-            "description": "Pin length"
-          },
-          "isStatic": {
-            "type": "boolean",
-            "description": "Whether the element is static (immovable)"
-          },
-          "isRemovable": {
-            "type": "boolean",
-            "description": "Whether the element can be removed by player action"
-          },
-          "linkedTo": {
-            "type": "string",
-            "description": "ID of linked element (for synchronized removal)"
+            "description": "Pin ID that blocks this channel segment"
           }
         }
       }
-    },
-    "walls": {
-      "type": "array",
-      "description": "Array of wall boundaries",
-      "items": {
-        "type": "object",
-        "required": ["x", "y", "width", "height"],
-        "properties": {
-          "x": { "type": "number", "minimum": 0 },
-          "y": { "type": "number", "minimum": 0 },
-          "width": { "type": "number", "minimum": 1 },
-          "height": { "type": "number", "minimum": 1 }
-        }
-      }
-    },
-    "targetMoves": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Target number of moves for optimal completion"
-    },
-    "parScore": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Par score for this level"
-    },
-    "hints": {
-      "type": "array",
-      "description": "Optional hints for the player",
-      "items": {
-        "type": "string",
-        "maxLength": 200
-      },
-      "maxItems": 5
     }
   }
 }

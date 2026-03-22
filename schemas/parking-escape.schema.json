@@ -4,7 +4,7 @@
   "title": "Parking Escape Level",
   "description": "Schema for validating Parking Escape game levels",
   "type": "object",
-  "required": ["version", "id", "title", "difficulty", "grid", "targetMoves"],
+  "required": ["id", "difficulty", "grid", "targetMoves"],
   "properties": {
     "version": {
       "type": "integer",

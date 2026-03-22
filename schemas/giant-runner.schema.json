@@ -64,6 +64,32 @@
           }
         }
       }
+    },
+    "obstacles": {
+      "type": "array",
+      "description": "Array of obstacles along the course",
+      "items": {
+        "type": "object",
+        "required": ["x", "z", "width"],
+        "properties": {
+          "x": { "type": "number" },
+          "z": { "type": "number", "minimum": 0 },
+          "width": { "type": "number" }
+        }
+      }
+    },
+    "boss": {
+      "type": "object",
+      "required": ["z", "scale"],
+      "properties": {
+        "z": { "type": "number" },
+        "scale": { "type": "number" }
+      }
+    },
+    "difficulty": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Difficulty factor"
     }
   }
 }

@@ -53,24 +53,30 @@ export function calculateOptimalScale(level, startScale = DEFAULT_START_SCALE) {
  */
 export function calculateAverageScale(level, startScale = DEFAULT_START_SCALE, runs = 100) {
   let totalScale = 0;
+  // Use a deterministic LCG for repeatable averages (not crypto-quality, but consistent)
+  let lcg = 42;
+  const nextRandom = () => {
+    lcg = (lcg * 1664525 + 1013904223) & 0xffffffff;
+    return (lcg >>> 0) / 0x100000000;
+  };
 
   for (let run = 0; run < runs; run++) {
     let scale = startScale;
 
     for (const collectible of level.collectibles) {
       if (collectible.color === level.playerColor) {
-        if (Math.random() < 0.7) {
+        if (nextRandom() < 0.7) {
           scale += collectible.value;
         }
       } else {
-        if (Math.random() < 0.3) {
+        if (nextRandom() < 0.3) {
           scale = Math.max(MIN_SCALE, scale - collectible.value);
         }
       }
     }
 
     for (const obstacle of (level.obstacles || [])) {
-      if (Math.random() < 0.2) {
+      if (nextRandom() < 0.2) {
         scale = Math.max(MIN_SCALE, scale - OBSTACLE_PENALTY);
       }
     }
