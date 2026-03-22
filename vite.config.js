@@ -1,6 +1,6 @@
 // vite.config.js
 import { defineConfig } from 'vite';
-import { readdirSync, existsSync } from 'fs';
+import { readdirSync, existsSync, renameSync, rmSync } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,6 +18,38 @@ const gameEntries = existsSync(gamesDir)
     )
   : {};
 
+// Vite outputs HTML relative to project root, so src/hub/index.html -> dist/src/hub/index.html.
+// Cloudflare Pages _redirects expect /hub/ and /<game>/, not /src/hub/ and /src/games/<game>/.
+// This plugin moves dist/src/* up to dist/* after build.
+function flattenSrcOutput() {
+  return {
+    name: 'flatten-src-output',
+    closeBundle() {
+      const distSrc = resolve(__dirname, 'dist/src');
+      if (!existsSync(distSrc)) return;
+
+      // Move dist/src/hub -> dist/hub
+      const srcHub = resolve(distSrc, 'hub');
+      if (existsSync(srcHub)) {
+        renameSync(srcHub, resolve(__dirname, 'dist/hub'));
+      }
+
+      // Move dist/src/games/* -> dist/*
+      const srcGames = resolve(distSrc, 'games');
+      if (existsSync(srcGames)) {
+        for (const entry of readdirSync(srcGames, { withFileTypes: true })) {
+          if (entry.isDirectory()) {
+            renameSync(resolve(srcGames, entry.name), resolve(__dirname, 'dist', entry.name));
+          }
+        }
+      }
+
+      // Clean up empty dist/src
+      rmSync(distSrc, { recursive: true, force: true });
+    }
+  };
+}
+
 export default defineConfig({
   build: {
     rollupOptions: {
@@ -27,6 +59,7 @@ export default defineConfig({
       }
     }
   },
+  plugins: [flattenSrcOutput()],
   test: {
     include: ['tests/**/*.test.js'],
     environment: 'node'   // solvers are pure functions, no DOM needed
