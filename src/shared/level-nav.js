@@ -259,6 +259,7 @@ export function createLevelNav(options = {}) {
       transition: transform 0.15s ease;
       ${isLocked ? 'opacity: 0.5;' : ''}
     `;
+    dot.textContent = content;
 
     if (!isLocked) {
       dot.addEventListener('click', () => {
@@ -482,6 +483,7 @@ export function createLevelNav(options = {}) {
           transition: transform 0.15s ease;
           ${isLock ? 'opacity: 0.5;' : ''}
         `;
+        dot.textContent = content;
 
         if (!isLock) {
           dot.addEventListener('click', () => {
