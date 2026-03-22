@@ -11,7 +11,7 @@
  * isReducedMotion() returns false → spawn() always fires.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { PRESETS, createParticleSystem } from '../../src/shared/particles.js';
 
 // ─── PRESETS ──────────────────────────────────────────────────────────────────
@@ -156,9 +156,12 @@ describe('update', () => {
   });
 
   it('decreases activeCount as particles expire', () => {
+    // Mock Math.random to 0 so all particles get exactly the minimum life (350 ms).
+    const randSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
     const ps = createParticleSystem(null);
-    ps.spawn('sparkle', 0, 0, 4); // min life = 350 ms
-    ps.update(400);               // advance past min life
+    ps.spawn('sparkle', 0, 0, 4); // life = 350 ms (minimum)
+    randSpy.mockRestore();
+    ps.update(400);               // advance past min life → all 4 expire
     expect(ps.getActiveCount()).toBeLessThan(4);
   });
 
