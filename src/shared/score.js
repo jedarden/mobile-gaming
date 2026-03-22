@@ -489,13 +489,14 @@ export function showLevelComplete(options = {}) {
  */
 export function getAllBestScores(gameId) {
   const prefix = `${SCORE_KEY_PREFIX}${gameId}:`;
+  const fullPrefix = `mg:${prefix}`; // storage.js namespaces keys with 'mg:'
   const scores = {};
 
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith(prefix)) {
-        const levelIndex = parseInt(key.slice(prefix.length), 10);
+      if (key && key.startsWith(fullPrefix)) {
+        const levelIndex = parseInt(key.slice(fullPrefix.length), 10);
         if (!isNaN(levelIndex)) {
           scores[levelIndex] = storage.get(getScoreKey(gameId, levelIndex));
         }
@@ -515,12 +516,13 @@ export function getAllBestScores(gameId) {
  */
 export function resetAllScores(gameId) {
   const prefix = `${SCORE_KEY_PREFIX}${gameId}:`;
+  const fullPrefix = `mg:${prefix}`; // storage.js namespaces keys with 'mg:'
 
   try {
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith(prefix)) {
+      if (key && key.startsWith(fullPrefix)) {
         keysToRemove.push(key);
       }
     }
