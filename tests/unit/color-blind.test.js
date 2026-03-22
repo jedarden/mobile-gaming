@@ -12,7 +12,7 @@
  * value are excluded.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // ─── Mock localStorage ────────────────────────────────────────────────────────
 
@@ -37,6 +37,8 @@ import {
   applyColorBlindClass,
   removeColorBlindClass,
   syncColorBlindClass,
+  injectPatternDefs,
+  removePatternDefs,
 } from '../../src/shared/color-blind.js';
 
 beforeEach(() => {
@@ -206,5 +208,73 @@ describe('syncColorBlindClass', () => {
     document.body.className = '';
     syncColorBlindClass();
     expect(document.body.classList.contains('color-blind-mode')).toBe(true);
+  });
+});
+
+// ─── injectPatternDefs / removePatternDefs ────────────────────────────────────
+
+describe('injectPatternDefs', () => {
+  let svgEl;
+
+  beforeEach(() => {
+    svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svgEl);
+  });
+
+  afterEach(() => {
+    svgEl.remove();
+  });
+
+  it('creates a <defs> element when none exists', () => {
+    injectPatternDefs(svgEl);
+    expect(svgEl.querySelector('defs')).not.toBeNull();
+  });
+
+  it('injects one pattern per COLOR_PATTERNS entry', () => {
+    injectPatternDefs(svgEl);
+    const patternCount = Object.keys(COLOR_PATTERNS).length;
+    const patterns = svgEl.querySelectorAll('defs pattern');
+    expect(patterns.length).toBe(patternCount);
+  });
+
+  it('reuses existing <defs> element', () => {
+    const existingDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svgEl.appendChild(existingDefs);
+
+    injectPatternDefs(svgEl);
+
+    expect(svgEl.querySelectorAll('defs').length).toBe(1);
+  });
+
+  it('is a no-op when svgEl is null', () => {
+    expect(() => injectPatternDefs(null)).not.toThrow();
+  });
+});
+
+describe('removePatternDefs', () => {
+  let svgEl;
+
+  beforeEach(() => {
+    svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svgEl);
+    injectPatternDefs(svgEl); // inject first
+  });
+
+  afterEach(() => {
+    svgEl.remove();
+  });
+
+  it('removes all pattern elements from defs', () => {
+    removePatternDefs(svgEl);
+    expect(svgEl.querySelectorAll('defs pattern').length).toBe(0);
+  });
+
+  it('is a no-op when svgEl is null', () => {
+    expect(() => removePatternDefs(null)).not.toThrow();
+  });
+
+  it('is a no-op when defs does not exist', () => {
+    const emptySvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    expect(() => removePatternDefs(emptySvg)).not.toThrow();
   });
 });
