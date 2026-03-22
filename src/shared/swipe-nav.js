@@ -34,7 +34,10 @@ const DEFAULT_GAME_RING = [
   { id: 'save-the-character', title: 'Save the Character', icon: 'character' },
   { id: 'bus-jam', title: 'Bus Jam', icon: 'bus' },
   { id: 'jelly-shift', title: 'Jelly Shift', icon: 'jelly' },
-  { id: 'giant-runner', title: 'Giant Runner', icon: 'giant' }
+  { id: 'giant-runner', title: 'Giant Runner', icon: 'giant' },
+  { id: 'crowd-runner', title: 'Crowd Runner', icon: 'crowd' },
+  { id: 'bridge-race', title: 'Bridge Race', icon: 'bridge' },
+  { id: 'makeover-run', title: 'Makeover Run', icon: 'makeover' }
 ];
 
 // State - lazy-initialized on first access to avoid module-load-time storage calls
