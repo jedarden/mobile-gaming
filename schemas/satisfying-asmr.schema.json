@@ -42,9 +42,13 @@
       "description": "Total number of dirty cells in the level"
     },
     "difficulty": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Difficulty rating"
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
+      "description": "Difficulty tier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Display title for the level"
     }
   }
 }

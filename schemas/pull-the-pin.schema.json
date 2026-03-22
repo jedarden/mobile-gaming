@@ -78,8 +78,8 @@
             }
           },
           "blockedByPin": {
-            "type": "string",
-            "description": "Pin ID that blocks this channel segment"
+            "type": ["string", "null"],
+            "description": "Pin ID that blocks this channel segment, or null if unblocked"
           }
         }
       }

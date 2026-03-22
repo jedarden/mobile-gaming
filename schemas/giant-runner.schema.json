@@ -87,9 +87,9 @@
       }
     },
     "difficulty": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Difficulty factor"
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
+      "description": "Difficulty tier"
     }
   }
 }

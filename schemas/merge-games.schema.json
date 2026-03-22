@@ -56,8 +56,8 @@
       }
     },
     "difficulty": {
-      "type": "integer",
-      "minimum": 1,
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
       "description": "Difficulty tier"
     },
     "title": {
