@@ -11,13 +11,18 @@ import {
   reshape,
   fitsHole,
   checkWallCollision,
+  checkAllCollisions,
   passWall,
   failWall,
   isGameOver,
+  calculateStars,
+  cloneState,
+  createGameHistory,
   MIN_WIDTH,
   MAX_WIDTH,
   BLOB_AREA,
   SPEED_INCREMENT,
+  WALL_COLLISION_Z_THRESHOLD,
   validateLevel
 } from '../../src/games/jelly-shift/state.js';
 
@@ -403,5 +408,170 @@ describe('Jelly Shift State', () => {
       expect(state.blob.width).toBeGreaterThanOrEqual(MIN_WIDTH);
       expect(state.blob.width).toBeLessThanOrEqual(MAX_WIDTH);
     });
+  });
+});
+
+describe('checkAllCollisions', () => {
+  const level = {
+    id: 1,
+    walls: [
+      { z: 30, hole: { shape: 'tall', width: 0.6, height: 1.67 } },
+      { z: 60, hole: { shape: 'wide', width: 1.67, height: 0.6 } }
+    ]
+  };
+
+  it('returns empty array when blob is far from all walls', () => {
+    const state = createInitialState(level);
+    // blob.z = 0, walls at z=30 and z=60 — none within threshold
+    expect(checkAllCollisions(state)).toEqual([]);
+  });
+
+  it('returns pass result when blob fits hole at wall z', () => {
+    const state = createInitialState(level);
+    state.blob.z = 30;
+    state.blob.width = 0.5;
+    state.blob.height = 1.5;
+    const results = checkAllCollisions(state);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toEqual({ wallIdx: 0, result: 'pass' });
+  });
+
+  it('returns fail result when blob does not fit hole', () => {
+    const state = createInitialState(level);
+    state.blob.z = 30;
+    state.blob.width = 2.0;
+    state.blob.height = 0.5;
+    const results = checkAllCollisions(state);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toEqual({ wallIdx: 0, result: 'fail' });
+  });
+
+  it('skips already-passed walls', () => {
+    const state = createInitialState(level);
+    state.blob.z = 30;
+    state.walls[0].passed = true;
+    expect(checkAllCollisions(state)).toEqual([]);
+  });
+
+  it('does not include walls just outside the z threshold', () => {
+    const state = createInitialState(level);
+    state.blob.z = 30 - WALL_COLLISION_Z_THRESHOLD - 0.1; // just short of range
+    expect(checkAllCollisions(state)).toEqual([]);
+  });
+});
+
+describe('calculateStars', () => {
+  // With 2 walls and last wall at z=60: maxScore = 2*100 + floor(60) = 260
+  const level = {
+    id: 1,
+    walls: [
+      { z: 30, hole: { shape: 'tall', width: 0.6, height: 1.67 } },
+      { z: 60, hole: { shape: 'wide', width: 1.67, height: 0.6 } }
+    ]
+  };
+
+  it('returns 3 stars for score >= 80% of max', () => {
+    const state = createInitialState(level);
+    state.score = 208; // 208/260 = 0.8
+    expect(calculateStars(state)).toBe(3);
+  });
+
+  it('returns 3 stars for perfect score', () => {
+    const state = createInitialState(level);
+    state.score = 260;
+    expect(calculateStars(state)).toBe(3);
+  });
+
+  it('returns 2 stars for score >= 50% of max', () => {
+    const state = createInitialState(level);
+    state.score = 130; // 130/260 = 0.5
+    expect(calculateStars(state)).toBe(2);
+  });
+
+  it('returns 1 star for score below 50% of max', () => {
+    const state = createInitialState(level);
+    state.score = 0;
+    expect(calculateStars(state)).toBe(1);
+  });
+
+  it('returns 1 star for score just below 50% threshold', () => {
+    const state = createInitialState(level);
+    state.score = 129; // 129/260 ≈ 0.496 < 0.5
+    expect(calculateStars(state)).toBe(1);
+  });
+});
+
+describe('cloneState', () => {
+  const level = {
+    id: 1,
+    walls: [
+      { z: 30, hole: { shape: 'tall', width: 0.6, height: 1.67 } }
+    ]
+  };
+
+  it('returns a state with all fields', () => {
+    const state = createInitialState(level);
+    const clone = cloneState(state);
+    expect(clone.blob).toBeDefined();
+    expect(clone.walls).toHaveLength(1);
+    expect(clone.speed).toBe(state.speed);
+    expect(clone.score).toBe(state.score);
+    expect(clone.status).toBe(state.status);
+    expect(clone.time).toBe(state.time);
+    expect(clone.wallsPassed).toBe(state.wallsPassed);
+    expect(clone.totalWalls).toBe(state.totalWalls);
+  });
+
+  it('clone blob is independent of original', () => {
+    const state = createInitialState(level);
+    const clone = cloneState(state);
+    clone.blob.z = 999;
+    expect(state.blob.z).toBe(0);
+  });
+
+  it('clone walls are independent of original', () => {
+    const state = createInitialState(level);
+    const clone = cloneState(state);
+    clone.walls[0].passed = true;
+    expect(state.walls[0].passed).toBe(false);
+  });
+
+  it('original scalar changes do not affect clone', () => {
+    const state = createInitialState(level);
+    const clone = cloneState(state);
+    state.score = 500;
+    expect(clone.score).toBe(0);
+  });
+});
+
+describe('createGameHistory', () => {
+  it('returns object with push, undo, canUndo methods', () => {
+    const hist = createGameHistory();
+    expect(typeof hist.push).toBe('function');
+    expect(typeof hist.undo).toBe('function');
+    expect(typeof hist.canUndo).toBe('function');
+  });
+
+  it('cannot undo after a single push', () => {
+    const hist = createGameHistory();
+    hist.push('state-a');
+    expect(hist.canUndo()).toBe(false);
+  });
+
+  it('can undo after two pushes and returns prior state', () => {
+    const hist = createGameHistory();
+    hist.push('state-a');
+    hist.push('state-b');
+    expect(hist.canUndo()).toBe(true);
+    expect(hist.undo()).toBe('state-a');
+  });
+
+  it('respects custom maxDepth by evicting oldest entry', () => {
+    const hist = createGameHistory(2);
+    hist.push('a');
+    hist.push('b');
+    hist.push('c'); // oldest 'a' evicted; stack = ['b', 'c']
+    expect(hist.canUndo()).toBe(true);
+    expect(hist.undo()).toBe('b');
   });
 });

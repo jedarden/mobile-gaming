@@ -24,6 +24,8 @@ import {
   countRemainingPassengers,
   cloneState,
   calculateStars,
+  getHint,
+  createHistory,
   BUS_COLORS,
 } from '../../src/games/bus-jam/state.js';
 
@@ -464,5 +466,88 @@ describe('calculateStars', () => {
   it('gives 1 star when moves exceed 1.5x optimal', () => {
     expect(calculateStars(10, 5)).toBe(1);
     expect(calculateStars(20, 5)).toBe(1);
+  });
+});
+
+// ── getHint ────────────────────────────────────────────────────────────────
+
+describe('getHint', () => {
+  it('returns board hint when bus is adjacent to matching stop with waiting passengers', () => {
+    // makeLevel(): bus at (1,1), red stop at (1,0) with 2 waiting passengers
+    const state = createInitialState(makeLevel());
+    const hint = getHint(state);
+    expect(hint).not.toBeNull();
+    expect(hint.type).toBe('board');
+    expect(hint.bus.id).toBe('b1');
+    expect(hint.stop).toBeDefined();
+    expect(hint.message).toContain('red');
+  });
+
+  it('returns exit hint when bus is full and can reach exit', () => {
+    // Bus at (1,3) is full (passengers=capacity=2), not adjacent to stop at (1,0)
+    const level = makeLevel({
+      buses: [{ id: 'b1', x: 1, y: 3, color: 'red', passengers: 2, capacity: 2, exited: false }],
+    });
+    const state = createInitialState(level);
+    const hint = getHint(state);
+    expect(hint).not.toBeNull();
+    expect(hint.type).toBe('exit');
+    expect(hint.bus.id).toBe('b1');
+    expect(hint.exit).toBeDefined();
+  });
+
+  it('returns move hint when stop has no waiting passengers (priority 4 fallback)', () => {
+    // Empty stop → canBoard null, bus not full, no move-to-stop path either
+    const level = makeLevel({
+      stops: [{ id: 's1', x: 1, y: 0, color: 'red', waiting: [] }],
+    });
+    const state = createInitialState(level);
+    const hint = getHint(state);
+    expect(hint).not.toBeNull();
+    expect(hint.type).toBe('move');
+    expect(hint.bus).toBeDefined();
+  });
+
+  it('returns null when all buses have exited', () => {
+    const level = makeLevel({
+      buses: [{ id: 'b1', x: 1, y: 1, color: 'red', passengers: 2, capacity: 2, exited: true }],
+    });
+    const state = createInitialState(level);
+    expect(getHint(state)).toBeNull();
+  });
+});
+
+// ── createHistory ──────────────────────────────────────────────────────────
+
+describe('createHistory', () => {
+  it('returns object with push, undo, canUndo methods', () => {
+    const hist = createHistory();
+    expect(typeof hist.push).toBe('function');
+    expect(typeof hist.undo).toBe('function');
+    expect(typeof hist.canUndo).toBe('function');
+  });
+
+  it('cannot undo after a single push', () => {
+    const hist = createHistory();
+    hist.push({ moves: 0 });
+    expect(hist.canUndo()).toBe(false);
+  });
+
+  it('can undo after two pushes and returns prior state', () => {
+    const hist = createHistory();
+    hist.push({ moves: 0 });
+    hist.push({ moves: 1 });
+    expect(hist.canUndo()).toBe(true);
+    const prev = hist.undo();
+    expect(prev.moves).toBe(0);
+  });
+
+  it('respects custom maxDepth by evicting oldest entry', () => {
+    const hist = createHistory(2);
+    hist.push('a');
+    hist.push('b');
+    hist.push('c'); // 'a' evicted; stack = ['b', 'c']
+    expect(hist.canUndo()).toBe(true);
+    expect(hist.undo()).toBe('b');
   });
 });

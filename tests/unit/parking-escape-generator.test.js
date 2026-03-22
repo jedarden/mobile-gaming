@@ -82,7 +82,7 @@ describe('generateLevel', () => {
       break;
     }
     expect(found).toBe(true);
-  });
+  }, 30000);
 
   it('id encodes difficulty and index', () => {
     // Use easy to avoid slow hard-level generation in tests
