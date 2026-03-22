@@ -239,3 +239,125 @@ describe('solve', () => {
     expect(state.status).toBe('won');
   });
 });
+
+describe('left-exit levels', () => {
+  const LEFT_EXIT_LEVEL = {
+    grid: {
+      width: 6,
+      height: 6,
+      exit: { x: 0, y: 2, direction: 'left' },
+      vehicles: [
+        { id: 'hero', type: 'hero', x: 2, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+      ]
+    }
+  };
+
+  it('checkWin returns true when hero has clear left path', () => {
+    const state = createInitialState(LEFT_EXIT_LEVEL);
+    // hero at x=2, exit left — columns 0,1 are free
+    expect(checkWin(state)).toBe(true);
+  });
+
+  it('checkWin returns false when hero row does not match exit row', () => {
+    const level = {
+      grid: {
+        width: 6,
+        height: 6,
+        exit: { x: 0, y: 3, direction: 'left' },
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 2, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+        ]
+      }
+    };
+    const state = createInitialState(level);
+    expect(checkWin(state)).toBe(false);
+  });
+
+  it('hero moves left with getVehicleMoves', () => {
+    const state = createInitialState(LEFT_EXIT_LEVEL);
+    const moves = getVehicleMoves(state, 'hero');
+    const lefts = moves.filter(m => m.direction === 'left');
+    expect(lefts.length).toBeGreaterThan(0);
+  });
+
+  it('applyMove moves hero left', () => {
+    const state = createInitialState(LEFT_EXIT_LEVEL);
+    const next = applyMove(state, 'hero', 'left', 1);
+    const hero = next.vehicles.find(v => v.id === 'hero');
+    expect(hero.x).toBe(1);
+    expect(next.moves).toBe(1);
+  });
+});
+
+describe('down-exit levels', () => {
+  const DOWN_EXIT_LEVEL = {
+    grid: {
+      width: 4,
+      height: 6,
+      exit: { x: 1, y: 6, direction: 'down' },
+      vehicles: [
+        { id: 'hero', type: 'hero', x: 1, y: 0, width: 1, height: 2, orientation: 'vertical', color: '#E74C3C' }
+      ]
+    }
+  };
+
+  it('checkWin returns true when hero has clear downward path', () => {
+    const state = createInitialState(DOWN_EXIT_LEVEL);
+    expect(checkWin(state)).toBe(true);
+  });
+
+  it('hero can move down', () => {
+    const state = createInitialState(DOWN_EXIT_LEVEL);
+    const moves = getVehicleMoves(state, 'hero');
+    expect(moves.some(m => m.direction === 'down')).toBe(true);
+  });
+
+  it('applyMove moves hero down', () => {
+    const state = createInitialState(DOWN_EXIT_LEVEL);
+    const next = applyMove(state, 'hero', 'down', 1);
+    const hero = next.vehicles.find(v => v.id === 'hero');
+    expect(hero.y).toBe(1);
+  });
+});
+
+describe('applyMove — additional cases', () => {
+  it('does not change status on non-winning move', () => {
+    const state = createInitialState(SIMPLE_LEVEL);
+    const next = applyMove(state, 'hero', 'right', 1);
+    expect(next.status).toBe('playing');
+  });
+
+  it('handles multiple sequential moves', () => {
+    const state = createInitialState(SIMPLE_LEVEL);
+    const s1 = applyMove(state, 'v1', 'up', 2);
+    const s2 = applyMove(s1, 'hero', 'right', 4);
+    expect(s2.moves).toBe(2);
+    expect(s2.status).toBe('won');
+  });
+});
+
+describe('buildOccupied — width/height bounds', () => {
+  it('grid size matches level width×height', () => {
+    const state = createInitialState(SIMPLE_LEVEL);
+    const occ = buildOccupied(state);
+    expect(occ).toHaveLength(6);    // height
+    expect(occ[0]).toHaveLength(6); // width
+  });
+
+  it('all cells outside vehicles are null', () => {
+    const state = createInitialState({
+      grid: {
+        width: 3, height: 3,
+        exit: { x: 3, y: 1, direction: 'right' },
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 0, y: 1, width: 1, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+        ]
+      }
+    });
+    const occ = buildOccupied(state);
+    // hero occupies (1,0)
+    expect(occ[1][0]).toBe('hero');
+    expect(occ[0][0]).toBeNull();
+    expect(occ[2][2]).toBeNull();
+  });
+});

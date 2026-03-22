@@ -10,7 +10,12 @@ import {
   applyAction,
   cloneState,
   getHint,
-  validatePuzzle
+  validatePuzzle,
+  getElement,
+  getInteractiveElements,
+  isRevealed,
+  resetSequence,
+  revealElement
 } from '../../src/games/brain-teaser/state.js';
 
 import { createMockContext } from '../helpers/mock-canvas.js';
@@ -287,5 +292,235 @@ describe('Brain Teaser State', () => {
         expect(state.attempts).toBe(1);
       expect(state.animation.type).toBe('shake');
     });
+  });
+});
+
+describe('getElement', () => {
+  let mockPuzzle;
+  beforeEach(() => {
+    mockPuzzle = {
+      id: 'test-001',
+      title: 'Test',
+      prompt: 'Tap the correct circle',
+      type: 'tap',
+      elements: [
+        { id: 'circle1', type: 'circle', x: 50, y: 200, w: 60, h: 60, clickable: true },
+        { id: 'circle2', type: 'circle', x: 150, y: 200, w: 60, h: 60, clickable: true }
+      ],
+      solution: { action: 'tap', targetId: 'circle2' },
+      decoyActions: [],
+      difficulty: 1
+    };
+  });
+
+  it('returns element by id', () => {
+    const state = createInitialState(mockPuzzle);
+    const el = getElement(state, 'circle1');
+    expect(el).not.toBeNull();
+    expect(el.id).toBe('circle1');
+  });
+
+  it('returns element with correct properties', () => {
+    const state = createInitialState(mockPuzzle);
+    const el = getElement(state, 'circle2');
+    expect(el.x).toBe(150);
+    expect(el.clickable).toBe(true);
+  });
+
+  it('returns null for unknown id', () => {
+    const state = createInitialState(mockPuzzle);
+    expect(getElement(state, 'nonexistent')).toBeNull();
+  });
+
+  it('returns null for empty string id', () => {
+    const state = createInitialState(mockPuzzle);
+    expect(getElement(state, '')).toBeNull();
+  });
+});
+
+describe('getInteractiveElements', () => {
+  it('returns all clickable elements', () => {
+    const puzzle = {
+      id: 'g1', title: 'T', prompt: 'P', type: 'tap',
+      elements: [
+        { id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'b', type: 'circle', x: 100, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'c', type: 'circle', x: 200, y: 0, w: 60, h: 60, clickable: true }
+      ],
+      solution: { action: 'tap', targetId: 'a' },
+      decoyActions: [],
+      difficulty: 1
+    };
+    const state = createInitialState(puzzle);
+    expect(getInteractiveElements(state)).toHaveLength(3);
+  });
+
+  it('includes draggable elements', () => {
+    const puzzle = {
+      id: 'g2', title: 'T', prompt: 'P', type: 'drag',
+      elements: [
+        { id: 'key', type: 'key', x: 0, y: 0, w: 40, h: 40, draggable: true },
+        { id: 'door', type: 'door', x: 100, y: 0, w: 80, h: 80 }
+      ],
+      solution: { action: 'drag', sourceId: 'key', targetId: 'door' },
+      decoyActions: [],
+      difficulty: 1
+    };
+    const state = createInitialState(puzzle);
+    const interactive = getInteractiveElements(state);
+    expect(interactive.some(e => e.id === 'key')).toBe(true);
+  });
+
+  it('excludes hidden non-interactive elements', () => {
+    const puzzle = {
+      id: 'g3', title: 'T', prompt: 'P', type: 'tap',
+      elements: [
+        { id: 'visible', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'hidden', type: 'label', x: 0, y: 100, w: 60, h: 60, hidden: true }
+      ],
+      solution: { action: 'tap', targetId: 'visible' },
+      decoyActions: [],
+      difficulty: 1
+    };
+    const state = createInitialState(puzzle);
+    const interactive = getInteractiveElements(state);
+    expect(interactive.some(e => e.id === 'hidden')).toBe(false);
+  });
+
+  it('returns empty array when no interactive elements', () => {
+    const puzzle = {
+      id: 'g4', title: 'T', prompt: 'P', type: 'tap',
+      elements: [
+        { id: 'bg', type: 'rect', x: 0, y: 0, w: 300, h: 300, hidden: true }
+      ],
+      solution: { action: 'tap', targetId: 'bg' },
+      decoyActions: [],
+      difficulty: 1
+    };
+    const state = createInitialState(puzzle);
+    expect(getInteractiveElements(state)).toHaveLength(0);
+  });
+});
+
+describe('isRevealed', () => {
+  let state;
+  beforeEach(() => {
+    const puzzle = {
+      id: 'r1', title: 'T', prompt: 'P', type: 'tap',
+      elements: [
+        { id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }
+      ],
+      solution: { action: 'tap', targetId: 'a' },
+      decoyActions: [],
+      difficulty: 1
+    };
+    state = createInitialState(puzzle);
+  });
+
+  it('returns false for unrevealed element', () => {
+    expect(isRevealed(state, 'a')).toBe(false);
+  });
+
+  it('returns true after revealElement', () => {
+    const next = revealElement(state, 'a');
+    expect(isRevealed(next, 'a')).toBe(true);
+  });
+
+  it('returns false for other elements when one is revealed', () => {
+    const next = revealElement(state, 'a');
+    expect(isRevealed(next, 'b')).toBe(false);
+  });
+
+  it('returns false on fresh state regardless of element id', () => {
+    expect(isRevealed(state, 'nonexistent')).toBe(false);
+  });
+});
+
+describe('resetSequence', () => {
+  let state;
+  beforeEach(() => {
+    const puzzle = {
+      id: 's1', title: 'T', prompt: 'P', type: 'sequence',
+      elements: [
+        { id: 'a', type: 'rect', x: 0, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'b', type: 'rect', x: 100, y: 0, w: 60, h: 60, clickable: true }
+      ],
+      solution: { action: 'sequence', steps: ['a', 'b'] },
+      decoyActions: [],
+      difficulty: 1
+    };
+    state = createInitialState(puzzle);
+  });
+
+  it('clears currentSequence', () => {
+    const withSeq = { ...state, currentSequence: ['a', 'b'] };
+    expect(resetSequence(withSeq).currentSequence).toEqual([]);
+  });
+
+  it('clears animation', () => {
+    const withAnim = { ...state, animation: { type: 'shake', message: 'wrong' } };
+    expect(resetSequence(withAnim).animation).toBeNull();
+  });
+
+  it('preserves status', () => {
+    const withSeq = { ...state, currentSequence: ['a'], status: 'playing' };
+    expect(resetSequence(withSeq).status).toBe('playing');
+  });
+
+  it('preserves attempts count', () => {
+    const withAttempts = { ...state, currentSequence: ['a'], attempts: 5 };
+    expect(resetSequence(withAttempts).attempts).toBe(5);
+  });
+
+  it('resets empty sequence without error', () => {
+    expect(() => resetSequence(state)).not.toThrow();
+    expect(resetSequence(state).currentSequence).toEqual([]);
+  });
+});
+
+describe('revealElement', () => {
+  let state;
+  beforeEach(() => {
+    const puzzle = {
+      id: 'rv1', title: 'T', prompt: 'P', type: 'tap',
+      elements: [
+        { id: 'x', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'y', type: 'circle', x: 100, y: 0, w: 60, h: 60, clickable: true }
+      ],
+      solution: { action: 'tap', targetId: 'x' },
+      decoyActions: [],
+      difficulty: 1
+    };
+    state = createInitialState(puzzle);
+  });
+
+  it('adds element to revealedElements', () => {
+    const next = revealElement(state, 'x');
+    expect(next.revealedElements).toContain('x');
+  });
+
+  it('returns same reference if already revealed', () => {
+    const s1 = revealElement(state, 'x');
+    const s2 = revealElement(s1, 'x');
+    expect(s2).toBe(s1);
+  });
+
+  it('does not duplicate revealed ids', () => {
+    const s1 = revealElement(state, 'x');
+    const s2 = revealElement(s1, 'x');
+    expect(s2.revealedElements.filter(id => id === 'x')).toHaveLength(1);
+  });
+
+  it('can reveal multiple different elements', () => {
+    const s1 = revealElement(state, 'x');
+    const s2 = revealElement(s1, 'y');
+    expect(s2.revealedElements).toContain('x');
+    expect(s2.revealedElements).toContain('y');
+    expect(s2.revealedElements).toHaveLength(2);
+  });
+
+  it('does not mutate original revealedElements', () => {
+    revealElement(state, 'x');
+    expect(state.revealedElements).toHaveLength(0);
   });
 });

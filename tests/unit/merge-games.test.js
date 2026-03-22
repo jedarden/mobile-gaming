@@ -207,4 +207,122 @@ describe('isSolvable', () => {
     };
     expect(isSolvable(done)).toBe(true);
   });
+
+  it('returns false when maxStates is 1 (explores nothing)', () => {
+    // With maxStates=1, DFS immediately stops — only catches already-complete states
+    const unsolved = {
+      width: 2, height: 1,
+      grid: [[1, 1]],
+      task: { targetTier: 2, targetCount: 1 }
+    };
+    // maxStates=1: visited set fills after first entry, loop never runs second iteration
+    expect(isSolvable(unsolved, 1)).toBe(false);
+  });
+
+  it('solves chain merge (1→2→3) on a 2D grid', () => {
+    // 2x2 grid of tier-1s: merge row-wise then vertically to reach tier-3
+    const chain = {
+      width: 2, height: 2,
+      grid: [[1, 1], [1, 1]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    expect(isSolvable(chain)).toBe(true);
+  });
+});
+
+describe('applyMerge — chain scenarios', () => {
+  it('produces tier-3 after two merges', () => {
+    const level = {
+      width: 4, height: 1,
+      grid: [[1, 1, 1, 1]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    const s1 = createInitialState(level);
+    const s2 = applyMerge(s1, 0, 0, 0, 1); // [2,0,1,1]
+    expect(s2.grid[0][0]).toBe(2);
+    const s3 = applyMerge(s2, 0, 2, 0, 3); // [2,0,2,0]
+    expect(s3.grid[0][2]).toBe(2);
+    const s4 = applyMerge(s3, 0, 0, 0, 2); // non-adjacent — should fail
+    expect(s4).toBe(s3);
+    // move tier-2 pieces adjacent
+    const level2 = {
+      width: 2, height: 1,
+      grid: [[2, 2]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    const s5 = createInitialState(level2);
+    const s6 = applyMerge(s5, 0, 0, 0, 1);
+    expect(s6.grid[0][0]).toBe(3);
+    expect(s6.status).toBe('won');
+  });
+
+  it('merges down (vertical neighbor)', () => {
+    const level = {
+      width: 1, height: 2,
+      grid: [[2], [2]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    const state = createInitialState(level);
+    const next = applyMerge(state, 0, 0, 1, 0);
+    expect(next.grid[0][0]).toBe(3);
+    expect(next.grid[1][0]).toBe(0);
+    expect(next.status).toBe('won');
+  });
+});
+
+describe('getMerges — larger grids', () => {
+  it('finds all pairs in a full row', () => {
+    const level = {
+      width: 4, height: 1,
+      grid: [[2, 2, 2, 2]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    const state = createInitialState(level);
+    const merges = getMerges(state);
+    // Horizontal pairs: (0,0)-(0,1), (0,1)-(0,2), (0,2)-(0,3) = 3 pairs
+    expect(merges).toHaveLength(3);
+  });
+
+  it('ignores empty cells', () => {
+    const level = {
+      width: 3, height: 1,
+      grid: [[1, 0, 1]],
+      task: { targetTier: 2, targetCount: 1 }
+    };
+    const state = createInitialState(level);
+    expect(getMerges(state)).toHaveLength(0);
+  });
+});
+
+describe('countTier — all tiers', () => {
+  it('counts each tier independently', () => {
+    const level = {
+      width: 4, height: 1,
+      grid: [[1, 2, 3, 2]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    const state = createInitialState(level);
+    expect(countTier(state, 1)).toBe(1);
+    expect(countTier(state, 2)).toBe(2);
+    expect(countTier(state, 3)).toBe(1);
+    expect(countTier(state, 4)).toBe(0);
+  });
+});
+
+describe('encodeGrid — canonical form', () => {
+  it('same grid always produces same key', () => {
+    const g = [[1, 2], [3, 0]];
+    expect(encodeGrid(g)).toBe(encodeGrid([[1, 2], [3, 0]]));
+  });
+
+  it('different grids produce different keys', () => {
+    const g1 = [[1, 2]];
+    const g2 = [[2, 1]];
+    expect(encodeGrid(g1)).not.toBe(encodeGrid(g2));
+  });
+
+  it('uses | as row separator', () => {
+    const g = [[1, 2], [3, 4]];
+    expect(encodeGrid(g)).toContain('|');
+  });
 });
