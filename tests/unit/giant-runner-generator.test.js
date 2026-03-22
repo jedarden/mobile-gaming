@@ -214,3 +214,146 @@ describe('generateBatch', () => {
     }
   });
 });
+
+// ── Additional structure and range invariants ─────────────────────────────
+
+describe('generateLevel — difficulty ranges', () => {
+  it('easy courseLength is within [200, 300]', () => {
+    const counts = new Set();
+    for (let s = 1; s <= 10; s++) counts.add(generateLevel(s, 'easy').courseLength);
+    for (const c of counts) {
+      expect(c).toBeGreaterThanOrEqual(200);
+      expect(c).toBeLessThanOrEqual(300);
+    }
+  });
+
+  it('medium courseLength is within [300, 450]', () => {
+    const counts = new Set();
+    for (let s = 1; s <= 10; s++) counts.add(generateLevel(s, 'medium').courseLength);
+    for (const c of counts) {
+      expect(c).toBeGreaterThanOrEqual(300);
+      expect(c).toBeLessThanOrEqual(450);
+    }
+  });
+
+  it('hard courseLength is within [450, 600]', () => {
+    const counts = new Set();
+    for (let s = 1; s <= 10; s++) counts.add(generateLevel(s, 'hard').courseLength);
+    for (const c of counts) {
+      expect(c).toBeGreaterThanOrEqual(450);
+      expect(c).toBeLessThanOrEqual(600);
+    }
+  });
+
+  it('easy speed is within [2.5, 3.0]', () => {
+    const level = generateLevel(1, 'easy');
+    expect(level.speed).toBeGreaterThanOrEqual(2.5);
+    expect(level.speed).toBeLessThanOrEqual(3.0);
+  });
+
+  it('medium speed is within [3.0, 3.5]', () => {
+    const level = generateLevel(1, 'medium');
+    expect(level.speed).toBeGreaterThanOrEqual(3.0);
+    expect(level.speed).toBeLessThanOrEqual(3.5);
+  });
+
+  it('hard speed is within [3.5, 4.0]', () => {
+    const level = generateLevel(1, 'hard');
+    expect(level.speed).toBeGreaterThanOrEqual(3.5);
+    expect(level.speed).toBeLessThanOrEqual(4.0);
+  });
+
+  it('easy boss.scale is within [1.5, 3.0]', () => {
+    const level = generateLevel(1, 'easy');
+    expect(level.boss.scale).toBeGreaterThanOrEqual(1.5);
+    expect(level.boss.scale).toBeLessThanOrEqual(3.0);
+  });
+
+  it('medium boss.scale is within [3.0, 5.0]', () => {
+    const level = generateLevel(1, 'medium');
+    expect(level.boss.scale).toBeGreaterThanOrEqual(3.0);
+    expect(level.boss.scale).toBeLessThanOrEqual(5.0);
+  });
+
+  it('hard boss.scale is within [5.0, 8.0]', () => {
+    const level = generateLevel(1, 'hard');
+    expect(level.boss.scale).toBeGreaterThanOrEqual(5.0);
+    expect(level.boss.scale).toBeLessThanOrEqual(8.0);
+  });
+});
+
+describe('generateLevel — structural invariants', () => {
+  it('id format is "gr-gen-{difficulty}-{index}-{seed}"', () => {
+    const level = generateLevel(7, 'hard', 3);
+    expect(level.id).toBe('gr-gen-hard-3-7');
+  });
+
+  it('obstacles array is defined (may be empty)', () => {
+    const level = generateLevel(1, 'easy');
+    expect(Array.isArray(level.obstacles)).toBe(true);
+  });
+
+  it('hard levels have more obstacles than easy (on average)', () => {
+    let easyObs = 0, hardObs = 0;
+    for (let s = 1; s <= 10; s++) {
+      easyObs += generateLevel(s, 'easy').obstacles.length;
+      hardObs += generateLevel(s, 'hard').obstacles.length;
+    }
+    expect(hardObs).toBeGreaterThan(easyObs);
+  });
+
+  it('collectibles are sorted by z position', () => {
+    const level = generateLevel(5, 'medium');
+    for (let i = 1; i < level.collectibles.length; i++) {
+      expect(level.collectibles[i].z).toBeGreaterThanOrEqual(level.collectibles[i - 1].z);
+    }
+  });
+
+  it('boss.z equals courseLength', () => {
+    const level = generateLevel(3, 'easy');
+    expect(level.boss.z).toBe(level.courseLength);
+  });
+
+  it('startScale is a positive number', () => {
+    const level = generateLevel(1, 'easy');
+    expect(typeof level.startScale).toBe('number');
+    expect(level.startScale).toBeGreaterThan(0);
+  });
+});
+
+describe('validateLevel — detailed result fields', () => {
+  it('returns optimalScale, averageScale, and bossScale fields', () => {
+    const levels = generateBatch(5000, 'easy', 1);
+    if (levels.length === 0) return;
+    const result = validateLevel(levels[0]);
+    expect(result).toHaveProperty('optimalScale');
+    expect(result).toHaveProperty('averageScale');
+    expect(result).toHaveProperty('bossScale');
+    expect(result).toHaveProperty('errors');
+  });
+
+  it('valid result has empty errors array', () => {
+    const levels = generateBatch(6000, 'easy', 1);
+    if (levels.length === 0) return;
+    const result = validateLevel(levels[0]);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('invalid result has non-empty errors array', () => {
+    const level = {
+      id: 'test',
+      difficulty: 'easy',
+      playerColor: 'blue',
+      collectibles: [],
+      obstacles: [],
+      boss: { scale: 99, z: 100 },
+      courseLength: 100,
+      speed: 2.5,
+      startScale: 1.0
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+});

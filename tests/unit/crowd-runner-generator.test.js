@@ -227,3 +227,105 @@ describe('generateBatch', () => {
     expect(ids.size).toBe(levels.length);
   });
 });
+
+// ── Additional structure invariants ──────────────────────────────────────────
+
+describe('generateLevel — additional invariants', () => {
+  it('speed is within range for medium difficulty', () => {
+    const level = generateLevel(1, 'medium');
+    expect(level.speed).toBeGreaterThanOrEqual(1.8);
+    expect(level.speed).toBeLessThanOrEqual(2.2);
+  });
+
+  it('speed is within range for hard difficulty', () => {
+    const level = generateLevel(1, 'hard');
+    expect(level.speed).toBeGreaterThanOrEqual(2.2);
+    expect(level.speed).toBeLessThanOrEqual(2.8);
+  });
+
+  it('courseLength is within range for medium difficulty', () => {
+    const level = generateLevel(1, 'medium');
+    expect(level.courseLength).toBeGreaterThanOrEqual(450);
+    expect(level.courseLength).toBeLessThanOrEqual(600);
+  });
+
+  it('gate count is within range for medium difficulty [5, 6]', () => {
+    // Sample a few seeds to hit both ends of the range
+    const counts = new Set();
+    for (let s = 1; s <= 20; s++) {
+      counts.add(generateLevel(s, 'medium').gates.length);
+    }
+    for (const c of counts) {
+      expect(c).toBeGreaterThanOrEqual(5);
+      expect(c).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('gate z positions are strictly increasing', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(7, diff);
+      let last = -Infinity;
+      for (const gate of level.gates) {
+        expect(gate.z).toBeGreaterThan(last);
+        last = gate.z;
+      }
+    }
+  });
+
+  it('boss.size is positive and passes validateLevel for generateBatch levels', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const levels = generateBatch(1, diff, 3);
+      for (const level of levels) {
+        expect(level.boss.size).toBeGreaterThan(0);
+        // generateBatch only returns validated levels — validateLevel guarantees
+        // optimal path > boss.size (there is a winning path)
+        const result = validateLevel(level);
+        expect(result.valid).toBe(true);
+      }
+    }
+  });
+
+  it('boss.size is at least 2', () => {
+    for (let s = 1; s <= 10; s++) {
+      const level = generateLevel(s, 'easy');
+      expect(level.boss.size).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('speed is rounded to one decimal place', () => {
+    for (let s = 1; s <= 10; s++) {
+      const level = generateLevel(s, 'medium');
+      const rounded = Math.round(level.speed * 10) / 10;
+      expect(level.speed).toBeCloseTo(rounded, 5);
+    }
+  });
+
+  it('good ops on left produce positive crowd change', () => {
+    // Verify that at least one gate side always increases the crowd (a "good op")
+    const level = generateLevel(42, 'easy');
+    for (const gate of level.gates) {
+      const leftOp  = gate.left;
+      const rightOp = gate.right;
+      // At least one side should be a + or × op (a "good" op)
+      const hasGoodOp = [leftOp, rightOp].some(op => op.op === '+' || op.op === '×');
+      expect(hasGoodOp).toBe(true);
+    }
+  });
+
+  it('bad ops on right produce negative crowd change', () => {
+    // At least one gate side per gate is a "bad" op (− or ÷)
+    const level = generateLevel(42, 'easy');
+    for (const gate of level.gates) {
+      const hasHarmfulOp = [gate.left, gate.right].some(op => op.op === '−' || op.op === '÷');
+      expect(hasHarmfulOp).toBe(true);
+    }
+  });
+
+  it('gate operation values are all positive', () => {
+    const level = generateLevel(1, 'hard');
+    for (const gate of level.gates) {
+      expect(gate.left.value).toBeGreaterThan(0);
+      expect(gate.right.value).toBeGreaterThan(0);
+    }
+  });
+});

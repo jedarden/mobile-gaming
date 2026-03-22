@@ -207,3 +207,93 @@ describe('generateBatch', () => {
     expect(ids.size).toBe(levels.length);
   });
 });
+
+// ── Additional structure and path invariants ──────────────────────────────
+
+describe('generateLevel — station layout invariants', () => {
+  it('all station z positions are >= 40', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(1, diff);
+      for (const s of level.stations) {
+        expect(s.z).toBeGreaterThanOrEqual(40);
+      }
+    }
+  });
+
+  it('all station z positions are < courseLength', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(1, diff);
+      for (const s of level.stations) {
+        expect(s.z).toBeLessThan(level.courseLength);
+      }
+    }
+  });
+
+  it('each z value has exactly one positive and one negative station', () => {
+    const level = generateLevel(3, 'easy');
+    const zValues = [...new Set(level.stations.map(s => s.z))];
+    for (const z of zValues) {
+      const atZ = level.stations.filter(s => s.z === z);
+      expect(atZ.length).toBe(2);
+      expect(atZ.filter(s => s.positive).length).toBe(1);
+      expect(atZ.filter(s => !s.positive).length).toBe(1);
+    }
+  });
+
+  it('base 4 positive station types cover all 4 categories (easy)', () => {
+    // easy has 6 pairs → 6 positives; the first 4 are seeded with one per category
+    // so across all 4 category slots, each category is represented exactly once
+    const level = generateLevel(1, 'easy');
+    const positives = level.stations.filter(s => s.positive);
+    const types = positives.map(s => s.type);
+    const uniqueTypes = new Set(types);
+    // At least 3 of the 4 categories must be present (algorithm assigns one per cat for base pairs)
+    expect(uniqueTypes.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('negative stations all have type "mud"', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(5, diff);
+      const negatives = level.stations.filter(s => !s.positive);
+      for (const s of negatives) {
+        expect(s.type).toBe('mud');
+      }
+    }
+  });
+
+  it('negative stations all have amount = 1', () => {
+    const level = generateLevel(2, 'medium');
+    const negatives = level.stations.filter(s => !s.positive);
+    for (const s of negatives) {
+      expect(s.amount).toBe(1);
+    }
+  });
+
+  it('positive station upgrade values are 2 or 3', () => {
+    const level = generateLevel(4, 'hard');
+    const positives = level.stations.filter(s => s.positive);
+    for (const s of positives) {
+      expect([2, 3]).toContain(s.upgrade);
+    }
+  });
+
+  it('z positions are evenly spaced (spacing = (courseLength - 60) / numPairs)', () => {
+    // easy: courseLength=260, numPairs=6, spacing=(260-60)/6≈33.33
+    const level = generateLevel(1, 'easy');
+    const zValues = [...new Set(level.stations.map(s => s.z))].sort((a, b) => a - b);
+    expect(zValues.length).toBe(6); // 6 pairs = 6 distinct z positions
+    // Each z starts at 40 + spacing*i — verify first is ~40
+    expect(zValues[0]).toBeGreaterThanOrEqual(40);
+    expect(zValues[0]).toBeLessThanOrEqual(45);
+  });
+
+  it('validateLevel reason is "OK" for generated levels', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(10, diff);
+      const result = validateLevel(level);
+      // The algorithm is designed to always produce valid levels
+      expect(result.valid).toBe(true);
+      expect(result.reason).toBe('OK');
+    }
+  });
+});

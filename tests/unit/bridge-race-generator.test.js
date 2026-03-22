@@ -204,3 +204,105 @@ describe('generateBatch', () => {
     }
   });
 });
+
+// ── Additional structure invariants ──────────────────────────────────────────
+
+describe('generateLevel — additional invariants', () => {
+  it('finishZ is within range for medium difficulty [140, 170]', () => {
+    // medium: finishZBase=140, offset [0,30] → [140, 170]
+    const level = generateLevel(1, 'medium');
+    expect(level.finishZ).toBeGreaterThanOrEqual(140);
+    expect(level.finishZ).toBeLessThanOrEqual(170);
+  });
+
+  it('finishZ is within range for hard difficulty [200, 230]', () => {
+    // hard: finishZBase=200, offset [0,30] → [200, 230]
+    const level = generateLevel(1, 'hard');
+    expect(level.finishZ).toBeGreaterThanOrEqual(200);
+    expect(level.finishZ).toBeLessThanOrEqual(230);
+  });
+
+  it('easy bridge count is within [2, 3]', () => {
+    const counts = new Set();
+    for (let s = 1; s <= 20; s++) {
+      counts.add(generateLevel(s, 'easy').bridges.length);
+    }
+    for (const c of counts) {
+      expect(c).toBeGreaterThanOrEqual(2);
+      expect(c).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('medium bridge count is within [3, 4]', () => {
+    const counts = new Set();
+    for (let s = 1; s <= 20; s++) {
+      counts.add(generateLevel(s, 'medium').bridges.length);
+    }
+    for (const c of counts) {
+      expect(c).toBeGreaterThanOrEqual(3);
+      expect(c).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('hard bridge count is exactly 4', () => {
+    for (let s = 1; s <= 5; s++) {
+      expect(generateLevel(s, 'hard').bridges.length).toBe(4);
+    }
+  });
+
+  it('easy opponent AI is "random"', () => {
+    const level = generateLevel(1, 'easy');
+    expect(level.opponents.length).toBe(1);
+    expect(level.opponents[0].ai).toBe('random');
+  });
+
+  it('medium opponent AIs are ["random", "greedy"]', () => {
+    const level = generateLevel(1, 'medium');
+    expect(level.opponents.length).toBe(2);
+    expect(level.opponents[0].ai).toBe('random');
+    expect(level.opponents[1].ai).toBe('greedy');
+  });
+
+  it('hard opponent AIs are both "greedy"', () => {
+    const level = generateLevel(1, 'hard');
+    expect(level.opponents.length).toBe(2);
+    expect(level.opponents[0].ai).toBe('greedy');
+    expect(level.opponents[1].ai).toBe('greedy');
+  });
+
+  it('total blue block count is at least 1.2× total bridge cells', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(1, diff);
+      const totalCells = level.bridges.reduce((sum, b) => sum + b.required, 0);
+      const totalBlue = level.blockPiles
+        .filter(p => p.color === 'blue')
+        .reduce((sum, p) => sum + p.count, 0);
+      expect(totalBlue).toBeGreaterThanOrEqual(totalCells * 1.2);
+    }
+  });
+
+  it('each bridge required value equals cellsPerBridge (consistent within a level)', () => {
+    const level = generateLevel(10, 'medium');
+    // All bridges in a level share the same cellsPerBridge
+    const required = level.bridges[0].required;
+    for (const bridge of level.bridges) {
+      expect(bridge.required).toBe(required);
+    }
+  });
+
+  it('opponent colors use the COLORS palette (red, green, yellow, purple)', () => {
+    const palette = ['red', 'green', 'yellow', 'purple'];
+    const level = generateLevel(5, 'hard');
+    for (const opp of level.opponents) {
+      expect(palette).toContain(opp.color);
+    }
+  });
+
+  it('all block pile colors are either blue or opponent colors', () => {
+    const palette = ['blue', 'red', 'green', 'yellow', 'purple'];
+    const level = generateLevel(3, 'medium');
+    for (const pile of level.blockPiles) {
+      expect(palette).toContain(pile.color);
+    }
+  });
+});
