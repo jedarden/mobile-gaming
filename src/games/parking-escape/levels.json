@@ -1,213 +1,1081 @@
 [
   {
-    "id": "pe-001",
+    "version": 1,
+    "id": "pe-gen-easy-0-102",
     "title": "Tutorial",
-    "difficulty": 2,
-    "targetMoves": 4,
-    "maxMoves": 50,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
-      "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical",   "color": "#2ECC71" },
-        { "id": "v3",   "type": "car",  "x": 4, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#F39C12" }
-      ]
-    }
-  },
-  {
-    "id": "pe-002",
-    "title": "Slide Out",
     "difficulty": 3,
-    "targetMoves": 6,
-    "maxMoves": 50,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 1, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 0, "y": 0, "width": 1, "height": 3, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 3, "y": 1, "width": 1, "height": 2, "orientation": "vertical",   "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 4, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 4, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#F39C12" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 3,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "truck",
+          "x": 4,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 5,
+          "y": 2,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 0,
+          "y": 5,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
   },
   {
-    "id": "pe-003",
-    "title": "Gridlock",
-    "difficulty": 4,
-    "targetMoves": 8,
-    "maxMoves": 50,
+    "version": 1,
+    "id": "pe-gen-easy-1-104",
+    "title": "Warm Up",
+    "difficulty": 3,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 3, "y": 3, "width": 2, "height": 1, "orientation": "horizontal", "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 1, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 5, "y": 0, "width": 1, "height": 3, "orientation": "vertical",   "color": "#1ABC9C" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 0,
+          "y": 4,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 1,
+          "y": 4,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 4,
+          "y": 3,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 5,
+    "maxMoves": 50
   },
   {
-    "id": "pe-004",
-    "title": "Traffic Jam",
-    "difficulty": 5,
-    "targetMoves": 9,
-    "maxMoves": 50,
+    "version": 1,
+    "id": "pe-gen-easy-2-107",
+    "title": "Sliding In",
+    "difficulty": 3,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "truck","x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 3, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 5, "y": 1, "width": 1, "height": 2, "orientation": "vertical",   "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 1, "y": 3, "width": 1, "height": 2, "orientation": "vertical",   "color": "#1ABC9C" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 2,
+          "y": 3,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 4,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 0,
+          "y": 3,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 2,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 3,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
   },
   {
-    "id": "pe-005",
-    "title": "The Squeeze",
-    "difficulty": 5,
-    "targetMoves": 11,
-    "maxMoves": 60,
+    "version": 1,
+    "id": "pe-gen-easy-3-111",
+    "title": "Easy Street",
+    "difficulty": 3,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical",   "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 0, "y": 4, "width": 3, "height": 1, "orientation": "horizontal", "color": "#1ABC9C" },
-        { "id": "v6",   "type": "car",  "x": 5, "y": 3, "width": 1, "height": 2, "orientation": "vertical",   "color": "#E67E22" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 4,
+          "y": 3,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 0,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 1,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 4,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
   },
   {
-    "id": "pe-006",
-    "title": "Bottleneck",
+    "version": 1,
+    "id": "pe-gen-medium-0-210",
+    "title": "Getting Tricky",
     "difficulty": 6,
-    "targetMoves": 13,
-    "maxMoves": 60,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 1, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 0, "y": 0, "width": 1, "height": 2, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 0, "y": 3, "width": 1, "height": 2, "orientation": "vertical",   "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 3, "y": 1, "width": 1, "height": 2, "orientation": "vertical",   "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 1, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 4, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#1ABC9C" },
-        { "id": "v6",   "type": "car",  "x": 4, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#E67E22" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 3,
+          "y": 1,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 4,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 4,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 3,
+          "y": 4,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 2,
+          "y": 4,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "car",
+          "x": 1,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "truck",
+          "x": 0,
+          "y": 3,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 2,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#34495E"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 9,
+    "maxMoves": 50
   },
   {
-    "id": "pe-007",
-    "title": "The Maze",
-    "difficulty": 7,
-    "targetMoves": 15,
-    "maxMoves": 70,
+    "version": 1,
+    "id": "pe-gen-medium-1-215",
+    "title": "Mid Jam",
+    "difficulty": 6,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "truck","x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 5, "y": 1, "width": 1, "height": 2, "orientation": "vertical",   "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 3, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#1ABC9C" },
-        { "id": "v6",   "type": "car",  "x": 0, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#E67E22" },
-        { "id": "v7",   "type": "car",  "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#34495E" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 3,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 4,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 3,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 1,
+          "y": 3,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "car",
+          "x": 1,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#1ABC9C"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 11,
+    "maxMoves": 50
   },
   {
-    "id": "pe-008",
+    "version": 1,
+    "id": "pe-gen-medium-2-216",
     "title": "Rush Hour",
-    "difficulty": 7,
-    "targetMoves": 17,
-    "maxMoves": 70,
+    "difficulty": 6,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 2, "y": 1, "width": 1, "height": 3, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 3, "y": 0, "width": 1, "height": 2, "orientation": "vertical",   "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 4, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 5, "y": 1, "width": 1, "height": 3, "orientation": "vertical",   "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 3, "y": 3, "width": 2, "height": 1, "orientation": "horizontal", "color": "#1ABC9C" },
-        { "id": "v6",   "type": "car",  "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E67E22" },
-        { "id": "v7",   "type": "car",  "x": 4, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#34495E" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 0,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 4,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "truck",
+          "x": 3,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 1,
+          "y": 3,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 4,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 9,
+    "maxMoves": 50
   },
   {
-    "id": "pe-009",
-    "title": "Standstill",
-    "difficulty": 8,
-    "targetMoves": 20,
-    "maxMoves": 80,
+    "version": 1,
+    "id": "pe-gen-medium-3-224",
+    "title": "Tight Squeeze",
+    "difficulty": 6,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "truck","x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 4, "y": 1, "width": 2, "height": 1, "orientation": "horizontal", "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 5, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 3, "y": 4, "width": 3, "height": 1, "orientation": "horizontal", "color": "#1ABC9C" },
-        { "id": "v6",   "type": "car",  "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E67E22" },
-        { "id": "v7",   "type": "car",  "x": 0, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#34495E" },
-        { "id": "v8",   "type": "car",  "x": 1, "y": 3, "width": 2, "height": 1, "orientation": "horizontal", "color": "#8E44AD" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 4,
+          "y": 3,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 1,
+          "y": 3,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 2,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 9,
+    "maxMoves": 50
   },
   {
-    "id": "pe-010",
-    "title": "Master",
+    "version": 1,
+    "id": "pe-gen-hard-0-300",
+    "title": "Master Plan",
+    "difficulty": 10,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 4,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 3,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 3,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 2,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 4,
+          "y": 3,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "truck",
+          "x": 0,
+          "y": 0,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
+          "x": 0,
+          "y": 1,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 0,
+          "y": 4,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#34495E"
+        },
+        {
+          "id": "v8",
+          "type": "car",
+          "x": 3,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v9",
+          "type": "car",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v10",
+          "type": "car",
+          "x": 2,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 23,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-gen-hard-1-302",
+    "title": "Expert Mode",
     "difficulty": 9,
-    "targetMoves": 24,
-    "maxMoves": 80,
     "grid": {
       "width": 6,
       "height": 6,
-      "exit": { "x": 6, "y": 2, "direction": "right" },
       "vehicles": [
-        { "id": "hero", "type": "hero", "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#E74C3C" },
-        { "id": "v1",   "type": "car",  "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical",   "color": "#3498DB" },
-        { "id": "v2",   "type": "car",  "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal", "color": "#9B59B6" },
-        { "id": "v3",   "type": "car",  "x": 5, "y": 0, "width": 1, "height": 2, "orientation": "vertical",   "color": "#2ECC71" },
-        { "id": "v4",   "type": "car",  "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#F39C12" },
-        { "id": "v5",   "type": "car",  "x": 3, "y": 2, "width": 2, "height": 1, "orientation": "horizontal", "color": "#1ABC9C" },
-        { "id": "v6",   "type": "car",  "x": 5, "y": 2, "width": 1, "height": 2, "orientation": "vertical",   "color": "#E67E22" },
-        { "id": "v7",   "type": "car",  "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#34495E" },
-        { "id": "v8",   "type": "car",  "x": 2, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#8E44AD" },
-        { "id": "v9",   "type": "car",  "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal", "color": "#27AE60" },
-        { "id": "v10",  "type": "car",  "x": 5, "y": 4, "width": 1, "height": 2, "orientation": "vertical",   "color": "#D35400" }
-      ]
-    }
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 4,
+          "y": 2,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 2,
+          "y": 3,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 2,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 5,
+          "y": 3,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "truck",
+          "x": 1,
+          "y": 4,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 3,
+          "y": 1,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#34495E"
+        },
+        {
+          "id": "v8",
+          "type": "car",
+          "x": 4,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v10",
+          "type": "car",
+          "x": 2,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 20,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-gen-hard-2-315",
+    "title": "Champion",
+    "difficulty": 9,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 4,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 2,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 1,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "car",
+          "x": 4,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
+          "x": 3,
+          "y": 1,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "truck",
+          "x": 0,
+          "y": 0,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#34495E"
+        },
+        {
+          "id": "v8",
+          "type": "truck",
+          "x": 4,
+          "y": 2,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v9",
+          "type": "car",
+          "x": 0,
+          "y": 3,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v10",
+          "type": "car",
+          "x": 3,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 17,
+    "maxMoves": 50
   }
 ]

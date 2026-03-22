@@ -1,6 +1,54 @@
 [
   {
-    "id": "mg-001",
+    "id": "mg-gen-easy-0-1",
+    "width": 5,
+    "height": 5,
+    "grid": [
+      [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "task": {
+      "targetTier": 3,
+      "targetCount": 1
+    },
+    "difficulty": "easy",
+    "title": "Match Two"
+  },
+  {
+    "id": "mg-gen-easy-1-2",
     "width": 5,
     "height": 5,
     "grid": [
@@ -28,8 +76,8 @@
       [
         0,
         0,
-        0,
-        0,
+        1,
+        1,
         0
       ],
       [
@@ -44,10 +92,11 @@
       "targetTier": 3,
       "targetCount": 1
     },
-    "difficulty": 1
+    "difficulty": "easy",
+    "title": "Simple Chain"
   },
   {
-    "id": "mg-002",
+    "id": "mg-gen-easy-2-3",
     "width": 5,
     "height": 5,
     "grid": [
@@ -61,11 +110,59 @@
       [
         1,
         1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "task": {
+      "targetTier": 3,
+      "targetCount": 1
+    },
+    "difficulty": "easy",
+    "title": "Stack Up"
+  },
+  {
+    "id": "mg-gen-easy-3-4",
+    "width": 5,
+    "height": 5,
+    "grid": [
+      [
+        1,
+        1,
         1,
         0,
         0
       ],
       [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
         0,
         0,
         0,
@@ -77,7 +174,7 @@
         0,
         0,
         0,
-        0
+        1
       ],
       [
         0,
@@ -91,151 +188,11 @@
       "targetTier": 3,
       "targetCount": 1
     },
-    "difficulty": 1
+    "difficulty": "easy",
+    "title": "Merge Up"
   },
   {
-    "id": "mg-003",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        1,
-        1,
-        0,
-        0,
-        1
-      ],
-      [
-        1,
-        1,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 3,
-      "targetCount": 1
-    },
-    "difficulty": 1
-  },
-  {
-    "id": "mg-004",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        1,
-        1,
-        0,
-        0,
-        0
-      ],
-      [
-        1,
-        1,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 3,
-      "targetCount": 1
-    },
-    "difficulty": 1
-  },
-  {
-    "id": "mg-005",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        1,
-        1,
-        0,
-        0,
-        0
-      ],
-      [
-        1,
-        1,
-        0,
-        0,
-        0
-      ],
-      [
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 3,
-      "targetCount": 1
-    },
-    "difficulty": 1
-  },
-  {
-    "id": "mg-006",
+    "id": "mg-gen-medium-0-100",
     "width": 5,
     "height": 5,
     "grid": [
@@ -250,13 +207,13 @@
         2,
         2,
         0,
-        0,
+        1,
         0
       ],
       [
         0,
         0,
-        1,
+        0,
         0,
         0
       ],
@@ -279,10 +236,11 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": 2
+    "difficulty": "medium",
+    "title": "Double Chain"
   },
   {
-    "id": "mg-007",
+    "id": "mg-gen-medium-1-101",
     "width": 5,
     "height": 5,
     "grid": [
@@ -299,100 +257,6 @@
         0,
         0,
         0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        1,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 4,
-      "targetCount": 1
-    },
-    "difficulty": 2
-  },
-  {
-    "id": "mg-008",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        2,
-        2,
-        0,
-        0,
-        0
-      ],
-      [
-        2,
-        2,
-        1,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 4,
-      "targetCount": 1
-    },
-    "difficulty": 2
-  },
-  {
-    "id": "mg-009",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        2,
-        2,
-        0,
-        0,
-        0
-      ],
-      [
-        2,
-        2,
-        0,
-        0,
-        1
       ],
       [
         0,
@@ -420,10 +284,11 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": 2
+    "difficulty": "medium",
+    "title": "Level Five"
   },
   {
-    "id": "mg-010",
+    "id": "mg-gen-medium-2-102",
     "width": 5,
     "height": 5,
     "grid": [
@@ -432,13 +297,13 @@
         2,
         0,
         0,
-        1
+        0
       ],
       [
         2,
         2,
-        0,
-        0,
+        1,
+        1,
         0
       ],
       [
@@ -453,7 +318,55 @@
         0,
         0,
         0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
         1
+      ]
+    ],
+    "task": {
+      "targetTier": 4,
+      "targetCount": 1
+    },
+    "difficulty": "medium",
+    "title": "Four Play"
+  },
+  {
+    "id": "mg-gen-medium-3-103",
+    "width": 5,
+    "height": 5,
+    "grid": [
+      [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
       ],
       [
         0,
@@ -467,10 +380,11 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": 2
+    "difficulty": "medium",
+    "title": "Tier Up"
   },
   {
-    "id": "mg-011",
+    "id": "mg-gen-hard-0-200",
     "width": 5,
     "height": 5,
     "grid": [
@@ -479,27 +393,27 @@
         2,
         2,
         2,
-        0
-      ],
-      [
-        2,
-        2,
-        2,
-        2,
-        0
-      ],
-      [
-        0,
-        1,
-        0,
-        1,
         1
       ],
       [
-        0,
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      [
         0,
         0,
         1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
         0
       ],
       [
@@ -514,151 +428,11 @@
       "targetTier": 4,
       "targetCount": 2
     },
-    "difficulty": 3
+    "difficulty": "hard",
+    "title": "Hard Stack"
   },
   {
-    "id": "mg-012",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        2,
-        2,
-        2,
-        2,
-        0
-      ],
-      [
-        2,
-        2,
-        2,
-        2,
-        1
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        1,
-        0,
-        0,
-        0,
-        1
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 4,
-      "targetCount": 2
-    },
-    "difficulty": 3
-  },
-  {
-    "id": "mg-013",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        2,
-        2,
-        2,
-        2,
-        0
-      ],
-      [
-        2,
-        2,
-        2,
-        2,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        1,
-        1
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        1,
-        0,
-        0,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 4,
-      "targetCount": 2
-    },
-    "difficulty": 3
-  },
-  {
-    "id": "mg-014",
-    "width": 5,
-    "height": 5,
-    "grid": [
-      [
-        2,
-        2,
-        2,
-        2,
-        0
-      ],
-      [
-        2,
-        2,
-        2,
-        2,
-        0
-      ],
-      [
-        1,
-        1,
-        0,
-        0,
-        1
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        1,
-        0
-      ]
-    ],
-    "task": {
-      "targetTier": 4,
-      "targetCount": 2
-    },
-    "difficulty": 3
-  },
-  {
-    "id": "mg-015",
+    "id": "mg-gen-hard-1-201",
     "width": 5,
     "height": 5,
     "grid": [
@@ -688,7 +462,55 @@
         0,
         0,
         1,
-        1
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    ],
+    "task": {
+      "targetTier": 4,
+      "targetCount": 2
+    },
+    "difficulty": "hard",
+    "title": "Twin Goals"
+  },
+  {
+    "id": "mg-gen-hard-2-202",
+    "width": 5,
+    "height": 5,
+    "grid": [
+      [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        1,
+        0,
+        0
       ],
       [
         0,
@@ -702,6 +524,7 @@
       "targetTier": 4,
       "targetCount": 2
     },
-    "difficulty": 3
+    "difficulty": "hard",
+    "title": "Supreme"
   }
 ]
