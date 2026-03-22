@@ -43,5 +43,5 @@
     "targetTier": 4,
     "targetCount": 1
   },
-  "difficulty": 2
+  "difficulty": "medium"
 }

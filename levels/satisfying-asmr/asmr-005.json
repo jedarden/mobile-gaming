@@ -262,5 +262,5 @@
   ],
   "patternType": "checkerboard",
   "totalDirt": 128,
-  "difficulty": 2
+  "difficulty": "medium"
 }
