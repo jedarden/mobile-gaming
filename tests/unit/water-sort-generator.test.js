@@ -167,3 +167,94 @@ describe('generateLevels', () => {
     expect(JSON.stringify(withDefault)).toBe(JSON.stringify(withExplicit));
   });
 });
+
+// ── Difficulty and structure boundary tests ────────────────────────────────────
+
+describe('colorCount ranges by difficulty', () => {
+  it('easy (d<0.33) colorCount is in [3, 4]', () => {
+    let level = null;
+    for (let s = 0; s < 50 && !level; s++) level = generateLevel(s, 0.1);
+    expect(level).not.toBeNull();
+    expect(level.colorCount).toBeGreaterThanOrEqual(3);
+    expect(level.colorCount).toBeLessThanOrEqual(4);
+  });
+
+  it('medium (0.33 ≤ d < 0.66) colorCount is in [5, 6]', () => {
+    let level = null;
+    for (let s = 0; s < 50 && !level; s++) level = generateLevel(s, 0.5);
+    expect(level).not.toBeNull();
+    expect(level.colorCount).toBeGreaterThanOrEqual(5);
+    expect(level.colorCount).toBeLessThanOrEqual(6);
+  });
+
+  it('hard (d≥0.66) colorCount is in [7, 8]', () => {
+    let level = null;
+    for (let s = 0; s < 50 && !level; s++) level = generateLevel(s, 0.9);
+    expect(level).not.toBeNull();
+    expect(level.colorCount).toBeGreaterThanOrEqual(7);
+    expect(level.colorCount).toBeLessThanOrEqual(8);
+  });
+});
+
+describe('tube structure invariants', () => {
+  it('total tubes > colorCount (at least 1 buffer tube)', () => {
+    let level = null;
+    for (let s = 0; s < 20 && !level; s++) level = generateLevel(s, 0.5);
+    expect(level).not.toBeNull();
+    expect(level.tubes.length).toBeGreaterThan(level.colorCount);
+  });
+
+  it('total color segments = colorCount × maxSegments', () => {
+    let level = null;
+    for (let s = 0; s < 20 && !level; s++) level = generateLevel(s, 0.5);
+    expect(level).not.toBeNull();
+    const totalSegments = level.tubes.flat().length;
+    expect(totalSegments).toBe(level.colorCount * level.maxSegments);
+  });
+
+  it('buffer tubes (indices >= colorCount) are empty', () => {
+    let level = null;
+    for (let s = 0; s < 20 && !level; s++) level = generateLevel(s, 0.5);
+    expect(level).not.toBeNull();
+    const bufferTubes = level.tubes.slice(level.colorCount);
+    expect(bufferTubes.length).toBeGreaterThan(0);
+    for (const tube of bufferTubes) {
+      expect(tube).toHaveLength(0);
+    }
+  });
+
+  it('maxSegments is always 4 for all difficulty tiers', () => {
+    const allLevels = [
+      ...generateLevels(2000, 3, 0.1),
+      ...generateLevels(3000, 3, 0.5),
+      ...generateLevels(4000, 3, 0.9),
+    ];
+    expect(allLevels.length).toBeGreaterThan(0);
+    for (const level of allLevels) {
+      expect(level.maxSegments).toBe(4);
+    }
+  });
+});
+
+describe('generateLevels edge cases', () => {
+  it('count=0 returns empty array', () => {
+    const levels = generateLevels(999, 0, 0.5);
+    expect(levels).toHaveLength(0);
+  });
+
+  it('level ids match ws-gen-{seed} for each sequential seed', () => {
+    const START = 10000;
+    const levels = generateLevels(START, 3, 0.5);
+    let expectedSeed = START;
+    for (const level of levels) {
+      expect(level.id).toBe(`ws-gen-${expectedSeed}`);
+      expectedSeed++;
+    }
+  });
+
+  it('all levels in a batch have unique ids', () => {
+    const levels = generateLevels(5000, 8, 0.5);
+    const ids = new Set(levels.map(l => l.id));
+    expect(ids.size).toBe(levels.length);
+  });
+});

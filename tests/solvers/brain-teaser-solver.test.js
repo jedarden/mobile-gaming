@@ -228,3 +228,41 @@ describe('Brain Teaser Solver', () => {
     });
   });
 });
+
+// ── Per-level individual solvability tests ─────────────────────────────────────
+//
+// One test per puzzle. Makes failures immediately visible by ID instead of
+// requiring a forEach loop message to identify the broken level.
+
+describe('Individual level solvability', () => {
+  for (const puzzle of puzzles) {
+    if (puzzle.type === 'tap') {
+      it(`${puzzle.id} (tap) — solution produces solved state`, () => {
+        const state = createInitialState(puzzle);
+        expect(state.status).toBe('playing');
+        const next = applyAction(state, puzzle.solution);
+        expect(next.status).toBe('solved');
+      });
+    } else if (puzzle.type === 'drag') {
+      it(`${puzzle.id} (drag) — solution produces solved state`, () => {
+        const state = createInitialState(puzzle);
+        expect(state.status).toBe('playing');
+        const next = applyAction(state, puzzle.solution);
+        expect(next.status).toBe('solved');
+      });
+    } else if (puzzle.type === 'sequence') {
+      it(`${puzzle.id} (sequence) — applying all steps produces solved state`, () => {
+        let state = createInitialState(puzzle);
+        expect(state.status).toBe('playing');
+        const steps = puzzle.solution.steps;
+        for (let i = 0; i < steps.length; i++) {
+          state = applyAction(state, { action: 'tap', targetId: steps[i] });
+          if (i < steps.length - 1) {
+            expect(state.status).toBe('playing');
+          }
+        }
+        expect(state.status).toBe('solved');
+      });
+    }
+  }
+});

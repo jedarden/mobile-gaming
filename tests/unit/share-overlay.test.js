@@ -159,4 +159,66 @@ describe('showShareOverlay', () => {
     // Overlay should NOT be appended (native share was used)
     expect(document.getElementById('share-overlay')).toBeNull();
   });
+
+  it('shows overlay on mobile when no videoBlob (native share condition not met)', async () => {
+    const mockShare = vi.fn(async () => {});
+    await getFreshModule({
+      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+      share: mockShare,
+      canShare: vi.fn(() => true),
+    });
+
+    // No videoBlob — condition requires videoBlob for native share
+    await shareModule.showShareOverlay({ title: 'Test' });
+
+    // Native share should NOT have been called
+    expect(mockShare).not.toHaveBeenCalled();
+    // Overlay should be appended as fallback
+    expect(document.getElementById('share-overlay')).not.toBeNull();
+  });
+
+  it('falls back to overlay when native share fails on mobile', async () => {
+    const mockShare = vi.fn(async () => {
+      const err = new Error('Share failed');
+      err.name = 'NotAllowedError';
+      throw err;
+    });
+    await getFreshModule({
+      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+      share: mockShare,
+      canShare: vi.fn(() => true),
+    });
+
+    const videoBlob = new Blob(['data'], { type: 'video/webm' });
+    await shareModule.showShareOverlay({ title: 'Test', videoBlob });
+
+    // Native share was attempted but failed
+    expect(mockShare).toHaveBeenCalled();
+    // Overlay should be shown as fallback
+    expect(document.getElementById('share-overlay')).not.toBeNull();
+  });
+});
+
+// ── Style injection ────────────────────────────────────────────────────────
+
+describe('style injection', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+    document.getElementById('share-overlay-styles')?.remove();
+    vi.clearAllMocks();
+  });
+
+  it('injects a <style> element with id "share-overlay-styles"', async () => {
+    await getFreshModule();
+    shareModule.createShareOverlay({});
+    expect(document.getElementById('share-overlay-styles')).not.toBeNull();
+  });
+
+  it('does not inject duplicate styles when called twice', async () => {
+    await getFreshModule();
+    shareModule.createShareOverlay({});
+    shareModule.createShareOverlay({});
+    const styleEls = document.querySelectorAll('#share-overlay-styles');
+    expect(styleEls.length).toBe(1);
+  });
 });
