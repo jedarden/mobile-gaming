@@ -14,6 +14,7 @@ import {
   tierToParams,
   streakMultiplier,
   createEndlessSession,
+  createEndlessSessionAsync,
 } from '../../src/shared/endless.js';
 
 // ─── Mock generator ───────────────────────────────────────────────────────────
@@ -453,5 +454,25 @@ describe('createEndlessSession — endSession and best score', () => {
 
     const stored = parseInt(localStorage.getItem('mg:endless:best:water-sort'), 10);
     expect(stored).toBeGreaterThan(50);
+  });
+});
+
+// ── createEndlessSessionAsync ──────────────────────────────────────────────
+
+describe('createEndlessSessionAsync', () => {
+  it('throws for unsupported game', async () => {
+    await expect(createEndlessSessionAsync('unknown-game')).rejects.toThrow('does not support endless mode');
+  });
+
+  it('throws for brain-teaser (not in endless games set)', async () => {
+    await expect(createEndlessSessionAsync('brain-teaser')).rejects.toThrow('does not support endless mode');
+  });
+
+  it('returns a session for a supported game', async () => {
+    const session = await createEndlessSessionAsync('water-sort', { sessionSeed: 9999 });
+    expect(session).toBeDefined();
+    expect(typeof session.nextLevel).toBe('function');
+    expect(typeof session.completeLevel).toBe('function');
+    expect(typeof session.getScore).toBe('function');
   });
 });
