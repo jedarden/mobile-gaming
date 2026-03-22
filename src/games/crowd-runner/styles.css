@@ -1,0 +1,178 @@
+/**
+ * Crowd Runner - Game Styles
+ */
+
+.game-container.crowd-runner {
+  --game-accent: #4DABF7;
+  background: linear-gradient(135deg, #0d2137 0%, #1a3a5a 50%, #0d2137 100%);
+}
+
+/* Stats bar */
+.crowd-runner .game-stats {
+  background: var(--color-game-header);
+  border-bottom: 1px solid rgba(77, 171, 247, 0.2);
+}
+
+.crowd-runner .stat-value {
+  color: #4DABF7;
+  font-weight: var(--font-weight-bold);
+}
+
+.crowd-runner .crowd-count {
+  font-size: 1.4rem;
+  color: #FFD93D;
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+
+/* Game board */
+.crowd-runner .game-board {
+  background: #0d2137;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.crowd-runner .game-board canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Controls */
+.crowd-runner .game-controls {
+  background: var(--color-game-control);
+  border-top: 1px solid rgba(77, 171, 247, 0.2);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.crowd-runner .game-controls .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.crowd-runner .game-controls .btn:hover {
+  background: rgba(77, 171, 247, 0.1);
+  border-color: #4DABF7;
+  color: #4DABF7;
+}
+
+/* Level nav */
+.crowd-runner .level-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-game-control);
+}
+
+.crowd-runner .level-nav .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Overlay */
+.crowd-runner .overlay {
+  background: rgba(13, 33, 55, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.crowd-runner .overlay-title.win  { color: #69DB7C; }
+.crowd-runner .overlay-title.lose { color: #FF6B6B; }
+
+.crowd-runner .stars .star {
+  color: var(--color-text-muted);
+  font-size: 2rem;
+  margin: 0 var(--space-xs);
+  transition: color var(--transition-normal);
+}
+
+.crowd-runner .stars .star.filled { color: #FFD93D; }
+
+.crowd-runner .stats-summary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-md) 0;
+}
+
+.crowd-runner .overlay-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.crowd-runner .overlay-actions .btn-primary {
+  background: #4DABF7;
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: background var(--transition-fast);
+}
+
+.crowd-runner .overlay-actions .btn-primary:hover { background: #3a9be0; }
+
+.crowd-runner .overlay-actions .btn-secondary {
+  background: transparent;
+  color: #4DABF7;
+  border: 1px solid #4DABF7;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+}
+
+.crowd-runner .overlay-actions .btn-secondary:hover {
+  background: rgba(77, 171, 247, 0.1);
+}
+
+/* Settings */
+.crowd-runner .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.crowd-runner .setting-item label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .crowd-runner .star,
+  .crowd-runner .btn,
+  .crowd-runner .btn-icon,
+  .crowd-runner .crowd-count {
+    transition: none;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .crowd-runner { --game-bg: #070f1a; }
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .crowd-runner .game-header { padding: var(--space-xs) var(--space-sm); }
+  .crowd-runner .game-title  { font-size: var(--font-size-lg); }
+}
