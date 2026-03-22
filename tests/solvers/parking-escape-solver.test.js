@@ -80,6 +80,27 @@ describe('Parking Escape Solver', () => {
       }
       expect(state.status).toBe('won');
     });
+
+    it(`level ${level.id} solver cost equals targetMoves`, () => {
+      const result = solve(level);
+      expect(result).not.toBeNull();
+      expect(result.cost).toBe(level.targetMoves);
+    });
+
+    it(`level ${level.id} solution path contains only valid vehicle ids`, () => {
+      const result = solve(level);
+      expect(result).not.toBeNull();
+      const validIds = new Set(level.grid.vehicles.map(v => v.id));
+      for (const move of result.path) {
+        expect(validIds.has(move.vehicleId)).toBe(true);
+      }
+    });
+
+    it(`level ${level.id} solution uses at most maxMoves`, () => {
+      const result = solve(level);
+      expect(result).not.toBeNull();
+      expect(result.cost).toBeLessThanOrEqual(level.maxMoves);
+    });
   }
 
   it('hand-crafted levels cover easy through hard difficulty', () => {

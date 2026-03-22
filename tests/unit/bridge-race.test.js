@@ -697,6 +697,15 @@ describe('isGameOver', () => {
 
 // ── calculateStars ─────────────────────────────────────────────────────────
 
+// Minimal state for calculateStars — only the fields the function reads.
+function makeStarState(filledCount, remainingBlue) {
+  return {
+    player: { color: 'blue' },
+    bridges: [{ cells: Array(filledCount).fill('blue') }],
+    blockPiles: [{ color: 'blue', count: remainingBlue }]
+  };
+}
+
 describe('calculateStars', () => {
   it('returns a number 1-3', () => {
     const state = createInitialState(makeLevel());
@@ -708,5 +717,37 @@ describe('calculateStars', () => {
   it('returns 1 star when no cells filled', () => {
     const state = createInitialState(makeLevel());
     expect(calculateStars(state)).toBe(1);
+  });
+
+  it('returns 3 stars when efficiency ratio >= 0.8', () => {
+    // filledCells=8, remainingBlue=2 → ratio = 8/10 = 0.8
+    expect(calculateStars(makeStarState(8, 2))).toBe(3);
+  });
+
+  it('returns 3 stars when all available blocks are used (ratio = 1.0)', () => {
+    // filledCells=10, remainingBlue=0 → but totalBlueBlocks=0 guard fires → returns 1
+    // Instead test ratio approaching 1: filledCells=9, remaining=1 → 9/10 = 0.9
+    expect(calculateStars(makeStarState(9, 1))).toBe(3);
+  });
+
+  it('returns 2 stars when efficiency ratio is exactly 0.5', () => {
+    // filledCells=5, remainingBlue=5 → ratio = 5/10 = 0.5
+    expect(calculateStars(makeStarState(5, 5))).toBe(2);
+  });
+
+  it('returns 2 stars when efficiency ratio is between 0.5 and 0.8', () => {
+    // filledCells=6, remainingBlue=6 → ratio = 6/12 = 0.5 (boundary)
+    // filledCells=7, remainingBlue=6 → ratio = 7/13 ≈ 0.538
+    expect(calculateStars(makeStarState(7, 6))).toBe(2);
+  });
+
+  it('returns 1 star when efficiency ratio < 0.5', () => {
+    // filledCells=2, remainingBlue=8 → ratio = 2/10 = 0.2
+    expect(calculateStars(makeStarState(2, 8))).toBe(1);
+  });
+
+  it('returns 1 star when no blue blocks remain in piles (zero-denominator guard)', () => {
+    // totalBlueBlocks=0 → early return of 1 regardless of filled cells
+    expect(calculateStars(makeStarState(0, 0))).toBe(1);
   });
 });

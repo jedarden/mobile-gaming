@@ -73,4 +73,39 @@ describe('Merge Games Solver', () => {
       expect(result).not.toBeNull();
     }
   });
+
+  it('isSolvable returns false for an unsolvable configuration', () => {
+    // Two tier-1 items can only produce one tier-2; goal of tier-3 is unreachable
+    const impossible = {
+      width: 2, height: 1,
+      grid: [[1, 1]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    expect(isSolvable(impossible)).toBe(false);
+  });
+
+  it('isSolvable respects the maxStates cutoff', () => {
+    // With maxStates=1 the DFS loop never executes (visited starts at size 1);
+    // any non-trivially-complete level must return false
+    const level = levels[0]; // first level requires merges to solve
+    expect(isSolvable(level, 1)).toBe(false);
+  });
+
+  it('isSolvable is deterministic — same level always returns same result', () => {
+    for (const level of levels) {
+      const first  = isSolvable(level);
+      const second = isSolvable(level);
+      expect(first).toBe(second);
+    }
+  });
+
+  it('isSolvable returns true for a trivially complete initial state', () => {
+    // Grid already has targetTier at targetCount — isComplete fires immediately
+    const trivial = {
+      width: 2, height: 1,
+      grid: [[3, 0]],
+      task: { targetTier: 3, targetCount: 1 }
+    };
+    expect(isSolvable(trivial)).toBe(true);
+  });
 });
