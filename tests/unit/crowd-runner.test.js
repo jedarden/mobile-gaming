@@ -14,6 +14,8 @@ import {
   steer,
   setLane,
   isGameOver,
+  checkWin,
+  checkLose,
   calculateStars,
   simulatePath,
   evaluateAllPaths,
@@ -332,6 +334,42 @@ describe('isGameOver', () => {
   it('returns true when lost', () => {
     const state = { ...createInitialState(makeLevel()), status: 'lost' };
     expect(isGameOver(state)).toBe(true);
+  });
+});
+
+// ── checkWin / checkLose ────────────────────────────────────────────────────
+
+describe('checkWin', () => {
+  it('returns true when status is "won"', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'won' };
+    expect(checkWin(state)).toBe(true);
+  });
+
+  it('returns false when status is "running"', () => {
+    const state = createInitialState(makeLevel());
+    expect(checkWin(state)).toBe(false);
+  });
+
+  it('returns false when status is "lost"', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(checkWin(state)).toBe(false);
+  });
+});
+
+describe('checkLose', () => {
+  it('returns true when status is "lost"', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(checkLose(state)).toBe(true);
+  });
+
+  it('returns false when status is "running"', () => {
+    const state = createInitialState(makeLevel());
+    expect(checkLose(state)).toBe(false);
+  });
+
+  it('returns false when status is "won"', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'won' };
+    expect(checkLose(state)).toBe(false);
   });
 });
 

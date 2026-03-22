@@ -47,7 +47,9 @@ import {
   getTopCandidates,
   getNextUnsolvedLevel,
   getGameUrl,
-  getAvailableGames
+  getAvailableGames,
+  navigateToQuickPlay,
+  GAME_REGISTRY
 } from '../../src/shared/quick-play.js';
 
 describe('Quick Play', () => {
@@ -345,11 +347,11 @@ describe('Quick Play', () => {
     it('should cap at total levels', () => {
       const history = {
         'water-sort': {
-          completed: 15 // More than total levels (10)
+          completed: 35 // More than total levels (30)
         }
       };
       const level = getNextUnsolvedLevel('water-sort', history);
-      expect(level).toBe(10);
+      expect(level).toBe(30);
     });
   });
 
@@ -444,12 +446,100 @@ describe('Quick Play', () => {
           sessions: 10,
           completed: 8,
           totalRetries: 15
+        },
+        // Newer games — all played with high retry rates to keep water-sort as winner
+        'pull-the-pin': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
+        },
+        'parking-escape': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
+        },
+        'merge-games': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
+        },
+        'satisfying-asmr': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
+        },
+        'crowd-runner': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
+        },
+        'bridge-race': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
+        },
+        'makeover-run': {
+          lastPlayed: baseTime,
+          sessions: 10,
+          completed: 8,
+          totalRetries: 15
         }
       };
 
       const result = pickGame();
       // Should prefer water-sort (flow zone) over games with higher retry rates
       expect(result.gameId).toBe('water-sort');
+    });
+  });
+
+  describe('GAME_REGISTRY', () => {
+    it('is an array with entries for all 13 games', () => {
+      expect(Array.isArray(GAME_REGISTRY)).toBe(true);
+      expect(GAME_REGISTRY.length).toBe(13);
+    });
+
+    it('each entry has id, title, category, and totalLevels', () => {
+      for (const entry of GAME_REGISTRY) {
+        expect(typeof entry.id, `${entry.id} id not a string`).toBe('string');
+        expect(typeof entry.title, `${entry.id} title not a string`).toBe('string');
+        expect(typeof entry.category, `${entry.id} category not a string`).toBe('string');
+        expect(entry.totalLevels, `${entry.id} missing totalLevels`).toBeGreaterThan(0);
+      }
+    });
+
+    it('includes all expected game IDs', () => {
+      const ids = GAME_REGISTRY.map(g => g.id);
+      const expected = [
+        'water-sort', 'pull-the-pin', 'brain-teaser', 'save-the-character',
+        'jelly-shift', 'bus-jam', 'parking-escape', 'merge-games',
+        'satisfying-asmr', 'giant-runner', 'crowd-runner', 'bridge-race',
+        'makeover-run'
+      ];
+      for (const id of expected) {
+        expect(ids, `missing ${id}`).toContain(id);
+      }
+    });
+  });
+
+  describe('navigateToQuickPlay', () => {
+    it('sets window.location.href to a game URL', () => {
+      const origHref = globalThis.window?.location?.href;
+      const mockLocation = { href: '' };
+      const origWindow = globalThis.window;
+      globalThis.window = { location: mockLocation };
+
+      navigateToQuickPlay();
+
+      expect(mockLocation.href).toMatch(/\//); // URL contains a path
+
+      globalThis.window = origWindow;
+      if (origHref !== undefined) globalThis.window.location.href = origHref;
     });
   });
 });

@@ -25,14 +25,20 @@ const WEIGHTS = {
 const RECENCY_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 // Game registry with level counts (for determining next unsolved level)
-// This is a subset of games that are implemented and have levels
 const GAME_REGISTRY = [
-  { id: 'water-sort', title: 'Water Sort', category: 'puzzle', totalLevels: 10 },
-  { id: 'brain-teaser', title: 'Brain Teaser', category: 'puzzle', totalLevels: 10 },
-  { id: 'jelly-shift', title: 'Jelly Shift', category: 'arcade', totalLevels: 10 },
-  { id: 'giant-runner', title: 'Giant Runner', category: 'arcade', totalLevels: 10 },
-  { id: 'bus-jam', title: 'Bus Jam', category: 'puzzle', totalLevels: 10 },
-  { id: 'save-the-character', title: 'Save the Character', category: 'puzzle', totalLevels: 10 }
+  { id: 'water-sort',         title: 'Water Sort',         category: 'puzzle',  totalLevels: 30 },
+  { id: 'brain-teaser',       title: 'Brain Teaser',       category: 'puzzle',  totalLevels: 25 },
+  { id: 'jelly-shift',        title: 'Jelly Shift',        category: 'arcade',  totalLevels: 15 },
+  { id: 'giant-runner',       title: 'Giant Runner',       category: 'arcade',  totalLevels: 20 },
+  { id: 'bus-jam',            title: 'Bus Jam',            category: 'puzzle',  totalLevels: 30 },
+  { id: 'save-the-character', title: 'Save the Character', category: 'puzzle',  totalLevels: 20 },
+  { id: 'pull-the-pin',       title: 'Pull the Pin',       category: 'puzzle',  totalLevels: 20 },
+  { id: 'parking-escape',     title: 'Parking Escape',     category: 'puzzle',  totalLevels: 11 },
+  { id: 'merge-games',        title: 'Merge Games',        category: 'puzzle',  totalLevels: 11 },
+  { id: 'satisfying-asmr',    title: 'Satisfying ASMR',   category: 'casual',  totalLevels: 11 },
+  { id: 'crowd-runner',       title: 'Crowd Runner',       category: 'arcade',  totalLevels: 20 },
+  { id: 'bridge-race',        title: 'Bridge Race',        category: 'arcade',  totalLevels: 15 },
+  { id: 'makeover-run',       title: 'Makeover Run',       category: 'arcade',  totalLevels: 12 },
 ];
 
 /**
