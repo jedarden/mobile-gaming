@@ -149,6 +149,14 @@ describe('collectBlock', () => {
     expect(next.player.blocks).toBe(0);
   });
 
+  it('does not collect when pile count is negative (<= 0 guard)', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, blockPiles: state.blockPiles.map((p, i) => i === 0 ? { ...p, count: -1 } : p) };
+    const next = collectBlock(state, 'player', 0);
+    expect(next).toBe(state);
+    expect(next.player.blocks).toBe(0);
+  });
+
   it('works for opponent entities', () => {
     const state = createInitialState(makeLevel());
     const next  = collectBlock(state, 0, 1); // opponent 0 is red, pile 1 is red
@@ -159,6 +167,12 @@ describe('collectBlock', () => {
   it('returns state unchanged for invalid pile index', () => {
     const state = createInitialState(makeLevel());
     const next  = collectBlock(state, 'player', 99);
+    expect(next).toBe(state);
+  });
+
+  it('returns state unchanged for invalid entityId', () => {
+    const state = createInitialState(makeLevel());
+    const next  = collectBlock(state, 'nonexistent', 0);
     expect(next).toBe(state);
   });
 
@@ -222,6 +236,21 @@ describe('placeBlock', () => {
     let state = createInitialState(makeLevel());
     state = { ...state, player: { ...state.player, blocks: 1 } };
     const next = placeBlock(state, 'player', 0, 99);
+    expect(next).toBe(state);
+  });
+
+  it('returns state unchanged for negative cell index (< 0 branch)', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, blocks: 1 } };
+    const next = placeBlock(state, 'player', 0, -1);
+    expect(next).toBe(state);
+  });
+
+  it('returns state unchanged when entity has negative blocks (<= 0 covers negatives)', () => {
+    // entity.blocks <= 0 guard: -1 <= 0 is true → returns state unchanged
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, blocks: -1 } };
+    const next = placeBlock(state, 'player', 0, 0);
     expect(next).toBe(state);
   });
 
@@ -344,6 +373,12 @@ describe('hasEntityWon', () => {
     state = { ...state, player: { ...state.player, z: 200, bridgesCompleted: 2 } };
     expect(hasEntityWon(state, 'player')).toBe(true);
   });
+
+  it('returns true when entity.z equals finishZ exactly (>= boundary)', () => {
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, z: 100, bridgesCompleted: 2 } };
+    expect(hasEntityWon(state, 'player')).toBe(true);
+  });
 });
 
 // ── checkWin ──────────────────────────────────────────────────────────────
@@ -464,6 +499,20 @@ describe('moveEntity', () => {
     const next  = moveEntity(state, 0, 1, 3);
     expect(next.opponents[0].x).toBe(7); // 6 + 1
     expect(next.opponents[0].z).toBe(3);
+  });
+
+  it('allows backward movement past incomplete bridge (guard only blocks forward)', () => {
+    let state = createInitialState(makeLevel());
+    // Position player past the bridge (bridge at z=30, player at z=40)
+    state = { ...state, player: { ...state.player, z: 40 } };
+    // Move backward by 20 — passes through bridge zone without blocking
+    const next = moveEntity(state, 'player', 0, -20);
+    expect(next.player.z).toBe(20); // not blocked — backward movement is always allowed
+  });
+
+  it('returns same state for unknown entityId (if(!entity) guard)', () => {
+    const state = createInitialState(makeLevel());
+    expect(moveEntity(state, 'ghost-entity', 5, 10)).toBe(state);
   });
 });
 
@@ -617,12 +666,41 @@ describe('aiTick', () => {
     expect(result).toEqual({ dx: 0, dz: 0 });
   });
 
+  it('returns {dx:0, dz:speed} when opponent is already at target (dist < 0.001)', () => {
+    // Position red opponent (idx 0) exactly on the red pile at (5, 10)
+    // dist = 0 < 0.001 → early return {dx:0, dz:speed}
+    const level = makeLevel({
+      opponents: [{ color: 'red', x: 5, ai: 'greedy' }],
+      blockPiles: [{ x: 5, z: 0, color: 'red', count: 5 }], // pile at same z as opponent start
+    });
+    const state = createInitialState(level);
+    // opponent starts at z=0 (createInitialState sets z=0), pile is at z=0 → dist=0
+    const dt = 1 / 60;
+    const { dx, dz } = aiTick(state, 0, dt, mockRng);
+    expect(dx).toBe(0);
+    expect(dz).toBeCloseTo(ENTITY_SPEED * dt, 5); // speed = ENTITY_SPEED * dt
+  });
+
   it('greedy move is bounded by speed * dt', () => {
     const state = createInitialState(makeLevel());
     const dt = 1 / 60;
     const { dx, dz } = aiTick(state, 0, dt, mockRng);
     const mag = Math.sqrt(dx * dx + dz * dz);
     expect(mag).toBeLessThanOrEqual(ENTITY_SPEED * dt + 0.001);
+  });
+
+  it('greedy AI moves forward when it has blocks but all bridges are already complete', () => {
+    // Make all bridges complete with red (opponent 0 color) so findNextBridge → -1
+    let state = createInitialState(makeLevel());
+    state = {
+      ...state,
+      opponents: state.opponents.map((o, i) => i === 0 ? { ...o, blocks: 3 } : o),
+      bridges: state.bridges.map(b => ({ ...b, cells: Array(b.cells.length).fill('red') })),
+    };
+    const dt = 1 / 60;
+    const { dx, dz } = aiTick(state, 0, dt, mockRng);
+    expect(dx).toBe(0);
+    expect(dz).toBeCloseTo(ENTITY_SPEED * dt, 5);
   });
 });
 
@@ -673,6 +751,23 @@ describe('performProximityActions', () => {
     };
     const next = performProximityActions(state, 'player');
     expect(next.player.bridgesCompleted).toBe(1);
+  });
+
+  it('stops auto-placing on subsequent bridges when blocks run out after first placement', () => {
+    // Two bridges within PLACE_RADIUS=3, player has exactly 1 block
+    let state = createInitialState(makeLevel({
+      blockPiles: [],
+      bridges: [{ z: 1, required: 2 }, { z: 2, required: 2 }],
+    }));
+    state = { ...state, player: { ...state.player, blocks: 1, z: 0 } };
+    const next = performProximityActions(state, 'player');
+    // Bridge 0 gets the 1 block placed
+    const b0filled = next.bridges[0].cells.filter(c => c === 'blue').length;
+    expect(b0filled).toBe(1);
+    // Bridge 1 is untouched — the break fired before reaching it
+    const b1filled = next.bridges[1].cells.filter(c => c === 'blue').length;
+    expect(b1filled).toBe(0);
+    expect(next.player.blocks).toBe(0);
   });
 });
 

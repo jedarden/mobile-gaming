@@ -22,6 +22,7 @@ import {
   isGameOver,
   calculateStars,
   cloneState,
+  createGameHistory,
   MIN_SCALE,
   DEFAULT_START_SCALE,
   LANE_MIN,
@@ -142,6 +143,13 @@ describe('createInitialState', () => {
     expect(state.obstacles).toEqual([]);
   });
 
+  it('handles level with no collectibles', () => {
+    const level = makeLevel();
+    level.collectibles = [];
+    const state = createInitialState(level);
+    expect(state.collectibles).toEqual([]);
+  });
+
   it('does not mutate original collectibles', () => {
     const level = makeLevel();
     const orig = level.collectibles[0];
@@ -152,6 +160,20 @@ describe('createInitialState', () => {
   it('sets courseLength from level', () => {
     const state = createInitialState(makeLevel({ courseLength: 600 }));
     expect(state.courseLength).toBe(600);
+  });
+
+  it('defaults courseLength to 400 when not provided', () => {
+    const level = makeLevel();
+    delete level.courseLength;
+    const state = createInitialState(level);
+    expect(state.courseLength).toBe(400);
+  });
+
+  it('defaults speed to 3 when not provided', () => {
+    const level = makeLevel();
+    delete level.speed;
+    const state = createInitialState(level);
+    expect(state.speed).toBe(3);
   });
 });
 
@@ -269,6 +291,15 @@ describe('collect', () => {
     expect(next.collectibles[0].collected).toBe(true);
   });
 
+  it('value=0 on matching color leaves scale unchanged (scaleDelta=0, no penalty branch)', () => {
+    const level = makeLevel();
+    level.collectibles = [{ x: 0, z: 100, value: 0, color: 'blue' }];
+    const state = createInitialState(level);
+    const next = collect(state, 0);
+    expect(next.player.scale).toBeCloseTo(1.0); // 1.0 + 0 = 1.0
+    expect(next.collectibles[0].collected).toBe(true);
+  });
+
   it('does not re-collect an already collected item', () => {
     const state = createInitialState(makeLevel());
     const next1 = collect(state, 0);
@@ -290,6 +321,11 @@ describe('collect', () => {
     const state = createInitialState(makeLevel());
     const next = collect(state, 99);
     expect(next).toBe(state);
+  });
+
+  it('returns unchanged state for negative index (< 0 branch)', () => {
+    const state = createInitialState(makeLevel());
+    expect(collect(state, -1)).toBe(state);
   });
 
   it('does not mutate original state', () => {
@@ -330,9 +366,23 @@ describe('hitObstacle', () => {
     expect(next.player.scale).toBe(MIN_SCALE);
   });
 
+  it('reduces scale to intermediate value when well above MIN_SCALE', () => {
+    // scale 0.5 − 0.2 = 0.3, which is above MIN_SCALE
+    const level = makeLevel({ startScale: 0.5 });
+    const state = createInitialState(level);
+    const next = hitObstacle(state, 0);
+    expect(next.player.scale).toBeCloseTo(0.3);
+  });
+
   it('returns unchanged state for invalid index', () => {
     const state = createInitialState(makeLevel());
     const next = hitObstacle(state, 99);
+    expect(next).toBe(state);
+  });
+
+  it('returns unchanged state for negative index (< 0 branch)', () => {
+    const state = createInitialState(makeLevel());
+    const next = hitObstacle(state, -1);
     expect(next).toBe(state);
   });
 
@@ -376,6 +426,18 @@ describe('resolveBoss', () => {
     const level = makeLevel();
     level.boss = { z: 400, scale: 5.0 };
     const state = { ...createInitialState(level), status: 'boss_fight' };
+    const next = resolveBoss(state);
+    expect(next.status).toBe('lost');
+  });
+
+  it('returns "lost" when player scale equals boss scale (condition is >, not >=)', () => {
+    const level = makeLevel();
+    level.boss = { z: 400, scale: 2.0 };
+    const state = {
+      ...createInitialState(level),
+      status: 'boss_fight',
+      player: { ...createInitialState(level).player, scale: 2.0 },
+    };
     const next = resolveBoss(state);
     expect(next.status).toBe('lost');
   });
@@ -439,6 +501,16 @@ describe('checkObstacleCollisions', () => {
     const stateHit = hitObstacle(state, 0);
     const collisions = checkObstacleCollisions(stateHit);
     expect(collisions).not.toContain(0);
+  });
+
+  it('returns obstacle index when player overlaps it', () => {
+    // Player at z=0, x=0; obstacle at z=0, x=0, width=5 — direct overlap
+    const level = makeLevel();
+    level.obstacles = [{ x: 0, z: 0, width: 5.0 }];
+    const state = createInitialState(level); // player at z=0, x=0
+    const collisions = checkObstacleCollisions(state);
+    expect(collisions).toContain(0);
+    expect(collisions).toHaveLength(1);
   });
 });
 
@@ -523,5 +595,59 @@ describe('cloneState', () => {
     const clone = cloneState(state);
     clone.player.scale = 99;
     expect(state.player.scale).toBe(1.0);
+  });
+});
+
+describe('createGameHistory', () => {
+  it('returns an object with push, undo, and canUndo', () => {
+    const h = createGameHistory();
+    expect(typeof h.push).toBe('function');
+    expect(typeof h.undo).toBe('function');
+    expect(typeof h.canUndo).toBe('function');
+  });
+
+  it('canUndo is false on an empty history', () => {
+    expect(createGameHistory().canUndo()).toBe(false);
+  });
+
+  it('canUndo is false after a single push (no previous state)', () => {
+    const h = createGameHistory();
+    h.push({ player: { scale: 1 } });
+    expect(h.canUndo()).toBe(false);
+  });
+
+  it('canUndo is true after two pushes', () => {
+    const h = createGameHistory();
+    h.push({ player: { scale: 1 } });
+    h.push({ player: { scale: 1.5 } });
+    expect(h.canUndo()).toBe(true);
+  });
+
+  it('undo returns the previous state', () => {
+    const h = createGameHistory();
+    const s1 = createInitialState(makeLevel());
+    const s2 = cloneState(s1);
+    s2.player.scale = 2.0;
+    h.push(s1);
+    h.push(s2);
+    const restored = h.undo();
+    expect(restored.player.scale).toBe(s1.player.scale);
+  });
+
+  it('undo returns null when nothing to undo', () => {
+    const h = createGameHistory();
+    expect(h.undo()).toBeNull();
+  });
+
+  it('respects custom maxDepth — evicts oldest when full', () => {
+    const h = createGameHistory(3);
+    h.push('a');
+    h.push('b');
+    h.push('c');
+    h.push('d'); // 'd' evicts 'a'
+    // can undo at most maxDepth−1 = 2 times
+    h.undo(); // back to 'c'
+    h.undo(); // back to 'b'
+    expect(h.canUndo()).toBe(false); // 'a' was evicted
   });
 });

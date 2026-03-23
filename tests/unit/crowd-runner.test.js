@@ -134,6 +134,21 @@ describe('createInitialState', () => {
     createInitialState(level);
     expect(level.gates[0]).toBe(original);
   });
+
+  it('defaults startingCrowd to 10 when value is 0 (falsy)', () => {
+    const state = createInitialState(makeLevel({ startingCrowd: 0 }));
+    expect(state.crowdSize).toBe(10);
+  });
+
+  it('defaults courseLength to 500 when value is 0 (falsy)', () => {
+    const state = createInitialState(makeLevel({ courseLength: 0 }));
+    expect(state.courseLength).toBe(500);
+  });
+
+  it('defaults speed to 2 when value is 0 (falsy)', () => {
+    const state = createInitialState(makeLevel({ speed: 0 }));
+    expect(state.speed).toBe(2);
+  });
 });
 
 // ── crossGate ──────────────────────────────────────────────────────────────
@@ -159,10 +174,31 @@ describe('crossGate', () => {
     expect(state2.crowdSize).toBe(state1.crowdSize);
   });
 
+  it('returns exact same state reference for already-crossed gate (no copy)', () => {
+    const state  = createInitialState(makeLevel());
+    const state1 = crossGate(state, 0, 'left');
+    const state2 = crossGate(state1, 0, 'left');
+    expect(state2).toBe(state1);
+  });
+
   it('returns state unchanged for invalid gate index', () => {
     const state = createInitialState(makeLevel());
     const next  = crossGate(state, 99, 'left');
     expect(next).toBe(state);
+  });
+
+  it('returns state unchanged for negative gate index', () => {
+    const state = createInitialState(makeLevel());
+    const next  = crossGate(state, -1, 'left');
+    expect(next).toBe(state);
+  });
+
+  it('defaults to right op for unknown side string', () => {
+    const state = createInitialState(makeLevel());
+    // 'center' !== 'left' → uses gate[0].right: 10 − 3 = 7
+    const next  = crossGate(state, 0, 'center');
+    expect(next.crowdSize).toBe(7);
+    expect(next.gates[0].crossed).toBe(true);
   });
 
   it('floors crowd at 1 after a very harsh right op', () => {
@@ -207,6 +243,11 @@ describe('steer', () => {
     const next = steer(state, 1);
     expect(next.laneOffset).toBe(0);
   });
+
+  it('does not steer when status is "lost"', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(steer(state, 1)).toBe(state);
+  });
 });
 
 // ── setLane ────────────────────────────────────────────────────────────────
@@ -226,11 +267,30 @@ describe('setLane', () => {
     const state = createInitialState(makeLevel());
     expect(setLane(state, 5).laneOffset).toBe(LANE_MAX);
   });
+
+  it('is a no-op when game is not running', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'won' };
+    const next  = setLane(state, 0.8);
+    expect(next).toBe(state);
+  });
+
+  it('is a no-op when status is "lost"', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(setLane(state, 0.8)).toBe(state);
+  });
 });
 
 // ── advance ────────────────────────────────────────────────────────────────
 
 describe('advance', () => {
+  it('is a no-op when dt is 0', () => {
+    const state = createInitialState(makeLevel());
+    const next  = advance(state, 0);
+    expect(next.position).toBe(0);
+    expect(next.crowdSize).toBe(10);
+    expect(next.gates.every(g => !g.crossed)).toBe(true);
+  });
+
   it('increments position', () => {
     const state = createInitialState(makeLevel());
     const next  = advance(state, 1 / 60);
@@ -304,6 +364,17 @@ describe('advance', () => {
     expect(next).toBe(state);
   });
 
+  it('clamps position to boss.z on boss encounter (overshoot prevented)', () => {
+    // Large speed so dt=1 overshoots boss.z by a lot
+    const level = makeLevel({ startingCrowd: 100, courseLength: 10, speed: 1000 });
+    level.gates = [];
+    const state = createInitialState(level);
+    const next = advance(state, 1);
+    // Position must be exactly boss.z (10), not > 10
+    expect(next.position).toBe(10);
+    expect(next.status).toBe('won');
+  });
+
   it('does not cross a gate twice', () => {
     const state = createInitialState(makeLevel());
     let s = state;
@@ -315,6 +386,70 @@ describe('advance', () => {
     // Each gate should be crossed exactly once
     const crossedCount = s.gates.filter(g => g.crossed).length;
     expect(crossedCount).toBeLessThanOrEqual(s.gates.length);
+  });
+
+  it('crosses multiple gates in one large dt step', () => {
+    // Gates at z=100 and z=200; large dt pushes past both in one step
+    const level = makeLevel({
+      startingCrowd: 10,
+      courseLength: 1000,
+      speed: 1,
+      gates: [
+        { z: 10, left: { op: '+', value: 5 }, right: { op: '+', value: 5 } },
+        { z: 20, left: { op: '+', value: 5 }, right: { op: '+', value: 5 } }
+      ],
+      boss: { size: 1, z: 1000 }
+    });
+    const state = createInitialState(level);
+    // dt large enough to advance > 20 units in one step (speed=1, dt=1/60*frames=1s → 60 units)
+    const next = advance(state, 1);
+    expect(next.gates[0].crossed).toBe(true);
+    expect(next.gates[1].crossed).toBe(true);
+    // Both gates applied: 10 + 5 + 5 = 20
+    expect(next.crowdSize).toBe(20);
+  });
+
+  it('takes right gate when laneOffset is exactly 0', () => {
+    // laneOffset=0 → getGateSide returns "right"
+    let state = createInitialState(makeLevel());
+    // state.laneOffset is 0 by default
+    expect(state.laneOffset).toBe(0);
+    let s = state;
+    for (let i = 0; i < 120; i++) {
+      s = advance(s, 1 / 60);
+      if (s.gates[0].crossed) break;
+    }
+    // Right gate is − 3 → 10 − 3 = 7
+    expect(s.crowdSize).toBe(7);
+  });
+
+  it('crosses two gates at identical z values in a single advance step', () => {
+    const level = makeLevel({
+      startingCrowd: 10,
+      courseLength: 1000,
+      speed: 1,
+      gates: [
+        { z: 50, left: { op: '+', value: 3 }, right: { op: '+', value: 3 } },
+        { z: 50, left: { op: '+', value: 7 }, right: { op: '+', value: 7 } },
+      ],
+      boss: { size: 1, z: 1000 },
+    });
+    const state = createInitialState(level);
+    const next = advance(state, 1); // large dt pushes position well past z=50
+    expect(next.gates[0].crossed).toBe(true);
+    expect(next.gates[1].crossed).toBe(true);
+    expect(next.crowdSize).toBe(20); // 10 + 3 + 7
+  });
+
+  it('loses when crowdSize equals boss.size at encounter (check is >, not >=)', () => {
+    // boss.size = 50, crowdSize starts at 50, no gates → crowdSize stays 50
+    // At boss: 50 > 50 is false → lost
+    const level = makeLevel({ startingCrowd: 50, courseLength: 10, speed: 1000 });
+    level.gates = [];
+    level.boss = { size: 50 };
+    const state = createInitialState(level);
+    const next = advance(state, 1);
+    expect(next.status).toBe('lost');
   });
 });
 
@@ -390,6 +525,14 @@ describe('calculateStars', () => {
     expect(calculateStars(101, 100)).toBe(1);
     expect(calculateStars(11, 10)).toBe(1);
   });
+
+  it('gives 1 star when crowd equals boss size (ratio exactly 1.0)', () => {
+    expect(calculateStars(100, 100)).toBe(1);
+  });
+
+  it('gives 1 star for ratio between 1.0 and 1.5 (e.g., 1.49)', () => {
+    expect(calculateStars(149, 100)).toBe(1);
+  });
 });
 
 // ── simulatePath ───────────────────────────────────────────────────────────
@@ -414,6 +557,44 @@ describe('simulatePath', () => {
     const result = simulatePath(level, ['left', 'right', 'left']);
     expect(result).toBe(40);
   });
+
+  it('returns startingCrowd for a level with 0 gates', () => {
+    const emptyLevel = makeLevel({ gates: [] });
+    expect(simulatePath(emptyLevel, [])).toBe(10);
+  });
+
+  it('defaults unspecified path entries to "right"', () => {
+    // Path only specifies first gate as 'left'; gates 1 and 2 default to right
+    // left(+10)=20, right(+5)=25, right(÷2)=12
+    const result = simulatePath(level, ['left']);
+    expect(result).toBe(12);
+  });
+
+  it('floors result at 1 when subtraction would go to 0 or below', () => {
+    const harshLevel = makeLevel({
+      startingCrowd: 3,
+      gates: [
+        { z: 100, left: { op: '−', value: 100 }, right: { op: '+', value: 0 } }
+      ]
+    });
+    // 3 − 100 → would be -97, but floors at 1
+    expect(simulatePath(harshLevel, ['left'])).toBe(1);
+  });
+
+  it('ignores path entries beyond gate count', () => {
+    // level has 3 gates; extra entries in path are silently ignored
+    const result1 = simulatePath(level, ['left', 'right', 'left']);
+    const result2 = simulatePath(level, ['left', 'right', 'left', 'left', 'left']);
+    expect(result1).toBe(result2);
+  });
+
+  it('default switch case: unknown op leaves crowd unchanged', () => {
+    const level = makeLevel({
+      gates: [{ z: 100, left: { op: '?', value: 5 }, right: { op: '+', value: 1 } }]
+    });
+    // '?' op hits the default case → crowd stays at 10
+    expect(simulatePath(level, ['left'])).toBe(10);
+  });
 });
 
 // ── evaluateAllPaths ───────────────────────────────────────────────────────
@@ -430,5 +611,50 @@ describe('evaluateAllPaths', () => {
     const level  = makeLevel(); // 3 gates
     const { allResults } = evaluateAllPaths(level);
     expect(allResults.length).toBe(2 ** 3);
+  });
+
+  it('with 0 gates: allResults has 1 entry equal to startingCrowd', () => {
+    const emptyLevel = makeLevel({ gates: [] });
+    const { optimal, worst, allResults } = evaluateAllPaths(emptyLevel);
+    expect(allResults.length).toBe(1);
+    expect(allResults[0]).toBe(10);
+    expect(optimal).toBe(10);
+    expect(worst).toBe(10);
+  });
+
+  it('with 1 gate: allResults has 2 entries (left + right)', () => {
+    const oneGateLevel = makeLevel({
+      gates: [{ z: 100, left: { op: '+', value: 10 }, right: { op: '−', value: 3 } }]
+    });
+    const { allResults } = evaluateAllPaths(oneGateLevel);
+    expect(allResults.length).toBe(2);
+    // One entry is left(+10)=20, other is right(−3)=7
+    expect(allResults).toContain(20);
+    expect(allResults).toContain(7);
+  });
+
+  it('optimal equals Math.max of allResults', () => {
+    const level = makeLevel();
+    const { optimal, allResults } = evaluateAllPaths(level);
+    expect(optimal).toBe(Math.max(...allResults));
+  });
+
+  it('worst equals Math.min of allResults', () => {
+    const level = makeLevel();
+    const { worst, allResults } = evaluateAllPaths(level);
+    expect(worst).toBe(Math.min(...allResults));
+  });
+
+  it('all results in allResults are at least 1 (floor enforced)', () => {
+    const harshLevel = makeLevel({
+      startingCrowd: 2,
+      gates: [
+        { z: 100, left: { op: '÷', value: 100 }, right: { op: '−', value: 99 } }
+      ]
+    });
+    const { allResults } = evaluateAllPaths(harshLevel);
+    for (const result of allResults) {
+      expect(result).toBeGreaterThanOrEqual(1);
+    }
   });
 });

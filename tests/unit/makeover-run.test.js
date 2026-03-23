@@ -85,6 +85,11 @@ describe('createInitialState', () => {
     const state = createInitialState({ stations: [] });
     expect(state.courseLength).toBe(300);
   });
+
+  it('defaults speed=2 when level.speed is not provided', () => {
+    const state = createInitialState({ stations: [] }); // no speed property
+    expect(state.speed).toBe(2);
+  });
 });
 
 // ─── hitStation ──────────────────────────────────────────────────────────────
@@ -153,6 +158,47 @@ describe('hitStation', () => {
       state.appearance.makeup + state.appearance.accessories);
     expect(state.score).toBe(4);
   });
+
+  it('returns same state for out-of-bounds index', () => {
+    const state = createInitialState(SIMPLE_LEVEL);
+    expect(hitStation(state, 99)).toBe(state);
+    expect(hitStation(state, -1)).toBe(state);
+  });
+
+  it('uses station.type when downgrade is absent on a negative station', () => {
+    // negative station without downgrade → `cat = station.type`
+    const modState = {
+      ...createInitialState(SIMPLE_LEVEL),
+      appearance: { hair: 2, outfit: 0, makeup: 0, accessories: 0 },
+      score: 2,
+      stations: [{ z: 10, x: 0, type: 'hair', positive: false, triggered: false }]
+    };
+    const next = hitStation(modState, 0);
+    expect(next.appearance.hair).toBe(1); // 2 - (amount||1) = 2 - 1 = 1
+  });
+
+  it('amount=0 (falsy) falls back to || 1, reducing by 1 not 0', () => {
+    // station.amount || 1 → 0 || 1 = 1, so reduces by 1 despite amount being 0
+    const modState = {
+      ...createInitialState(SIMPLE_LEVEL),
+      appearance: { hair: 3, outfit: 0, makeup: 0, accessories: 0 },
+      score: 3,
+      stations: [{ z: 10, x: 0, type: 'hair', positive: false, amount: 0, triggered: false }]
+    };
+    const next = hitStation(modState, 0);
+    expect(next.appearance.hair).toBe(2); // 3 - (0||1) = 3 - 1 = 2
+  });
+
+  it('reduces by station.amount when amount > 1', () => {
+    const modState = {
+      ...createInitialState(SIMPLE_LEVEL),
+      appearance: { hair: 3, outfit: 0, makeup: 0, accessories: 0 },
+      score: 3,
+      stations: [{ z: 10, x: 0, type: 'hair', positive: false, amount: 2, triggered: false }]
+    };
+    const next = hitStation(modState, 0);
+    expect(next.appearance.hair).toBe(1); // 3 - 2 = 1
+  });
 });
 
 // ─── steer ───────────────────────────────────────────────────────────────────
@@ -162,6 +208,12 @@ describe('steer', () => {
     const state = createInitialState(SIMPLE_LEVEL);
     const next  = steer(state, 0.3);
     expect(next.x).toBeCloseTo(0.3);
+  });
+
+  it('accumulates from current x position', () => {
+    const state = { ...createInitialState(SIMPLE_LEVEL), x: 0.5 };
+    const next  = steer(state, 0.2);
+    expect(next.x).toBeCloseTo(0.7);
   });
 
   it('clamps x to LANE_MIN', () => {
@@ -206,6 +258,12 @@ describe('setX', () => {
 // ─── advance ─────────────────────────────────────────────────────────────────
 
 describe('advance', () => {
+  it('dt=0 does not advance z', () => {
+    const state = createInitialState(SIMPLE_LEVEL);
+    const next  = advance(state, 0);
+    expect(next.z).toBe(0);
+  });
+
   it('moves z forward by speed * dt * 60', () => {
     const state = createInitialState(SIMPLE_LEVEL);
     const next  = advance(state, 1 / 60);
@@ -216,6 +274,11 @@ describe('advance', () => {
     const state = { ...createInitialState(SIMPLE_LEVEL), status: 'judging' };
     const next  = advance(state, 1 / 60);
     expect(next.z).toBe(0);
+  });
+
+  it('returns exact same state reference when not running (identity check)', () => {
+    const state = { ...createInitialState(SIMPLE_LEVEL), status: 'complete' };
+    expect(advance(state, 1 / 60)).toBe(state);
   });
 
   it('hits station when x is within threshold', () => {
@@ -276,6 +339,13 @@ describe('judge', () => {
     expect(next.stars).toBe(3);
   });
 
+  it('score=0 produces 1 star', () => {
+    const state = { ...createInitialState(SIMPLE_LEVEL), status: 'judging', score: 0 };
+    const next  = judge(state);
+    expect(next.status).toBe('complete');
+    expect(next.stars).toBe(1);
+  });
+
   it('noop when not judging', () => {
     const state = createInitialState(SIMPLE_LEVEL);
     const next  = judge(state);
@@ -303,6 +373,18 @@ describe('calculateStars', () => {
 
   it('boundary: score=0 → 1 star', () => {
     expect(calculateStars(0, 12)).toBe(1);
+  });
+
+  it('exact 0.67 boundary gives 3 stars (>= is inclusive)', () => {
+    expect(calculateStars(67, 100)).toBe(3);
+  });
+
+  it('exact 0.33 boundary gives 2 stars (>= is inclusive)', () => {
+    expect(calculateStars(33, 100)).toBe(2);
+  });
+
+  it('just below 0.33 gives 1 star', () => {
+    expect(calculateStars(32, 100)).toBe(1);
   });
 });
 
@@ -363,11 +445,34 @@ describe('simulatePath', () => {
     const result = simulatePath(SIMPLE_LEVEL, []);
     expect(result.score).toBe(0);
   });
+
+  it('treats undefined path entries the same as explicit 0', () => {
+    const sparse   = [undefined, -1, undefined, 1];
+    const explicit = [0,        -1, 0,         1];
+    const r1 = simulatePath(SIMPLE_LEVEL, sparse);
+    const r2 = simulatePath(SIMPLE_LEVEL, explicit);
+    expect(r1.score).toBe(r2.score);
+    expect(r1.stars).toBe(r2.stars);
+  });
+
+  it('level with no stations returns score=0, stars=1', () => {
+    const emptyLevel = { courseLength: 100, speed: 1.0, stations: [] };
+    const result = simulatePath(emptyLevel, []);
+    expect(result.score).toBe(0);
+    expect(result.stars).toBe(1);
+  });
 });
 
 // ─── optimalPath / worstPath ──────────────────────────────────────────────────
 
 describe('optimalPath', () => {
+  it('returns 0 for a z-group with no positive station', () => {
+    const level = { courseLength: 100, speed: 1, stations: [
+      { z: 50, x: 1, type: 'mud', downgrade: 'hair', amount: 1, positive: false },
+    ]};
+    expect(optimalPath(level)).toEqual([0]);
+  });
+
   it('returns one x per unique z group', () => {
     const path = optimalPath(SIMPLE_LEVEL);
     const zCount = new Set(SIMPLE_LEVEL.stations.map(s => s.z)).size;
@@ -386,6 +491,13 @@ describe('optimalPath', () => {
 });
 
 describe('worstPath', () => {
+  it('returns 0 for a z-group with no negative station', () => {
+    const level = { courseLength: 100, speed: 1, stations: [
+      { z: 50, x: -1, type: 'hair', upgrade: 2, positive: true },
+    ]};
+    expect(worstPath(level)).toEqual([0]);
+  });
+
   it('returns one x per unique z group', () => {
     const path = worstPath(SIMPLE_LEVEL);
     const zCount = new Set(SIMPLE_LEVEL.stations.map(s => s.z)).size;

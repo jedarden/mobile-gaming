@@ -92,6 +92,13 @@ describe('Jelly Shift State', () => {
         expect(result.fits).toBe(false);
       });
 
+      it('should return false when blob width fits but height does not for wide hole', () => {
+        // width fits (1.5 <= 2.0) but height does not (0.8 > 0.5)
+        const result = fitsHole(1.5, 0.8, { shape: 'wide', width: 2.0, height: 0.5 });
+        expect(result.fits).toBe(false);
+        expect(result.margin).toBe(0);
+      });
+
       it('should return exact margin for perfect fit', () => {
         const result = fitsHole(0.6, 1.67, { shape: 'tall', width: 0.6, height: 1.67 });
         expect(result.fits).toBe(true);
@@ -149,12 +156,33 @@ describe('Jelly Shift State', () => {
         });
         expect(result.fits).toBe(false);
       });
+
+      it('returns max margin when blob fits both arms', () => {
+        // Blob (0.5, 0.5) fits both horizontal arm (wH=2,hH=1) and vertical arm (wV=1,hH=2)
+        // marginH = min(2-0.5, 1-0.5) = min(1.5, 0.5) = 0.5
+        // marginV = min(1-0.5, 2-0.5) = min(0.5, 1.5) = 0.5
+        // max = 0.5
+        const result = fitsHole(0.5, 0.5, {
+          shape: 'plus',
+          widthH: 2.0, heightH: 1.0,
+          widthV: 1.0, heightV: 2.0
+        });
+        expect(result.fits).toBe(true);
+        expect(result.margin).toBeCloseTo(0.5);
+      });
     });
 
     describe('unknown shapes', () => {
       it('should return false for unknown shape', () => {
         const result = fitsHole(1.0, 1.0, { shape: 'unknown' });
         expect(result.fits).toBe(false);
+        expect(result.margin).toBe(0);
+      });
+
+      it('should return false when hole has no shape property', () => {
+        const result = fitsHole(1.0, 1.0, {});
+        expect(result.fits).toBe(false);
+        expect(result.margin).toBe(0);
       });
     });
   });
@@ -238,6 +266,14 @@ describe('Jelly Shift State', () => {
       expect(newState.blob.z).toBe(0);
     });
 
+    it('should immediately set status to won when level has no walls', () => {
+      // walls.length === 0 → every() returns true vacuously on first advance
+      const emptyLevel = { id: 1, walls: [] };
+      const state = createInitialState(emptyLevel);
+      const newState = advance(state, 1 / 60);
+      expect(newState.status).toBe('won');
+    });
+
     it('should set status to won when all walls passed', () => {
       const state = createInitialState(baseLevel);
       state.walls = state.walls.map(w => ({ ...w, passed: true }));
@@ -245,6 +281,16 @@ describe('Jelly Shift State', () => {
 
       const newState = advance(state, 1 / 60);
       expect(newState.status).toBe('won');
+    });
+
+    it('sets status to won when newZ >= lastWall.z + 20 (second OR branch, walls not passed)', () => {
+      // Last wall at z=60; threshold is 60+20=80; advance blob to z=79 → newZ≈81 ≥ 80
+      const state = createInitialState(baseLevel);
+      state.blob.z = 79; // newZ = 79 + speed*dt*60 = 79 + 2 = 81 ≥ 80
+      // walls are NOT all passed (default: passed is falsy)
+      expect(state.walls.some(w => !w.passed)).toBe(true);
+      const newState = advance(state, 1 / 60);
+      expect(newState.status).toBe('won'); // second OR fires: newZ >= lastZ + 20
     });
 
     it('should smoothly interpolate blob width toward target', () => {
@@ -299,6 +345,32 @@ describe('Jelly Shift State', () => {
       const result = checkWallCollision(state, 0);
       expect(result).toBe('none');
     });
+
+    it('should return none for negative wall index', () => {
+      const state = createInitialState(baseLevel);
+      expect(checkWallCollision(state, -1)).toBe('none');
+    });
+
+    it('should return none for out-of-bounds wall index', () => {
+      const state = createInitialState(baseLevel);
+      expect(checkWallCollision(state, 999)).toBe('none');
+    });
+
+    it('should return none when wallIdx equals walls.length (exact upper boundary)', () => {
+      const state = createInitialState(baseLevel); // 1 wall → walls.length === 1
+      expect(checkWallCollision(state, state.walls.length)).toBe('none');
+    });
+
+    it('should start detecting collision when blob.z equals wall.z - WALL_COLLISION_Z_THRESHOLD (exact >= boundary)', () => {
+      const state = createInitialState(baseLevel);
+      // wall 0 is at z=30, blob.z = 30 - 0.5 = 29.5 is exactly at threshold
+      state.blob.z = 30 - WALL_COLLISION_Z_THRESHOLD;
+      state.blob.width = 0.5;
+      state.blob.height = 1.67;
+      const result = checkWallCollision(state, 0);
+      // blob fits the tall hole — should return 'pass', not 'none'
+      expect(result).toBe('pass');
+    });
   });
 
   describe('passWall', () => {
@@ -310,6 +382,21 @@ describe('Jelly Shift State', () => {
       expect(newState.walls[0].passed).toBe(true);
       expect(newState.wallsPassed).toBe(1);
       expect(newState.score).toBe(100);
+    });
+
+    it('returns state unchanged for negative index', () => {
+      const state = createInitialState(baseLevel);
+      expect(passWall(state, -1)).toBe(state);
+    });
+
+    it('returns state unchanged for out-of-bounds index', () => {
+      const state = createInitialState(baseLevel);
+      expect(passWall(state, 99)).toBe(state);
+    });
+
+    it('returns state unchanged for index exactly equal to walls.length (>= boundary)', () => {
+      const state = createInitialState(baseLevel);
+      expect(passWall(state, state.walls.length)).toBe(state);
     });
   });
 
@@ -359,6 +446,13 @@ describe('Jelly Shift State', () => {
       expect(validation.errors).toContain('Missing walls array');
     });
 
+    it('reports missing walls when walls is explicitly null (not undefined)', () => {
+      // !Array.isArray(null) is true → same error as missing property
+      const validation = validateLevel({ id: 1, walls: null });
+      expect(validation.valid).toBe(false);
+      expect(validation.errors).toContain('Missing walls array');
+    });
+
     it('should report missing hole on wall', () => {
       const validation = validateLevel({
         id: 1,
@@ -366,6 +460,64 @@ describe('Jelly Shift State', () => {
       });
       expect(validation.valid).toBe(false);
       expect(validation.errors.some(e => e.includes('missing hole'))).toBe(true);
+    });
+
+    it('should report missing hole.shape', () => {
+      const validation = validateLevel({
+        id: 1,
+        walls: [{ z: 30, hole: {} }]
+      });
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('missing hole.shape'))).toBe(true);
+    });
+
+    it('should report missing hole.width for tall shape', () => {
+      const validation = validateLevel({
+        id: 1,
+        walls: [{ z: 30, hole: { shape: 'tall', height: 1.5 } }]
+      });
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('hole.width'))).toBe(true);
+    });
+
+    it('should report missing hole.height for wide shape', () => {
+      const validation = validateLevel({
+        id: 1,
+        walls: [{ z: 30, hole: { shape: 'wide', width: 2.0 } }]
+      });
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('hole.height'))).toBe(true);
+    });
+
+    it('should report missing plus-hole dimensions', () => {
+      const validation = validateLevel({
+        id: 1,
+        walls: [{ z: 30, hole: { shape: 'plus', widthH: 1.0, heightH: 2.0 } }]
+      });
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('widthV'))).toBe(true);
+      expect(validation.errors.some(e => e.includes('heightV'))).toBe(true);
+    });
+
+    it('should validate a correct plus-shape wall', () => {
+      const validation = validateLevel({
+        id: 1,
+        walls: [{
+          z: 30,
+          hole: { shape: 'plus', widthH: 2.0, heightH: 0.8, widthV: 0.8, heightV: 2.0 }
+        }]
+      });
+      expect(validation.valid).toBe(true);
+      expect(validation.errors).toHaveLength(0);
+    });
+
+    it('should report missing wall z', () => {
+      const validation = validateLevel({
+        id: 1,
+        walls: [{ hole: { shape: 'tall', width: 0.6, height: 1.5 } }]
+      });
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('missing z'))).toBe(true);
     });
   });
 
