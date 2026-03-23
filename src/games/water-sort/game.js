@@ -410,6 +410,7 @@ class WaterSortGame {
         retryCount: this.levelRetries || 0,
         solveTime: Date.now() - (this.levelStartTime || Date.now()),
         undoRate: this.state.moves > 0 ? (this.levelUndos || 0) / this.state.moves : 0,
+        hintUsage: this.hintSession?.level ?? 0,
       }, { won: false, daily: this.isDailyMode });
     }
 
@@ -431,6 +432,7 @@ class WaterSortGame {
       retryCount: this.levelRetries || 0,
       solveTime,
       undoRate,
+      hintUsage: this.hintSession?.level ?? 0,
     }, { won: true, daily: this.isDailyMode });
 
     await updateGameStats(GAME_ID, {

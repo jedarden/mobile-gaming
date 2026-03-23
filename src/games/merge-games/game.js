@@ -170,7 +170,7 @@ class MergeGame {
   }
 
   async handleWin() {
-    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()), hintUsage: this.hintSession?.level ?? 0 }, { won: true });
     const moves = this.state.moves;
     const level = this.levels[this.currentLevelIndex];
     const stars = moves <= 5 ? 3 : moves <= 10 ? 2 : 1;

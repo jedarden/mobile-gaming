@@ -369,7 +369,7 @@ class BrainTeaserGame {
     haptic('win');
 
     // Record adaptive difficulty signal
-    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()), hintUsage: this.hintSession?.level ?? 0 }, { won: true });
 
     // Update stats
     await updateGameStats(GAME_ID, {

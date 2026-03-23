@@ -246,6 +246,7 @@ class ParkingEscapeGame {
     recordLevel(GAME_ID, {
       retryCount: this.levelRetries || 0,
       solveTime,
+      hintUsage: this.hintSession?.level ?? 0,
     }, { won: true });
 
     await updateGameStats(GAME_ID, {

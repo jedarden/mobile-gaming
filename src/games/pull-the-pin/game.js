@@ -216,6 +216,7 @@ export function createGame(canvas, options = {}) {
     render,
     destroy,
     showHint() { if (hintSession) hintSession.showHint(); },
+    getHintLevel() { return hintSession?.level ?? 0; },
     setReducedMotion(v) { renderer.setReducedMotion(v); },
     setColorBlindMode(v) { renderer.setColorBlindMode(v); }
   };
@@ -274,6 +275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       recordLevel(GAME_ID, {
         retryCount: levelRetries,
         solveTime: Date.now() - levelStartTime,
+        hintUsage: game.getHintLevel(),
       }, { won: true });
       const hasNext = currentLevelIndex < levels.length - 1;
       showOverlay('Level Complete!', 'All balls reached their cups!', hasNext);
@@ -286,6 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       recordLevel(GAME_ID, {
         retryCount: levelRetries,
         solveTime: Date.now() - levelStartTime,
+        hintUsage: game.getHintLevel(),
       }, { won: false });
       showOverlay('Try Again', 'A ball missed its cup.', false);
       announce('A ball missed its cup. Try again!');
