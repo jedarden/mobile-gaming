@@ -4,6 +4,7 @@
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
+import { isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -40,6 +41,7 @@ class MergeGame {
     this.levels = await res.json();
 
     this.renderer = createRenderer(this.canvas);
+    this.renderer.setReducedMotion(isReducedMotionEnabled());
     this.input = createInput({
       canvas: this.canvas,
       renderer: this.renderer,
@@ -77,8 +79,10 @@ class MergeGame {
     });
     document.getElementById('setting-sound').addEventListener('change', e =>
       updateSettings({ soundEnabled: e.target.checked }));
-    document.getElementById('setting-motion').addEventListener('change', e =>
-      updateSettings({ reducedMotion: e.target.checked }));
+    document.getElementById('setting-motion').addEventListener('change', e => {
+      updateSettings({ reducedMotion: e.target.checked });
+      this.renderer.setReducedMotion(e.target.checked);
+    });
   }
 
   startLevel(index) {

@@ -35,6 +35,7 @@ export function createRenderer(canvas) {
   let cellSize = 60;
   let offsetX = 0;
   let offsetY = 0;
+  let reducedMotion = false;
 
   // Merge burst particles: { x, y, vx, vy, color, life, r }
   const particles = [];
@@ -74,6 +75,7 @@ export function createRenderer(canvas) {
 
   /** Spawn merge particle burst at cell center */
   function spawnMergeBurst(r, c, tier) {
+    if (reducedMotion) return;
     const { x, y, w, h } = cellRect(r, c);
     const cx = x + w / 2;
     const cy = y + h / 2;
@@ -276,7 +278,9 @@ export function createRenderer(canvas) {
     return null;
   }
 
-  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, getCellSize: () => cellSize };
+  function setReducedMotion(v) { reducedMotion = v; }
+
+  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, getCellSize: () => cellSize };
 }
 
 function lighten(hex, pct) {

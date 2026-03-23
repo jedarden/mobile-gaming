@@ -28,6 +28,7 @@ export function createRenderer(canvas) {
   let gridW = 16;
   let gridH = 16;
   let currentPatternType = 'full';
+  let reducedMotion = false;
 
   // Offscreen canvases
   let dirtCanvas = null;
@@ -289,6 +290,7 @@ export function createRenderer(canvas) {
    * Spawn debris crumbs at the given pixel position (called from game.js on each spray).
    */
   function spawnDebris(px, py) {
+    if (reducedMotion) return;
     const dirtColors = ['#6e4c32', '#8b6045', '#5a3e2b', '#7a5235', '#4a3020'];
     const count = 4 + Math.floor(Math.random() * 5);
     for (let i = 0; i < count; i++) {
@@ -311,6 +313,7 @@ export function createRenderer(canvas) {
    * Trigger completion sparkle burst (called from game.js on win).
    */
   function triggerCompletionSparkle() {
+    if (reducedMotion) return;
     const colors = ['#FFD700', '#FF69B4', '#00FFFF', '#ADFF2F', '#FF6347', '#DDA0DD', '#FFE66D'];
     const cx = canvasW / 2;
     const cy = canvasH / 2;
@@ -341,6 +344,8 @@ export function createRenderer(canvas) {
     };
   }
 
+  function setReducedMotion(v) { reducedMotion = v; }
+
   return {
     resize,
     render,
@@ -349,7 +354,8 @@ export function createRenderer(canvas) {
     pixelToGrid,
     getCellSize: () => cellSize,
     spawnDebris,
-    triggerCompletionSparkle
+    triggerCompletionSparkle,
+    setReducedMotion
   };
 }
 
