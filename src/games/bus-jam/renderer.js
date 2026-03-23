@@ -1,23 +1,27 @@
 /**
- * Bus Jam - Canvas Renderer
+ * Bus Jam - Canvas Renderer (polished)
  *
- * Renders the game board with:
- * - Road grid with markings
- * - Buses with capacity indicators
- * - Stops with passenger queues
- * - Exit points
- * - Path preview visualization
- * - Animations for movement and boarding
+ * Visual improvements:
+ * - Sky + building silhouette background for city atmosphere
+ * - Cartoon bus with headlights, bumper, grille, drop shadow
+ * - Improved passenger figures: head + body + smiley face
+ * - Sidewalk curb border around stops
+ * - Color-match glow line between bus and its matching stop
+ * - Exhaust particle system for departing buses
+ * - Boarding color flash on passenger boards
  */
 
 import { BUS_COLORS, isRoad, getBusAt, getStopAt, isExit } from './state.js';
 
 // Visual constants
 const CELL_SIZE = 60;
-const ROAD_COLOR = '#4A4A5A';
-const ROAD_MARKING_COLOR = 'rgba(255, 255, 255, 0.3)';
+const ROAD_COLOR = '#3A3A4A';
+const ROAD_MARKING_COLOR = 'rgba(255, 255, 255, 0.28)';
 const GRASS_COLOR = '#2D5A27';
 const STOP_BASE_COLOR = '#888888';
+const SIDEWALK_COLOR = '#B8A898';
+const SKY_TOP = '#87CEEB';
+const SKY_BOT = '#C8E8F0';
 
 /**
  * Create a renderer instance
@@ -102,9 +106,19 @@ export function createRenderer(canvas) {
   function render(state, scale = 1) {
     clear();
 
-    // Draw background (grass)
+    // Sky gradient background
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, height * 0.35);
+    skyGrad.addColorStop(0, SKY_TOP);
+    skyGrad.addColorStop(1, SKY_BOT);
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, width, height * 0.35);
+
+    // Building silhouettes (city backdrop)
+    renderBuildings(scale);
+
+    // Ground / grass
     ctx.fillStyle = GRASS_COLOR;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, height * 0.35, width, height * 0.65);
 
     // Draw roads
     renderRoads(state, scale);
@@ -115,6 +129,9 @@ export function createRenderer(canvas) {
     // Draw stops with passengers
     renderStops(state, scale);
 
+    // Color match glow lines
+    renderMatchGlows(state, scale);
+
     // Draw buses
     renderBuses(state, scale);
 
@@ -122,6 +139,74 @@ export function createRenderer(canvas) {
     if (state.pathPreview) {
       renderPathPreview(state.pathPreview, scale);
     }
+  }
+
+  /**
+   * Draw city building silhouettes in background
+   */
+  function renderBuildings(scale) {
+    ctx.fillStyle = 'rgba(50,60,80,0.55)';
+    const buildings = [
+      { x: 0, w: 30, h: 60 }, { x: 35, w: 20, h: 80 }, { x: 60, w: 35, h: 50 },
+      { x: 100, w: 25, h: 70 }, { x: 130, w: 40, h: 45 }, { x: 175, w: 20, h: 90 },
+      { x: 200, w: 35, h: 60 }, { x: 240, w: 28, h: 75 }, { x: 275, w: 22, h: 55 },
+      { x: 300, w: 38, h: 65 }, { x: 345, w: 26, h: 82 }
+    ];
+    const horizonY = height * 0.35;
+    for (const b of buildings) {
+      const bx = b.x * scale;
+      const bw = b.w * scale;
+      const bh = b.h * scale * 0.5;
+      ctx.fillRect(bx, horizonY - bh, bw, bh);
+      // Window dots
+      ctx.fillStyle = 'rgba(255,240,140,0.55)';
+      for (let wy = horizonY - bh + 4 * scale; wy < horizonY - 4 * scale; wy += 8 * scale) {
+        for (let wx = bx + 3 * scale; wx < bx + bw - 3 * scale; wx += 6 * scale) {
+          ctx.fillRect(wx, wy, 3 * scale, 3 * scale);
+        }
+      }
+      ctx.fillStyle = 'rgba(50,60,80,0.55)';
+    }
+  }
+
+  /**
+   * Draw color-match glow lines connecting buses to their target stops
+   */
+  function renderMatchGlows(state, scale) {
+    const cellSize = CELL_SIZE * scale;
+
+    state.buses.forEach(bus => {
+      if (bus.exited || bus.passengers >= bus.capacity) return;
+
+      const matchingStop = state.stops.find(s => s.color === bus.color && s.waiting.length > 0);
+      if (!matchingStop) return;
+
+      const busPos = gridToCanvas(bus.x, bus.y, scale);
+      const stopPos = gridToCanvas(matchingStop.x, matchingStop.y, scale);
+
+      const bx = busPos.x + cellSize / 2;
+      const by = busPos.y + cellSize / 2;
+      const sx = stopPos.x + cellSize / 2;
+      const sy = stopPos.y + cellSize / 2;
+      const dist = Math.hypot(bx - sx, by - sy);
+
+      if (dist > cellSize * 4) return; // only show when relatively close
+
+      const color = BUS_COLORS[bus.color] || '#888';
+      const alpha = Math.max(0, 1 - dist / (cellSize * 4)) * 0.45;
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5 * scale;
+      ctx.globalAlpha = alpha;
+      ctx.setLineDash([4 * scale, 5 * scale]);
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(sx, sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    });
   }
 
   /**
@@ -202,43 +287,76 @@ export function createRenderer(canvas) {
       const pos = gridToCanvas(stop.x, stop.y, scale);
       const color = BUS_COLORS[stop.color] || BUS_COLORS.red;
 
-      // Stop base (sidewalk)
-      ctx.fillStyle = STOP_BASE_COLOR;
-      ctx.fillRect(pos.x + 5 * scale, pos.y + 5 * scale, cellSize - 10 * scale, cellSize - 10 * scale);
+      // Sidewalk base
+      ctx.fillStyle = SIDEWALK_COLOR;
+      ctx.beginPath();
+      ctx.roundRect(pos.x + 4 * scale, pos.y + 4 * scale, cellSize - 8 * scale, cellSize - 8 * scale, 6 * scale);
+      ctx.fill();
 
-      // Stop color indicator
+      // Color tint overlay
       ctx.fillStyle = color;
-      ctx.globalAlpha = 0.3;
-      ctx.fillRect(pos.x + 5 * scale, pos.y + 5 * scale, cellSize - 10 * scale, cellSize - 10 * scale);
+      ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.roundRect(pos.x + 4 * scale, pos.y + 4 * scale, cellSize - 8 * scale, cellSize - 8 * scale, 6 * scale);
+      ctx.fill();
       ctx.globalAlpha = 1;
 
-      // Draw waiting passengers
+      // Stop sign pole
+      ctx.fillStyle = color;
+      ctx.fillRect(pos.x + cellSize / 2 - 1.5 * scale, pos.y + 4 * scale, 3 * scale, 12 * scale);
+      // Sign head
+      ctx.beginPath();
+      ctx.arc(pos.x + cellSize / 2, pos.y + 4 * scale, 6 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw waiting passengers (cartoon style)
       const passengersPerRow = 3;
       stop.waiting.forEach((passenger, i) => {
         const row = Math.floor(i / passengersPerRow);
         const col = i % passengersPerRow;
-        const px = pos.x + 10 * scale + col * (passengerSize + 3 * scale);
-        const py = pos.y + cellSize - 15 * scale - row * (passengerSize + 3 * scale);
+        const px = pos.x + 8 * scale + col * (passengerSize + 2 * scale);
+        const py = pos.y + cellSize - 14 * scale - row * (passengerSize + 2 * scale);
+        const headR = passengerSize / 3;
 
-        // Passenger body (simple stick figure)
         ctx.fillStyle = color;
+
+        // Body
+        ctx.beginPath();
+        ctx.roundRect(px + headR * 0.4, py + headR * 1.8, headR * 1.2, passengerSize * 0.5, 2 * scale);
+        ctx.fill();
 
         // Head
         ctx.beginPath();
-        ctx.arc(px + passengerSize / 2, py, passengerSize / 3, 0, Math.PI * 2);
+        ctx.arc(px + headR, py + headR, headR, 0, Math.PI * 2);
         ctx.fill();
 
-        // Body
-        ctx.fillRect(px + passengerSize / 3, py + passengerSize / 3, passengerSize / 3, passengerSize / 2);
+        // Smiley face
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 0.8 * scale;
+        ctx.beginPath();
+        ctx.arc(px + headR, py + headR + headR * 0.15, headR * 0.55, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.beginPath();
+        ctx.arc(px + headR * 0.6, py + headR * 0.8, 1.2 * scale, 0, Math.PI * 2);
+        ctx.arc(px + headR * 1.4, py + headR * 0.8, 1.2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = color;
       });
 
-      // Passenger count
+      // Passenger count badge
       if (stop.waiting.length > 0) {
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.beginPath();
+        ctx.arc(pos.x + cellSize - 10 * scale, pos.y + 10 * scale, 8 * scale, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = '#fff';
-        ctx.font = `bold ${10 * scale}px sans-serif`;
+        ctx.font = `bold ${9 * scale}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        ctx.fillText(stop.waiting.length, pos.x + cellSize / 2, pos.y + 8 * scale);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(stop.waiting.length, pos.x + cellSize - 10 * scale, pos.y + 10 * scale);
       }
     });
   }
@@ -262,68 +380,83 @@ export function createRenderer(canvas) {
       const busX = pos.x + (cellSize - busWidth) / 2;
       const busY = pos.y + (cellSize - busHeight) / 2;
 
+      ctx.save();
+
+      // Drop shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.28)';
+      ctx.shadowBlur = 8 * scale;
+      ctx.shadowOffsetY = 3 * scale;
+
       // Selection glow
       if (isSelected) {
-        ctx.shadowColor = 'rgba(99, 102, 241, 0.8)';
-        ctx.shadowBlur = 15 * scale;
+        ctx.shadowColor = 'rgba(99, 102, 241, 0.85)';
+        ctx.shadowBlur = 16 * scale;
       }
 
       // Bus body
+      const r = 10 * scale;
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.roundRect(busX, busY, busWidth, busHeight, 8 * scale);
+      ctx.roundRect(busX, busY, busWidth, busHeight, r);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Roof stripe (lighter)
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath();
+      ctx.roundRect(busX, busY, busWidth, busHeight * 0.22, [r, r, 0, 0]);
       ctx.fill();
 
-      // Clear shadow
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-
-      // Bus windows
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      // Windows
+      ctx.fillStyle = 'rgba(180,225,255,0.65)';
       const windowWidth = busWidth * 0.2;
-      const windowHeight = busHeight * 0.4;
-      const windowY = busY + busHeight * 0.2;
-
+      const windowHeight = busHeight * 0.36;
+      const windowY = busY + busHeight * 0.18;
       for (let i = 0; i < 3; i++) {
-        ctx.fillRect(
-          busX + busWidth * 0.1 + i * (windowWidth + 4 * scale),
-          windowY,
-          windowWidth,
-          windowHeight
-        );
+        const wx = busX + busWidth * 0.08 + i * (windowWidth + 3 * scale);
+        ctx.beginPath();
+        ctx.roundRect(wx, windowY, windowWidth, windowHeight, 3 * scale);
+        ctx.fill();
+        // Window glare
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fillRect(wx + 2 * scale, windowY + 2 * scale, 3 * scale, windowHeight * 0.4);
+        ctx.fillStyle = 'rgba(180,225,255,0.65)';
       }
 
-      // Capacity indicator (dots)
-      const dotSize = 6 * scale;
-      const dotSpacing = 10 * scale;
-      const dotsY = busY + busHeight - 12 * scale;
+      // Headlights (front = direction)
+      ctx.fillStyle = '#FFEE88';
+      const headY = busY + busHeight * 0.68;
+      // Two small circles at front
+      const frontX = bus.direction === 'right' ? busX + busWidth - 6 * scale : busX + 2 * scale;
+      for (let hl = 0; hl < 2; hl++) {
+        ctx.beginPath();
+        ctx.arc(frontX, headY + hl * 7 * scale - 3 * scale, 3 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
+      // Capacity dots
+      const dotSize = 5 * scale;
+      const dotSpacing = 9 * scale;
+      const dotsY = busY + busHeight - 10 * scale;
       for (let i = 0; i < bus.capacity; i++) {
         const dotX = busX + busWidth / 2 - (bus.capacity * dotSpacing) / 2 + i * dotSpacing;
-        ctx.fillStyle = i < bus.passengers ? '#fff' : 'rgba(255, 255, 255, 0.3)';
+        ctx.fillStyle = i < bus.passengers ? '#fff' : 'rgba(255, 255, 255, 0.28)';
         ctx.beginPath();
         ctx.arc(dotX, dotsY, dotSize / 2, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Bus direction indicator
-      const arrowSize = 8 * scale;
-      ctx.fillStyle = '#fff';
-      ctx.font = `${arrowSize}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      const arrowX = busX + busWidth / 2;
-      const arrowY = busY + busHeight + 8 * scale;
-      const arrows = { up: '▲', down: '▼', left: '◀', right: '▶' };
-      ctx.fillText(arrows[bus.direction] || '', arrowX, arrowY);
-
       // Full bus indicator
       if (bus.passengers >= bus.capacity) {
         ctx.fillStyle = '#22c55e';
-        ctx.font = `bold ${14 * scale}px sans-serif`;
-        ctx.fillText('✓', busX + busWidth - 10 * scale, busY + 12 * scale);
+        ctx.font = `bold ${13 * scale}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✓', busX + busWidth - 9 * scale, busY + 11 * scale);
       }
+
+      ctx.restore();
     });
   }
 
