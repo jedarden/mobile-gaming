@@ -3,7 +3,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
-import { createInitialState, cleanArea, getProgress, isComplete, WIN_THRESHOLD } from './state.js';
+import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 

@@ -9,7 +9,7 @@
  * - Integration with shared systems
  */
 
-import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { initStorage, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 
@@ -17,7 +17,6 @@ import {
   createInitialState,
   selectChoice,
   resolveChoice,
-  nextScenario,
   getScenarioTitle,
   getThreat,
   getChoices,
