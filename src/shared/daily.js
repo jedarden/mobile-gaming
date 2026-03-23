@@ -20,13 +20,14 @@ const STORAGE_KEY = 'mg:daily';
 
 // All available games for daily rotation
 const GAMES = [
+  'bus-jam',
   'pull-the-pin',
   'water-sort',
   'brain-teaser',
   'parking-escape',
   'save-the-character',
-  'merge',
-  'satisfying',
+  'merge-games',
+  'satisfying-asmr',
   'crowd-runner',
   'bridge-race',
   'giant-runner',
