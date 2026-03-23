@@ -304,7 +304,6 @@ export function createSettings(options = {}) {
 
   injectStyles();
 
-  const settings = loadSettings();
   let versionTapCount = 0;
   let versionTapTimer = null;
 
