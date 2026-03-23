@@ -9,6 +9,7 @@ import { createInitialState, applyMove, getAllMoves } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 const GAME_ID = 'parking-escape';
 const LEVELS_URL = './levels.json';
@@ -113,7 +114,11 @@ class ParkingEscapeGame {
 
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
+    const isRetry = index === this.currentLevelIndex && this.levelStartTime > 0;
+    if (isRetry) this.levelRetries = (this.levelRetries || 0) + 1;
+    else this.levelRetries = 0;
     this.currentLevelIndex = index;
+    this.levelStartTime = Date.now();
     const level = this.levels[index];
     this.state = createInitialState(level);
     this.history = [];
@@ -188,6 +193,12 @@ class ParkingEscapeGame {
     const level = this.levels[this.currentLevelIndex];
     const moves = this.state.moves;
     const stars = moves <= level.targetMoves ? 3 : moves <= level.targetMoves * 1.5 ? 2 : 1;
+    const solveTime = Date.now() - (this.levelStartTime || Date.now());
+
+    recordLevel(GAME_ID, {
+      retryCount: this.levelRetries || 0,
+      solveTime,
+    }, { won: true });
 
     await updateGameStats(GAME_ID, {
       lastLevel: this.currentLevelIndex,

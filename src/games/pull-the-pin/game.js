@@ -13,6 +13,7 @@ import { initStorage, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 
@@ -191,6 +192,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const levels = levelsData;
   let currentLevelIndex = 0;
+  let levelStartTime = Date.now();
+  let levelRetries = 0;
 
   const levelIndicator = document.getElementById('level-indicator');
   const pinCountEl = document.getElementById('pin-count');
@@ -223,6 +226,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const game = createGame(canvas, {
     async onWin() {
       haptic('win');
+      recordLevel(GAME_ID, {
+        retryCount: levelRetries,
+        solveTime: Date.now() - levelStartTime,
+      }, { won: true });
       const hasNext = currentLevelIndex < levels.length - 1;
       showOverlay('Level Complete!', 'All balls reached their cups!', hasNext);
       announce(`Level ${currentLevelIndex + 1} complete! All balls reached their cups!`);
@@ -231,6 +238,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
     onLose() {
       haptic('fail');
+      recordLevel(GAME_ID, {
+        retryCount: levelRetries,
+        solveTime: Date.now() - levelStartTime,
+      }, { won: false });
       showOverlay('Try Again', 'A ball missed its cup.', false);
       announce('A ball missed its cup. Try again!');
     },
@@ -241,7 +252,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   game.setReducedMotion(isReducedMotionEnabled());
 
   function loadLevel(index) {
+    const isRetry = index === currentLevelIndex && levelStartTime > 0;
+    if (isRetry) levelRetries++;
+    else levelRetries = 0;
     currentLevelIndex = index;
+    levelStartTime = Date.now();
     hideOverlay();
     game.loadLevel(levels[index]);
     updateUI(game.getState());

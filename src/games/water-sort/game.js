@@ -12,6 +12,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { isColorBlindEnabled } from '../../shared/color-blind.js';
 import { completeDailyChallenge, getGameDailySeed } from '../../shared/daily.js';
 
 import {
@@ -32,6 +33,7 @@ import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { generateLevel } from './generator.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 // Game constants
 const GAME_ID = 'water-sort';
@@ -93,6 +95,7 @@ class WaterSortGame {
       // Create renderer
       this.renderer = createRenderer(this.canvas);
       this.renderer.setReducedMotion(isReducedMotionEnabled());
+      this.renderer.setColorBlindMode(isColorBlindEnabled());
 
       // Create input handler
       this.input = createInput({
@@ -228,6 +231,12 @@ class WaterSortGame {
       updateSettings({ reducedMotion: e.target.checked, reducedMotionSetByUser: true });
       this.renderer.setReducedMotion(e.target.checked);
     });
+
+    document.getElementById('setting-color-blind').addEventListener('change', (e) => {
+      updateSettings({ colorBlind: e.target.checked });
+      this.renderer.setColorBlindMode(e.target.checked);
+      this.render();
+    });
   }
 
   /**
@@ -245,6 +254,9 @@ class WaterSortGame {
 
     this.selectedTube = null;
     this.animating = false;
+    this.levelStartTime = Date.now();
+    this.levelRetries = 0;
+    this.levelUndos = 0;
 
     this.handleResize();
     this.updateUI();
@@ -260,6 +272,7 @@ class WaterSortGame {
    * Restart current level
    */
   restartLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
     this.startLevel(this.currentLevelIndex);
   }
 
@@ -347,6 +360,11 @@ class WaterSortGame {
     } else if (isStuck(this.state)) {
       haptic('fail');
       this.state.status = 'stuck';
+      recordLevel(GAME_ID, {
+        retryCount: this.levelRetries || 0,
+        solveTime: Date.now() - (this.levelStartTime || Date.now()),
+        undoRate: this.state.moves > 0 ? (this.levelUndos || 0) / this.state.moves : 0,
+      }, { won: false, daily: this.isDailyMode });
     }
 
     this.animating = false;
@@ -360,6 +378,14 @@ class WaterSortGame {
   async handleWin() {
     const level = this.levels[this.currentLevelIndex];
     const stars = calculateStars(this.state.moves, level.optimal);
+    const solveTime = Date.now() - (this.levelStartTime || Date.now());
+    const undoRate = this.state.moves > 0 ? (this.levelUndos || 0) / this.state.moves : 0;
+
+    recordLevel(GAME_ID, {
+      retryCount: this.levelRetries || 0,
+      solveTime,
+      undoRate,
+    }, { won: true, daily: this.isDailyMode });
 
     await updateGameStats(GAME_ID, {
       played: 1,
@@ -414,6 +440,7 @@ class WaterSortGame {
 
     const prevState = this.history.undo();
     if (prevState) {
+      this.levelUndos = (this.levelUndos || 0) + 1;
       this.state = { ...prevState, selectedTube: null };
       this.selectedTube = null;
       this.state.status = 'playing';
@@ -460,6 +487,7 @@ class WaterSortGame {
     document.getElementById('setting-sound').checked = settings.soundEnabled;
     document.getElementById('setting-haptic').checked = settings.hapticEnabled;
     document.getElementById('setting-motion').checked = settings.reducedMotion;
+    document.getElementById('setting-color-blind').checked = settings.colorBlind;
 
     this.settingsOverlay.classList.add('active');
     this.settingsOverlay.setAttribute('aria-hidden', 'false');

@@ -11,6 +11,7 @@
  */
 
 import { LIQUID_COLORS, isTubeComplete } from './state.js';
+import { getPatternLabel } from '../../shared/color-blind.js';
 
 // Visual constants
 const TUBE_WIDTH = 52;
@@ -40,6 +41,7 @@ export function createRenderer(canvas) {
   let height = 0;
   let tubeScale = 1;
   let reducedMotion = false;
+  let colorBlindMode = false;
   let animating = false;
   let animData = null;
 
@@ -227,6 +229,20 @@ export function createRenderer(canvas) {
       ctx.beginPath();
       ctx.roundRect(liquidX + 2 * s, liquidY + 2 * s, liquidW * 0.3, liquidH - 4 * s, 3 * s);
       ctx.fill();
+
+      // Color-blind pattern label
+      if (colorBlindMode) {
+        const label = getPatternLabel(color);
+        if (label) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.font = `bold ${Math.round(13 * s)}px monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, liquidX + liquidW / 2, liquidY + liquidH / 2);
+          ctx.restore();
+        }
+      }
 
       // Segment separator line
       if (i > 0) {
@@ -510,6 +526,13 @@ export function createRenderer(canvas) {
   }
 
   /**
+   * Set color-blind mode
+   */
+  function setColorBlindMode(value) {
+    colorBlindMode = value;
+  }
+
+  /**
    * Check if currently animating
    */
   function isAnimating() {
@@ -524,6 +547,7 @@ export function createRenderer(canvas) {
     animatePour,
     triggerTubePop,
     setReducedMotion,
+    setColorBlindMode,
     isAnimating,
     get tubeScale() { return tubeScale; }
   };
