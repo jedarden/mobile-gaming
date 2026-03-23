@@ -255,15 +255,21 @@ class BrainTeaserGame {
       level: puzzle,
       getState: () => this.state,
       onHighlight: ({ move }) => {
-        // For drag actions highlight the source (what to pick up); for tap highlight the target
-        const hintId = (move.action === 'drag' && move.sourceId) ? move.sourceId : move.targetId;
+        // For drag: highlight the source; for sequence: highlight first step; for tap: highlight target
+        let hintId;
+        if (move.action === 'drag' && move.sourceId) hintId = move.sourceId;
+        else if (move.action === 'sequence' && move.steps?.length) hintId = move.steps[0];
+        else hintId = move.targetId;
         if (this.renderer) this.renderer.setHintTarget(hintId);
         // Also show text hint
         this.showTextHint();
       },
       onShowMove: ({ move }) => {
-        // At level 2, show the destination/target regardless of action type
-        if (this.renderer) this.renderer.setHintTarget(move.targetId);
+        // At level 2: for sequence show first step, otherwise show target
+        const hintId = (move.action === 'sequence' && move.steps?.length)
+          ? move.steps[0]
+          : move.targetId;
+        if (this.renderer) this.renderer.setHintTarget(hintId);
         this.showTextHint();
       },
       onAutoPlay: ({ move }) => {
