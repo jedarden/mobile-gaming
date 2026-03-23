@@ -29,6 +29,7 @@ export function createRenderer(canvas) {
   let offsetX = PADDING;
   let offsetY = PADDING;
   let reducedMotion = false;
+  let hintVehicleId = null;
 
   // Animation: per-vehicle slide { fromX, fromY, toX, toY, startTime, cells }
   const slideAnims = new Map();
@@ -45,6 +46,7 @@ export function createRenderer(canvas) {
   let lastCellSize = 0;
 
   function setReducedMotion(v) { reducedMotion = v; }
+  function setHintVehicle(id) { hintVehicleId = id; }
 
   function resize(state) {
     const container = canvas.parentElement;
@@ -259,6 +261,19 @@ export function createRenderer(canvas) {
     }
     ctx.closePath();
     ctx.fill();
+
+    // Hint highlight ring
+    if (v.id === hintVehicleId) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(255, 215, 0, 0.9)';
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(px - 2, py - 2, pw + 4, ph + 4, 6);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   /** Draw exit particles */
@@ -439,6 +454,7 @@ export function createRenderer(canvas) {
     shake,
     onHeroExit,
     setReducedMotion,
+    setHintVehicle,
     getCellSize: () => cellSize,
     getOffset: () => ({ x: offsetX, y: offsetY })
   };

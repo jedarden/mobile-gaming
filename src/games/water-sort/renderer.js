@@ -42,6 +42,7 @@ export function createRenderer(canvas) {
   let tubeScale = 1;
   let reducedMotion = false;
   let colorBlindMode = false;
+  let hintTubeIndex = null;
   let animating = false;
   let animData = null;
 
@@ -177,6 +178,12 @@ export function createRenderer(canvas) {
     if (isSelected) {
       ctx.shadowColor = 'rgba(99, 102, 241, 0.7)';
       ctx.shadowBlur = 14 * s;
+    }
+
+    // Hint highlight
+    if (tubeIdx === hintTubeIndex) {
+      ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+      ctx.shadowBlur = 20 * s;
     }
 
     // Tube background (glass)
@@ -533,6 +540,13 @@ export function createRenderer(canvas) {
   }
 
   /**
+   * Set hint tube index
+   */
+  function setHintTube(index) {
+    hintTubeIndex = index;
+  }
+
+  /**
    * Check if currently animating
    */
   function isAnimating() {
@@ -548,6 +562,7 @@ export function createRenderer(canvas) {
     triggerTubePop,
     setReducedMotion,
     setColorBlindMode,
+    setHintTube,
     isAnimating,
     get tubeScale() { return tubeScale; }
   };

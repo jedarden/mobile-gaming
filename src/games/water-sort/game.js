@@ -34,6 +34,7 @@ import { createInput } from './input.js';
 import { generateLevel } from './generator.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createHintSession, getHintTokens } from '../../shared/hints.js';
 
 // Game constants
 const GAME_ID = 'water-sort';
@@ -75,6 +76,9 @@ class WaterSortGame {
     // Daily challenge
     this.isDailyMode = false;
     this.dailySeed = null;
+
+    // Hint session
+    this.hintSession = null;
 
     // Bind methods
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -199,6 +203,13 @@ class WaterSortGame {
     // Buttons
     this.btnUndo.addEventListener('click', () => this.undo());
     this.btnRestart.addEventListener('click', () => this.restartLevel());
+
+    const hintBtn = document.getElementById('btn-hint');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', () => {
+        if (this.hintSession) this.hintSession.showHint();
+      });
+    }
     this.btnPrev.addEventListener('click', () => this.prevLevel());
     this.btnNext.addEventListener('click', () => this.nextLevel());
     this.btnSound.addEventListener('click', () => this.toggleSound());
@@ -252,6 +263,30 @@ class WaterSortGame {
     this.history = createGameHistory(100);
     this.history.push(cloneState(this.state));
 
+    if (this.hintSession) { this.hintSession.destroy(); }
+    const rawLevel = this.levels[index];
+    this.hintSession = createHintSession({
+      gameId: GAME_ID,
+      level: rawLevel,
+      getState: () => ({ tubes: this.state.tubes.map(t => [...t.segments]), maxSegments: this.state.maxSegments }),
+      onHighlight: ({ move }) => {
+        this.renderer.setHintTube(move.from);
+        this.render();
+      },
+      onShowMove: ({ move }) => {
+        this.renderer.setHintTube(move.from);
+        this.render();
+      },
+      onAutoPlay: ({ move }) => {
+        this.renderer.setHintTube(null);
+        this.executePour(move.from, move.to);
+      },
+      onTokensEmpty: () => {
+        this.updateHintButton();
+      },
+    });
+    this.updateHintButton();
+
     this.selectedTube = null;
     this.animating = false;
     this.levelStartTime = Date.now();
@@ -274,6 +309,14 @@ class WaterSortGame {
   restartLevel() {
     this.levelRetries = (this.levelRetries || 0) + 1;
     this.startLevel(this.currentLevelIndex);
+  }
+
+  updateHintButton() {
+    const btn = document.getElementById('btn-hint');
+    if (!btn) return;
+    const tokens = getHintTokens();
+    btn.textContent = `Hint (${tokens})`;
+    btn.disabled = tokens <= 0;
   }
 
   /**

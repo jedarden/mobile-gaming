@@ -10,6 +10,7 @@ import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createHintSession, getHintTokens } from '../../shared/hints.js';
 
 const GAME_ID = 'parking-escape';
 const LEVELS_URL = './levels.json';
@@ -34,6 +35,7 @@ class ParkingEscapeGame {
     this.currentLevelIndex = 0;
     this.state = null;
     this.history = [];  // stack of states for undo
+    this.hintSession = null;
     this.renderer = null;
     this.input = null;
     this._rafId = null;
@@ -83,6 +85,13 @@ class ParkingEscapeGame {
   setupButtons() {
     this.btnUndo.addEventListener('click', () => this.undo());
     this.btnRestart.addEventListener('click', () => this.restartLevel());
+
+    const hintBtn = document.getElementById('btn-hint');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', () => {
+        if (this.hintSession) this.hintSession.showHint();
+      });
+    }
     this.btnPrev.addEventListener('click', () => this.prevLevel());
     this.btnNext.addEventListener('click', () => this.nextLevel());
     this.btnSound.addEventListener('click', () => this.toggleSound());
@@ -122,15 +131,51 @@ class ParkingEscapeGame {
     const level = this.levels[index];
     this.state = createInitialState(level);
     this.history = [];
+
+    // Reset hint session for new level
+    if (this.hintSession) { this.hintSession.destroy(); }
+    this.hintSession = createHintSession({
+      gameId: GAME_ID,
+      level: level,
+      getState: () => this.state,
+      onHighlight: ({ move }) => {
+        this.renderer.setHintVehicle(move.vehicleId);
+        this.render();
+      },
+      onShowMove: ({ move }) => {
+        this.renderer.setHintVehicle(move.vehicleId);
+        this.render();
+      },
+      onAutoPlay: ({ move }) => {
+        this.renderer.setHintVehicle(null);
+        this.handleMove(move.vehicleId, move.direction, move.distance);
+      },
+      onTokensEmpty: () => {
+        this.updateHintButton();
+      },
+    });
+    this.updateHintButton();
+
     this.handleResize();
     this.updateUI();
     this.render();
     announce(`Level ${index + 1}. Slide vehicles to clear a path for the exit car.`);
   }
 
-  restartLevel() { this.startLevel(this.currentLevelIndex); }
+  restartLevel() {
+    if (this.hintSession) this.hintSession.reset();
+    this.startLevel(this.currentLevelIndex);
+  }
   prevLevel() { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel() { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
+
+  updateHintButton() {
+    const btn = document.getElementById('btn-hint');
+    if (!btn) return;
+    const tokens = getHintTokens();
+    btn.textContent = `Hint (${tokens})`;
+    btn.disabled = tokens <= 0;
+  }
 
   handleMove(vehicleId, direction, distance) {
     if (!this.state || this.state.status !== 'playing') return;
