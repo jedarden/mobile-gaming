@@ -782,4 +782,40 @@ describe('Swipe Navigation', () => {
       document.body.removeChild(container);
     });
   });
+
+  // ── handleIconTap — targetIndex === currentGameIndex early return ─────────
+
+  describe('handleIconTap — same-game icon tap returns early (targetIndex === currentGameIndex branch)', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(l => l.remove());
+      saveGameRing([{ id: 'water-sort', title: 'Water Sort', icon: 'droplet' }]);
+    });
+
+    it('does not navigate when the current game icon is clicked (targetIndex === currentGameIndex returns early)', () => {
+      saveGameRing([
+        { id: 'water-sort',   title: 'Water Sort',   icon: 'droplet' },
+        { id: 'pull-the-pin', title: 'Pull the Pin', icon: 'pin' },
+      ]);
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      const cleanup = initSwipeNav({ currentGameId: 'water-sort', container });
+
+      const locMock = { href: '' };
+      vi.stubGlobal('location', locMock);
+
+      // Find the icon button for the current game (index 0 = water-sort)
+      const icons = document.querySelectorAll('.swipe-nav-icon');
+      expect(icons.length).toBeGreaterThan(0);
+      const currentIcon = icons[0]; // index 0 is the active (current) game
+      currentIcon.click(); // fires handleIconTap(0) — targetIndex === currentGameIndex → returns early
+
+      // No navigation should occur — href unchanged
+      expect(locMock.href).toBe('');
+
+      cleanup();
+      document.body.removeChild(container);
+    });
+  });
 });
