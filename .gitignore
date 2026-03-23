@@ -5,3 +5,5 @@ dist/
 .DS_Store
 public/icons/icon-*.png
 public/og/*.png
+test-results/
+.marathon/

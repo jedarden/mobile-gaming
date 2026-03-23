@@ -30,6 +30,10 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 
+const GAME_ID   = 'jelly-shift';
+const LEVELS_URL = './levels.json';
+const FIXED_DT   = 1 / 60;
+
 class JellyShiftGame {
   constructor() {
     // DOM elements

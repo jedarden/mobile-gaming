@@ -50,6 +50,9 @@ export function createRenderer(container) {
   // Previous scale for hit detection
   let prevScale = 1.0;
 
+  // Last rendered state (used by animateBossFight)
+  let lastRenderedState = null;
+
   /**
    * Initialize the Three.js scene
    */
@@ -298,6 +301,7 @@ export function createRenderer(container) {
    * Render the game state
    */
   function render(state) {
+    lastRenderedState = state;
     // Clear old meshes
     collectibleMeshes.forEach(m => scene.remove(m));
     obstacleMeshes.forEach(m => scene.remove(m));
@@ -426,7 +430,7 @@ export function createRenderer(container) {
 
       if (won) {
         // Boss shrinks and disappears
-        const scale = state.boss.scale * (1 - progress);
+        const scale = (lastRenderedState ? lastRenderedState.boss.scale : 1) * (1 - progress);
         bossMesh.scale.set(scale, scale, scale);
         bossMesh.rotation.y = progress * Math.PI * 2;
       } else {

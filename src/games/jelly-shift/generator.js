@@ -98,20 +98,15 @@ export function isTransitionAchievable(holeA, holeB, wallSpacing, speed) {
   const rangeA = getValidWidthRange(holeA);
   const rangeB = getValidWidthRange(holeB);
 
-  // Find the closest valid widths between the two ranges
-  let minTransitionDist = Infinity;
-
   if (rangeA.max >= rangeB.min && rangeB.max >= rangeA.min) {
     // Ranges overlap - no problem
     return true;
   }
 
   // Ranges don't overlap - need to check if reshape is possible
-  if (rangeA.max < rangeB.min) {
-    minTransitionDist = rangeB.min - rangeA.max;
-  } else {
-    minTransitionDist = rangeA.min - rangeB.max;
-  }
+  const minTransitionDist = rangeA.max < rangeB.min
+    ? rangeB.min - rangeA.max
+    : rangeA.min - rangeB.max;
 
   // Time available = wallSpacing / (speed * 60)
   const timeAvailable = wallSpacing / (speed * 60);

@@ -38,25 +38,6 @@ function wobble(seed) {
   return ((seed * 7919) % 7 - 3) * 0.7;
 }
 
-// Element sprite renderers
-const SPRITE_RENDERERS = {
-  circle: renderCircle,
-  rect: renderRect,
-  triangle: renderTriangle,
-  star: renderStar,
-  heart: renderHeart,
-  diamond: renderDiamond,
-  cup: renderCup,
-  ball: renderBall,
-  box: renderBox,
-  key: renderKey,
-  door: renderDoor,
-  button: renderButton,
-  arrow: renderArrow,
-  text: renderText,
-  image: renderImage,
-  hidden: renderHidden
-};
 
 /**
  * Create a renderer instance
@@ -253,6 +234,26 @@ export function createRenderer(canvas) {
       ctx.fillText(line, width / 2, adjustedY + i * 24 * scale);
     });
   }
+
+  // Element sprite renderers — defined here so function declarations above are hoisted
+  const SPRITE_RENDERERS = {
+    circle: renderCircle,
+    rect: renderRect,
+    triangle: renderTriangle,
+    star: renderStar,
+    heart: renderHeart,
+    diamond: renderDiamond,
+    cup: renderCup,
+    ball: renderBall,
+    box: renderBox,
+    key: renderKey,
+    door: renderDoor,
+    button: renderButton,
+    arrow: renderArrow,
+    text: renderText,
+    image: renderImage,
+    hidden: renderHidden
+  };
 
   /**
    * Render a puzzle element with sketch-style border wobble
