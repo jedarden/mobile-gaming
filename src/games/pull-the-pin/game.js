@@ -26,7 +26,6 @@ export function createGame(canvas, options = {}) {
   let gameState = null;
   let renderer = createRenderer(canvas);
   let inputHandler = null;
-  let animationFrame = null;
   let physicsInterval = null;
 
   /**

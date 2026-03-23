@@ -17,12 +17,6 @@ const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 480;
 const BALL_COLORS = ['red', 'blue', 'green', 'yellow'];
 
-const DIFFICULTY_CONFIG = {
-  easy:   { numColors: 2, numPins: 2 },
-  medium: { numColors: 3, numPins: 3 },
-  hard:   { numColors: 4, numPins: 4 }
-};
-
 /**
  * Generate a level with specified difficulty
  *
