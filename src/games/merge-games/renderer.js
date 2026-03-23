@@ -45,7 +45,27 @@ export function createRenderer(canvas) {
   // Scale pops: { r, c, startTime, scale }
   const scalePops = new Map();
 
+  // Last rendered state — needed for the particle animation loop
+  let lastState = null;
+  let loopId = null;
+
   function now() { return performance.now(); }
+
+  /** Run a rAF loop while particles or scale pops are active */
+  function startLoop() {
+    if (loopId || reducedMotion) return;
+    function loop() {
+      const active = particles.length > 0 || scalePops.size > 0 || hintCells !== null;
+      if (!active || !lastState) { loopId = null; return; }
+      render(lastState, null);
+      loopId = requestAnimationFrame(loop);
+    }
+    loopId = requestAnimationFrame(loop);
+  }
+
+  function stopLoop() {
+    if (loopId) { cancelAnimationFrame(loopId); loopId = null; }
+  }
 
   function resize(state) {
     const container = canvas.parentElement;
@@ -95,6 +115,7 @@ export function createRenderer(canvas) {
       });
     }
     scalePops.set(`${r},${c}`, { startTime: now(), tier });
+    startLoop();
   }
 
   function updateParticles() {
@@ -216,6 +237,7 @@ export function createRenderer(canvas) {
   }
 
   function render(state, drag) {
+    lastState = state;
     updateParticles();
 
     const cw = parseInt(canvas.style.width);
@@ -302,9 +324,10 @@ export function createRenderer(canvas) {
 
   function setHintCells(r1, c1, r2, c2) {
     hintCells = (r1 === null) ? null : { r1, c1, r2, c2 };
+    if (hintCells) startLoop(); else stopLoop();
   }
 
-  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, setHintCells, getCellSize: () => cellSize };
+  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, setHintCells, stopLoop, getCellSize: () => cellSize };
 }
 
 function lighten(hex, pct) {

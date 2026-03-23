@@ -155,11 +155,12 @@ class MergeGame {
     const newTier = next.grid[r2][c2];
     this.state = next;
     this.updateUI();
-    this.render();
-    haptic('merge');
+    // Spawn burst first so the loop captures it on the same render frame
     if (this.renderer && this.renderer.spawnMergeBurst) {
       this.renderer.spawnMergeBurst(r2, c2, newTier);
     }
+    this.render();
+    haptic('merge');
     if (this.state.status === 'won') {
       haptic('win');
       setTimeout(() => this.handleWin(), 250);
