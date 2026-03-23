@@ -325,7 +325,7 @@ class WaterSortGame {
    * Handle tube tap
    */
   handleTubeTap(tubeIdx) {
-    if (this.animating || !this.state || this.state.status === 'won') return;
+    if (this.animating || !this.state || this.state.status === 'won' || this.state.status === 'stuck') return;
 
     if (this.selectedTube === null) {
       // Select tube (only if not empty and not complete)
@@ -406,6 +406,7 @@ class WaterSortGame {
     } else if (isStuck(this.state)) {
       haptic('fail');
       this.state.status = 'stuck';
+      announce('No moves left. Use undo or restart.');
       recordLevel(GAME_ID, {
         retryCount: this.levelRetries || 0,
         solveTime: Date.now() - (this.levelStartTime || Date.now()),
@@ -553,7 +554,7 @@ class WaterSortGame {
    * Handle keyboard input
    */
   handleKeyDown(e) {
-    if (this.animating || !this.state || this.state.status === 'won') return;
+    if (this.animating || !this.state || this.state.status === 'won' || this.state.status === 'stuck') return;
 
     switch (e.key) {
       case 'z':
