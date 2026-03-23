@@ -412,8 +412,6 @@ export function createRenderer(container) {
   const sparkles = [];
   let prevAppearance = null;
 
-  const dummy = new THREE.Object3D();
-
   function init() {
     const result = createThreeScene(container, {
       fov: 55,

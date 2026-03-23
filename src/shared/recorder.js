@@ -411,8 +411,6 @@ export async function encodeToMP4(canvas, frames) {
       hardwareAcceleration: 'prefer-hardware'
     });
 
-    let framesEncoded = 0;
-
     const encodeNextFrame = async (index) => {
       if (index >= frames.length) {
         encoder.flush().then(() => {
@@ -430,7 +428,6 @@ export async function encodeToMP4(canvas, frames) {
       encoder.encode(frame, { keyFrame });
 
       frame.close();
-      framesEncoded++;
 
       // Process next frame
       requestAnimationFrame(() => encodeNextFrame(index + 1));
