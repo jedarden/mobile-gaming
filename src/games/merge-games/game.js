@@ -105,6 +105,7 @@ class MergeGame {
 
     // Reset hint session
     if (this.hintSession) { this.hintSession.destroy(); }
+    if (this.renderer) this.renderer.setHintCells(null, null, null, null);
     this.hintSession = createHintSession({
       gameId: GAME_ID,
       level,

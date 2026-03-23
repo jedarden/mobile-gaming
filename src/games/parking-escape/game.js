@@ -135,6 +135,7 @@ class ParkingEscapeGame {
 
     // Reset hint session for new level
     if (this.hintSession) { this.hintSession.destroy(); }
+    if (this.renderer) this.renderer.setHintVehicle(null);
     this.hintSession = createHintSession({
       gameId: GAME_ID,
       level: level,

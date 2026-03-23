@@ -265,6 +265,7 @@ class WaterSortGame {
     this.history.push(cloneState(this.state));
 
     if (this.hintSession) { this.hintSession.destroy(); }
+    if (this.renderer) this.renderer.setHintTube(null);
     const rawLevel = this.levels[index];
     this.hintSession = createHintSession({
       gameId: GAME_ID,
