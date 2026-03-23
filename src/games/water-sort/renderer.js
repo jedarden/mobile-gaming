@@ -1,12 +1,13 @@
 /**
- * Water Sort - Canvas Renderer
+ * Water Sort - Canvas Renderer (polished)
  *
- * Renders the game board with:
- * - Tubes as rounded-bottom glass rectangles
- * - Colored liquid segments inside tubes
- * - Pour animation (400ms cubic-bezier)
- * - Gold glow on completed pure-color tubes
- * - Selection highlight
+ * Visual improvements:
+ * - Glass refraction: vertical sheen stripe on tube body
+ * - Pour stream: connecting liquid trail during pour
+ * - Anticipation ease: slight pull-back before pour starts
+ * - Bubble particles rising inside tubes after a pour
+ * - Splash ripples at landing position
+ * - Scale-pop on tube completion (elastic out)
  */
 
 import { LIQUID_COLORS, isTubeComplete } from './state.js';
@@ -18,7 +19,7 @@ const SEGMENT_HEIGHT = 40;
 const TUBE_RADIUS = 10;
 const TUBE_GAP = 12;
 const TUBE_BORDER = 3;
-const POUR_DURATION = 400;
+const POUR_DURATION = 480;  // slightly longer for more fluid feel
 
 /**
  * Create a renderer instance
@@ -26,6 +27,13 @@ const POUR_DURATION = 400;
  * @param {HTMLCanvasElement} canvas - Canvas element
  * @returns {Object} Renderer API
  */
+// Easing with anticipation (slight pull-back before moving)
+function easeAnticipate(t) {
+  // Cubic with -s overshoot at start
+  const s = 0.18;
+  return (t * t * ((s + 1) * t - s));
+}
+
 export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d');
   let width = 0;
@@ -34,6 +42,13 @@ export function createRenderer(canvas) {
   let reducedMotion = false;
   let animating = false;
   let animData = null;
+
+  // Tube completion pop state: tubeIdx → { startTime }
+  const tubePops = new Map();
+  // Bubble particles: { x, y, r, vy, alpha, tubeIdx }
+  const bubbles = [];
+  // Splash ripples: { x, y, startTime, color }
+  const splashes = [];
 
   /**
    * Resize canvas to fit container with proper tube layout
@@ -115,7 +130,7 @@ export function createRenderer(canvas) {
   }
 
   /**
-   * Draw a single tube
+   * Draw a single tube with scale-pop on completion
    */
   function drawTube(x, y, tube, state, tubeIdx, isSelected) {
     const s = tubeScale;
@@ -129,16 +144,35 @@ export function createRenderer(canvas) {
 
     const complete = isTubeComplete(state, tubeIdx);
 
+    // Scale pop when newly completed
+    const pop = tubePops.get(tubeIdx);
+    let popScale = 1;
+    if (pop) {
+      const elapsed = (performance.now() - pop.startTime) / 350;
+      if (elapsed < 1) {
+        popScale = 1 + 0.10 * Math.pow(2, -10 * elapsed) * Math.sin((elapsed - 0.05) * Math.PI / 0.2);
+      } else {
+        tubePops.delete(tubeIdx);
+      }
+    }
+
+    ctx.save();
+    if (popScale !== 1) {
+      const cx = x + tw / 2;
+      const cy = y + th / 2;
+      ctx.translate(cx, cy);
+      ctx.scale(popScale, popScale);
+      ctx.translate(-cx, -cy);
+    }
+
     // Gold glow for completed tubes
     if (complete) {
-      ctx.save();
       ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
       ctx.shadowBlur = 16 * s;
     }
 
     // Selection highlight
     if (isSelected) {
-      ctx.save();
       ctx.shadowColor = 'rgba(99, 102, 241, 0.7)';
       ctx.shadowBlur = 14 * s;
     }
@@ -156,14 +190,19 @@ export function createRenderer(canvas) {
     ctx.roundRect(x, y, tw, th, [r, r, r * 1.5, r * 1.5]);
     ctx.stroke();
 
-    // Glass shine effect
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+    // Glass refraction sheen — vertical gradient stripe
+    const sheen = ctx.createLinearGradient(x + border, y, x + border + innerW * 0.28, y);
+    sheen.addColorStop(0, 'rgba(255,255,255,0.22)');
+    sheen.addColorStop(0.6, 'rgba(255,255,255,0.06)');
+    sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sheen;
     ctx.beginPath();
-    ctx.roundRect(x + border, y + border, innerW * 0.35, th - border * 2, r * 0.5);
+    ctx.roundRect(x + border, y + border, innerW * 0.28, th - border * 2, r * 0.5);
     ctx.fill();
 
-    if (complete) ctx.restore();
-    if (isSelected) ctx.restore();
+    // Right edge gloss
+    ctx.fillStyle = 'rgba(255,255,255,0.07)';
+    ctx.fillRect(x + tw - border * 2, y + r, border, th - r * 2);
 
     // Draw liquid segments (bottom to top)
     const segments = tube.segments;
@@ -203,11 +242,71 @@ export function createRenderer(canvas) {
 
     // Gold ring on completed tube
     if (complete) {
+      ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+      ctx.shadowBlur = 16 * s;
       ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
       ctx.lineWidth = 2 * s;
       ctx.beginPath();
       ctx.roundRect(x - 1 * s, y - 1 * s, tw + 2 * s, th + 2 * s, [r + 1 * s, r + 1 * s, r * 1.5 + 1 * s, r * 1.5 + 1 * s]);
       ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Update bubble particles
+   */
+  function updateBubbles() {
+    const t = performance.now();
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      b.y -= b.vy;
+      b.vy *= 0.995;
+      b.alpha -= 0.018;
+      if (b.alpha <= 0) { bubbles.splice(i, 1); }
+    }
+  }
+
+  /**
+   * Draw bubbles inside tube columns
+   */
+  function drawBubbles(state) {
+    const s = tubeScale;
+    for (const b of bubbles) {
+      const pos = getTubePosition(b.tubeIdx, state);
+      const tw = TUBE_WIDTH * s;
+      // clip to tube area roughly
+      ctx.save();
+      ctx.globalAlpha = Math.min(b.alpha, 0.6);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.beginPath();
+      ctx.arc(pos.x + tw / 2 + b.x, pos.y + b.y, b.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /**
+   * Draw splash ripples at landing
+   */
+  function drawSplashes() {
+    const t = performance.now();
+    for (let i = splashes.length - 1; i >= 0; i--) {
+      const sp = splashes[i];
+      const elapsed = (t - sp.startTime) / 400;
+      if (elapsed >= 1) { splashes.splice(i, 1); continue; }
+      const r = 4 + elapsed * 18;
+      const alpha = (1 - elapsed) * 0.55;
+      ctx.save();
+      ctx.strokeStyle = sp.color;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = 2 * tubeScale;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, r * tubeScale, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
   }
 
@@ -215,6 +314,7 @@ export function createRenderer(canvas) {
    * Draw the full game state
    */
   function render(state) {
+    updateBubbles();
     clear();
 
     for (let i = 0; i < state.tubes.length; i++) {
@@ -238,8 +338,6 @@ export function createRenderer(canvas) {
         if (i === toIdx) {
           // Draw destination tube with extra segments appearing
           const baseSegments = state.tubes[toIdx].segments;
-          // The poured segments are already in the destination for the final state
-          // During animation we show the pre-pour state
           const prePourSegments = baseSegments.slice(0, baseSegments.length - count);
           const modifiedTube = {
             ...state.tubes[i],
@@ -257,10 +355,13 @@ export function createRenderer(canvas) {
     if (animating && animData) {
       drawPourAnimation(state, animData);
     }
+
+    drawBubbles(state);
+    drawSplashes();
   }
 
   /**
-   * Draw the liquid blob animation during a pour
+   * Draw the liquid blob + stream during a pour
    */
   function drawPourAnimation(state, anim) {
     const { fromIdx, toIdx, count, progress, color } = anim;
@@ -269,11 +370,9 @@ export function createRenderer(canvas) {
     const s = tubeScale;
     const segH = SEGMENT_HEIGHT * s;
 
-    // Cubic-bezier easing
+    // Anticipation easing
     const t = progress;
-    const eased = t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const eased = easeAnticipate(t);
 
     // Source tube top position
     const fromX = fromPos.x + TUBE_WIDTH * s / 2;
@@ -285,31 +384,53 @@ export function createRenderer(canvas) {
     const toX = toPos.x + TUBE_WIDTH * s / 2;
     const destY = toPos.y + TUBE_HEIGHT * s - TUBE_BORDER * s - (destSegs + count) * segH;
 
-    // Interpolate blob position
-    const blobX = fromX + (toX - fromX) * eased;
-    const blobY = sourceTopY + (destY - sourceTopY) * eased - 20 * s * Math.sin(eased * Math.PI);
+    // Arc — more pronounced (40 * sin gives a nice arc)
+    const arcHeight = 30 * s * Math.sin(Math.max(0, eased) * Math.PI);
+    const blobX = fromX + (toX - fromX) * Math.max(0, eased);
+    const blobY = sourceTopY + (destY - sourceTopY) * Math.max(0, eased) - arcHeight;
 
-    // Draw blob
     const liquidColor = LIQUID_COLORS[color] || '#888888';
     const blobSize = (TUBE_WIDTH * 0.6) * s;
 
+    // Trailing stream (thin line from source to blob)
+    if (progress > 0.05 && progress < 0.85) {
+      ctx.save();
+      ctx.strokeStyle = liquidColor;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = blobSize * 0.35;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(fromX, sourceTopY);
+      // Quadratic curve arcing toward blob
+      ctx.quadraticCurveTo(
+        fromX + (blobX - fromX) * 0.3,
+        sourceTopY - arcHeight * 0.5,
+        blobX, blobY
+      );
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Main blob
+    ctx.globalAlpha = 0.92;
     ctx.fillStyle = liquidColor;
-    ctx.globalAlpha = 0.9;
     ctx.beginPath();
-    ctx.ellipse(blobX, blobY, blobSize / 2, blobSize / 3, 0, 0, Math.PI * 2);
+    // Slightly elongated in direction of travel
+    const angle = Math.atan2(destY - sourceTopY, toX - fromX);
+    ctx.ellipse(blobX, blobY, blobSize / 2, blobSize / 2.5, angle, 0, Math.PI * 2);
     ctx.fill();
 
     // Blob shine
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
     ctx.beginPath();
-    ctx.ellipse(blobX - blobSize * 0.1, blobY - blobSize * 0.08, blobSize * 0.2, blobSize * 0.12, 0, 0, Math.PI * 2);
+    ctx.ellipse(blobX - blobSize * 0.12, blobY - blobSize * 0.1, blobSize * 0.22, blobSize * 0.13, 0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.globalAlpha = 1;
   }
 
   /**
-   * Animate a pour operation
+   * Animate a pour operation — includes bubbles and splash on landing
    */
   function animatePour(fromIdx, toIdx, count, color, state) {
     if (reducedMotion) {
@@ -320,13 +441,48 @@ export function createRenderer(canvas) {
       animating = true;
       animData = { fromIdx, toIdx, count, color, progress: 0 };
 
+      let splashSpawned = false;
+      let bubblesSpawned = false;
+
       const startTime = performance.now();
+      const s = tubeScale;
 
       function frame(time) {
         const elapsed = time - startTime;
         const progress = Math.min(elapsed / POUR_DURATION, 1);
-
         animData.progress = progress;
+
+        // Spawn splash at ~80% through animation
+        if (progress >= 0.78 && !splashSpawned) {
+          splashSpawned = true;
+          const toPos = getTubePosition(toIdx, state);
+          const segH = SEGMENT_HEIGHT * s;
+          const destSegs = state.tubes[toIdx].segments.length - count;
+          const sx = toPos.x + TUBE_WIDTH * s / 2;
+          const sy = toPos.y + TUBE_HEIGHT * s - TUBE_BORDER * s - (destSegs + count) * segH;
+          const liquidColor = LIQUID_COLORS[color] || '#888';
+          splashes.push({ x: sx, y: sy, startTime: time, color: liquidColor });
+          splashes.push({ x: sx, y: sy + 5 * s, startTime: time + 60, color: liquidColor });
+        }
+
+        // Spawn bubbles rising in destination tube after landing
+        if (progress >= 0.85 && !bubblesSpawned) {
+          bubblesSpawned = true;
+          const toPos = getTubePosition(toIdx, state);
+          const th = TUBE_HEIGHT * s;
+          const tw = TUBE_WIDTH * s;
+          for (let i = 0; i < 5; i++) {
+            bubbles.push({
+              tubeIdx: toIdx,
+              x: (Math.random() - 0.5) * (tw * 0.5),
+              y: th * 0.6 + Math.random() * th * 0.3,
+              r: (1 + Math.random() * 2) * s,
+              vy: (0.6 + Math.random() * 0.8) * s,
+              alpha: 0.6 + Math.random() * 0.3
+            });
+          }
+        }
+
         render(state);
 
         if (progress < 1) {
@@ -340,6 +496,13 @@ export function createRenderer(canvas) {
 
       requestAnimationFrame(frame);
     });
+  }
+
+  /**
+   * Trigger a tube completion pop (called from game.js after pour resolves)
+   */
+  function triggerTubePop(tubeIdx) {
+    tubePops.set(tubeIdx, { startTime: performance.now() });
   }
 
   /**
@@ -362,6 +525,7 @@ export function createRenderer(canvas) {
     clear,
     canvasToTubeIndex,
     animatePour,
+    triggerTubePop,
     setReducedMotion,
     isAnimating,
     get tubeScale() { return tubeScale; }

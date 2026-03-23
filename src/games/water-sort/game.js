@@ -331,6 +331,11 @@ class WaterSortGame {
     // Animate
     await this.renderer.animatePour(fromIdx, toIdx, count, color, prePourState);
 
+    // Trigger scale-pop if destination tube is now complete
+    if (isTubeComplete(this.state, toIdx)) {
+      this.renderer.triggerTubePop(toIdx);
+    }
+
     // Check win
     if (checkWin(this.state)) {
       this.state.status = 'won';
