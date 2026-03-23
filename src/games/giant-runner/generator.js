@@ -9,7 +9,7 @@
  */
 
 import { createRng } from '../../shared/rng.js';
-import { MIN_SCALE, DEFAULT_START_SCALE, LANE_MIN, LANE_MAX } from './state.js';
+import { MIN_SCALE, DEFAULT_START_SCALE } from './state.js';
 
 // Lane positions for collectibles/obstacles
 const LANES = [-2, -1, 0, 1, 2];

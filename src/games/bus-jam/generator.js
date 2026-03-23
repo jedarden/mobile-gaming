@@ -13,7 +13,6 @@
  */
 
 import { createRNG } from '../../shared/rng.js';
-import { createInitialState, findPath, canBoard, boardPassenger, canExit, executeExit, checkWin } from './state.js';
 
 /** Color palette for buses and passengers */
 const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];

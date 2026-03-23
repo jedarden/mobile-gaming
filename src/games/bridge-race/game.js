@@ -15,8 +15,7 @@ import {
   performProximityActions,
   checkWin,
   isGameOver,
-  calculateStars,
-  ENTITY_SPEED
+  calculateStars
 } from './state.js';
 
 import { createRenderer } from './renderer.js';

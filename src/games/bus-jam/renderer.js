@@ -11,7 +11,7 @@
  * - Boarding color flash on passenger boards
  */
 
-import { BUS_COLORS, isRoad, getBusAt, getStopAt, isExit } from './state.js';
+import { BUS_COLORS } from './state.js';
 
 // Visual constants
 const CELL_SIZE = 60;

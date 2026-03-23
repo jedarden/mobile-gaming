@@ -3,7 +3,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
-import { createInitialState, applyMerge, isComplete, getMerges } from './state.js';
+import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 

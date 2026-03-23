@@ -12,7 +12,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
-import { getDailyChallenge, getGameDailySeed } from '../../shared/daily.js';
+import { getGameDailySeed } from '../../shared/daily.js';
 
 import {
   createInitialState,
@@ -24,8 +24,7 @@ import {
   checkObstacleCollisions,
   resolveBoss,
   isGameOver,
-  calculateStars,
-  cloneState
+  calculateStars
 } from './state.js';
 
 import { createRenderer } from './renderer.js';
@@ -397,8 +396,6 @@ class GiantRunnerGame {
    */
   updateUI() {
     if (!this.state) return;
-
-    const level = this.levels[this.currentLevelIndex];
 
     this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.scaleDisplay.textContent = this.state.player.scale.toFixed(2);

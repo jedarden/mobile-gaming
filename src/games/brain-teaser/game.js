@@ -15,7 +15,6 @@ import { initAccessibility, announce, isReducedMotionEnabled } from '../../share
 
 import {
   createInitialState,
-  cloneState,
   applyAction,
   getHint,
   validatePuzzle
@@ -490,8 +489,6 @@ class BrainTeaserGame {
    * Update UI elements
    */
   updateUI() {
-    const puzzle = this.puzzles[this.currentPuzzleIndex];
-
     this.levelDisplay.textContent = this.currentPuzzleIndex + 1;
     this.attemptsDisplay.textContent = this.state.attempts;
     this.levelProgress.textContent = `Puzzle ${this.currentPuzzleIndex + 1} / ${this.puzzles.length}`;

@@ -23,8 +23,7 @@ import {
   passWall,
   failWall,
   isGameOver,
-  calculateStars,
-  cloneState
+  calculateStars
 } from './state.js';
 
 import { createRenderer } from './renderer.js';

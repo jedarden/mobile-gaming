@@ -15,7 +15,6 @@ import {
   isGameOver,
   isJudging,
   judge,
-  calculateStars,
   CATEGORIES
 } from './state.js';
 

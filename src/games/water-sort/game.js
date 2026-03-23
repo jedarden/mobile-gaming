@@ -519,7 +519,6 @@ class WaterSortGame {
    */
   updateUI() {
     if (!this.state) return;
-    const level = this.levels[this.currentLevelIndex];
 
     this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.movesDisplay.textContent = this.state.moves;

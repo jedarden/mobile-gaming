@@ -10,18 +10,16 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
-import { awardLevelComplete, getLevelInfo } from '../../shared/meta.js';
+import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
-import { getDailyChallenge, completeDailyChallenge, getGameDailySeed, isDailyCompleted } from '../../shared/daily.js';
+import { getGameDailySeed } from '../../shared/daily.js';
 import { createRNG } from '../../shared/rng.js';
 
 import {
   createInitialState,
   cloneState,
   getBusAt,
-  getStopAt,
   isRoad,
-  isExit,
   findPath,
   canBoard,
   boardPassenger,
@@ -721,8 +719,6 @@ class BusJamGame {
    * Update UI elements
    */
   updateUI() {
-    const level = this.levels[this.currentLevelIndex];
-
     this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.movesDisplay.textContent = this.state.moves;
     this.passengersDisplay.textContent = countRemainingPassengers(this.state);
