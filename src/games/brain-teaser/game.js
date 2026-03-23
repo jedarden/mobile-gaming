@@ -417,6 +417,7 @@ class BrainTeaserGame {
    */
   showHint() {
     if (this.hintSession) this.hintSession.showHint();
+    this.updateHintButton();
   }
 
   /**

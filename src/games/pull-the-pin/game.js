@@ -311,7 +311,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const hintBtn = document.getElementById('btn-hint');
   if (hintBtn) {
-    hintBtn.addEventListener('click', () => game.showHint());
+    hintBtn.addEventListener('click', () => {
+      game.showHint();
+      updateHintButton();
+    });
   }
 
   if (overlayRetry) {

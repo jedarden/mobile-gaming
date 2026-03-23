@@ -71,6 +71,7 @@ class MergeGame {
     const hintBtn = document.getElementById('btn-hint');
     if (hintBtn) hintBtn.addEventListener('click', () => {
       if (this.hintSession) this.hintSession.showHint();
+      this.updateHintButton();
     });
     document.getElementById('btn-replay').addEventListener('click', () => {
       this.winOverlay.classList.remove('active');

@@ -90,6 +90,7 @@ class ParkingEscapeGame {
     if (hintBtn) {
       hintBtn.addEventListener('click', () => {
         if (this.hintSession) this.hintSession.showHint();
+        this.updateHintButton();
       });
     }
     this.btnPrev.addEventListener('click', () => this.prevLevel());
