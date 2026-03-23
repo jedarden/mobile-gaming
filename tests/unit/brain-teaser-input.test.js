@@ -218,6 +218,39 @@ describe('createInput', () => {
     capturedDragHandler({ isDragging: false, x: 50, y: 50 });
     expect(onDragEnd).not.toHaveBeenCalled();
   });
+
+  // ── null/undefined callback guards (false arms of if(onXxx) checks) ────────
+
+  it('handleTap: no throw when onTapAction is null (if(onTapAction) false branch)', () => {
+    const el = makeElement({ clickable: true });
+    renderer = makeRenderer(el);
+    setup({ onTapAction: null });
+    expect(() => capturedTapHandler({ x: 10, y: 10 })).not.toThrow();
+  });
+
+  it('handleDragStart: no throw when onDragStart is null (if(onDragStart) false branch)', () => {
+    const el = makeElement({ draggable: true });
+    renderer = makeRenderer(el);
+    setup({ onDragStart: null });
+    expect(() => capturedDragHandler({ isDragging: true, x: 5, y: 5 })).not.toThrow();
+  });
+
+  it('handleDragMove: no throw when onDragMove is null (if(onDragMove) false branch)', () => {
+    const el = makeElement({ draggable: true });
+    renderer.getElementAt.mockReturnValueOnce(el);
+    setup({ onDragMove: null });
+    capturedDragHandler({ isDragging: true, x: 5, y: 5 }); // start sets draggedElement
+    expect(() => capturedDragHandler({ isDragging: true, dx: 10, dy: 5 })).not.toThrow();
+  });
+
+  it('handleDragEnd: no throw when onDragEnd is null but target differs from source (if(onDragEnd && ...) false)', () => {
+    const source = makeElement({ id: 'src', draggable: true });
+    const target = makeElement({ id: 'tgt' });
+    renderer.getElementAt.mockReturnValueOnce(source).mockReturnValueOnce(target);
+    setup({ onDragEnd: null });
+    capturedDragHandler({ isDragging: true, x: 5, y: 5 });  // start
+    expect(() => capturedDragHandler({ isDragging: false, x: 50, y: 50 })).not.toThrow();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
