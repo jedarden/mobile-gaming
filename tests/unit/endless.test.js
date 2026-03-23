@@ -196,6 +196,34 @@ describe('createEndlessSession — generateBatch generator shape', () => {
     const s = createEndlessSession('water-sort', undefinedGenerator, { sessionSeed: 5 });
     expect(s.nextLevel()).toBeNull();
   });
+
+  it('returns null when all 6 attempts (5 primary + 1 fallback) fail (fallback also returns null)', () => {
+    // All attempts return null → nextLevel() returns null from the fallback call
+    const allFailGenerator = { generateLevel: vi.fn(() => null) };
+    const s = createEndlessSession('water-sort', allFailGenerator, { sessionSeed: 0 });
+    const level = s.nextLevel();
+    expect(level).toBeNull();
+    // 5 primary attempts + 1 fallback = 6 total calls
+    expect(allFailGenerator.generateLevel).toHaveBeenCalledTimes(6);
+  });
+
+  it('falls back to easier difficulty after 5 failed primary attempts (difficulty fallback branch)', () => {
+    let callCount = 0;
+    const fallbackGenerator = {
+      generateLevel: vi.fn((seed, difficulty) => {
+        callCount++;
+        // First 5 calls (primary attempts) return null; 6th call (fallback) returns a level
+        if (callCount <= 5) return null;
+        return { id: `fallback-${seed}`, seed, difficulty, valid: true };
+      })
+    };
+    const s = createEndlessSession('water-sort', fallbackGenerator, { sessionSeed: 0 });
+    const level = s.nextLevel();
+    expect(level).not.toBeNull();
+    expect(level.id).toMatch(/^fallback-/);
+    // 5 primary attempts + 1 fallback = 6 total calls
+    expect(fallbackGenerator.generateLevel).toHaveBeenCalledTimes(6);
+  });
 });
 
 // ─── createEndlessSession ─────────────────────────────────────────────────────

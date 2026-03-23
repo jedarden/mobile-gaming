@@ -112,6 +112,21 @@ describe('Swipe Navigation', () => {
       expect(ring.length).toBeGreaterThan(1);
       expect(ring.find(g => g.id === 'water-sort')).toBeDefined();
     });
+
+    it('returns default ring when stored value is not an array (Array.isArray false branch)', () => {
+      mockStorageInstance.data['gameRing'] = 'not-an-array';
+      const ring = loadGameRing();
+      expect(Array.isArray(ring)).toBe(true);
+      expect(ring.length).toBeGreaterThan(0);
+      expect(ring[0]).toHaveProperty('id');
+    });
+
+    it('returns default ring when stored value is an empty array (length === 0 false branch)', () => {
+      mockStorageInstance.data['gameRing'] = [];
+      const ring = loadGameRing();
+      expect(Array.isArray(ring)).toBe(true);
+      expect(ring.length).toBeGreaterThan(0);
+    });
   });
 
   describe('getAdjacentIndices', () => {
@@ -256,6 +271,16 @@ describe('Swipe Navigation', () => {
       const result2 = detectEdgeSwipe(element, event, 60);
       expect(result2).toEqual({ isEdge: true, side: 'left' });
     });
+
+    it('uses changedTouches when touches is absent (changedTouches fallback branch)', () => {
+      const element = {
+        getBoundingClientRect: () => ({ left: 0, width: 300 })
+      };
+      // event has changedTouches but NOT touches — exercises the else-if branch
+      const event = { changedTouches: [{ clientX: 10 }] };
+      const result = detectEdgeSwipe(element, event, 40);
+      expect(result).toEqual({ isEdge: true, side: 'left' });
+    });
   });
 
   describe('isTwoFingerHorizontalSwipe', () => {
@@ -339,6 +364,36 @@ describe('Swipe Navigation', () => {
       const originalRing = getGameRing();
       reorderGame(4, 0); // ring has 4 items, index 4 is exactly out of bounds
       expect(getGameRing()).toEqual(originalRing);
+    });
+
+    it('updates currentGameIndex to toIndex when current game is being moved (=== fromIndex branch)', () => {
+      setCurrentGameIndex(1); // currently on 'b'
+      reorderGame(1, 3);     // move 'b' from index 1 to index 3
+      expect(getCurrentGameIndex()).toBe(3);
+    });
+
+    it('decrements currentGameIndex when item before current is moved to at/after current (fromIndex < current && toIndex >= current branch)', () => {
+      setCurrentGameIndex(2); // currently on 'c' (index 2)
+      reorderGame(0, 2);     // move 'a' (before current) to index 2 (at current) → current shifts left
+      expect(getCurrentGameIndex()).toBe(1);
+    });
+
+    it('increments currentGameIndex when item after current is moved to at/before current (fromIndex > current && toIndex <= current branch)', () => {
+      setCurrentGameIndex(1); // currently on 'b' (index 1)
+      reorderGame(3, 1);     // move 'd' (after current) to index 1 (at current) → current shifts right
+      expect(getCurrentGameIndex()).toBe(2);
+    });
+
+    it('leaves currentGameIndex unchanged when reorder does not affect current position (implicit else — no branch fires)', () => {
+      // currentGameIndex=2 ('c'), moving 'a' (index 0) to index 1:
+      //   ring goes [a,b,c,d] → [b,a,c,d]; 'c' stays at index 2
+      //   Condition 1: 2 === 0 → false
+      //   Condition 2: 0 < 2 (true) && 1 >= 2 (false) → false
+      //   Condition 3: 0 > 2 (false) → false
+      //   → no branch fires; currentGameIndex stays 2
+      setCurrentGameIndex(2);
+      reorderGame(0, 1);
+      expect(getCurrentGameIndex()).toBe(2);
     });
   });
 
@@ -482,6 +537,249 @@ describe('Swipe Navigation', () => {
         expect(adjacent.right).toBeGreaterThanOrEqual(0);
         expect(adjacent.right).toBeLessThan(3);
       }
+    });
+  });
+
+  describe('preloadAdjacentGames — dedup (existingPreload early return)', () => {
+    afterEach(() => {
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(l => l.remove());
+    });
+
+    it('does not create a duplicate modulepreload link when one already exists (existingPreload branch)', () => {
+      saveGameRing([
+        { id: 'pull-the-pin', title: 'Pull the Pin', icon: 'pin' },
+        { id: 'water-sort',   title: 'Water Sort',   icon: 'droplet' },
+        { id: 'brain-teaser', title: 'Brain Teaser', icon: 'brain' },
+      ]);
+
+      // Remove any leftover preload links from earlier tests to get a clean slate
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(l => l.remove());
+
+      // Pre-inject a modulepreload link for pull-the-pin (adjacent-left of water-sort at index 1)
+      const preExisting = document.createElement('link');
+      preExisting.rel = 'modulepreload';
+      preExisting.href = '/src/games/pull-the-pin/game.js';
+      document.head.appendChild(preExisting);
+
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      const cleanup = initSwipeNav({ currentGameId: 'water-sort', container });
+
+      // Should only be ONE link for pull-the-pin — existing one was found → early return fired
+      const pullPinLinks = document.querySelectorAll(
+        'link[rel="modulepreload"][href*="/pull-the-pin/game.js"]'
+      );
+      expect(pullPinLinks.length).toBe(1);
+
+      cleanup();
+      document.body.removeChild(container);
+    });
+  });
+
+  describe('preloadAdjacentGames — !game guard (empty ring)', () => {
+    afterEach(() => {
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(l => l.remove());
+      saveGameRing([{ id: 'water-sort', title: 'Water Sort', icon: 'droplet' }]);
+    });
+
+    it('does not throw when game ring is empty (gameRing[NaN] === undefined — !game false branch)', () => {
+      // Empty ring → getAdjacentIndices returns NaN indices → gameRing[NaN] = undefined → !game guard fires
+      saveGameRing([]);
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      expect(() => {
+        const cleanup = initSwipeNav({ currentGameId: 'water-sort', container });
+        cleanup();
+      }).not.toThrow();
+
+      document.body.removeChild(container);
+    });
+  });
+
+  describe('initSwipeNav — unknown currentGameId fallback', () => {
+    it('defaults currentGameIndex to 0 when currentGameId is not in the game ring (findIndex === -1 branch)', () => {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      const cleanup = initSwipeNav({
+        currentGameId: 'completely-unknown-game-id-xyz',
+        container,
+      });
+
+      // findIndex returns -1 for unknown id → fallback to 0
+      expect(getCurrentGameIndex()).toBe(0);
+
+      cleanup();
+      document.body.removeChild(container);
+    });
+  });
+
+  describe('handleSwipeEnd — !targetGame branch', () => {
+    afterEach(() => {
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(l => l.remove());
+      // Restore a valid ring so other tests are not affected
+      saveGameRing([{ id: 'water-sort', title: 'Water Sort', icon: 'droplet' }]);
+    });
+
+    it('resets isTransitioning to false when targetGame is undefined (empty ring after init)', () => {
+      saveGameRing([
+        { id: 'water-sort',   title: 'Water Sort',   icon: 'droplet' },
+        { id: 'pull-the-pin', title: 'Pull the Pin', icon: 'pin' },
+      ]);
+
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      // Provide a non-zero bounding rect so gesture thresholds work
+      container.getBoundingClientRect = vi.fn().mockReturnValue(
+        { left: 0, top: 0, right: 400, bottom: 600, width: 400, height: 600 }
+      );
+
+      const cleanup = initSwipeNav({ currentGameId: 'water-sort', container });
+
+      // Replace ring with empty array — getAdjacentIndices will return NaN indices
+      // and gameRing[NaN] === undefined, triggering the !targetGame early return
+      saveGameRing([]);
+
+      expect(isSwipeNavTransitioning()).toBe(false);
+
+      // Simulate an edge swipe: start at left edge, move past swipeThreshold (80px)
+      // With fake timers Date.now() is fixed → duration=0 → velocity=Infinity ≥ 0.5
+      container.dispatchEvent(new MouseEvent('mousedown', { clientX: 10, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mousemove', { clientX: 110, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mouseup',   { clientX: 110, clientY: 300, bubbles: true }));
+
+      // handleSwipeEnd ran: set isTransitioning=true, then !targetGame → reset to false
+      expect(isSwipeNavTransitioning()).toBe(false);
+
+      cleanup();
+      document.body.removeChild(container);
+    });
+  });
+
+  // ── updateIndicatorHighlight — scrollIntoView absent ──────────────────────
+
+  describe('updateIndicatorHighlight — scrollIntoView absent (if false branch)', () => {
+    let container;
+
+    beforeEach(() => {
+      saveGameRing([
+        { id: 'water-sort',   title: 'Water Sort',   icon: 'droplet' },
+        { id: 'pull-the-pin', title: 'Pull the Pin', icon: 'pin' },
+      ]);
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    });
+
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+
+    it('does not throw when activeIcon.scrollIntoView is absent (false branch)', () => {
+      initSwipeNav({ currentGameId: 'water-sort', container });
+
+      // Override instance property to shadow prototype scrollIntoView → makes it falsy
+      const activeIcon = document.querySelector('.swipe-nav-icon.active');
+      if (activeIcon) {
+        Object.defineProperty(activeIcon, 'scrollIntoView', { value: undefined, configurable: true });
+      }
+
+      // setCurrentGameIndex → updateIndicatorHighlight → if(activeIcon && activeIcon.scrollIntoView) → false
+      expect(() => setCurrentGameIndex(0)).not.toThrow();
+    });
+  });
+
+  // ── handleMove — shouldTrigger=false and absDx≤10 branches ────────────────
+
+  describe('handleMove — if(shouldTrigger && absDx > 10) false branches', () => {
+    let container, cleanup;
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      saveGameRing([
+        { id: 'water-sort',   title: 'Water Sort',   icon: 'droplet' },
+        { id: 'pull-the-pin', title: 'Pull the Pin', icon: 'pin' },
+      ]);
+      container = document.createElement('div');
+      document.body.appendChild(container);
+      container.getBoundingClientRect = vi.fn().mockReturnValue(
+        { left: 0, top: 0, right: 400, bottom: 600, width: 400, height: 600 }
+      );
+      cleanup = initSwipeNav({ currentGameId: 'water-sort', container });
+    });
+
+    afterEach(() => {
+      if (cleanup) cleanup();
+      document.body.removeChild(container);
+      vi.useRealTimers();
+    });
+
+    it('does not navigate for a center swipe (shouldTrigger=false branch)', () => {
+      // clientX=200 is not within 40px of either edge → isEdgeSwipe=false, touchCount=1
+      // → shouldTrigger = false || (1 >= 2 && ...) = false → if body skipped
+      container.dispatchEvent(new MouseEvent('mousedown', { clientX: 200, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mousemove', { clientX: 300, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mouseup',   { clientX: 300, clientY: 300, bubbles: true }));
+
+      expect(isSwipeNavTransitioning()).toBe(false); // no navigation triggered
+    });
+
+    it('does not navigate when absDx <= 10 despite edge swipe start (absDx > 10 false branch)', () => {
+      // clientX=5 → left edge (isEdgeSwipe=true, shouldTrigger=true)
+      // but mousemove only 5px → absDx=5 ≤ 10 → if body skipped
+      container.dispatchEvent(new MouseEvent('mousedown', { clientX: 5,  clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mousemove', { clientX: 10, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mouseup',   { clientX: 10, clientY: 300, bubbles: true }));
+
+      expect(isSwipeNavTransitioning()).toBe(false); // absDx=5 ≤ 10 → not triggered
+    });
+  });
+
+  describe('handleSwipeEnd — successful navigation (setTimeout window.location.href branch)', () => {
+    afterEach(() => {
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(l => l.remove());
+      saveGameRing([{ id: 'water-sort', title: 'Water Sort', icon: 'droplet' }]);
+      vi.unstubAllGlobals();
+    });
+
+    it('sets window.location.href to target game URL after 50ms (setTimeout branch)', () => {
+      saveGameRing([
+        { id: 'water-sort',   title: 'Water Sort',   icon: 'droplet' },
+        { id: 'pull-the-pin', title: 'Pull the Pin', icon: 'pin' },
+      ]);
+
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      container.getBoundingClientRect = vi.fn().mockReturnValue(
+        { left: 0, top: 0, right: 400, bottom: 600, width: 400, height: 600 }
+      );
+
+      const cleanup = initSwipeNav({ currentGameId: 'water-sort', container });
+
+      // Replace window.location so href assignment doesn't trigger jsdom navigation
+      const locMock = { href: '' };
+      vi.stubGlobal('location', locMock);
+
+      // Simulate right-edge swipe leftward (direction='right' → navigates to right-adjacent game)
+      // startX=390 > 360 (400-edgeThreshold=40) → right edge detected
+      // move to clientX=290 → dx=-100 < 0 → direction overridden to 'right' (next game)
+      container.dispatchEvent(new MouseEvent('mousedown', { clientX: 390, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mousemove', { clientX: 290, clientY: 300, bubbles: true }));
+      container.dispatchEvent(new MouseEvent('mouseup',   { clientX: 290, clientY: 300, bubbles: true }));
+
+      // isTransitioning is true — success path was taken
+      expect(isSwipeNavTransitioning()).toBe(true);
+
+      // Advance past the 50ms setTimeout
+      vi.advanceTimersByTime(51);
+
+      // window.location.href should be set to target game URL (right-adjacent = pull-the-pin at index 1)
+      expect(locMock.href).toBe('/pull-the-pin/');
+
+      cleanup();
+      document.body.removeChild(container);
     });
   });
 });

@@ -166,6 +166,18 @@ describe('Water Sort State', () => {
       const newState = pour(state, 0, 1); // color mismatch
       expect(newState).toBe(state);
     });
+
+    it('resets selectedTube to null on a valid non-winning pour', () => {
+      const state = {
+        ...createInitialState({
+          tubes: [['red', 'blue', 'blue'], ['blue'], []],
+          maxSegments: 4
+        }),
+        selectedTube: 0,
+      };
+      const next = pour(state, 0, 1); // valid, non-winning pour
+      expect(next.selectedTube).toBeNull();
+    });
   });
 
   describe('checkWin', () => {
@@ -528,5 +540,12 @@ describe('undo — null when cannot undo', () => {
     expect(undone).not.toBeNull();
     // Second undo: pointer back to 0, canUndo()=false → null
     expect(undo(undone, history)).toBeNull();
+  });
+
+  it('returns null when history.undo() returns a falsy non-null value (if(prevState) false branch with 0)', () => {
+    // if (prevState) catches any falsy value — test with 0 (falsy non-null)
+    const mockHistory = { undo: () => 0 };
+    const state = createInitialState({ tubes: [['red'], []], maxSegments: 4 });
+    expect(undo(state, mockHistory)).toBeNull();
   });
 });

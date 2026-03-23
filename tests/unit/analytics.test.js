@@ -7,7 +7,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // ─── Mock localStorage ────────────────────────────────────────────────────────
 
@@ -38,6 +38,7 @@ import {
   trackFeatureUse,
   getEvents,
   clearAnalytics,
+  renderDashboard,
 } from '../../src/shared/analytics.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -310,6 +311,13 @@ describe('storage error resilience', () => {
     expect(() => trackGameStart({ gameId: 'test', levelId: 1 })).not.toThrow();
   });
 
+  it('clearAnalytics does not throw when removeItem throws (catch block)', () => {
+    localStorageMock.removeItem.mockImplementationOnce(() => {
+      throw new Error('Storage error');
+    });
+    expect(() => clearAnalytics()).not.toThrow();
+  });
+
   it('retries with trimmed events when first write fails', () => {
     for (let i = 0; i < 20; i++) {
       trackGameStart({ gameId: 'test', levelId: i });
@@ -321,5 +329,132 @@ describe('storage error resilience', () => {
     expect(() => trackGameStart({ gameId: 'test', levelId: 20 })).not.toThrow();
     // After trimming and retrying, stored events are fewer than 21
     expect(getEvents().length).toBeLessThan(21);
+  });
+});
+
+// ─── renderDashboard ──────────────────────────────────────────────────────────
+
+const mockCtx = {
+  fillStyle: '',
+  font: '',
+  fillRect: vi.fn(),
+  fillText: vi.fn(),
+  measureText: vi.fn(() => ({ width: 40 })),
+};
+
+describe('renderDashboard', () => {
+  beforeEach(() => {
+    clear();
+    // jsdom has no canvas 2D support — stub getContext so _drawDailyBar doesn't throw
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(mockCtx);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders "No events recorded yet." when no events exist (empty branch)', () => {
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('No events recorded yet.');
+  });
+
+  it('renders the dashboard title regardless of event count', () => {
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('Analytics Dashboard');
+  });
+
+  it('renders section headings when events exist (non-empty branch)', () => {
+    trackGameStart({ gameId: 'water-sort', levelId: 'ws-001' });
+    trackLevelComplete({ gameId: 'water-sort', levelId: 'ws-001', moves: 5, time: 8000 });
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('Games Played');
+    expect(container.textContent).toContain('Level Completion Rate');
+    expect(container.textContent).toContain('Avg Solve Time');
+    expect(container.textContent).toContain('Most / Least Played');
+    expect(container.textContent).toContain('Feature Adoption');
+  });
+
+  it('shows total event count in non-empty dashboard', () => {
+    trackGameStart({ gameId: 'water-sort', levelId: 1 });
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('Total events stored: 1');
+  });
+
+  it('clears previous content on re-render', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<span id="stale">old content</span>';
+    renderDashboard(container);
+    expect(document.getElementById('stale')).toBeNull();
+    expect(container.querySelector('#stale')).toBeNull();
+  });
+
+  it('_buildTimeTable shows "No data" when all level_complete events have non-number time (typeof check branch)', () => {
+    // game_start makes other sections show real data; level_complete with string time is skipped
+    trackGameStart({ gameId: 'water-sort', levelId: 1 });
+    trackLevelComplete({ gameId: 'water-sort', levelId: 1, time: 'not-a-number' });
+    trackFeatureUse('hint'); // so feature table also has data (not "No data")
+    const container = document.createElement('div');
+    renderDashboard(container);
+    // Only the time table has "No data" (popularity/completion/features have real data)
+    expect(container.textContent).toContain('Avg Solve Time');
+    expect(container.textContent).toContain('No data');
+  });
+
+  it('_buildPopularityList and _buildCompletionBars show "No data" when no game_start events exist (sorted.length===0 and gameIds.length===0 branches)', () => {
+    // Only level_complete events — no game_start means popularity list is empty
+    trackLevelComplete({ gameId: 'water-sort', levelId: 1, time: 5000 });
+    const container = document.createElement('div');
+    renderDashboard(container);
+    // Both popularity and completion bars hit the "No data" branch
+    expect(container.textContent).toContain('Most / Least Played');
+    expect(container.textContent).toContain('No data');
+  });
+
+  it('_buildFeatureTable shows "No data" when no feature_use events exist (features.length===0 branch)', () => {
+    // Only non-feature events → features array empty → "No data" shown in Feature Adoption section
+    trackGameStart({ gameId: 'water-sort' });
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('Feature Adoption');
+    expect(container.textContent).toContain('No data');
+  });
+
+  it('game_start events with falsy gameId are excluded from popularity count (e.gameId falsy branch)', () => {
+    // game_start with empty-string gameId → condition (e.event === 'game_start' && e.gameId) is false
+    // → not counted → popularity list shows "No data"
+    trackGameStart({ gameId: '' });
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('Most / Least Played');
+    expect(container.textContent).toContain('No data');
+  });
+
+  it('_buildCompletionBars shows "No data" when no game_start or level_complete events exist (gameIds.length===0 branch)', () => {
+    // Only session_start + feature_use events → starts={}, completes={} → gameIds=[] → "No data" in completion bars
+    trackSessionStart();
+    trackFeatureUse('hint');
+    const container = document.createElement('div');
+    renderDashboard(container);
+    expect(container.textContent).toContain('Level Completion Rate');
+    expect(container.textContent).toContain('No data');
+  });
+
+  it('_drawDailyBar skips game_start events older than 14 days (if(key in counts) false branch)', () => {
+    // Inject a game_start event with a timestamp 30 days ago — its _dayKey is not
+    // in counts (which only spans the last 14 days) → if (key in counts) is false → skipped
+    const oldTimestamp = Date.now() - 30 * 86400000;
+    localStorageMock.setItem(
+      'mg:global:analytics',
+      JSON.stringify([{ event: 'game_start', gameId: 'water-sort', levelId: 1, source: 'hub', timestamp: oldTimestamp }])
+    );
+    const container = document.createElement('div');
+    // Old event still satisfies events.length > 0 → non-empty branch runs → _drawDailyBar called
+    // Old event is a game_start but its key is not in counts → silently skipped
+    expect(() => renderDashboard(container)).not.toThrow();
+    expect(container.textContent).toContain('Games Played');
   });
 });

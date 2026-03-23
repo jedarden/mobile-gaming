@@ -119,6 +119,17 @@ describe('calculateAverageScale', () => {
     const avg = calculateAverageScale(level, 1.0, 100);
     expect(avg).toBeGreaterThanOrEqual(0.1 - 1e-9); // MIN_SCALE = 0.1 (allow float rounding)
   });
+
+  it('works when level.obstacles is undefined (|| [] fallback)', () => {
+    const level = {
+      playerColor: 'blue',
+      collectibles: [{ color: 'blue', value: 0.5, z: 10 }],
+      // obstacles deliberately omitted → undefined → || [] fallback at line 78
+      boss: { scale: 1 }
+    };
+    expect(() => calculateAverageScale(level, 1.0, 5)).not.toThrow();
+    expect(calculateAverageScale(level, 1.0, 5)).toBeGreaterThan(0);
+  });
 });
 
 // ── generateLevel ──────────────────────────────────────────────────────────
@@ -181,6 +192,29 @@ describe('validateLevel', () => {
     };
     const result = validateLevel(level);
     expect(result.valid).toBe(false);
+  });
+
+  it('rejects a level where average scale fails but optimal passes (averageScale<=bossScale isolated branch)', () => {
+    // optimal = 1.0 + 10 = 11.0 >= 4 * 1.3 = 5.2 → optimal check passes (no error)
+    // 200 obstacles with 0.2 hit-chance and 0.2 penalty each → expected avg penalty ≈ 8
+    // average ≈ 1 + 10*0.7 - 8 = ~0.1 (floored by MIN_SCALE) <= 4 → average check fails
+    const level = {
+      id: 'test-avg',
+      difficulty: 'easy',
+      playerColor: 'blue',
+      collectibles: [{ color: 'blue', value: 10 }],
+      obstacles: Array.from({ length: 200 }, (_, i) => ({ id: `obs-${i}`, lane: 1 })),
+      boss: { scale: 4 },
+      courseLength: 100,
+      speed: 2,
+      startScale: 1.0,
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(false);
+    // Optimal passes (11 >> 5.2) but average fails — error message mentions average scale
+    expect(result.errors.some(e => /[Aa]verage/.test(e))).toBe(true);
+    // No error for optimal
+    expect(result.errors.some(e => /[Oo]ptimal/.test(e))).toBe(false);
   });
 });
 
@@ -390,5 +424,30 @@ describe('validateLevel — detailed result fields', () => {
     const result = validateLevel(level);
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
+  });
+});
+
+// ── validateLevel — only optimal fails (isolated optimalScale < threshold branch) ──
+
+describe('validateLevel — isolated optimal scale check (optimalScale < bossScale*1.3 only branch)', () => {
+  it('reports only optimal error when optimal barely fails threshold but average passes boss scale', () => {
+    // optimal = 1.0 + 1.5 = 2.5 < 2.0 * 1.3 = 2.6 → optimal FAILS
+    // average ≈ 1.0 + 1.5 * 0.7 = 2.05 > 2.0 → average PASSES
+    const level = {
+      id: 'test-optimal-only',
+      difficulty: 'easy',
+      playerColor: 'blue',
+      collectibles: [{ color: 'blue', value: 1.5 }],
+      obstacles: [],
+      boss: { scale: 2.0 },
+      courseLength: 100,
+      speed: 2,
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(false);
+    // Optimal error is present
+    expect(result.errors.some(e => /[Oo]ptimal/.test(e))).toBe(true);
+    // Average error is NOT present (average passes)
+    expect(result.errors.some(e => /[Aa]verage/.test(e))).toBe(false);
   });
 });

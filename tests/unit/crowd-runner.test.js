@@ -658,3 +658,12 @@ describe('evaluateAllPaths', () => {
     }
   });
 });
+
+// ── advance — non-running status guard ────────────────────────────────────────
+
+describe('advance — non-running status "lost" guard (status !== "running" branches)', () => {
+  it('returns same state reference when status is "lost" (guard true branch)', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(advance(state, 1 / 60)).toBe(state);
+  });
+});

@@ -425,6 +425,29 @@ describe('createHintSession', () => {
 
   // ── Worker init failure ────────────────────────────────────────────────────
 
+  it('startIdleTimer returns early when setTimeout is not defined (typeof === undefined branch)', () => {
+    const origSetTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = undefined;
+    try {
+      expect(() => session.onUserInput()).not.toThrow();
+    } finally {
+      globalThis.setTimeout = origSetTimeout;
+    }
+  });
+
+  it('stopIdleTimer skips clearTimeout when clearTimeout is not defined (typeof === undefined branch)', () => {
+    // Set a timer first so idleTimer !== null (outer guard is true)
+    session.onUserInput(); // starts idle timer → idleTimer !== null
+    const origClearTimeout = globalThis.clearTimeout;
+    globalThis.clearTimeout = undefined;
+    try {
+      // reset() calls stopIdleTimer() with idleTimer !== null and clearTimeout undefined
+      expect(() => session.reset()).not.toThrow();
+    } finally {
+      globalThis.clearTimeout = origClearTimeout;
+    }
+  });
+
   it('calls onWorkerError when Worker constructor throws (catch block)', () => {
     global.Worker = vi.fn(() => { throw new Error('Worker not supported'); });
     const failSession = makeSession();
@@ -441,5 +464,31 @@ describe('createHintSession', () => {
     expect(onHighlight).not.toHaveBeenCalled();
     expect(onShowMove).not.toHaveBeenCalled();
     expect(onAutoPlay).not.toHaveBeenCalled();
+  });
+
+  it('falls back to [] when worker responds without moves key (data.moves||[] false arm)', () => {
+    // data.moves is undefined → undefined || [] = [] → applyCurrentLevel returns early (length===0)
+    session.showHint();
+    fakeWorker.respond({}); // no moves key, no error key
+    expect(onHighlight).not.toHaveBeenCalled();
+    expect(onShowMove).not.toHaveBeenCalled();
+  });
+
+  // ── onWorkerError optional chaining false arms ─────────────────────────────
+
+  it('does not throw when onWorkerError is undefined and worker message contains error (?. false arm)', () => {
+    // onWorkerError: undefined → onWorkerError?.() skips the call without throwing
+    const noErrSession = makeSession({ onWorkerError: undefined });
+    noErrSession.showHint();
+    expect(() => fakeWorker.respond({ error: 'Solver failed' })).not.toThrow();
+    noErrSession.destroy();
+  });
+
+  it('does not throw when onWorkerError is undefined and worker fires onerror event (?. false arm)', () => {
+    // onWorkerError: undefined → onWorkerError?.() skips the call without throwing
+    const noErrSession = makeSession({ onWorkerError: undefined });
+    noErrSession.showHint();
+    expect(() => fakeWorker.onerror({ message: 'Worker crashed' })).not.toThrow();
+    noErrSession.destroy();
   });
 });

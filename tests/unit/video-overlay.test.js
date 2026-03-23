@@ -16,6 +16,7 @@ import videoOverlay, {
   drawIntroFrame,
   drawOutroFrame,
   drawWatermark,
+  drawQRCodeAsync,
   renderFrame,
   getIntroFrameCount,
   getOutroFrameCount,
@@ -208,6 +209,13 @@ describe('drawIntroFrame', () => {
     expect(() => drawIntroFrame(ctx, { gameName: 'Test' }, 0.5)).not.toThrow();
     expect(() => drawIntroFrame(ctx, { gameName: 'Test' }, 1)).not.toThrow();
   });
+
+  it('draws difficulty badge text when difficulty is provided (if (difficulty) true branch)', () => {
+    const ctx = makeCtxMock();
+    drawIntroFrame(ctx, { gameName: 'Test', difficulty: 'Hard' });
+    const calls = ctx.fillText.mock.calls;
+    expect(calls.some(([text]) => text === 'Hard')).toBe(true);
+  });
 });
 
 // ── drawOutroFrame ────────────────────────────────────────────────────────
@@ -329,5 +337,148 @@ describe('renderFrame', () => {
     renderFrame(ctx, null, { phase: 'gameplay' }, 'my-watermark');
     const calls = ctx.fillText.mock.calls;
     expect(calls.some(([text]) => text === 'my-watermark')).toBe(true);
+  });
+
+  it('calls drawImage when gameCanvas provided (if(gameCanvas) true branch)', () => {
+    const ctx = makeCtxMock();
+    const gameCanvas = { width: 390, height: 844 }; // portrait — triggers ELSE branch in calculateGamePosition
+    renderFrame(ctx, gameCanvas, { phase: 'gameplay' });
+    expect(ctx.drawImage).toHaveBeenCalledWith(gameCanvas, expect.any(Number), expect.any(Number), expect.any(Number), expect.any(Number));
+  });
+
+  it('positions wide game canvas correctly (gameAspect > outputAspect — IF branch in calculateGamePosition)', () => {
+    // Wide landscape: 1920×1080, aspect=1.778 > output aspect (1080/1920=0.5625) → IF branch
+    // Expected: drawWidth=OUTPUT_WIDTH, x=0, drawHeight=OUTPUT_WIDTH/gameAspect, y centered
+    const ctx = makeCtxMock();
+    const gameCanvas = { width: 1920, height: 1080 };
+    renderFrame(ctx, gameCanvas, { phase: 'gameplay' });
+    const [, x, y, w, h] = ctx.drawImage.mock.calls[0];
+    expect(x).toBe(0); // wide game: x starts at 0
+    expect(w).toBe(OUTPUT_WIDTH); // fills full output width
+    expect(h).toBeCloseTo(OUTPUT_WIDTH / (1920 / 1080), 1); // height computed from aspect
+    expect(y).toBeCloseTo((OUTPUT_HEIGHT - h) / 2, 1); // vertically centered
+  });
+
+  it('positions tall game canvas correctly (gameAspect ≤ outputAspect — ELSE branch in calculateGamePosition)', () => {
+    // Tall portrait: 390×844, aspect≈0.462 < output aspect (0.5625) → ELSE branch
+    // Expected: drawHeight=OUTPUT_HEIGHT, y=0, drawWidth=OUTPUT_HEIGHT*gameAspect, x centered
+    const ctx = makeCtxMock();
+    const gameCanvas = { width: 390, height: 844 };
+    renderFrame(ctx, gameCanvas, { phase: 'gameplay' });
+    const [, x, y, w, h] = ctx.drawImage.mock.calls[0];
+    expect(y).toBe(0); // tall game: y starts at 0
+    expect(h).toBe(OUTPUT_HEIGHT); // fills full output height
+    expect(w).toBeCloseTo(OUTPUT_HEIGHT * (390 / 844), 1); // width computed from aspect
+    expect(x).toBeCloseTo((OUTPUT_WIDTH - w) / 2, 1); // horizontally centered
+  });
+});
+
+// ── drawOutroFrame — qrUrl branch ─────────────────────────────────────────
+
+describe('drawOutroFrame — qrUrl branch', () => {
+  it('draws QR placeholder when qrUrl is provided and QRCode is not yet loaded (fallback path)', () => {
+    const ctx = makeCtxMock();
+    // qrUrl triggers the if(qrUrl) branch; QRCode is null at startup → fallback renders "Scan"
+    drawOutroFrame(ctx, { stats: { stars: 2 }, qrUrl: 'https://example.com' });
+    const texts = ctx.fillText.mock.calls.map(([text]) => text);
+    expect(texts).toContain('Scan');
+    expect(texts).toContain('Scan to Play');
+  });
+});
+
+// ── drawQRCodeAsync ───────────────────────────────────────────────────────
+
+describe('drawQRCodeAsync', () => {
+  it('resolves without throwing when qrcode-generator is available (if(QRCode) true branch)', async () => {
+    const ctx = makeCtxMock();
+    // loadQRCode sets the module-level QRCode; drawQRCode then takes the if(QRCode) true branch
+    await expect(drawQRCodeAsync(ctx, 'https://example.com', 0, 0, 200)).resolves.toBeUndefined();
+    // fillRect called for background + QR modules
+    expect(ctx.fillRect).toHaveBeenCalled();
+  });
+
+  it('skips loadQRCode when already loaded (if(qrCodeLoaded) early return branch)', async () => {
+    // qrCodeLoaded is true after the first test above — second call hits the early return
+    const ctx = makeCtxMock();
+    await expect(drawQRCodeAsync(ctx, 'https://example.com/2', 10, 10, 150)).resolves.toBeUndefined();
+    expect(ctx.fillRect).toHaveBeenCalled();
+  });
+});
+
+// ── renderFrame — gameplay with null gameCanvas (if(gameCanvas) false branch) ─
+
+describe('renderFrame — gameplay phase null gameCanvas (if false branch)', () => {
+  it('skips drawImage when gameCanvas is null (if(gameCanvas) false branch)', () => {
+    const ctx = makeCtxMock();
+    // Pass null as gameCanvas — if(gameCanvas) is false → drawImage is never called
+    renderFrame(ctx, null, { phase: 'gameplay' });
+    expect(ctx.drawImage).not.toHaveBeenCalled();
+    // clearRect is always called
+    expect(ctx.clearRect).toHaveBeenCalled();
+  });
+});
+
+// ── renderFrame — gameplay with no watermark (if(watermark) false branch) ─────
+
+describe('renderFrame — gameplay phase empty watermark (if false branch)', () => {
+  it('skips drawWatermark when watermark is empty string (if(watermark) false branch)', () => {
+    const ctx = makeCtxMock();
+    const gameCanvas = { width: 390, height: 844 };
+    // Pass empty string as watermark → if(watermark) is false → drawWatermark not called
+    renderFrame(ctx, gameCanvas, { phase: 'gameplay' }, '');
+    // drawImage IS called for the game canvas; fillText called for QR/outro is absent
+    expect(ctx.drawImage).toHaveBeenCalledTimes(1);
+    // The watermark fillText ('mobile-gaming.pages.dev') is NOT in the calls
+    const texts = ctx.fillText.mock.calls.map(([t]) => t);
+    expect(texts).not.toContain('mobile-gaming.pages.dev');
+  });
+});
+
+// ── renderFrame — unknown phase (no-op for unrecognized phase values) ──────────
+
+describe('renderFrame — unknown phase (implicit else — all if/else-if branches false)', () => {
+  it('only clears canvas when phase is not intro/gameplay/outro (unmatched phase no-op)', () => {
+    const ctx = makeCtxMock();
+    renderFrame(ctx, null, { phase: 'unknown-phase' });
+    // clearRect is always called
+    expect(ctx.clearRect).toHaveBeenCalledTimes(1);
+    // No phase-specific drawing occurred
+    expect(ctx.fillRect).not.toHaveBeenCalled();
+    expect(ctx.fillText).not.toHaveBeenCalled();
+  });
+});
+
+// ── drawQRCode — catch(e) branch when qr.make() throws ─────────────────────
+// drawQRCode is private but is reachable via drawQRCodeAsync.
+// To exercise the catch(e) at line 360 we need a fresh module where
+// QRCode is a mock factory whose .make() throws, so the try block fails and
+// falls through to the fallback placeholder renderer.
+
+describe('drawQRCode — catch(e) branch when QRCode.make() throws', () => {
+  it('logs console.warn and draws "Scan" fallback when make() throws (catch(e) arm)', async () => {
+    vi.resetModules();
+    // mock qrcode-generator to return a factory whose .make() throws
+    vi.doMock('qrcode-generator', () => ({
+      default: vi.fn(() => ({
+        addData: vi.fn(),
+        make: vi.fn(() => { throw new Error('mock QR make failure'); }),
+        getModuleCount: vi.fn(() => 10),
+        isDark: vi.fn(() => false),
+      })),
+    }));
+
+    const { drawQRCodeAsync: freshDrawQRCodeAsync } = await import('../../src/shared/video-overlay.js');
+    const ctx = makeCtxMock();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await freshDrawQRCodeAsync(ctx, 'https://example.com', 0, 0, 200);
+
+    // catch(e) fired → console.warn('QR code generation failed:', e)
+    expect(warnSpy).toHaveBeenCalledWith('QR code generation failed:', expect.any(Error));
+    // Fallback placeholder renders "Scan" text
+    expect(ctx.fillText.mock.calls.some(([t]) => t === 'Scan')).toBe(true);
+
+    warnSpy.mockRestore();
+    vi.resetModules();
   });
 });

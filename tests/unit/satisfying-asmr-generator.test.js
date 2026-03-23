@@ -99,6 +99,15 @@ describe('generateLevel', () => {
     expect(['splatter', 'checkerboard']).toContain(level.patternType);
   });
 
+  it('unknown difficulty falls back to medium config (|| DIFFICULTY_CONFIG.medium branch)', () => {
+    // DIFFICULTY_CONFIG['unknown'] is undefined → || fires → medium config used
+    const medium = generateLevel(42, 'medium');
+    const unknown = generateLevel(42, 'unknown');
+    // speed and patternType come from config — should match medium
+    expect(unknown.speed).toBe(medium.speed);
+    expect(unknown.patternType).toBe(medium.patternType);
+  });
+
   it('level always has at least 20% coverage (fallback enforced)', () => {
     // Generator falls back to stripes if coverage < 20%
     for (let s = 0; s < 10; s++) {
@@ -126,6 +135,28 @@ describe('generateLevel', () => {
       expect(fraction).toBeGreaterThanOrEqual(0.5);
       expect(fraction).toBeLessThanOrEqual(0.75);
     }
+  });
+
+  it('diagonal stripes: first-row cells alternate by column (diagonal=true branch)', () => {
+    // Seed 4, easy: patternType='stripes', diagonal=true
+    // For diagonal stripes, idx = r+c; at row 0: c=0→idx=0, c=2→idx=2, c=4→idx=4
+    // With stripeWidth=2: floor(idx/2)%2 alternates 0,0,1,1,0,0,1,1... per-column
+    // So first row cells are NOT all identical (column position matters)
+    const level = generateLevel(4, 'easy', 0);
+    expect(level.patternType).toBe('stripes');
+    // At row 0: cells[0] and cells[2] are in different stripe groups for stripeWidth=2
+    expect(level.cells.slice(0, 8)).toEqual([1, 1, 0, 0, 1, 1, 0, 0]);
+  });
+
+  it('non-diagonal stripes: first-row cells are all identical (diagonal=false branch)', () => {
+    // Seed 1, easy: patternType='stripes', diagonal=false
+    // For non-diagonal stripes, idx = r; entire row 0 has idx=0 → all same value
+    const level = generateLevel(1, 'easy', 0);
+    expect(level.patternType).toBe('stripes');
+    // All cells in row 0 must have the same value (row-only idx)
+    const row0 = level.cells.slice(0, GRID_W);
+    const allSame = row0.every(v => v === row0[0]);
+    expect(allSame).toBe(true);
   });
 
   it('hard level coverage is lower than easy level coverage (on average)', () => {

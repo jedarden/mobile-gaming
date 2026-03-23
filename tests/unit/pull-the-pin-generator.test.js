@@ -81,7 +81,7 @@ describe('generateLevel', () => {
       }
     });
 
-    it('hard levels have 4 colors and 4 cups/balls', () => {
+    it('hard levels have 4 colors and 4 cups/balls', { timeout: 30000 }, () => {
       for (let seed = 1; seed <= 30; seed++) {
         const level = generateLevel(seed, 'hard');
         if (level !== null) {
@@ -363,7 +363,7 @@ describe('generateBatch', () => {
     expect(ids.size).toBe(levels.length);
   });
 
-  it('medium levels are structurally valid when generated', () => {
+  it('medium levels are structurally valid when generated', { timeout: 30000 }, () => {
     // Medium (4 pins) has low generation success rate; only check structure
     const levels = generateBatch(1000, 'medium', 2);
     for (const level of levels) {

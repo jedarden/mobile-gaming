@@ -36,6 +36,7 @@ import {
   showFailResult,
   showFailTimer,
   cleanupAllOverlays,
+  savePersonalBest,
 } from '../../src/shared/fail-speedrun.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -133,6 +134,54 @@ describe('showFailResult', () => {
     showFailResult({ container, gameId: 'unknown-game', levelIndex: 0, timeMs: 500 });
     expect(container.textContent).toContain('Fastest fail');
   });
+
+  it('shows "Best" stat comparison when previousBest is not null (if(previousBest !== null) true branch)', () => {
+    // Pre-seed a personal best so getPersonalBest returns a non-null value
+    savePersonalBest('pull-the-pin', 7, 1200);
+    showFailResult({ container, gameId: 'pull-the-pin', levelIndex: 7, timeMs: 1500 });
+    // The "Best" stat block is only rendered when previousBest !== null
+    expect(container.textContent).toContain('Best');
+  });
+
+  it('destroy() twice does not throw (overlay.parentNode null on second call — if false branch)', () => {
+    const instance = showFailResult({ container, gameId: 'pull-the-pin', levelIndex: 0, timeMs: 600 });
+    instance.destroy(); // first call: removes from DOM
+    expect(() => instance.destroy()).not.toThrow(); // second call: overlay.parentNode is null
+  });
+
+  it('appends to document.body when container is omitted (container || document.body false branch)', () => {
+    // No container passed → target = document.body
+    showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 800 });
+    expect(document.body.querySelector('.fs-overlay')).not.toBeNull();
+    // Clean up
+    document.body.querySelector('.fs-overlay')?.remove();
+  });
+
+  it('does not throw when retry button clicked without onRetry callback (if false branch)', () => {
+    // No onRetry → action==='retry' && onRetry → false → no-op
+    showFailResult({ container, gameId: 'pull-the-pin', levelIndex: 0, timeMs: 800 });
+    const retryBtn = container.querySelector('[data-action="retry"]');
+    expect(() => { if (retryBtn) retryBtn.click(); }).not.toThrow();
+  });
+
+  it('does not throw when close button clicked without onClose callback (if false branch)', () => {
+    // No onClose → action==='close' && onClose → false → no-op
+    showFailResult({ container, gameId: 'pull-the-pin', levelIndex: 0, timeMs: 800 });
+    const closeBtn = container.querySelector('[data-action="close"]');
+    expect(() => { if (closeBtn) closeBtn.click(); }).not.toThrow();
+  });
+
+  it('hide() then destroy() before timeout fires does not throw (overlay.parentNode null in setTimeout — if false branch)', () => {
+    vi.useFakeTimers();
+    const instance = showFailResult({ container, gameId: 'pull-the-pin', levelIndex: 0, timeMs: 500 });
+    // hide() starts a 300ms setTimeout that checks overlay.parentNode
+    instance.hide();
+    // destroy() removes overlay immediately — overlay.parentNode becomes null
+    instance.destroy();
+    // Advance past the 300ms setTimeout — false branch: overlay.parentNode is null → removeChild not called
+    expect(() => vi.advanceTimersByTime(400)).not.toThrow();
+    vi.useRealTimers();
+  });
 });
 
 // ── showFailTimer ──────────────────────────────────────────────────────────
@@ -191,6 +240,12 @@ describe('showFailTimer', () => {
     instance.destroy();
     // Should not throw
     expect(() => instance.update(true)).not.toThrow();
+  });
+
+  it('destroy() twice does not throw (timer.parentNode null on second call — if false branch)', () => {
+    const instance = showFailTimer({ container, getCurrentTime: () => 0 });
+    instance.destroy(); // first call: removes timer from DOM
+    expect(() => instance.destroy()).not.toThrow(); // second call: timer.parentNode is null
   });
 });
 

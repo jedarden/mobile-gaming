@@ -79,6 +79,43 @@ describe('getValidWidthRange', () => {
     });
   });
 
+  describe('plus holes — non-overlapping ranges (ternary branch)', () => {
+    // To reach the ternary at line 79, the two ranges must NOT overlap.
+    // This happens when one range is inverted (empty), e.g. widthH < 1/heightH.
+    //
+    // With MIN_WIDTH=0.3, MAX_WIDTH=3.0:
+    //   { widthH:0.3, heightH:0.3, widthV:3.0, heightV:3.0 }
+    //   hRange = { min: max(0.3, 1/0.3≈3.33) = 3.33, max: min(3.0, 0.3) = 0.3 }  — inverted
+    //   vRange = { min: max(0.3, 1/3.0≈0.33) = 0.33, max: min(3.0, 3.0) = 3.0 }
+    //   Overlap check: 0.3 >= 0.33 → false  AND  3.0 >= 3.33 → false  → non-overlapping
+    //   hWidth = 0.3 - 3.33 = -3.03  <  vWidth = 3.0 - 0.33 = 2.67  → FALSE branch → returns vRange
+
+    it('returns vRange when hWidth < vWidth (ternary false branch — non-overlapping plus hole)', () => {
+      const hole = { shape: 'plus', widthH: 0.3, heightH: 0.3, widthV: 3.0, heightV: 3.0 };
+      const range = getValidWidthRange(hole);
+      // Should return vRange: { min: ~0.333, max: 3.0 }
+      expect(range.max).toBeCloseTo(MAX_WIDTH); // vRange.max = min(3.0, 3.0) = 3.0
+      expect(range.min).toBeGreaterThan(MIN_WIDTH); // vRange.min = max(0.3, 1/3) ≈ 0.333
+      expect(range.min).toBeLessThanOrEqual(range.max);
+    });
+
+    // Symmetric case: inverted vRange, valid hRange
+    //   { widthH:3.0, heightH:3.0, widthV:0.3, heightV:0.3 }
+    //   hRange = { min: 0.333, max: 3.0 }  — valid
+    //   vRange = { min: 3.33, max: 0.3 }   — inverted
+    //   Overlap check: 3.0 >= 3.33 → false  AND  0.3 >= 0.333 → false  → non-overlapping
+    //   hWidth = 2.67  >  vWidth = -3.03  → TRUE branch → returns hRange
+
+    it('returns hRange when hWidth >= vWidth (ternary true branch — non-overlapping plus hole)', () => {
+      const hole = { shape: 'plus', widthH: 3.0, heightH: 3.0, widthV: 0.3, heightV: 0.3 };
+      const range = getValidWidthRange(hole);
+      // Should return hRange: { min: ~0.333, max: 3.0 }
+      expect(range.max).toBeCloseTo(MAX_WIDTH); // hRange.max = min(3.0, 3.0) = 3.0
+      expect(range.min).toBeGreaterThan(MIN_WIDTH); // hRange.min = max(0.3, 1/3) ≈ 0.333
+      expect(range.min).toBeLessThanOrEqual(range.max);
+    });
+  });
+
   describe('unknown shape', () => {
     it('returns [MIN_WIDTH, MAX_WIDTH] for unknown shape', () => {
       const range = getValidWidthRange({ shape: 'circle', width: 1, height: 1 });
@@ -321,6 +358,26 @@ describe('generateLevel', () => {
     const a = generateLevel(100, 'medium');
     const b = generateLevel(200, 'medium');
     expect(JSON.stringify(a)).not.toBe(JSON.stringify(b));
+  });
+
+  it('substitutes fallback hole when transition is not achievable (lines 169-175 covered)', () => {
+    // When a WIDE-extreme → TALL-extreme transition is not achievable given the interval/speed,
+    // generateLevel sets hole = { shape:'tall'|'wide', width:1.0, height:1.0 }.
+    // These exact dimensions (1.0/1.0) do not appear in any TALL_HOLES or WIDE_HOLES template,
+    // so their presence in the output proves the fallback branch fired.
+    // Hard difficulty at start interval=25, speed=2.2: maxReshapeDist ≈ 1.5 <  some transition dists.
+    let fallbackFound = false;
+    for (let seed = 1; seed <= 200; seed++) {
+      const level = generateLevel(seed, 'hard');
+      if (level.walls.some(w =>
+        (w.hole.shape === 'tall' || w.hole.shape === 'wide') &&
+        w.hole.width === 1.0 && w.hole.height === 1.0
+      )) {
+        fallbackFound = true;
+        break;
+      }
+    }
+    expect(fallbackFound).toBe(true);
   });
 });
 

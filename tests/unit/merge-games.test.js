@@ -432,6 +432,15 @@ describe('getMerges — single isolated item', () => {
     });
     expect(getMerges(state)).toHaveLength(0);
   });
+
+  it('returns empty for 1×1 grid (c+1<width and r+1<height are both false)', () => {
+    const state = createInitialState({
+      width: 1, height: 1,
+      grid: [[2]],
+      task: { targetTier: 3, targetCount: 1 }
+    });
+    expect(getMerges(state)).toHaveLength(0);
+  });
 });
 
 describe('isComplete', () => {

@@ -200,6 +200,13 @@ describe('destroy', () => {
     expect(() => vp.destroy()).not.toThrow();
     expect(container.children.length).toBe(0);
   });
+
+  it('does not throw when resizeObserver is null (autoResize=false — if(this.resizeObserver) false branch)', () => {
+    const container = makeContainer();
+    const vp = createViewport(container, { logicalWidth: 390, logicalHeight: 844, autoResize: false });
+    expect(() => vp.destroy()).not.toThrow();
+    expect(container.children.length).toBe(0);
+  });
 });
 
 // ── factory helpers ────────────────────────────────────────────────────────

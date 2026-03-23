@@ -379,6 +379,18 @@ describe('hasEntityWon', () => {
     state = { ...state, player: { ...state.player, z: 100, bridgesCompleted: 2 } };
     expect(hasEntityWon(state, 'player')).toBe(true);
   });
+
+  it('returns false for invalid entityId (if(!entity) guard branch)', () => {
+    const state = createInitialState(makeLevel());
+    expect(hasEntityWon(state, 99)).toBe(false);
+  });
+
+  it('returns false when all bridges crossed but z < finishZ (first && operand short-circuits)', () => {
+    // bridgesCompleted >= totalBridges (TRUE) but z < finishZ (FALSE) → && returns false
+    let state = createInitialState(makeLevel());
+    state = { ...state, player: { ...state.player, z: 50, bridgesCompleted: 2 } };
+    expect(hasEntityWon(state, 'player')).toBe(false);
+  });
 });
 
 // ── checkWin ──────────────────────────────────────────────────────────────
@@ -480,6 +492,14 @@ describe('moveEntity', () => {
     };
     const next = moveEntity(state, 'player', 0, 50);
     expect(next.player.z).toBe(50); // not blocked by bridge 0 any more
+  });
+
+  it('allows free movement when all bridges are completed (loop start >= length, never executes)', () => {
+    let state = createInitialState(makeLevel());
+    // bridgesCompleted === 2 === bridges.length → loop body never runs
+    state = { ...state, player: { ...state.player, bridgesCompleted: 2, z: 80 } };
+    const next = moveEntity(state, 'player', 0, 30);
+    expect(next.player.z).toBe(110); // no incomplete bridge → free to advance past finishZ
   });
 
   it('blocks at first incomplete bridge only', () => {
@@ -660,6 +680,17 @@ describe('aiTick', () => {
     expect(typeof dz).toBe('number');
   });
 
+  it('random AI with low roll (< 0.7) falls through to greedyMove — (if roll < 0.7) true arm', () => {
+    // Opponent 1 is 'random' ai; mockRng returns 0.1 < 0.7 → greedyMove() is called
+    // (distinct from 'greedy' ai which never reaches the roll check at all)
+    const lowRoll = { next: () => 0.1 };
+    const state = createInitialState(makeLevel());
+    const { dx, dz } = aiTick(state, 1, 1 / 60, lowRoll); // opponent 1 is 'random' ai
+    // greedyMove() with no blocks → moves toward nearest pile → dz > 0
+    expect(typeof dx).toBe('number');
+    expect(dz).toBeGreaterThan(0);
+  });
+
   it('returns {dx:0, dz:0} for invalid opponent index', () => {
     const state = createInitialState(makeLevel());
     const result = aiTick(state, 99, 1 / 60, mockRng);
@@ -769,6 +800,38 @@ describe('performProximityActions', () => {
     expect(b1filled).toBe(0);
     expect(next.player.blocks).toBe(0);
   });
+
+  it('returns state unchanged for invalid entityId (if(!entity) guard branch)', () => {
+    const state = createInitialState(makeLevel());
+    const result = performProximityActions(state, 99);
+    expect(result).toBe(state);
+  });
+
+  it('auto-cross loop skips entirely when bridgesCompleted === bridges.length (loop body never runs)', () => {
+    // Set up a state where the player has already crossed all bridges
+    const level = makeLevel({ bridges: [{ z: 2, required: 2 }] });
+    let state = createInitialState(level);
+    // Force player to have already crossed the only bridge
+    state = { ...state, player: { ...state.player, bridgesCompleted: 1, z: 2 } };
+    // Also fill the bridge so isBridgeComplete would return true if reached
+    state = { ...state, bridges: [{ ...state.bridges[0], cells: ['blue', 'blue'] }] };
+    const next = performProximityActions(state, 'player');
+    // bridgesCompleted stays at 1 — the auto-cross loop body never ran
+    expect(next.player.bridgesCompleted).toBe(1);
+  });
+
+  it('auto-cross else break fires when next bridge is not complete (else break branch)', () => {
+    // Bridge exists but has 0 blue cells → isBridgeComplete returns false → else break
+    const level = makeLevel({ bridges: [{ z: 2, required: 2 }] });
+    let state = createInitialState(level);
+    // bridgesCompleted = 0, bridge cells all null (not complete)
+    state = { ...state, player: { ...state.player, bridgesCompleted: 0, z: 2 } };
+    // Ensure bridge cells are empty (not blue)
+    state = { ...state, bridges: [{ ...state.bridges[0], cells: [null, null] }] };
+    const next = performProximityActions(state, 'player');
+    // else break fired → bridgesCompleted stays at 0
+    expect(next.player.bridgesCompleted).toBe(0);
+  });
 });
 
 // ── isGameOver ─────────────────────────────────────────────────────────────
@@ -844,5 +907,61 @@ describe('calculateStars', () => {
   it('returns 1 star when no blue blocks remain in piles (zero-denominator guard)', () => {
     // totalBlueBlocks=0 → early return of 1 regardless of filled cells
     expect(calculateStars(makeStarState(0, 0))).toBe(1);
+  });
+});
+
+// ── createInitialState — OR fallback defaults ──────────────────────────────
+
+describe('createInitialState — OR fallback defaults', () => {
+  it('defaults opponents to [] when level has no opponents field (|| [] branch)', () => {
+    const state = createInitialState(makeLevel({ opponents: undefined }));
+    expect(state.opponents).toEqual([]);
+  });
+
+  it('defaults opponent ai to "random" when ai field is absent (|| "random" branch)', () => {
+    const state = createInitialState(makeLevel({ opponents: [{ color: 'red', x: 0 }] }));
+    expect(state.opponents[0].ai).toBe('random');
+  });
+
+  it('defaults playerColor to "blue" when not provided (|| "blue" branch)', () => {
+    const state = createInitialState(makeLevel({ playerColor: undefined }));
+    expect(state.player.color).toBe('blue');
+  });
+
+  it('defaults arenaWidth to 24 when not provided (|| 24 branch)', () => {
+    const state = createInitialState(makeLevel({ arenaWidth: undefined }));
+    expect(state.arenaWidth).toBe(24);
+  });
+});
+
+// ── aiTick — rng fallback ──────────────────────────────────────────────────
+
+describe('aiTick — rng fallback', () => {
+  it('uses Math.random when rng is undefined (rng falsy branch in ternary)', () => {
+    const state = createInitialState(makeLevel());
+    const result = aiTick(state, 0, 1 / 60, undefined);
+    expect(typeof result.dx).toBe('number');
+    expect(typeof result.dz).toBe('number');
+    expect(Number.isNaN(result.dx)).toBe(false);
+    expect(Number.isNaN(result.dz)).toBe(false);
+  });
+
+  it('uses Math.random when rng is null (rng falsy branch)', () => {
+    const state = createInitialState(makeLevel());
+    expect(() => aiTick(state, 0, 1 / 60, null)).not.toThrow();
+  });
+});
+
+// ── aiTick — Math.abs forward bias ───────────────────────────────────────────
+
+describe('aiTick — random wander dz is always non-negative (Math.abs forward bias)', () => {
+  it('dz >= 0 for wander when angle is in 3rd/4th quadrant (sine is negative without Math.abs)', () => {
+    // rng returns 0.9 for the first call (roll >= 0.7 → wanders)
+    // then returns 0.9 for the angle → angle = 0.9 * 2π ≈ 5.655 rad → sin(5.655) ≈ -0.587
+    // Math.abs clamps dz to positive
+    const rng = { next: () => 0.9 };
+    const state = createInitialState(makeLevel());
+    const { dz } = aiTick(state, 1, 1 / 60, rng); // opponent 1 is 'random' ai type
+    expect(dz).toBeGreaterThanOrEqual(0);
   });
 });

@@ -225,6 +225,25 @@ describe('recordLevel — neutral outcome decays streak', () => {
   });
 });
 
+// ─── recordLevel — isEasyWin with prior negative streak ──────────────────────
+
+describe('recordLevel — isEasyWin resets negative streak to 1 (Math.max(0, streak) branch)', () => {
+  beforeEach(clearGame);
+
+  it('resets streak from negative to 1 on easy win (Math.max(0, negative) = 0 branch)', () => {
+    // Build a negative streak of -2 via frustrated levels
+    const hard = { retryCount: 10, hintUsage: 5, rapidTapBursts: 5, undoRate: 2 };
+    recordLevel(GAME, hard);
+    recordLevel(GAME, hard);
+    expect(getProfile(GAME).streak).toBe(-2);
+
+    // Easy win while streak is negative → Math.max(0, -2) = 0, so streak = 0 + 1 = 1
+    const easy = { retryCount: 0, hintUsage: 0, solveTime: 5000, rapidTapBursts: 0 };
+    recordLevel(GAME, easy, { won: true });
+    expect(getProfile(GAME).streak).toBe(1); // not -1, because Math.max(0, streak) clamps
+  });
+});
+
 // ─── recordLevel — daily exempt ───────────────────────────────────────────────
 
 describe('recordLevel — daily exemption', () => {
@@ -285,6 +304,25 @@ describe('getProfile', () => {
   it('levelCount increments with each recordLevel', () => {
     for (let i = 0; i < 5; i++) recordLevel(GAME, {});
     expect(getProfile(GAME).levelCount).toBe(5);
+  });
+});
+
+// ─── recordLevel — frustration with positive streak (Math.min clamp) ──────────
+
+describe('recordLevel — frustrated level clamps positive streak to 0 (Math.min(0, streak) branch)', () => {
+  beforeEach(clearGame);
+
+  it('streak goes to -1 (not -(streak+1)) when frustration hits a positive streak (Math.min(0, positive)=0 then -1)', () => {
+    // Build a positive streak of 2 via easy wins
+    const easy = { retryCount: 0, hintUsage: 0, solveTime: 5000, rapidTapBursts: 0 };
+    recordLevel(GAME, easy, { won: true });
+    recordLevel(GAME, easy, { won: true });
+    expect(getProfile(GAME).streak).toBe(2);
+
+    // Frustrated level: Math.min(0, 2) - 1 = 0 - 1 = -1, not 2 - 1 = 1
+    const hard = { retryCount: 10, hintUsage: 5, rapidTapBursts: 5, undoRate: 2 };
+    recordLevel(GAME, hard);
+    expect(getProfile(GAME).streak).toBe(-1);
   });
 });
 
@@ -363,6 +401,16 @@ describe('loadProfile — corrupted storage', () => {
     expect(profile.tier).toBe(2);
     expect(Array.isArray(profile.history)).toBe(true);
   });
+
+  it('returns default profile when stored JSON is null (&&-short-circuit: null is falsy)', () => {
+    // JSON.parse('null') = null — `parsed && typeof parsed === 'object'` → false (null falsy)
+    // → falls through to default profile, never returns parsed
+    localStorageMock.setItem('mg:null-game:adaptive', 'null');
+    const profile = getProfile('null-game');
+    expect(profile.tier).toBe(2); // DEFAULT_TIER
+    expect(Array.isArray(profile.history)).toBe(true);
+    expect(profile.ema).toBe(0);
+  });
 });
 
 describe('per-game isolation', () => {
@@ -403,5 +451,31 @@ describe('resetAdaptive — catch block', () => {
       throw new Error('Storage denied');
     });
     expect(() => resetAdaptive(GAME)).not.toThrow();
+  });
+});
+
+describe('saveProfile — history trimming (if history.length > MAX_HISTORY true branch)', () => {
+  it('trims history to MAX_HISTORY=20 after 22 recorded levels', () => {
+    localStorageMock.clear();
+    // Each recordLevel call appends one entry; after 22 calls saveProfile trims to 20
+    for (let i = 0; i < 22; i++) {
+      recordLevel('trim-game', { retryCount: 0 });
+    }
+    const profile = getProfile('trim-game');
+    expect(profile.history.length).toBeLessThanOrEqual(20);
+  });
+});
+
+// ─── recordLevel — retryCount: null (?? 0 null coalescing) ───────────────────
+
+describe('recordLevel — retryCount null coalescing (?? 0 operator with null)', () => {
+  beforeEach(clearGame);
+
+  it('treats retryCount: null as 0 via ?? operator (null ?? 0 = 0), allowing easy-win streak', () => {
+    // retryCount: null → null ?? 0 = 0 → satisfies (signals.retryCount ?? 0) === 0
+    // With won:true, frustration near 0, isEasyWin = true → streak increments
+    const easyNullRetry = { retryCount: null, hintUsage: 0, solveTime: 5000, rapidTapBursts: 0 };
+    recordLevel(GAME, easyNullRetry, { won: true });
+    expect(getProfile(GAME).streak).toBe(1); // easy-win streak incremented
   });
 });

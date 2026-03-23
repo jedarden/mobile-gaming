@@ -164,6 +164,17 @@ describe('validateLevel', () => {
     expect(result.valid).toBe(false);
   });
 
+  it('returns invalid when goal is not reachable (if (!solvable) branch)', () => {
+    // One tier-1 item with targetTier=2 → cannot merge → isSolvable returns false
+    const unsolvable = {
+      task: { targetTier: 2, targetCount: 1 },
+      grid: [[1, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
+    };
+    const result = validateLevel(unsolvable);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/reachable/i);
+  });
+
   it('returns valid for all difficulty levels', () => {
     for (const diff of ['easy', 'medium', 'hard']) {
       const level = generateLevel(99 + diff.length, diff, 0);
@@ -206,5 +217,16 @@ describe('generateBatch', () => {
     const a = generateBatch(5000, 'hard', 2);
     const b = generateBatch(5000, 'hard', 2);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+});
+
+// ── validateLevel — null grid (!level.grid first OR clause) ──────────────────
+
+describe('validateLevel — null grid (!level.grid first OR clause)', () => {
+  it('returns invalid when grid is null (!level.grid true branch)', () => {
+    const level = generateLevel(42, 'easy', 0);
+    const result = validateLevel({ ...level, grid: null });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/Missing grid/i);
   });
 });

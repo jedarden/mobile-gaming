@@ -88,6 +88,21 @@ describe('normalizeEvent', () => {
     expect(norm.x).toBe(50);
     expect(norm.y).toBe(60);
   });
+
+  it('falls back to clientX/Y when both touches and changedTouches are empty (else branch)', () => {
+    const el = makeEl();
+    el.getBoundingClientRect = () => ({ left: 10, top: 20, width: 200, height: 200 });
+    // touches exists but empty, changedTouches exists but empty → falls through to clientX/Y
+    const fakeEvent = {
+      touches: [],
+      changedTouches: [],
+      clientX: 70,
+      clientY: 90,
+    };
+    const norm = normalizeEvent(el, 'move', fakeEvent);
+    expect(norm.x).toBe(60); // 70 - 10
+    expect(norm.y).toBe(70); // 90 - 20
+  });
 });
 
 // ── onTap ─────────────────────────────────────────────────────────────────────
@@ -242,6 +257,30 @@ describe('onDrag', () => {
     mouseDown(el, 0, 0);
     mouseMove(el, 20, 0);
     expect(cb).not.toHaveBeenCalled();
+  });
+
+  it('does not fire end callback on mouseup when isDragging=false (if(isDragging) false branch)', () => {
+    // mousedown → small move (below threshold → isDragging stays false) → mouseup
+    const el = makeEl();
+    const cb = vi.fn();
+    onDrag(el, cb, 20); // threshold=20
+    mouseDown(el, 0, 0); // fires initial down callback
+    cb.mockClear();
+    mouseMove(el, 5, 0); // 5px < 20 threshold → isDragging stays false, no move callback
+    mouseUp(el, 5, 0);   // isDragging=false → if(isDragging) false branch → no callback
+    expect(cb).not.toHaveBeenCalled();
+  });
+
+  it('fires on second move while already dragging (wasDragging=true branch of || condition)', () => {
+    const el = makeEl();
+    const cb = vi.fn();
+    onDrag(el, cb, 5);
+    mouseDown(el, 0, 0);
+    mouseMove(el, 10, 0); // cross threshold: wasDragging=false, isDragging=true
+    cb.mockClear();
+    mouseMove(el, 15, 0); // continuing: wasDragging=true → short-circuits isDragging check
+    expect(cb).toHaveBeenCalledOnce();
+    expect(cb.mock.calls[0][0].isDragging).toBe(true);
   });
 });
 

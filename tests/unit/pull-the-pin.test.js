@@ -144,6 +144,21 @@ describe('createInitialState', () => {
     expect(state.gravity).toBe(0.5);
   });
 
+  it('defaults gravity to GRAVITY constant when level.gravity is omitted (|| GRAVITY branch)', () => {
+    const level = makeLevel();
+    delete level.gravity; // remove so || GRAVITY fallback fires
+    const state = createInitialState(level);
+    expect(state.gravity).toBe(GRAVITY);
+  });
+
+  it('defaults cup height to 60 when c.height is omitted (|| 60 branch)', () => {
+    const level = makeLevel({
+      cups: [{ id: 'cup1', x: 80, y: 300, width: 40, acceptColor: 'red' }], // no height field
+    });
+    const state = createInitialState(level);
+    expect(state.cups[0].height).toBe(60);
+  });
+
   it('does not mutate original level', () => {
     const level = makeLevel();
     const origPin = level.pins[0];
@@ -188,6 +203,13 @@ describe('isChannelBlocked', () => {
     const state = createInitialState(makeLevel());
     const stateAfter = removePin(state, 'pin1');
     expect(isChannelBlocked(stateAfter, stateAfter.channels[0])).toBe(false);
+  });
+
+  it('returns false when blockedByPin references a non-existent pin id (pin && ... short-circuits to null)', () => {
+    // getPin returns null for unknown id → pin && !pin.removed evaluates to null (falsy)
+    const state = createInitialState(makeLevel());
+    const channel = { segments: [[0, 0, 1, 1]], blockedByPin: 'ghost-pin-id' };
+    expect(isChannelBlocked(state, channel)).toBeFalsy();
   });
 });
 
@@ -325,6 +347,21 @@ describe('simulateStep', () => {
     expect(next.balls[0].lost).toBe(true);
   });
 
+  it('handles zero-length channel segment (lengthSq === 0 branch in pointToSegment)', () => {
+    // A segment where start === end is degenerate (zero-length).
+    // The early-return path returns the point itself as the closest point.
+    const level = {
+      pins: [],
+      balls: [{ id: 'ball1', x: 100, y: 100, color: 'red' }],
+      cups: [{ id: 'cup1', x: 80, y: 300, width: 40, height: 60, acceptColor: 'red' }],
+      // Zero-length segment: x1===x2, y1===y2
+      channels: [{ segments: [[100, 100, 100, 100]], blockedByPin: null }],
+      gravity: GRAVITY,
+    };
+    const state = { ...createInitialState(level), status: 'animating' };
+    expect(() => simulateStep(state)).not.toThrow();
+  });
+
   it('does not mark ball as lost when new y is exactly 600 (boundary exclusive)', () => {
     // GRAVITY=0.3: ball at y=599.7 with vy=0 → y_new = 599.7+0.3 = 600.0, which is NOT > 600
     const level = makeSolvableLevel();
@@ -399,6 +436,24 @@ describe('checkWin', () => {
     const state = {
       ...createInitialState(level),
       balls: [{ id: 'ball1', x: 100, y: 200, vx: 0, vy: 0, color: 'red', settled: true, lost: false, cupId: null }],
+    };
+    expect(checkWin(state)).toBe('won');
+  });
+
+  it('returns "won" when balls array is empty (vacuous truth: every() on empty array is true)', () => {
+    const level = makeSolvableLevel();
+    const state = { ...createInitialState(level), balls: [] };
+    expect(checkWin(state)).toBe('won');
+  });
+
+  it('returns "won" when ball has nonexistent cupId (cup not found → if(cup&&...) false branch)', () => {
+    // ball.settled=true, ball.cupId='ghost' → truthy, so if(ball.settled && ball.cupId) fires
+    // cups.find() returns undefined → if(cup && cup.acceptColor !== ball.color) is false
+    // → skips loss → allSettled=true → 'won'
+    const level = makeSolvableLevel();
+    const state = {
+      ...createInitialState(level),
+      balls: [{ id: 'ball1', x: 100, y: 200, vx: 0, vy: 0, color: 'red', settled: true, lost: false, cupId: 'ghost-cup' }],
     };
     expect(checkWin(state)).toBe('won');
   });

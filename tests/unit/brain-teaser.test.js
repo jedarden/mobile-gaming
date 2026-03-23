@@ -153,6 +153,43 @@ describe('Brain Teaser State', () => {
       const next = applyAction(state, { action: 'tap', targetId: 'circle1' });
       expect(next.animation.type).toBe('bounce');
     });
+
+    it('defaults animation type to "shake" when decoy has no response property (|| fallback)', () => {
+      // Decoy without a response field → decoy.response is undefined → || 'shake' fires
+      const puzzle = {
+        ...mockPuzzle,
+        decoyActions: [
+          { action: 'tap', targetId: 'circle1', message: 'Nope!' }
+          // No response property — exercises: type: decoy.response || 'shake'
+        ]
+      };
+      const state = createInitialState(puzzle);
+      const next = applyAction(state, { action: 'tap', targetId: 'circle1' });
+      expect(next.animation.type).toBe('shake');
+    });
+
+    it('uses action.sourceId as animation target when action.targetId is absent (|| false arm)', () => {
+      // drag decoy with no targetId matches drag action with no targetId
+      // → action.targetId is undefined (falsy) → action.targetId || action.sourceId fires the || arm
+      const dragPuzzle = {
+        id: 'drag-decoy-001',
+        title: 'Drag Decoy Test',
+        prompt: 'Drag something',
+        type: 'drag',
+        elements: [
+          { id: 'key', type: 'rect', x: 50, y: 200, w: 40, h: 40, draggable: true },
+          { id: 'door', type: 'rect', x: 200, y: 150, w: 80, h: 120 }
+        ],
+        solution: { action: 'drag', sourceId: 'key', targetId: 'door' },
+        decoyActions: [{ action: 'drag', sourceId: 'key' }], // no targetId on decoy
+        difficulty: 1
+      };
+      const state = createInitialState(dragPuzzle);
+      // action also has no targetId — both undefined → actionsMatch fires → decoy found
+      const next = applyAction(state, { action: 'drag', sourceId: 'key' });
+      // action.targetId is undefined (falsy) → || action.sourceId → 'key'
+      expect(next.animation.target).toBe('key');
+    });
   });
 
   describe('cloneState', () => {
@@ -399,6 +436,7 @@ describe('Brain Teaser State', () => {
         expect(state.currentSequence).toEqual([]);
         expect(state.attempts).toBe(1);
       expect(state.animation.type).toBe('shake');
+      expect(state.animation.message).toBe('Wrong sequence!');
     });
 
     it('non-tap action on sequence puzzle does not add to sequence', () => {
@@ -416,6 +454,28 @@ describe('Brain Teaser State', () => {
       };
       const state = createInitialState(seqPuzzle);
       const next = applyAction(state, { action: 'drag', sourceId: 'x', targetId: 'y' });
+      expect(next.currentSequence).toEqual([]);
+      expect(next.status).toBe('playing');
+    });
+
+    it('tap action without targetId does not add to sequence (action.action==="tap" && action.targetId false arm)', () => {
+      // action.action === 'tap' (first condition true) but action.targetId is undefined (second condition false)
+      // → if(action.action === 'tap' && action.targetId) evaluates to false → sequence unchanged
+      const seqPuzzle = {
+        id: 'seq-004',
+        title: 'Tap No Target',
+        prompt: 'Tap in order',
+        type: 'sequence',
+        elements: [
+          { id: 'x', type: 'rect', x: 50, y: 200, w: 60, h: 60, clickable: true }
+        ],
+        solution: { action: 'sequence', steps: ['x'] },
+        decoyActions: [],
+        difficulty: 1
+      };
+      const state = createInitialState(seqPuzzle);
+      // tap action with no targetId — the && short-circuits on falsy targetId
+      const next = applyAction(state, { action: 'tap' }); // targetId undefined
       expect(next.currentSequence).toEqual([]);
       expect(next.status).toBe('playing');
     });
@@ -723,6 +783,12 @@ describe('validatePuzzle decoy reference validation', () => {
     solution: { action: 'tap', targetId: 'circle1' },
   };
 
+  it('validatePuzzle passes when decoyActions is null (if(puzzle.decoyActions) false branch — skip loop)', () => {
+    const result = validatePuzzle({ ...basePuzzle, decoyActions: null });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
   it('detects decoy targetId not found in elements', () => {
     const result = validatePuzzle({
       ...basePuzzle,
@@ -771,5 +837,125 @@ describe('actionsMatch — default switch branch', () => {
     // Both action and solution have action='rotate'; actionsMatch hits default → false
     const next = applyAction(state, { action: 'rotate', targetId: 'el1' });
     expect(next.status).not.toBe('solved');
+  });
+});
+
+describe('actionsMatch — sequence action missing steps (!action1.steps || !action2.steps branch)', () => {
+  it('does not solve puzzle when user action has action="sequence" but no steps field', () => {
+    const puzzle = {
+      id: 'seq-ms-001', title: 'T', prompt: 'P', type: 'sequence',
+      elements: [
+        { id: 'a', type: 'rect', x: 0, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'b', type: 'rect', x: 70, y: 0, w: 60, h: 60, clickable: true },
+      ],
+      solution: { action: 'sequence', steps: ['a', 'b'] },
+      decoyActions: [],
+      difficulty: 1,
+    };
+    const state = createInitialState(puzzle);
+    // action has action='sequence' but no steps → actionsMatch hits !action1.steps → returns false
+    const next = applyAction(state, { action: 'sequence' });
+    expect(next.status).not.toBe('solved');
+  });
+});
+
+describe('actionsMatch — sequence step length mismatch (steps.length !== steps.length branch)', () => {
+  it('does not solve puzzle when action has correct type but different number of steps (step-length mismatch branch)', () => {
+    const puzzle = {
+      id: 'seq-len-001', title: 'T', prompt: 'P', type: 'sequence',
+      elements: [
+        { id: 'a', type: 'rect', x: 0, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'b', type: 'rect', x: 70, y: 0, w: 60, h: 60, clickable: true },
+        { id: 'c', type: 'rect', x: 140, y: 0, w: 60, h: 60, clickable: true },
+      ],
+      solution: { action: 'sequence', steps: ['a', 'b'] },
+      decoyActions: [],
+      difficulty: 1,
+    };
+    const state = createInitialState(puzzle);
+    // action has 3 steps but solution has 2 → length mismatch at line 57 → returns false
+    const next = applyAction(state, { action: 'sequence', steps: ['a', 'b', 'c'] });
+    expect(next.status).not.toBe('solved');
+  });
+});
+
+describe('findDecoy — non-array truthy decoyActions (!Array.isArray branch)', () => {
+  it('applyAction handles non-array decoyActions gracefully (findDecoy returns null)', () => {
+    // Manually build a state bypassing createInitialState to set decoyActions to an object
+    const state = {
+      puzzle: {
+        id: 'nd-001', title: 'T', prompt: 'P', type: 'tap',
+        elements: [{ id: 'el1', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+        solution: { action: 'tap', targetId: 'different-el' },
+        decoyActions: { length: 0 }, // truthy non-array object
+        hint: undefined, showBanner: false, difficulty: 1,
+      },
+      interactions: [], status: 'playing', attempts: 0,
+      revealedElements: [], currentSequence: [], animation: null,
+    };
+    // findDecoy receives non-array → returns null → no decoy branch taken
+    const next = applyAction(state, { action: 'tap', targetId: 'el1' });
+    expect(next.status).toBe('playing'); // not solved (wrong target), not a decoy error
+    expect(next.attempts).toBe(0);      // decoy path not taken
+  });
+});
+
+// ── createInitialState — showBanner || false default ──────────────────────────
+
+describe('createInitialState — showBanner || false default (|| operator branches)', () => {
+  it('defaults showBanner to false when puzzle has no showBanner property (|| false fallback branch)', () => {
+    const puzzle = {
+      id: 'sb-test', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'tap', targetId: 'a' },
+      decoyActions: [],
+    };
+    const state = createInitialState(puzzle);
+    expect(state.puzzle.showBanner).toBe(false);
+  });
+
+  it('preserves showBanner: true when puzzle explicitly sets it (|| short-circuits on truthy)', () => {
+    const puzzle = {
+      id: 'sb-true', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'tap', targetId: 'a' },
+      decoyActions: [],
+      showBanner: true,
+    };
+    const state = createInitialState(puzzle);
+    expect(state.puzzle.showBanner).toBe(true);
+  });
+});
+
+// ── validatePuzzle — missing solution ─────────────────────────────────────────
+
+describe('validatePuzzle — missing solution (if(!puzzle.solution) branch)', () => {
+  it('reports error when solution is undefined (if(!puzzle.solution) true branch)', () => {
+    const result = validatePuzzle({
+      id: 'vs-001', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: undefined,
+      decoyActions: [],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Missing puzzle solution');
+  });
+});
+
+// ── validatePuzzle — sequence steps truthy non-array ─────────────────────────
+
+describe('validatePuzzle — sequence steps truthy non-array (!Array.isArray true arm)', () => {
+  it('rejects sequence puzzle when steps is a truthy non-array object', () => {
+    // steps is a truthy object (not an array) →
+    // !puzzle.solution.steps is false, !Array.isArray(steps) is true → "missing steps array" pushed
+    // Using { forEach: () => {} } so the later steps.forEach call at line 308 doesn't crash
+    const result = validatePuzzle({
+      id: 'seq-nonarr-001', title: 'T', prompt: 'P', type: 'sequence',
+      elements: [{ id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'sequence', steps: { forEach: () => {} } },
+      decoyActions: [],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.toLowerCase().includes('steps'))).toBe(true);
   });
 });

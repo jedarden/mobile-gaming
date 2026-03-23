@@ -131,6 +131,13 @@ describe('StorageManager — get', () => {
     expect(sm.get('nonexistent', '')).toBe('');
   });
 
+  it('returns defaultValue when localStorage item is empty string (if(!item) true branch for "")', () => {
+    // localStorage.getItem returns "" — falsy — triggers the !item guard
+    _store['mg:emptyval'] = '';
+    const sm = new StorageManager();
+    expect(sm.get('emptyval', 'fallback')).toBe('fallback');
+  });
+
   it('uses in-memory cache on second get', () => {
     const sm = new StorageManager();
     sm.set('cached', 'val');
@@ -214,6 +221,15 @@ describe('StorageManager — set', () => {
     });
     expect(sm.set('retry-fail', 'data')).toBe(false);
     expect(sm.get('retry-fail')).toBeNull();
+  });
+
+  it('calls _evictOldest when currentUsage + newValueSize > QUOTA_BUDGET (budget check true branch)', () => {
+    const sm = new StorageManager();
+    // Mock getUsage to return 5MB so the budget check triggers eviction
+    vi.spyOn(sm, 'getUsage').mockReturnValue(5 * 1024 * 1024);
+    const evictSpy = vi.spyOn(sm, '_evictOldest');
+    sm.set('budget-key', 'data');
+    expect(evictSpy).toHaveBeenCalled();
   });
 });
 
@@ -314,6 +330,13 @@ describe('module-level get/set/del/clear', () => {
 describe('isStorageAvailable', () => {
   it('returns true in jsdom environment', () => {
     expect(isStorageAvailable()).toBe(true);
+  });
+
+  it('returns false when localStorage.setItem throws (catch branch)', () => {
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      throw new Error('Access denied');
+    });
+    expect(isStorageAvailable()).toBe(false);
   });
 });
 
@@ -453,5 +476,65 @@ describe('initStorage', () => {
     updateSettings({ soundEnabled: false });
     await initStorage(); // should not overwrite
     expect(getSettings().soundEnabled).toBe(false);
+  });
+});
+
+// ─── StorageManager.getUsage / _getAllKeys ────────────────────────────────────
+
+describe('StorageManager — getUsage', () => {
+  it('returns 0 when no keys are stored', () => {
+    const sm = new StorageManager();
+    expect(sm.getUsage()).toBe(0);
+  });
+
+  it('returns positive bytes after setting a key', () => {
+    const sm = new StorageManager();
+    sm.set('usage-test', { data: 'hello' });
+    expect(sm.getUsage()).toBeGreaterThan(0);
+  });
+
+  it('returns 0 for the item when localStorage.getItem returns null (if(item) false branch)', () => {
+    const sm = new StorageManager();
+    // Override key() to report a mg:-prefixed key, but getItem returns null for it
+    localStorageMock.key.mockImplementationOnce(() => 'mg:phantom-key');
+    Object.defineProperty(localStorageMock, 'length', { value: 1, configurable: true });
+    localStorageMock.getItem.mockImplementationOnce(() => null);
+    const usage = sm.getUsage();
+    // item was null → skipped → total stays 0
+    expect(usage).toBe(0);
+    Object.defineProperty(localStorageMock, 'length', { get() { return Object.keys(_store).length; }, configurable: true });
+  });
+});
+
+describe('StorageManager — _getAllKeys (if fullKey && fullKey.startsWith branch)', () => {
+  it('skips null entries from localStorage.key(i) (&& short-circuit when fullKey is null)', () => {
+    const sm = new StorageManager();
+    _store['mg:real-key'] = '"value"';
+    // Return null for index 1 to simulate a sparse localStorage entry
+    localStorageMock.key.mockImplementation((i) => (i === 1 ? null : Object.keys(_store)[i] ?? null));
+    Object.defineProperty(localStorageMock, 'length', { get() { return 2; }, configurable: true });
+
+    // Should not throw; null key is safely skipped by && short-circuit
+    const keys = sm._getAllKeys();
+    expect(keys).toContain('real-key');
+    expect(keys.length).toBe(1); // only the valid key, null was skipped
+
+    Object.defineProperty(localStorageMock, 'length', { get() { return Object.keys(_store).length; }, configurable: true });
+    delete _store['mg:real-key'];
+  });
+
+  it('skips keys that do not start with the mg: namespace prefix (false branch)', () => {
+    const sm = new StorageManager();
+    // Directly inject a non-namespaced key into the backing store
+    _store['other:prefix:key'] = 'value';
+    _store['mg:valid:key'] = '"data"';
+    localStorageMock.key.mockImplementation((i) => Object.keys(_store)[i] ?? null);
+    const keys = sm._getAllKeys();
+    // Only 'valid:key' should be returned (mg: stripped), not 'other:prefix:key'
+    expect(keys).toContain('valid:key');
+    expect(keys).not.toContain('other:prefix:key');
+    // Clean up
+    delete _store['other:prefix:key'];
+    delete _store['mg:valid:key'];
   });
 });

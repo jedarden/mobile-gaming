@@ -6,7 +6,7 @@
  * getCapabilityReport, isMobile, isIOS, isAndroid, getPixelRatio.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi, afterEach } from 'vitest';
 import {
   getCapabilities,
   hasCapability,
@@ -272,5 +272,372 @@ describe('getPixelRatio', () => {
     Object.defineProperty(window, 'devicePixelRatio', { value: 2, configurable: true, writable: true });
     expect(getPixelRatio()).toBe(2);
     Object.defineProperty(window, 'devicePixelRatio', { value: orig, configurable: true, writable: true });
+  });
+});
+
+// ── hasCapability edge cases ───────────────────────────────────────────────
+
+describe('hasCapability — edge cases', () => {
+  it('returns false for empty string key', () => {
+    expect(hasCapability('')).toBe(false);
+  });
+
+  it('returns false for numeric-like string key', () => {
+    expect(hasCapability('123')).toBe(false);
+  });
+});
+
+// ── getCapabilityReport — section completeness ─────────────────────────────
+
+describe('getCapabilityReport — all groups present', () => {
+  it('contains Performance section', () => {
+    expect(getCapabilityReport()).toContain('Performance');
+  });
+
+  it('contains Web APIs section', () => {
+    expect(getCapabilityReport()).toContain('Web APIs');
+  });
+
+  it('contains Other section', () => {
+    expect(getCapabilityReport()).toContain('Other');
+  });
+
+  it('contains Audio/Video section', () => {
+    expect(getCapabilityReport()).toContain('Audio/Video');
+  });
+
+  it('contains specific feature names from each group', () => {
+    const report = getCapabilityReport();
+    expect(report).toContain('webgl');
+    expect(report).toContain('mediaRecorder');
+    expect(report).toContain('indexedDB');
+    expect(report).toContain('vibration');
+    expect(report).toContain('shareApi');
+    expect(report).toContain('performanceNow');
+    expect(report).toContain('websockets');
+    expect(report).toContain('serviceWorker');
+  });
+});
+
+// ── checkRequirements — mixed satisfied and missing ────────────────────────
+
+describe('checkRequirements — mixed results', () => {
+  it('separates missing from present capabilities', () => {
+    // 'localStorage' is present in jsdom; 'impossibleXYZ' is not
+    const result = checkRequirements(['localStorage', 'impossibleXYZ']);
+    expect(result.supported).toBe(false);
+    expect(result.missing).toContain('impossibleXYZ');
+    expect(result.missing).not.toContain('localStorage');
+  });
+
+  it('missing array length equals count of absent capabilities', () => {
+    const result = checkRequirements(['fakeA', 'fakeB']);
+    expect(result.missing.length).toBe(2);
+  });
+});
+
+// ── isIOS — non-iOS user agents ───────────────────────────────────────────
+
+describe('isIOS — non-iOS user agents', () => {
+  it('returns false for Android user agent', () => {
+    const orig = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Linux; Android 11; Pixel 5)',
+      configurable: true, writable: true
+    });
+    expect(isIOS()).toBe(false);
+    Object.defineProperty(navigator, 'userAgent', { value: orig, configurable: true, writable: true });
+  });
+
+  it('returns false for Windows user agent', () => {
+    const orig = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      configurable: true, writable: true
+    });
+    expect(isIOS()).toBe(false);
+    Object.defineProperty(navigator, 'userAgent', { value: orig, configurable: true, writable: true });
+  });
+});
+
+// ── isAndroid — non-Android user agents ───────────────────────────────────
+
+describe('isAndroid — non-Android user agents', () => {
+  it('returns false for iPad user agent', () => {
+    const orig = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (iPad; CPU OS 15_0 like Mac OS X)',
+      configurable: true, writable: true
+    });
+    expect(isAndroid()).toBe(false);
+    Object.defineProperty(navigator, 'userAgent', { value: orig, configurable: true, writable: true });
+  });
+});
+
+// ── catch branches via module reset ───────────────────────────────────────
+
+describe('checkLocalStorage — catch branch (private browsing)', () => {
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+  it('returns false when localStorage.setItem throws SecurityError', async () => {
+    vi.resetModules();
+    vi.stubGlobal('localStorage', {
+      setItem: () => { throw new Error('SecurityError'); },
+      removeItem: () => {},
+      getItem: () => null,
+      clear: () => {},
+      length: 0,
+    });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.localStorage).toBe(false);
+  });
+});
+
+describe('checkSessionStorage — catch branch (private browsing)', () => {
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+  it('returns false when sessionStorage.setItem throws', async () => {
+    vi.resetModules();
+    vi.stubGlobal('sessionStorage', {
+      setItem: () => { throw new Error('SecurityError'); },
+      removeItem: () => {},
+      getItem: () => null,
+      clear: () => {},
+      length: 0,
+    });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.sessionStorage).toBe(false);
+  });
+});
+
+describe('checkCanvas2D — catch branch (getContext throws)', () => {
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it('returns false for canvas2d when getContext throws', async () => {
+    vi.resetModules();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => {
+      throw new Error('Canvas blocked');
+    });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.canvas2d).toBe(false);
+    expect(caps.webgl).toBe(false);
+    expect(caps.webgl2).toBe(false);
+  });
+});
+
+// ── checkWebGL — experimental-webgl fallback ───────────────────────────────
+
+describe('checkWebGL — experimental-webgl fallback', () => {
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+  it('returns true for webgl when experimental-webgl context is available but webgl is not', async () => {
+    vi.resetModules();
+    vi.stubGlobal('WebGLRenderingContext', function MockWebGL() {});
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((type) => {
+      if (type === 'experimental-webgl') return { drawingBufferWidth: 0 };
+      return null;
+    });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.webgl).toBe(true);
+  });
+});
+
+// ── checkWebAudio — webkitAudioContext fallback ────────────────────────────
+
+describe('checkWebAudio — webkitAudioContext fallback', () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it('returns true for webAudio when webkitAudioContext exists but AudioContext does not', async () => {
+    vi.resetModules();
+    vi.stubGlobal('AudioContext', undefined);
+    vi.stubGlobal('webkitAudioContext', function MockWebkitAudioContext() {});
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.webAudio).toBe(true);
+  });
+});
+
+// ── checkIndexedDB — webkitIndexedDB fallback ─────────────────────────────
+
+describe('checkIndexedDB — webkitIndexedDB fallback', () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it('returns true for indexedDB when webkitIndexedDB exists but indexedDB does not', async () => {
+    vi.resetModules();
+    vi.stubGlobal('indexedDB', undefined);
+    vi.stubGlobal('webkitIndexedDB', { open: () => {} });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.indexedDB).toBe(true);
+  });
+
+  it('returns true for indexedDB when only mozIndexedDB exists', async () => {
+    vi.resetModules();
+    vi.stubGlobal('indexedDB', undefined);
+    vi.stubGlobal('webkitIndexedDB', undefined);
+    vi.stubGlobal('mozIndexedDB', { open: () => {} });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.indexedDB).toBe(true);
+  });
+});
+
+// ── checkTouch — maxTouchPoints > 0 branch ────────────────────────────────
+
+describe('checkTouch — maxTouchPoints > 0 branch', () => {
+  afterEach(() => {
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, configurable: true, writable: true });
+  });
+
+  it('returns true for touch when maxTouchPoints > 0 and ontouchstart is absent', async () => {
+    vi.resetModules();
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 5, configurable: true, writable: true });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.touch).toBe(true);
+  });
+});
+
+// ── checkFullscreen — webkit/moz/ms fallback branches ─────────────────────
+
+describe('checkFullscreen — webkitFullscreenEnabled fallback', () => {
+  afterEach(() => {
+    Object.defineProperty(document, 'webkitFullscreenEnabled', { value: undefined, configurable: true, writable: true });
+  });
+
+  it('returns true for fullscreen when webkitFullscreenEnabled is true', async () => {
+    vi.resetModules();
+    Object.defineProperty(document, 'fullscreenEnabled', { value: false, configurable: true, writable: true });
+    Object.defineProperty(document, 'webkitFullscreenEnabled', { value: true, configurable: true, writable: true });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.fullscreen).toBe(true);
+  });
+});
+
+// ── checkFullscreen — mozFullScreenEnabled fallback ───────────────────────
+
+describe('checkFullscreen — mozFullScreenEnabled fallback', () => {
+  afterEach(() => {
+    Object.defineProperty(document, 'mozFullScreenEnabled', { value: undefined, configurable: true, writable: true });
+    Object.defineProperty(document, 'webkitFullscreenEnabled', { value: undefined, configurable: true, writable: true });
+  });
+
+  it('returns true for fullscreen when only mozFullScreenEnabled is true', async () => {
+    vi.resetModules();
+    Object.defineProperty(document, 'fullscreenEnabled', { value: false, configurable: true, writable: true });
+    Object.defineProperty(document, 'webkitFullscreenEnabled', { value: false, configurable: true, writable: true });
+    Object.defineProperty(document, 'mozFullScreenEnabled', { value: true, configurable: true, writable: true });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.fullscreen).toBe(true);
+  });
+});
+
+// ── checkFullscreen — msFullscreenEnabled fallback ────────────────────────
+
+describe('checkFullscreen — msFullscreenEnabled fallback', () => {
+  afterEach(() => {
+    Object.defineProperty(document, 'msFullscreenEnabled', { value: undefined, configurable: true, writable: true });
+    Object.defineProperty(document, 'mozFullScreenEnabled', { value: undefined, configurable: true, writable: true });
+    Object.defineProperty(document, 'webkitFullscreenEnabled', { value: undefined, configurable: true, writable: true });
+  });
+
+  it('returns true for fullscreen when only msFullscreenEnabled is true', async () => {
+    vi.resetModules();
+    Object.defineProperty(document, 'fullscreenEnabled', { value: false, configurable: true, writable: true });
+    Object.defineProperty(document, 'webkitFullscreenEnabled', { value: false, configurable: true, writable: true });
+    Object.defineProperty(document, 'mozFullScreenEnabled', { value: false, configurable: true, writable: true });
+    Object.defineProperty(document, 'msFullscreenEnabled', { value: true, configurable: true, writable: true });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    expect(caps.fullscreen).toBe(true);
+  });
+});
+
+// ── isMobile — touch && mobile-UA true branch ─────────────────────────────
+
+describe('isMobile — touch && mobile-UA true branch', () => {
+  afterEach(() => {
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, configurable: true, writable: true });
+    Object.defineProperty(navigator, 'userAgent', {
+      value: navigator.userAgent, configurable: true, writable: true,
+    });
+  });
+
+  it('returns true when touch is enabled and user agent matches mobile pattern', async () => {
+    vi.resetModules();
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 5, configurable: true, writable: true });
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Linux; Android 12; Pixel 6) Chrome/99',
+      configurable: true, writable: true,
+    });
+    const mod = await import('../../src/shared/capabilities.js');
+    expect(mod.isMobile()).toBe(true);
+  });
+});
+
+// ── isMobile — touch && deviceOrientation/deviceMotion true branch ─────────
+
+describe('isMobile — deviceOrientation and deviceMotion fallback branches', () => {
+  afterEach(async () => {
+    delete globalThis.DeviceOrientationEvent;
+    delete globalThis.DeviceMotionEvent;
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, configurable: true, writable: true });
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (X11; Linux x86_64) Chrome/99',
+      configurable: true, writable: true,
+    });
+    vi.resetModules();
+  });
+
+  it('returns true when touch enabled and DeviceOrientationEvent exists — (caps.deviceOrientation) true branch', async () => {
+    vi.resetModules();
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 5, configurable: true, writable: true });
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (X11; Linux x86_64) Chrome/99', // non-mobile UA
+      configurable: true, writable: true,
+    });
+    globalThis.DeviceOrientationEvent = {};
+    const mod = await import('../../src/shared/capabilities.js');
+    expect(mod.isMobile()).toBe(true);
+  });
+
+  it('returns true when touch enabled and DeviceMotionEvent exists — (caps.deviceMotion) true branch', async () => {
+    vi.resetModules();
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 5, configurable: true, writable: true });
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (X11; Linux x86_64) Chrome/99', // non-mobile UA
+      configurable: true, writable: true,
+    });
+    globalThis.DeviceMotionEvent = {};
+    const mod = await import('../../src/shared/capabilities.js');
+    expect(mod.isMobile()).toBe(true);
+  });
+});
+
+// ── checkTouch — ontouchstart absent, maxTouchPoints=0 → touch false ────────
+
+describe('checkTouch — both conditions false → touch=false (|| false || false = false)', () => {
+  afterEach(async () => {
+    // Restore ontouchstart and reset maxTouchPoints
+    globalThis.ontouchstart = undefined;
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, configurable: true, writable: true });
+    vi.resetModules();
+  });
+
+  it('returns false for touch when ontouchstart is deleted and maxTouchPoints=0 (both || operands false)', async () => {
+    vi.resetModules();
+    // Remove ontouchstart from window so first || operand is false
+    delete globalThis.ontouchstart;
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, configurable: true, writable: true });
+    const mod = await import('../../src/shared/capabilities.js');
+    const caps = mod.getCapabilities();
+    // Both 'ontouchstart' in window (false) and maxTouchPoints > 0 (false) → touch=false
+    expect(caps.touch).toBe(false);
   });
 });

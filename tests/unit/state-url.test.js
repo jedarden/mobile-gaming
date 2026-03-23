@@ -280,6 +280,52 @@ describe('encodeState — compact fallback (hash > 2000 chars)', () => {
     expect(decoded.state._compact).toBe(true);
     expect(decoded.state.levelId).toBe('huge-level-id');
   });
+
+  it('compact encoding defaults moves to [] when state.moves is undefined (?? operator fallback)', () => {
+    // Build a large state WITH levelId but WITHOUT moves — exercises state.moves ?? []
+    const hugeStateNoMoves = {
+      levelId: 'huge-level-id',
+      // moves field intentionally absent → state.moves ?? [] = []
+      history: Array.from({ length: 800 }, (_, i) => ({
+        from: i % 13, to: (i * 7 + 3) % 13,
+        color: `#${(i * 123457 & 0xffffff).toString(16).padStart(6, '0')}`,
+        ts: i * 1234.5678,
+      })),
+    };
+    const hash = encodeState('water-sort', hugeStateNoMoves);
+    const decoded = decodeState(hash);
+    expect(decoded.state._compact).toBe(true);
+    expect(decoded.state.moves).toEqual([]);
+  });
+
+  it('returns full hash when state has no levelId (compact fallback condition false branch)', () => {
+    // Build a large state WITHOUT a levelId — the compact fallback requires levelId !== undefined
+    // so even if the hash is long, it should NOT fall back to compact encoding
+    const hugeStateNoLevelId = {
+      history: Array.from({ length: 800 }, (_, i) => ({
+        from: i % 13, to: (i * 7 + 3) % 13,
+        color: `#${(i * 123457 & 0xffffff).toString(16).padStart(6, '0')}`,
+        ts: i * 1234.5678,
+      })),
+    };
+    const hash = encodeState('water-sort', hugeStateNoLevelId);
+    // Should NOT have compact marker — levelId was absent so compact fallback was skipped
+    const decoded = decodeState(hash);
+    expect(decoded).not.toBeNull();
+    expect(decoded.state._compact).toBeUndefined();
+  });
+});
+
+// ─── decodeState catch block ──────────────────────────────────────────────────
+
+describe('decodeState — catch block', () => {
+  it('returns null when base64 data is structurally valid but not deflate data (inflateRaw throws → catch block)', () => {
+    // Format: #s=<gameId>.<version>.<base64url>
+    // "AAAAAA" decodes to 4 zero bytes — not a valid deflate stream
+    const corruptedHash = '#s=water-sort.1.AAAAAA';
+    const result = decodeState(corruptedHash);
+    expect(result).toBeNull();
+  });
 });
 
 // ─── encodeState validation ───────────────────────────────────────────────────

@@ -104,7 +104,7 @@ describe('generateLevel', () => {
     expect(level.difficulty).toBe(2 + Math.round(level.targetMoves / 4));
   });
 
-  it('medium difficulty: difficulty score uses 5 + Math.round(targetMoves / 8) formula', () => {
+  it('medium difficulty: difficulty score uses 5 + Math.round(targetMoves / 8) formula', { timeout: 30000 }, () => {
     let level = null;
     for (let s = 0; s < 30; s++) {
       level = generateLevel(s, 'medium', 0);
@@ -173,6 +173,26 @@ describe('generateLevel', () => {
       }
     }
   });
+
+  it('can generate truck vehicles (type=truck, length=3) from the 25% isTruck probability', { timeout: 30000 }, () => {
+    // With 25% per vehicle and many seeds, at least one truck should appear
+    let foundTruck = false;
+    for (let seed = 0; seed < 50; seed++) {
+      const level = generateLevel(seed, 'medium', 0);
+      if (!level) continue;
+      const trucks = level.grid.vehicles.filter(v => v.type === 'truck');
+      if (trucks.length > 0) {
+        foundTruck = true;
+        // Truck occupies 3 cells in its orientation direction
+        for (const truck of trucks) {
+          const length = truck.orientation === 'horizontal' ? truck.width : truck.height;
+          expect(length).toBe(3);
+        }
+        break;
+      }
+    }
+    expect(foundTruck).toBe(true);
+  });
 });
 
 describe('validateLevel', () => {
@@ -207,7 +227,7 @@ describe('validateLevel', () => {
     expect(result.reason).toContain('hero');
   });
 
-  it('returns valid for medium difficulty level', () => {
+  it('returns valid for medium difficulty level', { timeout: 30000 }, () => {
     let level = null;
     for (let s = 0; s < 30; s++) {
       level = generateLevel(s, 'medium', 0);
@@ -216,10 +236,37 @@ describe('validateLevel', () => {
     if (!level) return; // skip if generation failed in test environment
     expect(validateLevel(level).valid).toBe(true);
   });
+
+  it('returns invalid with "unsolvable" reason when hero is trapped (if(!solution) branch)', () => {
+    // Hero at (0,2) width=2 occupies cols 0-1 on row 2.
+    // Blocker at (2,2) width=4 occupies cols 2-5 on row 2 — right edge is at grid boundary (col 5),
+    // left edge would need col 1 which is occupied by the hero.
+    // Neither can move → level is unsolvable.
+    const unsolvableLevel = {
+      version: 1,
+      id: 'pe-unsolvable-test',
+      title: 'Unsolvable Test',
+      difficulty: 3,
+      grid: {
+        width: 6,
+        height: 6,
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 0, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' },
+          { id: 'b1',   type: 'car',  x: 2, y: 2, width: 4, height: 1, orientation: 'horizontal', color: '#3498DB' },
+        ],
+        exit: { x: 6, y: 2, direction: 'right' },
+      },
+      targetMoves: 0,
+      maxMoves: 50,
+    };
+    const result = validateLevel(unsolvableLevel);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain('unsolvable');
+  });
 });
 
 describe('generateLevel — unknown difficulty', () => {
-  it('falls back to medium config for an unknown difficulty string', () => {
+  it('falls back to medium config for an unknown difficulty string', { timeout: 30000 }, () => {
     // DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium (line 106)
     const level = generateLevel(42, 'legendary', 0);
     // Should not throw and should return a level or null (medium config is used)

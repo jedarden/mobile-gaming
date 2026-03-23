@@ -282,4 +282,38 @@ describe('render', () => {
     ps.spawn('sparkle', 0, 0, 3);
     expect(() => ps.render()).not.toThrow();
   });
+
+  it('draws rect shape via fillRect for confetti particles (p.shape === "rect" branch)', () => {
+    const ctx = {
+      save: vi.fn(), restore: vi.fn(),
+      translate: vi.fn(), rotate: vi.fn(),
+      fillRect: vi.fn(), beginPath: vi.fn(),
+      arc: vi.fn(), fill: vi.fn(),
+      globalAlpha: 1, fillStyle: '',
+    };
+    const ps = createParticleSystem(ctx);
+    ps.spawn('confetti', 50, 50, 1); // confetti uses shape='rect'
+    // Advance time slightly so particle is active with positive life
+    ps.update(0.01);
+    ps.render();
+    expect(ctx.fillRect).toHaveBeenCalled();
+    expect(ctx.rotate).toHaveBeenCalled(); // rect path calls ctx.rotate
+  });
+
+  it('draws circle shape via arc for sparkle particles (else branch)', () => {
+    const ctx = {
+      save: vi.fn(), restore: vi.fn(),
+      translate: vi.fn(), rotate: vi.fn(),
+      fillRect: vi.fn(), beginPath: vi.fn(),
+      arc: vi.fn(), fill: vi.fn(),
+      globalAlpha: 1, fillStyle: '',
+    };
+    const ps = createParticleSystem(ctx);
+    ps.spawn('sparkle', 50, 50, 1); // sparkle uses shape='circle'
+    ps.update(0.01);
+    ps.render();
+    expect(ctx.arc).toHaveBeenCalled();
+    expect(ctx.fill).toHaveBeenCalled();
+    expect(ctx.fillRect).not.toHaveBeenCalled();
+  });
 });

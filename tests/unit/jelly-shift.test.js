@@ -62,6 +62,11 @@ describe('Jelly Shift State', () => {
 
       expect(baseLevel.walls[0].passed).toBeUndefined();
     });
+
+    it('defaults speed to BASE_SPEED (2.0) when level.speed is 0 (falsy || fallback)', () => {
+      const state = createInitialState({ ...baseLevel, speed: 0 });
+      expect(state.speed).toBe(2.0); // 0 || BASE_SPEED (2.0)
+    });
   });
 
   describe('fitsHole', () => {
@@ -519,6 +524,17 @@ describe('Jelly Shift State', () => {
       expect(validation.valid).toBe(false);
       expect(validation.errors.some(e => e.includes('missing z'))).toBe(true);
     });
+
+    it('accepts unknown shape without dimension errors (no else branch for unknown shapes)', () => {
+      // validateLevel only adds errors for known shapes (tall/wide/plus) missing their dims;
+      // an unknown shape like "circle" bypasses those checks and passes if z and hole are present
+      const validation = validateLevel({
+        id: 1,
+        walls: [{ z: 30, hole: { shape: 'circle' } }]
+      });
+      expect(validation.valid).toBe(true);
+      expect(validation.errors).toHaveLength(0);
+    });
   });
 
   describe('Area Preservation', () => {
@@ -650,6 +666,16 @@ describe('calculateStars', () => {
     const state = createInitialState(level);
     state.score = 129; // 129/260 ≈ 0.496 < 0.5
     expect(calculateStars(state)).toBe(1);
+  });
+
+  it('uses || 100 fallback when walls array is empty (walls[-1]?.z is undefined → || 100 fires)', () => {
+    // With empty walls: totalWalls=0, walls[-1]?.z = undefined → || 100 → maxScore = 0+100 = 100
+    const emptyState = { ...createInitialState({ id: 'x', walls: [] }), score: 80 };
+    // 80/100 = 0.8 → 3 stars
+    expect(calculateStars(emptyState)).toBe(3);
+    const lowState = { ...createInitialState({ id: 'x', walls: [] }), score: 10 };
+    // 10/100 = 0.1 < 0.5 → 1 star
+    expect(calculateStars(lowState)).toBe(1);
   });
 });
 

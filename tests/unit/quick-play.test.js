@@ -306,6 +306,16 @@ describe('Quick Play', () => {
       expect(gameIds).toContain(result.gameId);
       expect(result.level).toBeGreaterThanOrEqual(1);
     });
+
+    it('returns water-sort level 1 fallback when registry is empty (availableGames.length===0 branch)', () => {
+      const saved = GAME_REGISTRY.splice(0);
+      try {
+        const result = pickGame();
+        expect(result).toEqual({ gameId: 'water-sort', level: 1 });
+      } finally {
+        GAME_REGISTRY.splice(0, 0, ...saved);
+      }
+    });
   });
 
   describe('getTopCandidates', () => {
@@ -363,6 +373,16 @@ describe('Quick Play', () => {
       expect(candidates).toHaveLength(2);
       // brain-teaser should NOT be first (recency penalty)
       expect(candidates[0].gameId).not.toBe('brain-teaser');
+    });
+
+    it('returns single water-sort fallback when registry is empty (availableGames.length===0 branch)', () => {
+      const saved = GAME_REGISTRY.splice(0);
+      try {
+        const candidates = getTopCandidates();
+        expect(candidates).toEqual([{ gameId: 'water-sort', level: 1 }]);
+      } finally {
+        GAME_REGISTRY.splice(0, 0, ...saved);
+      }
     });
   });
 
@@ -596,4 +616,5 @@ describe('Quick Play', () => {
       if (origHref !== undefined) globalThis.window.location.href = origHref;
     });
   });
+
 });

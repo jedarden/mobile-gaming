@@ -320,6 +320,25 @@ describe('canBoard', () => {
     const state = createInitialState(level);
     expect(canBoard(state, state.buses[0])).toBeNull();
   });
+
+  it('returns null when adjacent stop has wrong color (stop.color !== bus.color branch)', () => {
+    // Bus is blue, adjacent stop is red → color mismatch → condition fails → null
+    const level = makeLevel({
+      buses: [{ id: 'b1', x: 1, y: 1, color: 'blue', passengers: 0, capacity: 2, exited: false }],
+      stops: [{ id: 's1', x: 1, y: 0, color: 'red', waiting: ['p1'] }],
+    });
+    const state = createInitialState(level);
+    expect(canBoard(state, state.buses[0])).toBeNull();
+  });
+
+  it('returns null when adjacent matching-color stop has no waiting passengers (waiting.length === 0 branch)', () => {
+    // Bus is red, adjacent stop is red but empty → length check fails → null
+    const level = makeLevel({
+      stops: [{ id: 's1', x: 1, y: 0, color: 'red', waiting: [] }],
+    });
+    const state = createInitialState(level);
+    expect(canBoard(state, state.buses[0])).toBeNull();
+  });
 });
 
 // ── boardPassenger ─────────────────────────────────────────────────────────
@@ -599,6 +618,23 @@ describe('getHint', () => {
     expect(hint.bus).toBeDefined();
   });
 
+  it('skips exit hint when exit is occupied by another bus (path===null, && short-circuits — Priority 2 false arm)', () => {
+    // b1 is full, b2 sits at the exit (3,3) → findPath(b1, exit) returns null
+    // Condition: path && path.length > 0 → null && ... → false (short-circuit, never checks length)
+    // Priority 2 is skipped; Priority 3 fires because b1 can reach (1,1) adjacent to stop (1,0)
+    const level = makeLevel({
+      buses: [
+        { id: 'b1', x: 1, y: 3, color: 'red', passengers: 2, capacity: 2, exited: false },
+        { id: 'b2', x: 3, y: 3, color: 'blue', passengers: 0, capacity: 2, exited: false },
+      ],
+    });
+    const state = createInitialState(level);
+    const hint = getHint(state);
+    // Priority 2 skipped (path null) → hint is not an exit hint
+    expect(hint).not.toBeNull();
+    expect(hint.type).not.toBe('exit');
+  });
+
   it('returns null when all buses have exited', () => {
     const level = makeLevel({
       buses: [{ id: 'b1', x: 1, y: 1, color: 'red', passengers: 2, capacity: 2, exited: true }],
@@ -619,6 +655,28 @@ describe('getHint', () => {
     expect(hint.type).toBe('move');
     expect(hint.stop).toBeDefined();
     expect(hint.stop.id).toBe('s1');
+  });
+
+  it('falls through to priority 4 when all paths to adjacent stop cells return null (if(path && ...) false arm)', () => {
+    // Red bus at (3,3) — far from stop, not adjacent → Priority 1 skips
+    // Not full → Priority 2 skips
+    // Blue bus at (1,1) blocks the only road cell adjacent to stop (1,0)
+    // All other cells adjacent to stop (1,0) are non-road → findPath returns null for each
+    // → Priority 3 if(path && path.length > 0) is false for all directions → falls through
+    // → Priority 4 fires because red bus at (3,3) has valid move to (2,3)
+    const level = makeLevel({
+      buses: [
+        { id: 'b1', x: 3, y: 3, color: 'red', passengers: 0, capacity: 2, exited: false },
+        { id: 'b2', x: 1, y: 1, color: 'blue', passengers: 0, capacity: 2, exited: false },
+      ],
+    });
+    const state = createInitialState(level);
+    const hint = getHint(state);
+    // Priority 3 fell through; Priority 4 gives a generic move hint
+    expect(hint).not.toBeNull();
+    expect(hint.type).toBe('move');
+    // The hint should NOT reference the stop (priority 3 did not fire)
+    expect(hint.stop).toBeUndefined();
   });
 });
 
@@ -654,5 +712,39 @@ describe('createHistory', () => {
     hist.push('c'); // 'a' evicted; stack = ['b', 'c']
     expect(hist.canUndo()).toBe(true);
     expect(hist.undo()).toBe('b');
+  });
+});
+
+// ── getHint — priority 4 fallback ──────────────────────────────────────────
+
+describe('getHint — priority 4 fallback (any valid move)', () => {
+  it('returns generic move hint when priorities 1-3 all find nothing', () => {
+    // Blue bus, only a red stop → color mismatch skips priorities 1 & 3
+    // Bus not full → priority 2 skipped
+    // Bus has valid road moves → priority 4 fires
+    const state = createInitialState(makeLevel({
+      buses: [{ id: 'b1', x: 1, y: 1, color: 'blue', passengers: 0, capacity: 2, exited: false }],
+      stops: [{ id: 's1', x: 1, y: 0, color: 'red', waiting: ['p1'] }],
+    }));
+    const hint = getHint(state);
+    expect(hint).not.toBeNull();
+    expect(hint.type).toBe('move');
+    expect(hint.message).toBe('Try moving the blue bus.');
+    expect(Array.isArray(hint.path)).toBe(true);
+    expect(hint.path).toHaveLength(1);
+  });
+
+  it('returns null when priority 4 bus has no valid moves (moves.length > 0 false branch)', () => {
+    // Bus on an isolated road cell with no adjacent roads — getValidMoves returns []
+    // Priorities 1-3: no matching stop → all skipped
+    // Priority 4: moves.length === 0 → false branch → loop continues → returns null
+    const state = createInitialState({
+      grid: { width: 5, height: 5 },
+      buses: [{ id: 'b1', x: 2, y: 2, color: 'blue', passengers: 0, capacity: 2, exited: false }],
+      stops: [],
+      exits: [],
+      roads: [[2, 2]], // isolated single cell — no adjacent roads
+    });
+    expect(getHint(state)).toBeNull();
   });
 });

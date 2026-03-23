@@ -110,6 +110,24 @@ describe('share', () => {
       // Returns false when canShare is not a function
       expect(mod.hasFileShareSupport()).toBe(false);
     });
+
+    it('returns false when canShare is a function that returns false (canShare() false branch)', async () => {
+      // canShare IS a function, but returns false for the test file → hasFileShareSupport returns false
+      mockNavigator.canShare = vi.fn(() => false);
+      vi.resetModules();
+      global.navigator = mockNavigator;
+      const mod = await import('../../src/shared/share.js');
+      expect(mod.hasFileShareSupport()).toBe(false);
+    });
+
+    it('returns false when hasWebShareSupport() is false (!hasWebShareSupport() early return)', async () => {
+      // Remove navigator.share so hasWebShareSupport() returns false
+      delete mockNavigator.share;
+      vi.resetModules();
+      global.navigator = mockNavigator;
+      const mod = await import('../../src/shared/share.js');
+      expect(mod.hasFileShareSupport()).toBe(false);
+    });
   });
 
   describe('isMobile', () => {
@@ -186,6 +204,21 @@ describe('share', () => {
       expect(mockNavigator.share).toHaveBeenCalled();
     });
 
+    it('names video file gameplay.mp4 when blob type contains mp4 (mp4 branch)', async () => {
+      const videoBlob = new Blob(['video data'], { type: 'video/mp4' });
+      await shareModule.shareViaWebAPI({ title: 'My Game', videoBlob });
+      const shareData = mockNavigator.share.mock.calls[0][0];
+      expect(shareData.files).toBeDefined();
+      expect(shareData.files[0].name).toBe('gameplay.mp4');
+    });
+
+    it('names video file gameplay.webm when blob type does not contain mp4 (webm branch)', async () => {
+      const videoBlob = new Blob(['video data'], { type: 'video/webm' });
+      await shareModule.shareViaWebAPI({ title: 'My Game', videoBlob });
+      const shareData = mockNavigator.share.mock.calls[0][0];
+      expect(shareData.files[0].name).toBe('gameplay.webm');
+    });
+
     it('returns false when Web Share not available', async () => {
       delete mockNavigator.share;
       vi.resetModules();
@@ -226,6 +259,29 @@ describe('share', () => {
       const mod = await import('../../src/shared/share.js');
       const result = await mod.shareViaWebAPI({ title: 'Test' });
       expect(result).toBe(false);
+    });
+
+    it('does not add files to shareData when hasFileShareSupport() is false (videoBlob && false — if false branch)', async () => {
+      // Removing canShare makes hasFileShareSupport() return false (typeof check fails)
+      // and also makes the canShare guard at line 148 short-circuit (canShare is falsy)
+      delete mockNavigator.canShare;
+      vi.resetModules();
+      global.navigator = mockNavigator;
+      const mod = await import('../../src/shared/share.js');
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      const result = await mod.shareViaWebAPI({ title: 'Test', videoBlob });
+      expect(result).toBe(true); // share succeeds without file
+      const shareData = mockNavigator.share.mock.calls[0][0];
+      expect(shareData.files).toBeUndefined(); // files NOT added because hasFileShareSupport() is false
+    });
+
+    it('uses "My Gameplay" default when title is omitted (title||"My Gameplay" false arm)', async () => {
+      // shareViaWebAPI({}) — no title → title is undefined → || 'My Gameplay' fires
+      const result = await shareModule.shareViaWebAPI({});
+      expect(result).toBe(true);
+      const shareData = mockNavigator.share.mock.calls[0][0];
+      expect(shareData.title).toBe('My Gameplay');
+      expect(shareData.text).toBe('Check out my gameplay!'); // text also uses default
     });
   });
 
@@ -381,9 +437,25 @@ describe('share', () => {
       expect(text).toContain('Water Sort');
     });
 
+    it('uses "Game" fallback when gameName is undefined (gameName || "Game" false branch)', () => {
+      const text = shareModule.generateShareText({});
+      expect(text).toContain('Game');
+    });
+
     it('generates text with moves', () => {
       const text = shareModule.generateShareText({ gameName: 'Water Sort', moves: 14 });
       expect(text).toContain('14 moves');
+    });
+
+    it('generates text with time only (else-if branch — time but no moves)', () => {
+      const text = shareModule.generateShareText({ gameName: 'Water Sort', time: 45 });
+      expect(text).toContain('45 seconds');
+    });
+
+    it('generates text with both moves and time (inner if branch — moves + time together)', () => {
+      const text = shareModule.generateShareText({ gameName: 'Water Sort', moves: 10, time: 30 });
+      expect(text).toContain('10 moves');
+      expect(text).toContain('30s');
     });
 
     it('generates text with time', () => {
@@ -414,6 +486,73 @@ describe('share', () => {
       const result = await shareModule.quickShare(options);
       expect(result).toBe(true);
       expect(mockNavigator.share).toHaveBeenCalled();
+    });
+  });
+
+  describe('showShareOverlay', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('returns early when native share succeeds on mobile (if(shared) true branch)', async () => {
+      // Setup: iPhone UA (isMobile=true), share fn (hasWebShareSupport=true), videoBlob truthy
+      // To avoid File constructor issues in canShare check, remove canShare from navigator so
+      // hasFileShareSupport() returns false (skips file attachment) and canShare gate is skipped.
+      // shareViaWebAPI then just calls navigator.share → resolves → returns true → early return.
+      vi.resetModules();
+      const nativeShareFn = vi.fn(async () => {});
+      global.navigator = {
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+        share: nativeShareFn,
+        // no canShare — hasFileShareSupport() returns false → no File creation → no canShare gate
+      };
+      global.document.body.appendChild = vi.fn();
+      vi.stubGlobal('requestAnimationFrame', vi.fn(cb => cb()));
+      const mod = await import('../../src/shared/share.js');
+
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      await mod.showShareOverlay({ title: 'Test', text: 'Go!', url: 'http://x.com', videoBlob });
+
+      // native share succeeded → overlay NOT appended
+      expect(nativeShareFn).toHaveBeenCalled();
+      expect(global.document.body.appendChild).not.toHaveBeenCalled();
+    });
+
+    it('falls back to custom overlay when native share fails (if(shared) false arm)', async () => {
+      // navigator.share throws non-AbortError → shareViaWebAPI returns false → createShareOverlay runs
+      vi.resetModules();
+      const mockChild = {
+        addEventListener: vi.fn(),
+        classList: { add: vi.fn(), remove: vi.fn() },
+        dataset: {},
+      };
+      const bodyAppend = vi.fn();
+      global.navigator = {
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+        share: vi.fn(async () => { throw new Error('Permission denied'); }),
+        // no canShare — hasFileShareSupport returns false → no File creation
+      };
+      global.document = {
+        body: { appendChild: bodyAppend, removeChild: vi.fn() },
+        head: { appendChild: vi.fn() },
+        createElement: vi.fn(() => ({
+          id: '', className: '', innerHTML: '', textContent: '',
+          addEventListener: vi.fn(),
+          querySelector: vi.fn(() => mockChild),
+          querySelectorAll: vi.fn(() => []), // empty forEach — avoids platform btn loop
+          classList: { add: vi.fn() },
+        })),
+        getElementById: vi.fn(() => null), // style not yet injected → injectStyles proceeds
+        querySelector: vi.fn(() => null),
+      };
+      vi.stubGlobal('requestAnimationFrame', vi.fn(cb => cb()));
+      const mod = await import('../../src/shared/share.js');
+
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      await mod.showShareOverlay({ title: 'Test', text: 'Go!', url: 'http://x.com', videoBlob });
+
+      // native share failed → custom overlay IS appended to body
+      expect(bodyAppend).toHaveBeenCalled();
     });
   });
 });

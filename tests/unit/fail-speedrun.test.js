@@ -1,6 +1,8 @@
 /**
  * Fail Speedrun - Unit Tests
  *
+ * @vitest-environment jsdom
+ *
  * Tests for the fail speedrun mode functionality.
  */
 
@@ -63,7 +65,10 @@ import {
   formatTime,
   isFailSpeedrunEnabled,
   setFailSpeedrunEnabled,
-  toggleFailSpeedrun
+  toggleFailSpeedrun,
+  showFailResult,
+  showFailTimer,
+  cleanupAllOverlays,
 } from '../../src/shared/fail-speedrun.js';
 
 describe('Fail Speedrun', () => {
@@ -354,6 +359,23 @@ describe('Fail Speedrun', () => {
         expect(result.badgeAwarded).toBe(false);
       });
 
+      it('returns null result when recordFail called after stop() (!isRunning guard)', () => {
+        const speedrun = createFailSpeedrun({
+          gameId: 'pull-the-pin',
+          levelIndex: 0
+        });
+        mockPerformanceTime = 0;
+        speedrun.start();
+        mockPerformanceTime = 100;
+        speedrun.recordInput(); // firstInputTime is now set (non-null)
+        speedrun.stop();        // isRunning = false
+        // !isRunning is true → guard fires → null result
+        const result = speedrun.recordFail();
+        expect(result.timeMs).toBeNull();
+        expect(result.isNewBest).toBe(false);
+        expect(result.badgeAwarded).toBe(false);
+      });
+
       it('should stop timing on recordFail', () => {
         const speedrun = createFailSpeedrun({
           gameId: 'pull-the-pin',
@@ -370,6 +392,17 @@ describe('Fail Speedrun', () => {
 
         expect(result.timeMs).toBe(400);
         expect(result.isNewBest).toBe(true);
+      });
+
+      it('is a no-op when called before start() (!isRunning guard)', () => {
+        const speedrun = createFailSpeedrun({
+          gameId: 'pull-the-pin',
+          levelIndex: 0
+        });
+        // recordInput before start() → !isRunning is true → early return, hasInput stays false
+        mockPerformanceTime = 100;
+        speedrun.recordInput(); // should silently do nothing
+        expect(speedrun.getElapsedTime()).toBeNull(); // no firstInputTime set
       });
 
       it('should only record first input once', () => {
@@ -562,6 +595,54 @@ describe('Fail Speedrun', () => {
         expect(speedrun.getElapsedTime()).toBeNull();
         expect(speedrun.getState().isRunning).toBe(false);
       });
+
+      it('does not throw when recordFail called without onFail callback (if(onFail) false branch)', () => {
+        const speedrun = createFailSpeedrun({
+          gameId: 'pull-the-pin',
+          levelIndex: 0,
+          // no onFail
+        });
+        speedrun.start();
+        mockPerformanceTime = 100;
+        speedrun.recordInput();
+        mockPerformanceTime = 300;
+        let result;
+        expect(() => { result = speedrun.recordFail(); }).not.toThrow();
+        expect(result.timeMs).toBe(200);
+      });
+
+      it('skips tick interval setup when onTick not provided (if(onTick) false branch in start())', () => {
+        // No onTick — tickIntervalId should stay null; stop() is a no-op for intervals
+        const speedrun = createFailSpeedrun({
+          gameId: 'pull-the-pin',
+          levelIndex: 0,
+          // no onTick
+        });
+        speedrun.start();
+        // stop() must not throw even though no interval was ever set
+        expect(() => speedrun.stop()).not.toThrow();
+      });
+
+      it('clears active tick interval on recordFail (tickIntervalId !== null branch)', () => {
+        vi.useFakeTimers();
+        const onTick = vi.fn();
+        const speedrun = createFailSpeedrun({
+          gameId: 'pull-the-pin',
+          levelIndex: 0,
+          onTick,
+          tickInterval: 50,
+        });
+        speedrun.start();
+        mockPerformanceTime = 100;
+        speedrun.recordInput();
+        vi.advanceTimersByTime(150); // fire the interval a few times
+        mockPerformanceTime = 500;
+        speedrun.recordFail(); // clears interval
+        const callsAtFail = onTick.mock.calls.length;
+        vi.advanceTimersByTime(500); // no more ticks should fire
+        expect(onTick.mock.calls.length).toBe(callsAtFail);
+        vi.useRealTimers();
+      });
     });
   });
 
@@ -626,5 +707,182 @@ describe('Fail Speedrun', () => {
       expect(getGameConfig('jelly-shift').failObjective).toContain('splat');
       expect(getGameConfig('giant-runner').failObjective).toContain('smallest');
     });
+  });
+});
+
+// ── getTotalTime — null guard (startTime === null) ─────────────────────────
+
+describe('getTotalTime — null guard before start()', () => {
+  it('returns null before start() is called (startTime === null → return null branch)', () => {
+    const speedrun = createFailSpeedrun({ gameId: 'pull-the-pin', levelIndex: 0 });
+    // startTime is initialised to null; getTotalTime() checks startTime === null and returns null
+    expect(speedrun.getTotalTime()).toBeNull();
+  });
+});
+
+// ── showFailResult ────────────────────────────────────────────────────────────
+
+describe('showFailResult', () => {
+  beforeEach(() => {
+    mockStorageInstance = createMockStorage();
+    global.requestAnimationFrame = (cb) => { cb(); };
+    document.body.innerHTML = '';
+  });
+  afterEach(() => {
+    cleanupAllOverlays();
+    document.body.innerHTML = '';
+  });
+
+  it('appends overlay to document.body when no container provided', () => {
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 1234 });
+    expect(document.body.querySelector('.fs-overlay')).not.toBeNull();
+    inst.destroy();
+  });
+
+  it('uses gameConfig.failObjective as subtitle when gameId is known (gameConfig?.failObjective truthy)', () => {
+    const inst = showFailResult({ gameId: 'water-sort', levelIndex: 0, timeMs: 1000 });
+    const subtitle = document.body.querySelector('.fs-subtitle');
+    expect(subtitle.textContent).toContain('wrong color');
+    inst.destroy();
+  });
+
+  it('falls back to "Fastest fail" subtitle when gameId unknown (gameConfig null → || fallback)', () => {
+    const inst = showFailResult({ gameId: 'unknown-game-xyz', levelIndex: 0, timeMs: 500 });
+    const subtitle = document.body.querySelector('.fs-subtitle');
+    expect(subtitle.textContent).toBe('Fastest fail');
+    inst.destroy();
+  });
+
+  it('shows Ad Recreation badge when badgeAwarded=true (if(badgeAwarded) true arm)', () => {
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 999, badgeAwarded: true });
+    expect(document.body.querySelector('.fs-ad-badge')).not.toBeNull();
+    inst.destroy();
+  });
+
+  it('does not show Ad Recreation badge when badgeAwarded=false (default, if(badgeAwarded) false arm)', () => {
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 999 });
+    expect(document.body.querySelector('.fs-ad-badge')).toBeNull();
+    inst.destroy();
+  });
+
+  it('shows "New Personal Best!" when isNewBest=true (if(isNewBest) true arm)', () => {
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 999, isNewBest: true });
+    expect(document.body.querySelector('.fs-new-best')).not.toBeNull();
+    inst.destroy();
+  });
+
+  it('does not show "New Personal Best!" when isNewBest=false (default, if(isNewBest) false arm)', () => {
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 999 });
+    expect(document.body.querySelector('.fs-new-best')).toBeNull();
+    inst.destroy();
+  });
+
+  it('shows previous best stat when a personal best exists (if(previousBest !== null) true arm)', () => {
+    savePersonalBest('pull-the-pin', 0, 800);
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 999 });
+    const stats = document.body.querySelectorAll('.fs-stat');
+    expect(stats.length).toBe(2); // "This Run" + "Best"
+    inst.destroy();
+  });
+
+  it('does not show previous best stat when no personal best exists (if(previousBest !== null) false arm)', () => {
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 999 });
+    const stats = document.body.querySelectorAll('.fs-stat');
+    expect(stats.length).toBe(1); // "This Run" only
+    inst.destroy();
+  });
+
+  it('calls onRetry when retry button clicked (if(action==="retry"&&onRetry) true arm)', () => {
+    const onRetry = vi.fn();
+    showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 500, onRetry });
+    document.body.querySelector('[data-action="retry"]').click();
+    expect(onRetry).toHaveBeenCalled();
+  });
+
+  it('calls onClose when close button clicked (if(action==="close"&&onClose) true arm)', () => {
+    const onClose = vi.fn();
+    showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 500, onClose });
+    document.body.querySelector('[data-action="close"]').click();
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('appends to custom container when provided (container || document.body true arm)', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const inst = showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 500, container });
+    expect(container.querySelector('.fs-overlay')).not.toBeNull();
+    inst.destroy();
+  });
+});
+
+// ── showFailTimer ─────────────────────────────────────────────────────────────
+
+describe('showFailTimer', () => {
+  beforeEach(() => { document.body.innerHTML = ''; });
+  afterEach(() => { document.body.innerHTML = ''; });
+
+  it('appends timer element to document.body when no container (container || document.body false arm)', () => {
+    const inst = showFailTimer({ getCurrentTime: () => 0 });
+    expect(document.body.querySelector('.fs-timer')).not.toBeNull();
+    inst.destroy();
+  });
+
+  it('appends to custom container when provided (container || document.body true arm)', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const inst = showFailTimer({ container, getCurrentTime: () => 0 });
+    expect(container.querySelector('.fs-timer')).not.toBeNull();
+    inst.destroy();
+  });
+
+  it('update(false) shows "Waiting..." and adds fs-waiting class (hasInput false arm)', () => {
+    const inst = showFailTimer({ getCurrentTime: () => 500 });
+    inst.update(false);
+    expect(inst.timer.textContent).toBe('Waiting...');
+    expect(inst.timer.classList.contains('fs-waiting')).toBe(true);
+    inst.destroy();
+  });
+
+  it('update(true) shows formatted time and removes fs-waiting class (hasInput true arm)', () => {
+    const inst = showFailTimer({ getCurrentTime: () => 1234 });
+    inst.update(true);
+    expect(inst.timer.classList.contains('fs-waiting')).toBe(false);
+    expect(inst.timer.textContent).not.toBe('Waiting...');
+    inst.destroy();
+  });
+
+  it('destroy() removes timer from DOM', () => {
+    const inst = showFailTimer({ getCurrentTime: () => 0 });
+    expect(document.body.contains(inst.timer)).toBe(true);
+    inst.destroy();
+    expect(document.body.contains(inst.timer)).toBe(false);
+  });
+
+  it('update() after destroy() is a no-op and does not throw (if(destroyed) early return)', () => {
+    const inst = showFailTimer({ getCurrentTime: () => 999 });
+    inst.destroy();
+    expect(() => inst.update(true)).not.toThrow();
+  });
+});
+
+// ── cleanupAllOverlays ────────────────────────────────────────────────────────
+
+describe('cleanupAllOverlays', () => {
+  beforeEach(() => {
+    global.requestAnimationFrame = (cb) => { cb(); };
+    document.body.innerHTML = '';
+  });
+  afterEach(() => { document.body.innerHTML = ''; });
+
+  it('removes all active overlay instances from DOM', () => {
+    showFailResult({ gameId: 'pull-the-pin', levelIndex: 0, timeMs: 500 });
+    showFailResult({ gameId: 'water-sort', levelIndex: 0, timeMs: 600 });
+    expect(document.body.querySelectorAll('.fs-overlay').length).toBe(2);
+    cleanupAllOverlays();
+    expect(document.body.querySelectorAll('.fs-overlay').length).toBe(0);
+  });
+
+  it('does not throw when no overlays are active', () => {
+    expect(() => cleanupAllOverlays()).not.toThrow();
   });
 });

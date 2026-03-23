@@ -445,6 +445,14 @@ describe('validate', () => {
     expect(() => migrator({ items: 'not-array' })).toThrow(/items/i);
   });
 
+  it('throws when field is an array but schema expects a non-array type (Array.isArray true → actualType="array" !== type branch)', () => {
+    // Array.isArray([]) = true → actualType = 'array'; schema says 'object' → mismatch → throw
+    const schema = { items: 'object' };
+    const migrator = validate(schema);
+    expect(() => migrator({ items: [1, 2, 3] })).toThrow(/items/i);
+    expect(() => migrator({ items: [] })).toThrow(/items/i);
+  });
+
   it('can be chained with other helpers', () => {
     const migrator = chain(
       addDefaults({ count: 0 }),

@@ -240,6 +240,15 @@ describe('createScreenShake', () => {
     expect(shake.isActive()).toBe(false);
     window.matchMedia = original;
   });
+
+  it('trigger() is not blocked when window.matchMedia is unavailable (!window.matchMedia false branch → prefersReducedMotion returns false)', () => {
+    const orig = window.matchMedia;
+    window.matchMedia = undefined; // matchMedia unavailable → prefersReducedMotion returns false
+    const shake = createScreenShake();
+    shake.trigger(1, 200);
+    expect(shake.isActive()).toBe(true); // shake proceeds normally
+    window.matchMedia = orig;
+  });
 });
 
 // ─── particles.js ─────────────────────────────────────────────────────────────
@@ -376,6 +385,14 @@ describe('createParticleSystem', () => {
     ps.spawn('confetti', 200, 200);
     expect(ps.getActiveCount()).toBe(0);
     window.matchMedia = original;
+  });
+
+  it('spawn() proceeds normally when window.matchMedia is unavailable (!window.matchMedia false branch → isReducedMotion returns false)', () => {
+    const orig = window.matchMedia;
+    window.matchMedia = undefined; // isReducedMotion returns false → spawn normally
+    ps.spawn('sparkle', 100, 100);
+    expect(ps.getActiveCount()).toBeGreaterThan(0);
+    window.matchMedia = orig;
   });
 
   it('pool exhaustion: stops allocating at pool capacity without throwing', () => {

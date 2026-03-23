@@ -136,6 +136,15 @@ describe('resolveChoice', () => {
     expect(next).toBe(state);
   });
 
+  it('is a no-op when selectedChoice is set but status is not "animating" (status !== "animating" OR branch)', () => {
+    // selectedChoice is non-null but status is 'won' → second OR condition fires
+    const choice = { id: 'c1', label: 'A', correct: true };
+    const state = { ...createInitialState(makeScenario()), status: 'won', selectedChoice: choice };
+    const next = resolveChoice(state);
+    expect(next).toBe(state); // same reference — no state change
+    expect(next.status).toBe('won'); // status unchanged
+  });
+
   it('does not mutate original state', () => {
     const state = createInitialState(makeScenario());
     const animating = selectChoice(state, 'c1');

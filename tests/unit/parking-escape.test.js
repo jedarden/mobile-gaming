@@ -95,6 +95,23 @@ describe('buildOccupied', () => {
     expect(occ[0][5]).toBe('v');       // within bounds
     expect(occ[0][6]).toBeUndefined(); // x=6 is out of bounds, row has no index 6
   });
+
+  it('skips cells beyond grid height boundary for vertical vehicle (if(v.y+dy < height) false branch)', () => {
+    const level = {
+      grid: {
+        width: 6,
+        height: 4,
+        exit: { x: 6, y: 0, direction: 'right' },
+        vehicles: [
+          { id: 'v', type: 'car', x: 2, y: 3, width: 1, height: 2, orientation: 'vertical', color: '#fff' },
+        ],
+      },
+    };
+    const state = createInitialState(level);
+    const occ = buildOccupied(state);
+    expect(occ[3][2]).toBe('v');       // y=3, within bounds
+    expect(occ[4]).toBeUndefined();    // y=4 is out of bounds; occ only has rows 0-3
+  });
 });
 
 describe('getVehicleMoves', () => {
@@ -168,6 +185,17 @@ describe('applyMove', () => {
     expect(state.vehicles[0].x).toBe(origX);
   });
 
+  it('leaves vehicle position unchanged when direction is unrecognised (none of the 4 if-branches fires)', () => {
+    // direction='diagonal' matches none of left/right/up/down → u = {...v}, position unchanged
+    const state = createInitialState(SIMPLE_LEVEL);
+    const hero = state.vehicles.find(v => v.id === 'hero');
+    const next = applyMove(state, 'hero', 'diagonal', 5);
+    const heroAfter = next.vehicles.find(v => v.id === 'hero');
+    expect(heroAfter.x).toBe(hero.x);
+    expect(heroAfter.y).toBe(hero.y);
+    expect(next.moves).toBe(1); // move counter still increments
+  });
+
   it('sets status won when hero reaches exit', () => {
     const state = createInitialState(SIMPLE_LEVEL);
     // hero at (0,2), v1 at col 3. Move hero right by 1 to x=1, then the path to exit needs clearing
@@ -223,6 +251,22 @@ describe('checkWin', () => {
     const state = createInitialState(BLOCKED_LEVEL);
     // hero at row 2, v1 at (3,2) blocks
     expect(checkWin(state)).toBe(false);
+  });
+
+  it('defaults exit direction to "right" when direction field is absent (exit.direction||"right" false arm)', () => {
+    // exit has no direction → exit.direction is undefined → || 'right' fires → treated as right exit
+    const level = {
+      grid: {
+        width: 6, height: 6,
+        exit: { x: 6, y: 2 }, // no direction field
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 0, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+        ]
+      }
+    };
+    const state = createInitialState(level);
+    // Hero at (0,2) with clear path → checkWin uses || 'right' → should return true
+    expect(checkWin(state)).toBe(true);
   });
 });
 
@@ -289,6 +333,38 @@ describe('solve', () => {
     expect(result).toBeNull();
   });
 
+  it('solves level when exit.direction is absent (exitDir = exit.direction || "right" fallback)', () => {
+    // exit has no direction field → exitDir = undefined || 'right' = 'right'
+    const level = {
+      grid: {
+        width: 6, height: 6,
+        exit: { x: 6, y: 2 }, // no direction field
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 0, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+        ]
+      }
+    };
+    const result = solve(level);
+    expect(result).not.toBeNull();
+    expect(result.cost).toBeGreaterThanOrEqual(0);
+  });
+
+  it('returns null when exit.direction is an invalid string (isWon falls through all 4 directions → return false)', () => {
+    // 'diagonal' is truthy → exitDir = 'diagonal'; none of right/left/down/up match
+    // → isWon() always returns false → solve exhausts states → return null
+    const level = {
+      grid: {
+        width: 6, height: 6,
+        exit: { x: 6, y: 2, direction: 'diagonal' },
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 0, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+        ]
+      }
+    };
+    const result = solve(level);
+    expect(result).toBeNull();
+  });
+
   it('returns null when no hero vehicle exists (isWon guard: hi < 0)', () => {
     const level = {
       grid: {
@@ -311,6 +387,51 @@ describe('solve', () => {
       state = applyMove(state, move.vehicleId, move.direction, move.distance);
     }
     expect(state.status).toBe('won');
+  });
+
+  it('solves a left-exit level (isWon left-direction branch)', () => {
+    // Hero horizontal at x=2 y=2, exit left at x=0 y=2 — columns 0,1 are free
+    const level = {
+      grid: {
+        width: 6, height: 6,
+        exit: { x: 0, y: 2, direction: 'left' },
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 2, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' }
+        ]
+      }
+    };
+    const result = solve(level);
+    expect(result).not.toBeNull();
+  });
+
+  it('solves a down-exit level (isWon down-direction branch)', () => {
+    // Hero vertical at x=2 y=4, height=2, exit bottom at x=2 y=6 — row below hero is clear
+    const level = {
+      grid: {
+        width: 6, height: 6,
+        exit: { x: 2, y: 6, direction: 'down' },
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 2, y: 4, width: 1, height: 2, orientation: 'vertical', color: '#E74C3C' }
+        ]
+      }
+    };
+    const result = solve(level);
+    expect(result).not.toBeNull();
+  });
+
+  it('solves a up-exit level (isWon up-direction branch)', () => {
+    // Hero vertical at x=2 y=0, height=2, exit top at x=2 y=0 — nothing above hero
+    const level = {
+      grid: {
+        width: 6, height: 6,
+        exit: { x: 2, y: 0, direction: 'up' },
+        vehicles: [
+          { id: 'hero', type: 'hero', x: 2, y: 0, width: 1, height: 2, orientation: 'vertical', color: '#E74C3C' }
+        ]
+      }
+    };
+    const result = solve(level);
+    expect(result).not.toBeNull();
   });
 });
 
@@ -360,6 +481,23 @@ describe('left-exit levels', () => {
     const hero = next.vehicles.find(v => v.id === 'hero');
     expect(hero.x).toBe(1);
     expect(next.moves).toBe(1);
+  });
+
+  it('checkWin returns false when a vehicle blocks the left path (blocker between col 0 and hero)', () => {
+    const level = {
+      grid: {
+        width: 6,
+        height: 6,
+        exit: { x: 0, y: 2, direction: 'left' },
+        vehicles: [
+          { id: 'hero',    type: 'hero',    x: 3, y: 2, width: 2, height: 1, orientation: 'horizontal', color: '#E74C3C' },
+          { id: 'blocker', type: 'regular', x: 1, y: 2, width: 1, height: 1, orientation: 'horizontal', color: '#3498DB' },
+        ]
+      }
+    };
+    const state = createInitialState(level);
+    // blocker occupies col 1 on row 2 — blocks left path before hero reaches col 0
+    expect(checkWin(state)).toBe(false);
   });
 });
 

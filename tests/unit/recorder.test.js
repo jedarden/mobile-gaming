@@ -285,6 +285,37 @@ describe('recorder', () => {
 
       expect(recorderModule.isActive()).toBe(true);
     });
+
+    it('does not set auto-stop when maxDuration is 0 (if (maxDuration > 0) false branch)', async () => {
+      vi.useFakeTimers();
+      const canvas = createMockCanvas();
+      recorderModule.startCapture(canvas);
+
+      await recorderModule.startRecording({ maxDuration: 0 });
+      expect(recorderModule.isActive()).toBe(true);
+
+      // Advance time by 10 minutes — no auto-stop should fire
+      vi.advanceTimersByTime(600000);
+      expect(recorderModule.isActive()).toBe(true);
+
+      vi.useRealTimers();
+    });
+
+    it('auto-stops recording when maxDuration elapses (if (maxDuration > 0) true branch)', async () => {
+      vi.useFakeTimers();
+      const canvas = createMockCanvas();
+      recorderModule.startCapture(canvas);
+
+      await recorderModule.startRecording({ maxDuration: 5000 });
+      expect(recorderModule.isActive()).toBe(true);
+
+      // Advance past the maxDuration — auto-stop setTimeout fires → stopRecording() called
+      vi.advanceTimersByTime(5001);
+      // isActive() should now be false since the auto-stop fired
+      expect(recorderModule.isActive()).toBe(false);
+
+      vi.useRealTimers();
+    });
   });
 
   describe('stopRecording', () => {
@@ -302,6 +333,17 @@ describe('recorder', () => {
       // Wait a bit for chunks
       await new Promise(resolve => setTimeout(resolve, 100));
 
+      const blob = await recorderModule.stopRecording();
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('video/webm');
+    });
+
+    it('returns blob when called twice (mediaRecorder.state==="inactive" branch)', async () => {
+      const canvas = createMockCanvas();
+      recorderModule.startCapture(canvas);
+      await recorderModule.startRecording();
+      await recorderModule.stopRecording(); // first call: recorder stops → state='inactive'
+      // Second call: !mediaRecorder is false, mediaRecorder.state==='inactive' is true → early return
       const blob = await recorderModule.stopRecording();
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.type).toBe('video/webm');
@@ -355,6 +397,17 @@ describe('recorder', () => {
     it('throws when buffer is empty', async () => {
       await expect(recorderModule.captureBuffer()).rejects.toThrow('No buffered content available');
     });
+
+    it('returns a Blob when circular buffer has chunks (success path)', async () => {
+      vi.useFakeTimers();
+      recorderModule.startCapture(createMockCanvas(), { passive: true });
+      await recorderModule.startRecording();
+      vi.advanceTimersByTime(2000); // populates circularBuffer via ondataavailable
+      const blob = await recorderModule.captureBuffer();
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('video/webm');
+      vi.useRealTimers();
+    });
   });
 
   describe('convertToMP4', () => {
@@ -362,6 +415,23 @@ describe('recorder', () => {
       const webmBlob = new Blob(['video data'], { type: 'video/webm' });
       const result = await recorderModule.convertToMP4(webmBlob);
       expect(result).toBe(webmBlob);
+    });
+
+    it('routes through convertWithVideoEncoder when VideoEncoder is supported (if branch)', async () => {
+      // Set up VideoEncoder globally so hasVideoEncoderSupport() returns true
+      vi.resetModules();
+      global.VideoEncoder = vi.fn();
+      global.VideoDecoder = vi.fn();
+      try {
+        const mod = await import('../../src/shared/recorder.js');
+        const webmBlob = new Blob(['video data'], { type: 'video/webm' });
+        // convertWithVideoEncoder is a stub that calls remuxToMP4 which returns the original blob
+        const result = await mod.convertToMP4(webmBlob);
+        expect(result).toBe(webmBlob);
+      } finally {
+        delete global.VideoEncoder;
+        delete global.VideoDecoder;
+      }
     });
   });
 
@@ -372,12 +442,135 @@ describe('recorder', () => {
     });
   });
 
+  describe('encodeToMP4 — keyFrame logic (index===0 || index%60===0 branches)', () => {
+    afterEach(() => {
+      delete global.VideoEncoder;
+      delete global.VideoDecoder;
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    });
+
+    it('marks index 0 as keyFrame=true and index 1 as keyFrame=false (covers both || arms)', async () => {
+      // Need to mock mp4-muxer before importing recorder.js fresh
+      const encodeCalls = [];
+
+      const mockEncoderInstance = {
+        configure: vi.fn(),
+        encode: vi.fn((frame, opts) => { encodeCalls.push({ ...opts }); }),
+        flush: vi.fn(() => Promise.resolve()),
+        close: vi.fn()
+      };
+      const MockVideoEncoder = vi.fn(() => mockEncoderInstance);
+
+      const mockMuxerInstance = {
+        addVideoChunk: vi.fn(),
+        finalize: vi.fn(),
+        target: { buffer: new ArrayBuffer(0) }
+      };
+      const MockMuxer = vi.fn(() => mockMuxerInstance);
+      const MockArrayBufferTarget = vi.fn(() => ({}));
+
+      global.VideoEncoder = MockVideoEncoder;
+      global.VideoDecoder = vi.fn();
+      // Synchronous requestAnimationFrame so encodeNextFrame runs inline
+      vi.stubGlobal('requestAnimationFrame', (cb) => { cb(); });
+
+      vi.resetModules();
+      vi.doMock('mp4-muxer', () => ({
+        Muxer: MockMuxer,
+        ArrayBufferTarget: MockArrayBufferTarget
+      }));
+
+      const mod = await import('../../src/shared/recorder.js');
+
+      const frames = [
+        { close: vi.fn() }, // index 0 → keyFrame = true (index===0)
+        { close: vi.fn() }  // index 1 → keyFrame = false (1!==0 && 1%60!==0)
+      ];
+
+      await mod.encodeToMP4(null, frames);
+
+      // Both frames were encoded
+      expect(encodeCalls).toHaveLength(2);
+      // index 0: index===0 → true (first arm of ||)
+      expect(encodeCalls[0].keyFrame).toBe(true);
+      // index 1: index!==0 && 1%60!==0 → false (both arms false)
+      expect(encodeCalls[1].keyFrame).toBe(false);
+    });
+  });
+
   describe('getSupportedFormat', () => {
     it('returns format info', () => {
       const format = recorderModule.getSupportedFormat();
       expect(format).toHaveProperty('format');
       expect(format).toHaveProperty('mimeType');
       expect(format).toHaveProperty('canShare');
+    });
+
+    it('returns webm when VP9 is supported but VideoEncoder is unavailable (VP9/H264 branch)', () => {
+      // Default test env: VideoEncoder undefined, MockMediaRecorder VP9 = true
+      const format = recorderModule.getSupportedFormat();
+      expect(format.format).toBe('webm');
+      expect(format.canShare).toBe(true);
+    });
+
+    it('returns { format: "none", canShare: false } when no codecs supported (else branch)', async () => {
+      // Make isTypeSupported always return false by replacing global MediaRecorder
+      const origIsTypeSupported = global.MediaRecorder.isTypeSupported;
+      global.MediaRecorder.isTypeSupported = () => false;
+      vi.resetModules();
+      const mod = await import('../../src/shared/recorder.js');
+      // Also ensure VideoEncoder is absent
+      const format = mod.getSupportedFormat();
+      expect(format.format).toBe('none');
+      expect(format.canShare).toBe(false);
+      global.MediaRecorder.isTypeSupported = origIsTypeSupported;
+    });
+
+    it('returns mp4 when VideoEncoder is available (hasVideoEncoderSupport branch)', async () => {
+      global.VideoEncoder = vi.fn();
+      vi.resetModules();
+      try {
+        const mod = await import('../../src/shared/recorder.js');
+        const format = mod.getSupportedFormat();
+        expect(format.format).toBe('mp4');
+        expect(format.canShare).toBe(true);
+      } finally {
+        delete global.VideoEncoder;
+      }
+    });
+  });
+
+  describe('startCapture — non-passive mode (recordedChunks branch)', () => {
+    it('routes ondataavailable chunks to recordedChunks when passive=false (else branch)', async () => {
+      vi.useFakeTimers();
+      const canvas = createMockCanvas();
+      recorderModule.startCapture(canvas); // passive defaults to false
+      await recorderModule.startRecording();
+      // Advance 2s to fire ondataavailable twice (mock fires every 1000ms)
+      vi.advanceTimersByTime(2000);
+      vi.useRealTimers();
+      // Non-passive: chunks go to recordedChunks; blob from stopRecording has content
+      const blob = await recorderModule.stopRecording();
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.size).toBeGreaterThan(0);
+    });
+  });
+
+  describe('startCapture — passive mode (isPassiveMode branch)', () => {
+    it('routes ondataavailable chunks to circularBuffer when passive=true', async () => {
+      vi.useFakeTimers();
+      const canvas = createMockCanvas();
+      recorderModule.startCapture(canvas, { passive: true });
+      await recorderModule.startRecording();
+      // Advance time to trigger ondataavailable events (mock fires every 1000ms)
+      vi.advanceTimersByTime(2000);
+      // In passive mode, chunks go to circularBuffer, not recordedChunks
+      // getBufferedChunks returns circularBuffer contents
+      const buffered = recorderModule.getBufferedChunks();
+      expect(Array.isArray(buffered)).toBe(true);
+      expect(buffered.length).toBeGreaterThan(0);
+      vi.useRealTimers();
     });
   });
 
@@ -402,5 +595,166 @@ describe('recorder', () => {
       expect(status).toHaveProperty('duration');
       expect(status).toHaveProperty('bufferedDuration');
     });
+  });
+});
+
+// ── ondataavailable empty-data guard ─────────────────────────────────────────
+// Tests the `if (event.data && event.data.size > 0)` false branch in startRecording.
+// When data is null or zero-size, no chunk should be pushed to recordedChunks.
+
+describe('ondataavailable — event.data size=0 (if false branch)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('does not push chunk when event.data.size === 0', async () => {
+    vi.useFakeTimers();
+
+    class MockMRZeroSize {
+      constructor(stream) {
+        this.stream = stream; this.state = 'inactive';
+        this.ondataavailable = null; this.onstop = null;
+      }
+      start(t) {
+        this.state = 'recording';
+        this._iv = setInterval(() => {
+          if (this.state === 'recording' && this.ondataavailable) {
+            this.ondataavailable({ data: new Blob([], { type: 'video/webm' }) }); // size=0
+          }
+        }, t);
+      }
+      stop() {
+        this.state = 'inactive';
+        clearInterval(this._iv);
+        if (this.onstop) this.onstop();
+      }
+      static isTypeSupported(t) {
+        return ['video/webm', 'video/webm;codecs=vp9', 'video/webm;codecs=h264'].includes(t);
+      }
+    }
+
+    vi.resetModules();
+    global.MediaRecorder = MockMRZeroSize;
+    global.MediaStream = MockMediaStream;
+    global.window = { MediaRecorder: MockMRZeroSize, MediaStream: MockMediaStream, devicePixelRatio: 2, location: { href: '' } };
+    global.performance = { now: () => Date.now() };
+    global.document = { createElement: vi.fn(tag => tag === 'canvas' ? createMockCanvas() : {}), head: { appendChild: vi.fn() } };
+
+    const mod = await import('../../src/shared/recorder.js');
+    mod.startCapture(createMockCanvas());
+    await mod.startRecording();
+
+    vi.advanceTimersByTime(2000); // fires 2 events with size=0 blob — skipped by guard
+
+    const blob = await mod.stopRecording();
+    expect(blob.size).toBe(0); // no chunks were collected
+    mod.cleanup();
+  });
+});
+
+describe('ondataavailable — event.data null (if false branch)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('does not push chunk when event.data is null', async () => {
+    vi.useFakeTimers();
+
+    class MockMRNullData {
+      constructor(stream) {
+        this.stream = stream; this.state = 'inactive';
+        this.ondataavailable = null; this.onstop = null;
+      }
+      start(t) {
+        this.state = 'recording';
+        this._iv = setInterval(() => {
+          if (this.state === 'recording' && this.ondataavailable) {
+            this.ondataavailable({ data: null }); // null data — fails event.data check
+          }
+        }, t);
+      }
+      stop() {
+        this.state = 'inactive';
+        clearInterval(this._iv);
+        if (this.onstop) this.onstop();
+      }
+      static isTypeSupported(t) {
+        return ['video/webm', 'video/webm;codecs=vp9', 'video/webm;codecs=h264'].includes(t);
+      }
+    }
+
+    vi.resetModules();
+    global.MediaRecorder = MockMRNullData;
+    global.MediaStream = MockMediaStream;
+    global.window = { MediaRecorder: MockMRNullData, MediaStream: MockMediaStream, devicePixelRatio: 2, location: { href: '' } };
+    global.performance = { now: () => Date.now() };
+    global.document = { createElement: vi.fn(tag => tag === 'canvas' ? createMockCanvas() : {}), head: { appendChild: vi.fn() } };
+
+    const mod = await import('../../src/shared/recorder.js');
+    mod.startCapture(createMockCanvas());
+    await mod.startRecording();
+
+    vi.advanceTimersByTime(2000); // fires 2 events with null data — skipped by guard
+
+    const blob = await mod.stopRecording();
+    expect(blob.size).toBe(0); // no chunks were collected
+    mod.cleanup();
+  });
+});
+
+// ── circularBuffer overflow — shift() branch ──────────────────────────────────
+// Tests the `if (circularBuffer.length > CIRCULAR_BUFFER_MAX_CHUNKS) circularBuffer.shift()`
+// branch. Requires 902+ ondataavailable events in passive mode.
+
+describe('circularBuffer overflow — shift() branch', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('shifts oldest chunk when circularBuffer exceeds 900 chunks (shift() true branch)', async () => {
+    let capturedMR;
+    class MockMRCapture {
+      constructor(stream) {
+        this.stream = stream; this.state = 'inactive';
+        this.ondataavailable = null; this.onstop = null;
+        capturedMR = this;
+      }
+      start() { this.state = 'recording'; }
+      stop() {
+        this.state = 'inactive';
+        if (this.onstop) this.onstop();
+      }
+      static isTypeSupported(t) {
+        return ['video/webm', 'video/webm;codecs=vp9', 'video/webm;codecs=h264'].includes(t);
+      }
+    }
+
+    vi.resetModules();
+    global.MediaRecorder = MockMRCapture;
+    global.MediaStream = MockMediaStream;
+    global.window = { MediaRecorder: MockMRCapture, MediaStream: MockMediaStream, devicePixelRatio: 2, location: { href: '' } };
+    global.performance = { now: () => Date.now() };
+    global.document = { createElement: vi.fn(tag => tag === 'canvas' ? createMockCanvas() : {}), head: { appendChild: vi.fn() } };
+
+    const mod = await import('../../src/shared/recorder.js');
+    mod.startCapture(createMockCanvas(), { passive: true });
+    await mod.startRecording();
+
+    // Fire ondataavailable 902 times — exceeds CIRCULAR_BUFFER_MAX_CHUNKS (900)
+    // After each push past 900, shift() removes the oldest chunk
+    const chunk = new Blob(['x'], { type: 'video/webm' });
+    for (let i = 0; i < 902; i++) {
+      capturedMR.ondataavailable({ data: chunk });
+    }
+
+    // 902 pushes with 2 shifts → buffer length is 900, not 902
+    const buffered = mod.getBufferedChunks();
+    expect(buffered.length).toBe(900);
+    mod.cleanup();
   });
 });

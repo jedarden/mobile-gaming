@@ -209,6 +209,16 @@ describe('isReducedMotionEnabled', () => {
     localStorageMock.setItem('mg:settings', 'invalid-json');
     expect(() => isReducedMotionEnabled()).not.toThrow();
   });
+
+  it('falls back to media query result when JSON parse errors occur (catch block fallback path)', () => {
+    // Force invalid JSON so the catch block fires → falls through to media query
+    localStorageMock.setItem('mg:settings', 'not-valid-json');
+    // matchMedia returns matches: true in this mock
+    matchMediaMock.mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    const result = isReducedMotionEnabled();
+    // catch block executed, result falls back to mediaQuery.matches = true
+    expect(result).toBe(true);
+  });
 });
 
 // ── focusElement ──────────────────────────────────────────────────────────
@@ -246,6 +256,33 @@ describe('focusElement', () => {
 
   it('does not throw when selector matches nothing', () => {
     expect(() => focusElement('#non-existent')).not.toThrow();
+  });
+
+  it('announces to polite region when announcement string is provided (if(announcement) true branch)', () => {
+    initAccessibility();
+    vi.useFakeTimers();
+    const btn = document.createElement('button');
+    document.body.appendChild(btn);
+    focusElement(btn, 'Button focused');
+    vi.advanceTimersByTime(100);
+    const politeRegion = document.getElementById('aria-live-polite');
+    expect(politeRegion.textContent).toBe('Button focused');
+    btn.remove();
+    vi.useRealTimers();
+  });
+
+  it('does not announce when announcement is null (if(announcement) false branch default)', () => {
+    initAccessibility();
+    vi.useFakeTimers();
+    const btn = document.createElement('button');
+    document.body.appendChild(btn);
+    const politeRegion = document.getElementById('aria-live-polite');
+    politeRegion.textContent = 'previous';
+    focusElement(btn); // no announcement — default null
+    vi.advanceTimersByTime(100);
+    expect(politeRegion.textContent).toBe('previous'); // unchanged
+    btn.remove();
+    vi.useRealTimers();
   });
 });
 
@@ -308,6 +345,29 @@ describe('trapFocus', () => {
     // Press Enter — not Tab, should be ignored by handleKeyDown
     container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     expect(document.activeElement.id).toBe('nt-first'); // focus unchanged
+    container.remove();
+  });
+
+  it('does not wrap on Tab when active element is not the last (if(activeElement===lastFocusable) false branch)', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<button id="nw-first">A</button><button id="nw-last">B</button>';
+    document.body.appendChild(container);
+    trapFocus(container); // focuses nw-first
+    // Tab while focused on first — activeElement !== lastFocusable → no wrap, no action
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    expect(document.activeElement.id).toBe('nw-first'); // still on first
+    container.remove();
+  });
+
+  it('does not wrap on Shift+Tab when active element is not the first (if(activeElement===firstFocusable) false branch)', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<button id="ns-first">A</button><button id="ns-last">B</button>';
+    document.body.appendChild(container);
+    trapFocus(container); // focuses ns-first
+    container.querySelector('#ns-last').focus(); // move to last
+    // Shift+Tab from last — activeElement !== firstFocusable → no wrap, no action
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+    expect(document.activeElement.id).toBe('ns-last'); // stays on last
     container.remove();
   });
 });
@@ -378,5 +438,44 @@ describe('onReducedMotionChange', () => {
     capturedHandler({ matches: true });
     // catch swallowed the error; callback still fires with e.matches
     expect(callback).toHaveBeenCalledWith(true);
+  });
+});
+
+// ── announce — if(!region) lazy-init branch ────────────────────────────────
+// The module-level liveRegion/politeRegion start as null. After any call to
+// initAccessibility() they are set to DOM nodes. Removing the DOM node does NOT
+// reset the variable — so the if(!region) branch at line 80 can only be triggered
+// on a freshly-loaded module instance where initAccessibility() was never called.
+
+describe('announce — if(!region) lazy-init branch (fresh module)', () => {
+  it('calls initAccessibility lazily when liveRegion is null (if(!region) true arm)', async () => {
+    // Fresh module: liveRegion/politeRegion are still null
+    vi.resetModules();
+    const { announce: freshAnnounce } = await import('../../src/shared/accessibility.js');
+
+    vi.useFakeTimers();
+    // if(!region) fires → initAccessibility() is called → liveRegion is assigned
+    expect(() => freshAnnounce('lazy-init assertive')).not.toThrow();
+    expect(document.getElementById('aria-live-assertive')).not.toBeNull();
+    vi.advanceTimersByTime(100);
+    expect(document.getElementById('aria-live-assertive').textContent).toBe('lazy-init assertive');
+    vi.useRealTimers();
+    vi.resetModules();
+  });
+
+  it('calls initAccessibility lazily for polite priority when politeRegion is null', async () => {
+    vi.resetModules();
+    // Remove any lingering DOM nodes from the previous sub-test
+    document.getElementById('aria-live-assertive')?.remove();
+    document.getElementById('aria-live-polite')?.remove();
+    const { announce: freshAnnounce } = await import('../../src/shared/accessibility.js');
+
+    vi.useFakeTimers();
+    expect(() => freshAnnounce('lazy-init polite', 'polite')).not.toThrow();
+    expect(document.getElementById('aria-live-polite')).not.toBeNull();
+    vi.advanceTimersByTime(100);
+    expect(document.getElementById('aria-live-polite').textContent).toBe('lazy-init polite');
+    vi.useRealTimers();
+    vi.resetModules();
   });
 });

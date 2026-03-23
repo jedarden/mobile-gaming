@@ -215,6 +215,25 @@ describe('WIN stats rendering — undefined vs zero', () => {
   });
 });
 
+// ─── LOSS stats rendering ─────────────────────────────────────────────────────
+
+describe('LOSS stats rendering — _renderLossStats', () => {
+  it('renders moves stat when moves is defined (if(stats.moves !== undefined) true branch)', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.LOSS, { moves: 7 });
+    const statValues = overlay.element.querySelectorAll('.mg-retry-stat-value');
+    const texts = Array.from(statValues).map(el => el.textContent);
+    expect(texts.some(t => t === '7')).toBe(true);
+  });
+
+  it('renders no stat row when moves is undefined (if(stats.moves !== undefined) false branch)', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.LOSS, {});
+    const statValues = overlay.element.querySelectorAll('.mg-retry-stat-value');
+    expect(statValues.length).toBe(0);
+  });
+});
+
 // ─── failure count ────────────────────────────────────────────────────────────
 
 describe('failure count', () => {
@@ -449,5 +468,153 @@ describe('_handleAction optional callbacks', () => {
     const overlay = makeOverlay();
     // No case matches 'unknown' — switch falls through silently
     expect(() => overlay._handleAction('unknown')).not.toThrow();
+  });
+
+  it('calls onWatchReplay when replay action fires and onWatchReplay is provided (true branch)', () => {
+    const onWatchReplay = vi.fn();
+    const overlay = makeOverlay({ onWatchReplay });
+    overlay._handleAction('replay');
+    expect(onWatchReplay).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onUndo when undo action fires and onUndo is provided (true branch)', () => {
+    const onUndo = vi.fn();
+    const overlay = makeOverlay({ onUndo });
+    overlay._handleAction('undo');
+    expect(onUndo).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── constructor callback defaults (|| (() => {}) and || null branches) ───────
+
+describe('constructor — callback || (() => {}) defaults', () => {
+  it('defaults onRetry to no-op when not provided (|| (() => {}) true branch)', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(typeof overlay.onRetry).toBe('function');
+    expect(() => overlay.onRetry()).not.toThrow();
+  });
+
+  it('defaults onNext to no-op when not provided', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(typeof overlay.onNext).toBe('function');
+    expect(() => overlay.onNext()).not.toThrow();
+  });
+
+  it('defaults onSkip to no-op when not provided', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(typeof overlay.onSkip).toBe('function');
+    expect(() => overlay.onSkip()).not.toThrow();
+  });
+
+  it('defaults onHint to no-op when not provided', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(typeof overlay.onHint).toBe('function');
+    expect(() => overlay.onHint()).not.toThrow();
+  });
+
+  it('defaults onShare to no-op when not provided', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(typeof overlay.onShare).toBe('function');
+    expect(() => overlay.onShare()).not.toThrow();
+  });
+
+  it('defaults onWatchReplay to null when not provided (|| null true branch)', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(overlay.onWatchReplay).toBeNull();
+  });
+
+  it('defaults onUndo to null when not provided (|| null true branch)', () => {
+    const container = makeContainer();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0 });
+    expect(overlay.onUndo).toBeNull();
+  });
+
+  it('uses provided callbacks when given (|| false branches)', () => {
+    const container = makeContainer();
+    const onRetry = vi.fn();
+    const onWatchReplay = vi.fn();
+    const overlay = new RetryOverlay({ container, gameId: 'test', levelIndex: 0, onRetry, onWatchReplay });
+    expect(overlay.onRetry).toBe(onRetry);
+    expect(overlay.onWatchReplay).toBe(onWatchReplay);
+  });
+});
+
+// ─── button click → addEventListener → _handleAction (DOM click path) ────────
+
+describe('button click events route through _attachButtonHandlers', () => {
+  it('clicking the retry button fires onRetry (DOM click path via addEventListener)', () => {
+    const onRetry = vi.fn();
+    const overlay = makeOverlay({ onRetry });
+    overlay.show(ResultType.LOSS, {});
+    const btn = overlay.element.querySelector('[data-action="retry"]');
+    expect(btn).not.toBeNull();
+    btn.click();
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('clicking the next button fires onNext (DOM click path via addEventListener)', () => {
+    const onNext = vi.fn();
+    const overlay = makeOverlay({ onNext });
+    overlay.show(ResultType.WIN, {});
+    const btn = overlay.element.querySelector('[data-action="next"]');
+    expect(btn).not.toBeNull();
+    btn.click();
+    expect(onNext).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── _handleAction — regular switch cases ─────────────────────────────────────
+
+describe('_handleAction — regular switch cases', () => {
+  it('calls onRetry on "retry" action', () => {
+    const onRetry = vi.fn();
+    const overlay = makeOverlay({ onRetry });
+    overlay.show(ResultType.LOSS, {});
+    overlay._handleAction('retry');
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onNext and resets failureCount on "next" action', () => {
+    const onNext = vi.fn();
+    const overlay = makeOverlay({ onNext });
+    overlay.show(ResultType.LOSS, {});
+    overlay.show(ResultType.LOSS, {}); // failureCount = 2
+    overlay._handleAction('next');
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(overlay.failureCount).toBe(0);
+  });
+
+  it('calls onSkip and resets failureCount on "skip" action', () => {
+    const onSkip = vi.fn();
+    const overlay = makeOverlay({ onSkip });
+    overlay.show(ResultType.LOSS, {});
+    overlay.show(ResultType.LOSS, {});
+    overlay.show(ResultType.LOSS, {}); // failureCount = 3
+    overlay._handleAction('skip');
+    expect(onSkip).toHaveBeenCalledTimes(1);
+    expect(overlay.failureCount).toBe(0);
+  });
+
+  it('calls onHint on "hint" action', () => {
+    const onHint = vi.fn();
+    const overlay = makeOverlay({ onHint });
+    overlay.show(ResultType.LOSS, {});
+    overlay._handleAction('hint');
+    expect(onHint).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onShare with current stats on "share" action', () => {
+    const onShare = vi.fn();
+    const stats = { optimality: 80, moves: 5 };
+    const overlay = makeOverlay({ onShare });
+    overlay.show(ResultType.WIN, stats);
+    overlay._handleAction('share');
+    expect(onShare).toHaveBeenCalledWith(stats);
   });
 });

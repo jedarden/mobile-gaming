@@ -27,6 +27,8 @@ import {
   createSoundPattern,
   playSound,
   isAudioSupported,
+  resumeAudio,
+  suspendAudio,
 } from '../../src/shared/audio.js';
 
 // ── SOUNDS catalog ────────────────────────────────────────────────────────────
@@ -136,6 +138,16 @@ describe('setMasterVolume / getMasterVolume', () => {
     expect(getMasterVolume()).toBe(1);
   });
 
+  it('clamps Infinity to 1', () => {
+    setMasterVolume(Infinity);
+    expect(getMasterVolume()).toBe(1);
+  });
+
+  it('clamps -Infinity to 0', () => {
+    setMasterVolume(-Infinity);
+    expect(getMasterVolume()).toBe(0);
+  });
+
   it('volume 0 is allowed', () => {
     setMasterVolume(0);
     expect(getMasterVolume()).toBe(0);
@@ -215,6 +227,21 @@ describe('createSoundPattern', () => {
     const pattern = createSoundPattern({ frequency: 440, duration: 0 });
     expect(pattern.duration).toBe(0.1);
   });
+
+  it('attack: 0 falls back to 0.01 (|| operator treats 0 as falsy)', () => {
+    const pattern = createSoundPattern({ frequency: 440, attack: 0 });
+    expect(pattern.attack).toBe(0.01);
+  });
+
+  it('decay: 0 falls back to 0.09 (|| operator treats 0 as falsy)', () => {
+    const pattern = createSoundPattern({ frequency: 440, decay: 0 });
+    expect(pattern.decay).toBe(0.09);
+  });
+
+  it('type: empty string falls back to "sine" (|| operator treats "" as falsy)', () => {
+    const pattern = createSoundPattern({ type: '', frequency: 440 });
+    expect(pattern.type).toBe('sine');
+  });
 });
 
 // ── playSound ─────────────────────────────────────────────────────────────────
@@ -242,6 +269,14 @@ describe('playSound', () => {
 
   it('returns null for negative volume', () => {
     expect(playSound('click', -0.5)).toBeNull();
+  });
+
+  it('returns null when AudioContext is unavailable (catch block — no AudioContext in jsdom)', () => {
+    // soundEnabled=true (default), valid sound name, positive volume
+    // getAudioContext() throws because window.AudioContext is not defined in jsdom
+    // → catch fires → returns null
+    setSoundEnabled(true);
+    expect(playSound('click', 1)).toBeNull();
   });
 });
 
@@ -276,5 +311,207 @@ describe('isAudioSupported', () => {
     if (origWebkit !== undefined) {
       Object.defineProperty(window, 'webkitAudioContext', { value: origWebkit, configurable: true });
     }
+  });
+});
+
+// ── resumeAudio — catch block ──────────────────────────────────────────────────
+
+describe('resumeAudio — catch block', () => {
+  it('returns false when ctx.resume() throws (catch branch)', async () => {
+    // Use a fresh module load with a mock AudioContext whose resume() rejects
+    vi.resetModules();
+    const mockCtx = {
+      state: 'suspended',
+      currentTime: 0,
+      destination: {},
+      resume: vi.fn(() => Promise.reject(new Error('AudioContext resume rejected'))),
+    };
+    vi.stubGlobal('AudioContext', vi.fn(() => mockCtx));
+
+    const { resumeAudio: resumeAudioFresh } = await import('../../src/shared/audio.js');
+    const result = await resumeAudioFresh();
+    expect(result).toBe(false);
+
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+});
+
+// ── resumeAudio — non-suspended state (if branch false) ──────────────────────
+
+describe('resumeAudio — non-suspended state', () => {
+  it('returns true and skips ctx.resume() when state is not "suspended" (if branch false)', async () => {
+    vi.resetModules();
+    const resume = vi.fn();
+    const mockCtx = { state: 'running', currentTime: 0, destination: {}, resume };
+    vi.stubGlobal('AudioContext', vi.fn(() => mockCtx));
+
+    const { resumeAudio: resumeAudioFresh } = await import('../../src/shared/audio.js');
+    const result = await resumeAudioFresh();
+
+    expect(result).toBe(true);
+    expect(resume).not.toHaveBeenCalled(); // state !== 'suspended' → if body skipped
+
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+});
+
+// ── suspendAudio ─────────────────────────────────────────────────────────────
+
+describe('suspendAudio', () => {
+  it('calls audioContext.suspend() when audioContext exists and state is "running" (if true branch)', async () => {
+    vi.resetModules();
+    const suspend = vi.fn();
+    const mockCtx = { state: 'running', currentTime: 0, destination: {}, resume: vi.fn(), suspend };
+    vi.stubGlobal('AudioContext', vi.fn(() => mockCtx));
+
+    const { resumeAudio: resumeAudioFresh, suspendAudio: suspendAudioFresh } = await import('../../src/shared/audio.js');
+    await resumeAudioFresh(); // initializes module-level audioContext (state='running', if skipped)
+    suspendAudioFresh();
+    expect(suspend).toHaveBeenCalledTimes(1);
+
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it('does not call suspend() when audioContext.state is not "running" (if false branch)', async () => {
+    vi.resetModules();
+    const suspend = vi.fn();
+    const mockCtx = { state: 'suspended', currentTime: 0, destination: {}, resume: vi.fn(() => Promise.resolve()), suspend };
+    vi.stubGlobal('AudioContext', vi.fn(() => mockCtx));
+
+    const { resumeAudio: resumeAudioFresh, suspendAudio: suspendAudioFresh } = await import('../../src/shared/audio.js');
+    await resumeAudioFresh(); // initializes audioContext (state='suspended', resumes it)
+    // After resume(), state is still 'suspended' in our mock (we didn't update state)
+    suspendAudioFresh();
+    expect(suspend).not.toHaveBeenCalled(); // state is 'suspended', not 'running'
+
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it('does not throw when audioContext is not yet initialized (audioContext && ... — false branch)', async () => {
+    vi.resetModules();
+    // Import fresh module without creating audioContext (no getAudioContext call)
+    const { suspendAudio: suspendAudioFresh } = await import('../../src/shared/audio.js');
+    expect(() => suspendAudioFresh()).not.toThrow(); // audioContext is null → short-circuits
+
+    vi.resetModules();
+  });
+});
+
+// ── playSoundPattern — internal branches via playSound ───────────────────────
+
+describe('playSoundPattern — osc.type, frequencyEnd ramp, and setTimeout cleanup', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetModules();
+    vi.useRealTimers();
+  });
+
+  function makeMocks() {
+    const oscMock = {
+      type: undefined,
+      frequency: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      disconnect: vi.fn(),
+    };
+    const gainMock = {
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      gain: {
+        setValueAtTime: vi.fn(),
+        linearRampToValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+    };
+    const ctxMock = {
+      state: 'running',
+      currentTime: 0,
+      destination: {},
+      resume: vi.fn(() => Promise.resolve()),
+      createOscillator: vi.fn(() => oscMock),
+      createGain: vi.fn(() => gainMock),
+    };
+    return { oscMock, gainMock, ctxMock };
+  }
+
+  it('sets osc.type when pattern.type is truthy (if(pattern.type) true branch)', async () => {
+    vi.resetModules();
+    const { oscMock, ctxMock } = makeMocks();
+    vi.stubGlobal('AudioContext', vi.fn(() => ctxMock));
+
+    const { playSound, setSoundEnabled } = await import('../../src/shared/audio.js');
+    setSoundEnabled(true);
+    // SOUNDS.success has type='sine' but no frequencyEnd — exercises only the type branch
+    playSound('success', 1);
+
+    expect(oscMock.type).toBe('sine');
+  });
+
+  it('calls exponentialRampToValueAtTime when pattern.frequencyEnd is defined (if(frequencyEnd) true branch)', async () => {
+    vi.resetModules();
+    const { oscMock, ctxMock } = makeMocks();
+    vi.stubGlobal('AudioContext', vi.fn(() => ctxMock));
+
+    const { playSound, setSoundEnabled } = await import('../../src/shared/audio.js');
+    setSoundEnabled(true);
+    // SOUNDS.click has frequencyEnd: 600 — exercises the frequencyEnd ramp branch
+    playSound('click', 1);
+
+    expect(oscMock.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(
+      600,
+      expect.any(Number)
+    );
+  });
+
+  it('disconnects osc and gainNode after timeout fires (setTimeout cleanup branch)', async () => {
+    vi.useFakeTimers();
+    vi.resetModules();
+    const { oscMock, gainMock, ctxMock } = makeMocks();
+    vi.stubGlobal('AudioContext', vi.fn(() => ctxMock));
+
+    const { playSound, setSoundEnabled } = await import('../../src/shared/audio.js');
+    setSoundEnabled(true);
+    // SOUNDS.click has duration: 0.05 → cleanup fires at (0.05 + 0.1) * 1000 = 150ms
+    playSound('click', 1);
+
+    expect(oscMock.disconnect).not.toHaveBeenCalled();
+    expect(gainMock.disconnect).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(200); // past the 150ms cleanup delay
+
+    expect(oscMock.disconnect).toHaveBeenCalledTimes(1);
+    expect(gainMock.disconnect).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── getAudioContext — webkit fallback ─────────────────────────────────────────
+
+describe('getAudioContext — webkitAudioContext fallback', () => {
+  it('creates context via webkitAudioContext when AudioContext is absent (|| fallback branch)', async () => {
+    vi.resetModules();
+    const resume = vi.fn(() => Promise.resolve());
+    const mockCtx = { state: 'running', currentTime: 0, destination: {}, resume };
+    const webkitCtor = vi.fn(() => mockCtx);
+
+    // Remove standard AudioContext so the || branch is taken
+    const orig = window.AudioContext;
+    Object.defineProperty(window, 'AudioContext', { value: undefined, configurable: true, writable: true });
+    vi.stubGlobal('webkitAudioContext', webkitCtor);
+
+    const { resumeAudio: resumeAudioFresh } = await import('../../src/shared/audio.js');
+    const result = await resumeAudioFresh();
+
+    // webkitAudioContext constructor was used
+    expect(webkitCtor).toHaveBeenCalledTimes(1);
+    expect(result).toBe(true);
+
+    Object.defineProperty(window, 'AudioContext', { value: orig, configurable: true, writable: true });
+    vi.unstubAllGlobals();
+    vi.resetModules();
   });
 });

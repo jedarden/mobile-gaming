@@ -238,6 +238,12 @@ describe('createLevelNav — daily dot', () => {
     nav.dotsContainer.querySelector('.mg-level-daily').click();
     expect(playTap).toHaveBeenCalled();
   });
+
+  it('does not throw when daily dot is clicked without onDailySelect callback (if false branch)', () => {
+    const { nav } = makeLevelNav({ hasDaily: true }); // no onDailySelect
+    const daily = nav.dotsContainer.querySelector('.mg-level-daily');
+    expect(() => daily.click()).not.toThrow(); // if (onDailySelect) → false → no-op
+  });
 });
 
 describe('createLevelNav — endless dot', () => {
@@ -260,6 +266,12 @@ describe('createLevelNav — endless dot', () => {
     nav.dotsContainer.querySelector('.mg-level-endless').click();
     expect(onEndlessSelect).toHaveBeenCalledTimes(1);
   });
+
+  it('does not throw when endless dot is clicked without onEndlessSelect callback (if false branch)', () => {
+    const { nav } = makeLevelNav({ hasEndless: true }); // no onEndlessSelect
+    const endless = nav.dotsContainer.querySelector('.mg-level-endless');
+    expect(() => endless.click()).not.toThrow(); // if (onEndlessSelect) → false → no-op
+  });
 });
 
 // ─── Unlock/lock behavior (via click callbacks) ───────────────────────────────
@@ -277,6 +289,11 @@ describe('unlock logic', () => {
     const { nav } = makeLevelNav({ totalLevels: 5, onLevelSelect });
     getLevelDots(nav)[1].click();
     expect(onLevelSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not throw when unlocked level is clicked without onLevelSelect callback (if false branch)', () => {
+    const { nav } = makeLevelNav({ totalLevels: 5 }); // no onLevelSelect
+    expect(() => getLevelDots(nav)[0].click()).not.toThrow(); // if (onLevelSelect) → false → no-op
   });
 
   it('level 1 fires onLevelSelect after level 0 is completed (unlocked)', () => {
@@ -576,6 +593,34 @@ describe('optional callback guards', () => {
     const { nav } = makeLevelNav({ hasEndless: true }); // no onEndlessSelect
     const endless = nav.dotsContainer.querySelector('.mg-level-endless');
     expect(() => endless.click()).not.toThrow();
+  });
+});
+
+// ─── out-of-range currentLevel (if(currentDot) false branch) ─────────────────
+
+describe('createLevelNav — out-of-range stored currentLevel (if(currentDot) false branch)', () => {
+  it('does not throw when stored currentLevel exceeds totalLevels (querySelector returns null — if false branch)', () => {
+    // Pre-seed storage: currentLevel=10, but nav will only have dots 0..2
+    // loadCurrentLevel returns 10 → querySelector('[data-level="10"]') → null → if false branch
+    _store['mg:level-progress:oob-game:current'] = '10';
+    storage.cache.clear();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    expect(() => createLevelNav({ container, gameId: 'oob-game', totalLevels: 3 })).not.toThrow();
+  });
+});
+
+describe('refresh — out-of-range currentLevel (if(curDot) false branch)', () => {
+  it('does not throw on refresh when stored currentLevel exceeds totalLevels (curDot null — if false branch)', () => {
+    // Create nav normally, then manually set storage to an out-of-range level
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const nav = createLevelNav({ container, gameId: 'oob-refresh-game', totalLevels: 3 });
+    // Inject stale currentLevel beyond totalLevels into storage
+    _store['mg:level-progress:oob-refresh-game:current'] = '10';
+    storage.cache.clear();
+    // refresh() calls loadCurrentLevel → 10 → curDot = querySelector('[data-level="10"]') → null → if false
+    expect(() => nav.refresh()).not.toThrow();
   });
 });
 

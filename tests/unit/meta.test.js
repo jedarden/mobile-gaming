@@ -111,6 +111,19 @@ describe('awardLevelComplete', () => {
     const result = await awardLevelComplete('brain-teaser', 2);
     expect(result.xpEarned).toBeGreaterThan(0);
   });
+
+  it('sets firstPlayDate on first completion and does not overwrite it on subsequent calls', async () => {
+    // First call: firstPlayDate should be set (non-null)
+    await awardLevelComplete('water-sort', 1, { levelId: 'fd1' });
+    const stats1 = getPlayerStats();
+    expect(stats1.firstPlayDate).not.toBeNull();
+    const firstDate = stats1.firstPlayDate;
+
+    // Second call: firstPlayDate must remain unchanged
+    await awardLevelComplete('water-sort', 1, { levelId: 'fd2' });
+    const stats2 = getPlayerStats();
+    expect(stats2.firstPlayDate).toBe(firstDate);
+  });
 });
 
 // ── getLevelInfo ──────────────────────────────────────────────────────────
@@ -170,6 +183,18 @@ describe('getTotalStars', () => {
     // Most recent write wins (3 stars)
     expect(getTotalStars()).toBe(3);
   });
+
+  it('skips levels with undefined stars — (level.stars || 0) false arm', () => {
+    // Directly write raw meta with a level that lacks the stars property
+    // (defensive fallback for corrupted/legacy data)
+    localStorageMock.setItem('mg:meta', JSON.stringify({
+      totalXP: 0,
+      completedLevels: {
+        'water-sort': { 1: { timestamp: Date.now() } }  // no stars key
+      }
+    }));
+    expect(getTotalStars()).toBe(0);
+  });
 });
 
 // ── getPlayerLevel / getXPProgress ───────────────────────────────────────
@@ -222,6 +247,22 @@ describe('getXPProgress', () => {
     }));
     const { needed } = getXPProgress();
     expect(needed).toBe(4000);
+  });
+
+  it('clamps progress to 1 when xpInLevel exceeds xpNeeded (Math.min cap)', () => {
+    // playerLevel=1, totalXP=500; threshold(1)=0, threshold(2)=300
+    // xpInLevel = 500, xpNeeded = 300 → ratio 1.67 → capped to 1
+    localStorageMock.setItem('mg:meta', JSON.stringify({
+      totalXP: 500,
+      playerLevel: 1,
+      completedLevels: {},
+      streaks: { daily: 0, lastDailyDate: null },
+      achievements: [],
+      firstPlayDate: null,
+      totalPlayTime: 0
+    }));
+    const { progress } = getXPProgress();
+    expect(progress).toBe(1);
   });
 });
 
@@ -334,5 +375,33 @@ describe('getPlayerStats', () => {
     await awardLevelComplete('game-c', 3, { levelId: 1 });
     const stats = getPlayerStats();
     expect(stats.totalXP).toBeGreaterThan(0);
+  });
+});
+
+// ── getMeta catch block (corrupted storage) ────────────────────────────────
+
+describe('getMeta error handling', () => {
+  it('falls back to default meta when localStorage contains corrupted JSON (catch block)', () => {
+    // Inject corrupted JSON to trigger the JSON.parse catch in getMeta()
+    localStorageMock.getItem.mockReturnValueOnce('not-valid-json{{{');
+    const stats = getPlayerStats(); // calls getMeta internally
+    expect(stats.totalXP).toBe(0); // default value
+    expect(stats.playerLevel).toBe(1);
+  });
+
+  it('does not throw when saveMeta localStorage.setItem throws (silent catch)', async () => {
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError');
+    });
+    await expect(awardLevelComplete('water-sort', 1, { levelId: 1 })).resolves.not.toThrow();
+  });
+
+  it('uses "current" as levelId when details.levelId is falsy (|| "current" fallback branch)', async () => {
+    // details = {} → details.levelId is undefined → undefined || 'current' = 'current'
+    const result = await awardLevelComplete('water-sort', 2, {});
+    expect(result.xpEarned).toBeGreaterThan(0); // first completion bonus fires
+    // Call again without levelId — same 'current' bucket, now previousStars=2
+    const result2 = await awardLevelComplete('water-sort', 2, {});
+    expect(result2.xpEarned).toBeGreaterThanOrEqual(0); // repeat completion, no first-completion bonus
   });
 });

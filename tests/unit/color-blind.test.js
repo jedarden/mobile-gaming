@@ -164,6 +164,20 @@ describe('removeColorBlindClass', () => {
   });
 });
 
+// ─── syncColorBlindClass — false branch (before cache warms) ─────────────────
+// Must run before isColorBlindEnabled tests which warm the module cache with
+// colorBlind=true. At this point _cbStore is empty → isColorBlindEnabled()
+// returns false → the else branch (removeColorBlindClass) is taken.
+
+describe('syncColorBlindClass — false branch (isColorBlindEnabled returns false)', () => {
+  it('removes color-blind-mode class when color-blind is disabled (else branch)', () => {
+    // _cbStore is empty → isColorBlindEnabled() → false → removeColorBlindClass()
+    document.body.classList.add('color-blind-mode');
+    syncColorBlindClass();
+    expect(document.body.classList.contains('color-blind-mode')).toBe(false);
+  });
+});
+
 // ─── isColorBlindEnabled (ordered to avoid cache contamination) ──────────────
 //
 // The color-blind module uses a private StorageManager whose cache persists for
@@ -262,6 +276,18 @@ describe('injectPatternDefs', () => {
     const countAfter = svgEl.querySelectorAll('defs pattern').length;
     expect(countAfter).toBe(countBefore);
   });
+
+  it('emits empty pattern for unknown svgPattern type (default branch in buildSvgPattern)', () => {
+    // Temporarily inject a color entry with an unrecognised svgPattern so the
+    // switch-default path (inner = '') is exercised.
+    COLOR_PATTERNS._testUnknown = { label: '?', svgPattern: 'unknown-type', svgStroke: '#000' };
+    injectPatternDefs(svgEl);
+    const pattern = svgEl.querySelector('defs #cb-_testUnknown');
+    expect(pattern).not.toBeNull();
+    // The default branch sets inner = '', so the pattern element has no children
+    expect(pattern.children.length).toBe(0);
+    delete COLOR_PATTERNS._testUnknown;
+  });
 });
 
 describe('removePatternDefs', () => {
@@ -289,5 +315,56 @@ describe('removePatternDefs', () => {
   it('is a no-op when defs does not exist', () => {
     const emptySvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     expect(() => removePatternDefs(emptySvg)).not.toThrow();
+  });
+
+  it('skips missing patterns without throwing (if(el) false arm — el is null for each #cb-* query)', () => {
+    // SVG has a <defs> but no cb-* patterns — querySelector returns null for each → if(el) is false
+    const svgNoDefs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svgNoDefs.appendChild(defs);
+    // defs is empty — all #cb-${name} queries return null → if(el) false branch for every pattern
+    expect(() => removePatternDefs(svgNoDefs)).not.toThrow();
+    // defs still empty — nothing erroneously removed
+    expect(svgNoDefs.querySelectorAll('defs pattern').length).toBe(0);
+  });
+});
+
+// ─── applyColorBlindClass / removeColorBlindClass — SSR guard ─────────────────
+
+describe('applyColorBlindClass — document undefined guard (SSR branch)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns early without throwing when document is undefined', () => {
+    vi.stubGlobal('document', undefined);
+    expect(() => applyColorBlindClass()).not.toThrow();
+  });
+
+  it('removeColorBlindClass returns early without throwing when document is undefined', () => {
+    vi.stubGlobal('document', undefined);
+    expect(() => removeColorBlindClass()).not.toThrow();
+  });
+});
+
+// ─── isColorBlindEnabled — legacy 'settings' fallback (fresh module) ──────────
+
+describe('isColorBlindEnabled — legacy settings key fallback (fresh module load)', () => {
+  afterEach(() => {
+    vi.resetModules();
+    _cbStore = {};
+  });
+
+  it('returns true from legacy "settings" key when "global:settings" is absent (legacy path — line 87-88)', async () => {
+    // Fresh module → fresh StorageManager with empty cache
+    // Only the legacy 'settings' key is present in localStorage
+    _cbStore = {};
+    // StorageManager stores keys as "mg:<key>" with wrapper {v:1, data:value}
+    _cbStore['mg:settings'] = JSON.stringify({ v: 1, data: { colorBlind: true } });
+    // "mg:global:settings" is absent → global check returns null → falls through to legacy path
+
+    vi.resetModules();
+    const { isColorBlindEnabled: freshFn } = await import('../../src/shared/color-blind.js');
+    expect(freshFn()).toBe(true);
   });
 });

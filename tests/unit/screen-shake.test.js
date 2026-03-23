@@ -255,4 +255,12 @@ describe('trigger skips shake when prefers-reduced-motion is set', () => {
     expect(shake.isActive()).toBe(false);
     expect(shake.update(16)).toEqual({ x: 0, y: 0 });
   });
+
+  it('trigger() works normally when window.matchMedia is undefined (!window.matchMedia branch)', () => {
+    // Stub window without matchMedia — prefersReducedMotion() short-circuits to false
+    vi.stubGlobal('window', {});
+    const shake = createScreenShake();
+    shake.trigger(1.0, 300);
+    expect(shake.isActive()).toBe(true);
+  });
 });

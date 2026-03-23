@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { deflateRaw } from 'pako';
 
 // ─── Mock storage ─────────────────────────────────────────────────────────────
 
@@ -145,6 +146,15 @@ describe('exportProgress', () => {
     expect(code).toMatch(/^SYNC(-[0-9A-Za-z]{1,5})+$/);
   });
 
+  it('skips unparseable direct localStorage entries and still exports successfully (catch branch)', () => {
+    seedProgress();
+    localStorage.setItem('mg:daily', 'invalid json {');
+    const code = exportProgress();
+    localStorage.removeItem('mg:daily');
+    // Export should still succeed despite corrupted mg:daily
+    expect(code).toMatch(/^SYNC(-[0-9A-Za-z]{1,5})+$/);
+  });
+
   it('excludes gameState (ephemeral)', () => {
     seedProgress();
     mockStorage.set('gameState', { 'water-sort': { level: 3, inProgress: true } });
@@ -240,8 +250,24 @@ describe('importProgress', () => {
     expect(importProgress('SYNC-!!!!-XXXXX')).toMatchObject({ success: false });
   });
 
+  it('returns "Empty code" when code reduces to empty string after stripping prefix and dashes (clean.length === 0 branch)', () => {
+    // 'SYNC-' is truthy and a string, passes !code guard, but after strip → clean = '' → Empty code
+    expect(importProgress('SYNC-')).toEqual({ success: false, error: 'Empty code' });
+  });
+
+  it('returns "Invalid version prefix" when first char is non-numeric (isNaN branch)', () => {
+    // After stripping SYNC- and dashes, first char 'A' makes parseInt return NaN
+    expect(importProgress('SYNC-Aabc')).toEqual({ success: false, error: 'Invalid version prefix' });
+  });
+
   it('returns success:false for truncated code', () => {
     expect(importProgress('SYNC-1AAAA')).toMatchObject({ success: false });
+  });
+
+  it('returns success:false when base62 decodes but inflateRaw fails (inflate error catch branch)', () => {
+    // First char '1' = valid version, rest = valid base62 chars but not valid deflate data
+    // base62Decode succeeds, inflateRaw throws → catch block fires → 'Invalid sync code'
+    expect(importProgress('SYNC-1aaaaaaaaaaaa')).toMatchObject({ success: false, error: 'Invalid sync code' });
   });
 
   it('strips dashes and SYNC- prefix before decoding', () => {
@@ -396,6 +422,36 @@ describe('importProgress merge logic', () => {
     expect(mockStorage.get('level-progress:water-sort:current')).toBe(8);
   });
 
+  it('uses imported value when current level pointer is 0 (|| 0 falsy branch for current)', () => {
+    // current=0 → 0 || 0 = 0 → Math.max(0, 3) = 3
+    mockStorage.set('level-progress:water-sort:current', 0);
+
+    const deviceB = createMockStorage();
+    deviceB.set('level-progress:water-sort:current', 3);
+    const tmpStorage = mockStorage;
+    mockStorage = deviceB;
+    const code = exportProgress();
+    mockStorage = tmpStorage;
+
+    importProgress(code);
+    expect(mockStorage.get('level-progress:water-sort:current')).toBe(3);
+  });
+
+  it('keeps current when imported level pointer is 0 (|| 0 falsy branch for imported)', () => {
+    // imported=0 → 0 || 0 = 0 → Math.max(3, 0) = 3
+    mockStorage.set('level-progress:water-sort:current', 3);
+
+    const deviceB = createMockStorage();
+    deviceB.set('level-progress:water-sort:current', 0);
+    const tmpStorage = mockStorage;
+    mockStorage = deviceB;
+    const code = exportProgress();
+    mockStorage = tmpStorage;
+
+    importProgress(code);
+    expect(mockStorage.get('level-progress:water-sort:current')).toBe(3);
+  });
+
   it('imported wins for non-score fields (e.g. settings)', () => {
     mockStorage.set('global:settings', { sound: false, colorBlind: false });
 
@@ -423,6 +479,29 @@ describe('importProgress merge logic', () => {
 
     importProgress(code);
     expect(mockStorage.get('fail-speedrun:badges')).toEqual(['badge-1', 'badge-2']);
+  });
+
+  it('mergeStats || {} fires when each device has a different game in stats (|| {} default branch)', () => {
+    // Device A: only water-sort stats
+    mockStorage.set('stats', {
+      'water-sort': { played: 5, completed: 3, stars: 9, lastLevel: 3, highScores: { 0: 100 } },
+    });
+
+    // Device B: only brain-teaser stats
+    const deviceB = createMockStorage();
+    deviceB.set('stats', {
+      'brain-teaser': { played: 3, completed: 2, stars: 6, lastLevel: 2, highScores: { 0: 80 } },
+    });
+    const tmpStorage = mockStorage;
+    mockStorage = deviceB;
+    const code = exportProgress();
+    mockStorage = tmpStorage;
+
+    importProgress(code);
+    const stats = mockStorage.get('stats');
+    // Both games should appear in merged stats
+    expect(stats['water-sort'].completed).toBe(3); // local preserved via || {}
+    expect(stats['brain-teaser'].completed).toBe(2); // imported added via || {}
   });
 });
 
@@ -551,4 +630,155 @@ describe('shareProgress', () => {
     if (originalShare) navigator.share = originalShare;
     Object.defineProperty(navigator, 'clipboard', { value: originalClipboard, configurable: true });
   });
+
+  it('returns {shared: true, method: "native"} when navigator.share resolves (.then branch)', async () => {
+    const originalShare = navigator.share;
+    navigator.share = vi.fn().mockResolvedValue(undefined);
+    const result = await shareProgress('SYNC-TEST1-CODE0');
+    expect(result.shared).toBe(true);
+    expect(result.method).toBe('native');
+    if (originalShare) navigator.share = originalShare;
+    else delete navigator.share;
+  });
+
+  it('returns {shared: false, method: "native"} when navigator.share rejects (.catch branch)', async () => {
+    const originalShare = navigator.share;
+    navigator.share = vi.fn().mockRejectedValue(new Error('Share cancelled'));
+    const result = await shareProgress('SYNC-TEST1-CODE0');
+    expect(result.shared).toBe(false);
+    expect(result.method).toBe('native');
+    if (originalShare) navigator.share = originalShare;
+    else delete navigator.share;
+  });
+
+  it('returns {shared: false, method: "clipboard"} when clipboard.writeText rejects (.catch branch)', async () => {
+    const originalShare = navigator.share;
+    delete navigator.share;
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('Clipboard denied')) },
+      configurable: true,
+    });
+
+    const result = await shareProgress('SYNC-TEST1-CODE0');
+    expect(result.shared).toBe(false);
+    expect(result.method).toBe('clipboard');
+
+    if (originalShare) navigator.share = originalShare;
+    Object.defineProperty(navigator, 'clipboard', { value: originalClipboard, configurable: true });
+  });
+});
+
+// ─── merge helpers — if (!imported) return current; branches ─────────────────
+// These branches fire when importProgress receives a crafted payload that has
+// a null/falsy value for a key that already exists in local storage.
+
+describe('merge helpers — if (!imported) return current; false branches', () => {
+  // Helper: build a valid SYNC- code from a raw payload object
+  function makeSyncCode(payload) {
+    const json = JSON.stringify(payload);
+    const bytes = new TextEncoder().encode(json);
+    const compressed = deflateRaw(bytes);
+    const encoded = base62Encode(compressed);
+    const versioned = '1' + encoded;
+    const chunks = versioned.match(/.{1,5}/g) || [versioned];
+    return 'SYNC-' + chunks.join('-');
+  }
+
+  beforeEach(() => {
+    mockStorage = createMockStorage();
+    localStorage.clear();
+  });
+
+  it('mergeStats: returns current unchanged when imported is null (if(!imported) branch)', () => {
+    const current = { 'water-sort': { played: 5, completed: 3, stars: 9, lastLevel: 3, highScores: {} } };
+    mockStorage.set('stats', current);
+    const code = makeSyncCode({ v: 1, keys: { stats: null }, direct: {} });
+    importProgress(code);
+    expect(mockStorage.get('stats')).toEqual(current);
+  });
+
+  it('mergeBestScore: returns current unchanged when imported is null (if(!imported) branch)', () => {
+    const current = { optimality: 85, stars: 3 };
+    mockStorage.set('best-scores:water-sort:0', current);
+    const code = makeSyncCode({ v: 1, keys: { 'best-scores:water-sort:0': null }, direct: {} });
+    importProgress(code);
+    expect(mockStorage.get('best-scores:water-sort:0')).toEqual(current);
+  });
+
+  it('mergeSpeedrunBests: returns current unchanged when imported is null (if(!imported) branch)', () => {
+    const current = { 0: 5000, 1: 7200 };
+    mockStorage.set('fail-speedrun:bests:water-sort', current);
+    const code = makeSyncCode({ v: 1, keys: { 'fail-speedrun:bests:water-sort': null }, direct: {} });
+    importProgress(code);
+    expect(mockStorage.get('fail-speedrun:bests:water-sort')).toEqual(current);
+  });
+
+  it('mergeLevelProgress: returns current unchanged when imported is null (if(!imported) branch)', () => {
+    const current = { 0: 1, 1: 1, 2: 0 };
+    mockStorage.set('level-progress:water-sort', current);
+    const code = makeSyncCode({ v: 1, keys: { 'level-progress:water-sort': null }, direct: {} });
+    importProgress(code);
+    expect(mockStorage.get('level-progress:water-sort')).toEqual(current);
+  });
+
+  it('mergeDailyData: returns current when imported has no completed field (if(!imported.completed) branch)', () => {
+    const current = { completed: { '2026-03-20': true } };
+    localStorage.setItem('mg:daily', JSON.stringify(current));
+    // imported has no completed field → mergeDirectValue → mergeDailyData returns current
+    const code = makeSyncCode({ v: 1, keys: {}, direct: { 'mg:daily': { lastPlayed: '2026-03-21' } } });
+    importProgress(code);
+    const stored = JSON.parse(localStorage.getItem('mg:daily'));
+    expect(stored.completed['2026-03-20']).toBe(true);
+  });
+
+  it('mergeMetaData: returns current unchanged when imported is null (if(!imported) branch)', () => {
+    const current = { xp: 1500, level: 3 };
+    localStorage.setItem('mg:meta', JSON.stringify(current));
+    const code = makeSyncCode({ v: 1, keys: {}, direct: { 'mg:meta': null } });
+    importProgress(code);
+    const stored = JSON.parse(localStorage.getItem('mg:meta'));
+    expect(stored.xp).toBe(1500);
+    expect(stored.level).toBe(3);
+  });
+
+  it('returns "Invalid payload" when decoded JSON is null (if(!payload) true branch)', () => {
+    // JSON.stringify(null) = "null" — valid deflate but payload === null after parse
+    const code = makeSyncCode(null);
+    const result = importProgress(code);
+    expect(result).toEqual({ success: false, error: 'Invalid payload' });
+  });
+
+  it('returns "Invalid payload" when decoded JSON is a non-object primitive (typeof !== object right arm)', () => {
+    // payload=42 → !42 is false → right arm evaluated: typeof 42 !== 'object' → true → Invalid payload
+    const code = makeSyncCode(42);
+    const result = importProgress(code);
+    expect(result).toEqual({ success: false, error: 'Invalid payload' });
+  });
+
+  it('mergeDailyData: returns imported when local JSON has no completed field (!current.completed branch)', () => {
+    // Local mg:daily exists as JSON but has no .completed field → !current.completed → return imported
+    const localDaily = { lastPlayed: '2026-03-20' }; // no completed field
+    localStorage.setItem('mg:daily', JSON.stringify(localDaily));
+    const importedDaily = { completed: { '2026-03-21': true } };
+    const code = makeSyncCode({ v: 1, keys: {}, direct: { 'mg:daily': importedDaily } });
+    importProgress(code);
+    const stored = JSON.parse(localStorage.getItem('mg:daily'));
+    // imported wins because !current.completed
+    expect(stored.completed['2026-03-21']).toBe(true);
+  });
+
+  it('mergeDirectValue: returns imported for unknown direct key (default return branch)', () => {
+    // Craft a payload with a direct key that is neither mg:daily nor mg:meta
+    const localVal = { old: true };
+    localStorage.setItem('mg:other', JSON.stringify(localVal));
+    const importedVal = { newer: true };
+    const code = makeSyncCode({ v: 1, keys: {}, direct: { 'mg:other': importedVal } });
+    importProgress(code);
+    const stored = JSON.parse(localStorage.getItem('mg:other'));
+    // mergeDirectValue default → return imported
+    expect(stored).toEqual({ newer: true });
+    localStorage.removeItem('mg:other');
+  });
+
 });

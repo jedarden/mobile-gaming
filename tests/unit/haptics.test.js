@@ -122,6 +122,19 @@ describe('isHapticEnabled', () => {
     state.legacySettings = undefined; // no legacy settings either
     expect(isHapticEnabled()).toBe(true); // default: enabled
   });
+
+  it('falls through global non-boolean haptic to legacy (typeof false branch)', () => {
+    // global.haptic is a string, not boolean → typeof check fails → uses legacy
+    state.globalSettings = { haptic: 'yes' };
+    state.legacySettings = { hapticEnabled: false };
+    expect(isHapticEnabled()).toBe(false);
+  });
+
+  it('returns default true when global.haptic is non-boolean and legacy.hapticEnabled is also non-boolean', () => {
+    state.globalSettings = { haptic: 1 };      // number, not boolean
+    state.legacySettings = { hapticEnabled: 'true' }; // string, not boolean
+    expect(isHapticEnabled()).toBe(true); // falls through to default
+  });
 });
 
 // ─── haptic ───────────────────────────────────────────────────────────────────

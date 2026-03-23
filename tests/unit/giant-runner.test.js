@@ -108,6 +108,17 @@ describe('createInitialState', () => {
     expect(state.player.color).toBe('blue');
   });
 
+  it('falls back to DEFAULT_START_SCALE when startScale is 0 (|| treats 0 as falsy)', () => {
+    const state = createInitialState(makeLevel({ startScale: 0 }));
+    expect(state.player.scale).toBe(DEFAULT_START_SCALE);
+    expect(state.player.renderScale).toBe(DEFAULT_START_SCALE);
+  });
+
+  it('falls back to "blue" when playerColor is empty string (|| treats "" as falsy)', () => {
+    const state = createInitialState(makeLevel({ playerColor: '' }));
+    expect(state.player.color).toBe('blue');
+  });
+
   it('starts player at position (0, 0)', () => {
     const state = createInitialState(makeLevel());
     expect(state.player.x).toBe(0);
@@ -596,6 +607,14 @@ describe('cloneState', () => {
     clone.player.scale = 99;
     expect(state.player.scale).toBe(1.0);
   });
+
+  it('returns empty array for obstacles when state.obstacles is absent (falsy branch)', () => {
+    const state = createInitialState(makeLevel());
+    // Simulate a state where obstacles is undefined/null (the ?: false branch in cloneState)
+    const stateNoObs = { ...state, obstacles: null };
+    const clone = cloneState(stateNoObs);
+    expect(clone.obstacles).toEqual([]);
+  });
 });
 
 describe('createGameHistory', () => {
@@ -649,5 +668,19 @@ describe('createGameHistory', () => {
     h.undo(); // back to 'c'
     h.undo(); // back to 'b'
     expect(h.canUndo()).toBe(false); // 'a' was evicted
+  });
+});
+
+// ── advance — non-running status guard ────────────────────────────────────────
+
+describe('advance — non-running status guard (status !== "running" branches)', () => {
+  it('returns same state reference when status is "boss_fight" (guard true branch)', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'boss_fight' };
+    expect(advance(state, 1 / 60)).toBe(state);
+  });
+
+  it('returns same state reference when status is "lost" (guard true branch)', () => {
+    const state = { ...createInitialState(makeLevel()), status: 'lost' };
+    expect(advance(state, 1 / 60)).toBe(state);
   });
 });

@@ -50,6 +50,19 @@ describe('Replay Encoding', () => {
       expect(decoded.events).toEqual([]);
     });
 
+    it('uses REPLAY_VERSION=1 when version is omitted — (replay.version || REPLAY_VERSION) false arm', () => {
+      const replay = {
+        gameId: 'water-sort',
+        levelId: 1,
+        seed: 0,
+        // no version field → undefined → || REPLAY_VERSION (=1) fires
+        events: []
+      };
+      const encoded = encodeReplay(replay);
+      const decoded = decodeReplay(encoded);
+      expect(decoded.version).toBe(1); // REPLAY_VERSION constant = 1
+    });
+
     it('should preserve single tap event', () => {
       const replay = {
         gameId: 'water-sort',
@@ -392,6 +405,21 @@ describe('Replay URL Handling', () => {
       expect(parseReplayFromUrl('#level=5')).toBeNull();
       expect(parseReplayFromUrl('')).toBeNull();
     });
+
+    it('returns null when base64 is malformed (catch block in parseReplayFromUrl)', () => {
+      // '!!!invalid!!!' is not valid base64 and will cause atob to throw
+      expect(parseReplayFromUrl('#r=!!!not-valid-base64!!!')).toBeNull();
+    });
+
+    it('logs console.error when base64 decode fails (catch block side effect)', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      parseReplayFromUrl('#r=!!!not-valid-base64!!!');
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to decode replay from URL:',
+        expect.any(Error)
+      );
+      errorSpy.mockRestore();
+    });
   });
 
   describe('isReplayUrl', () => {
@@ -559,6 +587,56 @@ describe('Replay Playback', () => {
       expect(events[1].x).toBeCloseTo(200, 1);
     });
 
+    it('play() is a no-op when already playing (if (isPlaying) return branch)', () => {
+      const replay = {
+        gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION,
+        events: [{ dt: 99999, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      };
+      const onEvent = vi.fn();
+      const playback = createPlayback({ replay, onEvent, onComplete: vi.fn() });
+      playback.play(); // sets isPlaying = true
+      expect(playback.isPlaying()).toBe(true);
+      // Calling play() again while already playing — guard `if (isPlaying) return` fires
+      playback.play();
+      expect(playback.isPlaying()).toBe(true);
+      playback.stop();
+    });
+
+    it('play() restarts from beginning when currentIndex >= events.length (post-completion restart branch)', async () => {
+      vi.useFakeTimers();
+      const replay = {
+        gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION,
+        events: [{ dt: 0, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      };
+      const onEvent = vi.fn();
+      const onComplete = vi.fn();
+      const playback = createPlayback({ replay, onEvent, onComplete, speed: 1 });
+      playback.play();
+      vi.advanceTimersByTime(100); // event fires, onComplete fires, isPlaying=false, currentIndex=1
+      expect(playback.isPlaying()).toBe(false);
+      expect(playback.getCurrentIndex()).toBe(1); // at end
+      // Calling play() again: currentIndex (1) >= events.length (1) → currentIndex = 0
+      playback.play();
+      expect(playback.getCurrentIndex()).toBe(0); // reset to beginning
+      expect(playback.isPlaying()).toBe(true);
+      playback.stop();
+      vi.useRealTimers();
+    });
+
+    it('completes without error when onComplete is not provided (if (onComplete) false branch)', async () => {
+      // All events fire immediately (dt=0, speed=1000); scheduleNext runs and hits
+      // currentIndex >= length → if (onComplete) is false → no call, no throw
+      const replay = {
+        gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION,
+        events: [{ dt: 0, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      };
+      // onComplete intentionally omitted
+      const playback = createPlayback({ replay, onEvent: vi.fn(), speed: 1000 });
+      playback.play();
+      await new Promise(resolve => setTimeout(resolve, 50));
+      expect(playback.isPlaying()).toBe(false); // finished without onComplete
+    });
+
     it('should pause and resume playback', () => {
       const replay = {
         gameId: 'water-sort',
@@ -586,6 +664,20 @@ describe('Replay Playback', () => {
 
       playback.play();
       expect(playback.isPlaying()).toBe(true);
+    });
+
+    it('pause() is a no-op when not playing (if (!isPlaying) return branch)', () => {
+      const replay = {
+        gameId: 'water-sort',
+        levelId: 1,
+        seed: 1,
+        version: REPLAY_VERSION,
+        events: [{ dt: 0, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      };
+      const playback = createPlayback({ replay, onEvent: vi.fn(), onComplete: vi.fn() });
+      // Never called play() — isPlaying is false → pause() returns immediately
+      expect(() => playback.pause()).not.toThrow();
+      expect(playback.isPlaying()).toBe(false);
     });
 
     it('should stop and reset playback', () => {
@@ -636,6 +728,36 @@ describe('Replay Playback', () => {
 
       playback.setSpeed(0.5);
       expect(playback.getSpeed()).toBe(0.5);
+    });
+
+    it('clamps speed below minimum to 0.1', () => {
+      const replay = {
+        gameId: 'water-sort',
+        levelId: 1,
+        seed: 1,
+        version: REPLAY_VERSION,
+        events: []
+      };
+      const playback = createPlayback({ replay, onEvent: vi.fn(), onComplete: vi.fn() });
+      playback.setSpeed(0);
+      expect(playback.getSpeed()).toBe(0.1);
+      playback.setSpeed(-1);
+      expect(playback.getSpeed()).toBe(0.1);
+    });
+
+    it('clamps speed above maximum to 10', () => {
+      const replay = {
+        gameId: 'water-sort',
+        levelId: 1,
+        seed: 1,
+        version: REPLAY_VERSION,
+        events: []
+      };
+      const playback = createPlayback({ replay, onEvent: vi.fn(), onComplete: vi.fn() });
+      playback.setSpeed(15);
+      expect(playback.getSpeed()).toBe(10);
+      playback.setSpeed(100);
+      expect(playback.getSpeed()).toBe(10);
     });
 
     it('should seek to timestamp', () => {
@@ -772,6 +894,59 @@ describe('Replay Buffer', () => {
 
       expect(onComplete).toHaveBeenCalled();
       expect(onComplete.mock.calls[0][0].events).toHaveLength(1);
+    });
+
+    it('does not throw when stopRecording called without onReplayComplete (if (onReplayComplete) false branch)', () => {
+      // onReplayComplete is optional — omitting it exercises the false branch of the guard
+      const buffer = createReplayBuffer({ gameId: 'water-sort' });
+      buffer.startRecording(1, 1);
+      buffer.record({ type: 'tap', x: 10, y: 20 });
+      const replay = buffer.stopRecording(); // no onReplayComplete → if guard is false → no call
+      expect(replay).not.toBeNull();
+      expect(replay.events).toHaveLength(1);
+    });
+
+    it('startRecording while already recording resets and restarts (if (mode !== "idle") true branch)', () => {
+      const buffer = createReplayBuffer({ gameId: 'water-sort', onReplayComplete: vi.fn() });
+      buffer.startRecording(1, 100); // mode → 'recording'
+      buffer.record({ type: 'tap', x: 1, y: 1 });
+      // Call startRecording again while recording → mode !== 'idle' → this.stop() → then re-records
+      buffer.startRecording(2, 200);
+      expect(buffer.isRecording()).toBe(true);
+      buffer.record({ type: 'tap', x: 2, y: 2 });
+      const replay = buffer.stopRecording();
+      // Only the second recording's events should be present
+      expect(replay.levelId).toBe(2);
+      expect(replay.seed).toBe(200);
+      expect(replay.events).toHaveLength(1);
+    });
+
+    it('startPlayback without onComplete does not throw when playback ends (if (onComplete) false branch)', async () => {
+      const buffer = createReplayBuffer({ gameId: 'water-sort', onReplayComplete: vi.fn() });
+      vi.useFakeTimers();
+      const replay = {
+        gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION,
+        events: [{ dt: 0, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      };
+      // onComplete is undefined → inner if (onComplete) fires false → no call
+      expect(() => buffer.startPlayback(replay, vi.fn())).not.toThrow();
+      expect(buffer.isPlaying()).toBe(true);
+      vi.useRealTimers();
+      buffer.stop();
+    });
+
+    it('startPlayback while already playing stops prior playback first (if (mode !== "idle") true branch)', () => {
+      const buffer = createReplayBuffer({ gameId: 'water-sort', onReplayComplete: vi.fn() });
+      const replay = {
+        gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION,
+        events: [{ dt: 99999, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      };
+      buffer.startPlayback(replay, vi.fn()); // mode → 'playing'
+      expect(buffer.isPlaying()).toBe(true);
+      // Start playback again while still playing → mode !== 'idle' → this.stop() → new playback
+      buffer.startPlayback({ ...replay, levelId: 2 }, vi.fn());
+      expect(buffer.isPlaying()).toBe(true); // new playback running
+      buffer.stop();
     });
 
     it('should not record when not in recording mode', () => {
@@ -958,6 +1133,47 @@ describe('Replay Scrubber', () => {
     expect(playback.getCurrentIndex()).toBe(3);
   });
 
+  it('does not resume when seeking past end while playing (wasPlaying && targetIndex >= length false branch)', () => {
+    vi.useFakeTimers();
+    const replay = {
+      gameId: 'water-sort',
+      levelId: 1,
+      seed: 1,
+      version: REPLAY_VERSION,
+      events: [
+        { dt: 0,   type: 'tap', x: 0, y: 0, dx: 0, dy: 0 },
+        { dt: 100, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 },
+      ]
+    };
+    const playback = createPlayback({ replay, onEvent: vi.fn(), onComplete: vi.fn() });
+    playback.play(); // isPlaying = true, wasPlaying will be true in seek
+    // seek past end — targetIndex becomes 2, events.length is 2 → 2 < 2 is false → play() not called
+    playback.seek(9999);
+    expect(playback.getCurrentIndex()).toBe(2); // positioned at end
+    vi.useRealTimers();
+  });
+
+  it('resumes playback when seeking to valid position while playing (wasPlaying && targetIndex < length true branch)', () => {
+    vi.useFakeTimers();
+    const replay = {
+      gameId: 'water-sort',
+      levelId: 1,
+      seed: 1,
+      version: REPLAY_VERSION,
+      events: [
+        { dt: 0,   type: 'tap', x: 0, y: 0, dx: 0, dy: 0 },
+        { dt: 100, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 },
+        { dt: 100, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 },
+      ]
+    };
+    const playback = createPlayback({ replay, onEvent: vi.fn(), onComplete: vi.fn() });
+    playback.play(); // isPlaying = true
+    // seek to t=50 — targetIndex = 1, events.length = 3 → 1 < 3 is true → play() called again
+    playback.seek(50);
+    expect(playback.getCurrentIndex()).toBe(1); // positioned mid-replay
+    vi.useRealTimers();
+  });
+
   it('should find correct event at exact timestamp', () => {
     const replay = {
       gameId: 'water-sort',
@@ -1096,5 +1312,129 @@ describe('createReplayRenderer', () => {
     // Resolve first
     mockMediaRecorder.onstop();
     await first;
+  });
+
+  it('start() rejects when MediaRecorder fires onerror (onerror branch)', async () => {
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(),
+      feedEvent: vi.fn(),
+    });
+
+    const startPromise = renderer.start();
+    // Trigger the onerror callback to reject the promise
+    mockMediaRecorder.onerror(new Error('codec not found'));
+
+    await expect(startPromise).rejects.toThrow('MediaRecorder error');
+  });
+
+  it('start() rejects when initGame throws (catch block — lines 1046-1049)', async () => {
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(() => { throw new Error('initGame failed'); }),
+      feedEvent: vi.fn(),
+    });
+    await expect(renderer.start()).rejects.toThrow('initGame failed');
+  });
+
+  it('cancel() is a no-op before start() — null playback and mediaRecorder (if false branches)', () => {
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(),
+      feedEvent: vi.fn(),
+    });
+    // Neither playback nor mediaRecorder has been set — both if guards are false
+    expect(() => renderer.cancel()).not.toThrow();
+  });
+
+  it('cancel() skips mediaRecorder.stop() when state is already inactive (state !== "inactive" false branch)', async () => {
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(),
+      feedEvent: vi.fn(),
+    });
+
+    // Start rendering and resolve via stop() — stop() sets state to 'inactive' then fires onstop
+    const startPromise = renderer.start();
+    mockMediaRecorder.stop(); // state → 'inactive', onstop → resolves promise
+    await startPromise;
+
+    expect(mockMediaRecorder.state).toBe('inactive');
+    // stop() was called once already; cancel() must NOT call it again
+    const stopCallsBefore = mockMediaRecorder.stop.mock.calls.length;
+    renderer.cancel();
+    expect(mockMediaRecorder.stop.mock.calls.length).toBe(stopCallsBefore);
+  });
+
+  it('ondataavailable: pushes chunk when size > 0 (true arm) and skips when size === 0 (false arm)', async () => {
+    // After start(), the handler is installed on mockMediaRecorder.ondataavailable
+    const renderer = createReplayRenderer({
+      replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+      canvas: mockCanvas,
+      initGame: vi.fn(),
+      feedEvent: vi.fn(),
+    });
+
+    const startPromise = renderer.start();
+
+    // TRUE arm: size > 0 → chunk is kept (use a real Blob so .size is accurate)
+    const chunk = new Blob(['hello'], { type: 'video/webm' }); // size === 5
+    mockMediaRecorder.ondataavailable({ data: chunk });
+
+    // FALSE arm: size === 0 → chunk is ignored (no push)
+    mockMediaRecorder.ondataavailable({ data: new Blob([], { type: 'video/webm' }) });
+
+    // Resolve the promise via stop → onstop
+    mockMediaRecorder.stop();
+    const blob = await startPromise;
+
+    // The blob should have been built from exactly 1 chunk (the size>0 one)
+    expect(blob).toBeInstanceOf(Blob);
+    // recordedChunks had 1 entry (only the size>0 chunk was pushed)
+    expect(blob.size).toBe(chunk.size);
+  });
+
+  it('onComplete fires stop() after 500ms delay when mediaRecorder is still recording (setTimeout true arm)', async () => {
+    vi.useFakeTimers();
+    try {
+      const renderer = createReplayRenderer({
+        // Empty events → onComplete fires immediately when play() is called
+        replay: { gameId: 'water-sort', levelId: 1, seed: 1, version: REPLAY_VERSION, events: [] },
+        canvas: mockCanvas,
+        initGame: vi.fn(),
+        feedEvent: vi.fn(),
+      });
+
+      // start() → play() → scheduleNext() → events empty → onComplete() → setTimeout(fn, 500)
+      // mediaRecorder.state is 'recording' after start()
+      const startPromise = renderer.start();
+
+      // At this point onComplete has been called, the 500ms setTimeout is queued
+      expect(mockMediaRecorder.stop).not.toHaveBeenCalled();
+
+      // Advance past the 500ms delay → the if(state !== 'inactive') condition is true → stop() fires
+      vi.advanceTimersByTime(500);
+
+      // stop() sets state to 'inactive' and fires onstop → resolves the promise
+      await startPromise;
+
+      expect(mockMediaRecorder.stop).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('decodeReplayFromShortCode — error branches', () => {
+  it('throws on invalid format (no XX- prefix match)', () => {
+    expect(() => decodeReplayFromShortCode('invalid')).toThrow('Invalid short code format');
+  });
+
+  it('throws on unknown game prefix (XX- format but unknown prefix)', () => {
+    expect(() => decodeReplayFromShortCode('ZZ-abc123')).toThrow('Unknown game prefix');
   });
 });

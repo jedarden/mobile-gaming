@@ -176,12 +176,41 @@ describe('validateLevel', () => {
     expect(result.reason).toMatch(/not strictly increasing/i);
   });
 
+  it('null playerColor falls back to "blue" via || operator — still counts blue blocks (|| true branch)', () => {
+    // playerColor: null → (null || 'blue') = 'blue' → blockPiles with color 'blue' still counted
+    const level = generateLevel(1, 'easy');
+    const modified = { ...level, playerColor: null };
+    // behaviour is identical to playerColor: 'blue', so a valid generated level stays valid
+    expect(validateLevel(modified).valid).toBe(true);
+  });
+
+  it('rejects a level with null bridges (!level.bridges truthy check)', () => {
+    const level = generateLevel(1, 'easy');
+    const result = validateLevel({ ...level, bridges: null });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/No bridges/i);
+  });
+
   it('null blockPiles falls back to [] via || operator, causing insufficient blue blocks', () => {
     const level = generateLevel(1, 'easy');
     // null blockPiles → (null || []) = [] → zero blue blocks → invalid
     const result = validateLevel({ ...level, blockPiles: null });
     expect(result.valid).toBe(false);
     expect(result.reason).toMatch(/Insufficient blue blocks/i);
+  });
+
+  it('bridge missing required field treats as 0 via || operator (b.required || 0 fallback)', () => {
+    // Bridge has no `required` field → undefined → (undefined || 0) = 0 → totalCells = 0
+    const level = {
+      id: 'test',
+      bridges: [{ z: 30 }],   // no required — triggers the || 0 fallback
+      blockPiles: [{ x: 0, z: 10, color: 'blue', count: 100 }],
+      playerColor: 'blue',
+      finishZ: 100,
+    };
+    const result = validateLevel(level);
+    // totalCells=0, required=0, totalBlue=100 ≥ 0 → bridge z checks pass → valid
+    expect(result.valid).toBe(true);
   });
 });
 
@@ -323,5 +352,15 @@ describe('generateLevel — additional invariants', () => {
     for (const pile of level.blockPiles) {
       expect(palette).toContain(pile.color);
     }
+  });
+
+  it('adds extra blue pile when zone main pile is insufficient for minBlueBlocks (lines 90-99 covered)', () => {
+    // Hard difficulty: 4 bridges with 4–5 cells each → minBlueBlocks ≥ 20.
+    // Each zone's main pile holds at most (cellsPerBridge + 1) blocks.
+    // The remaining deficit after each main pile triggers the extra-pile branch (line 90),
+    // so the total number of blue piles exceeds the (bridges.length + 1) zone count.
+    const level = generateLevel(1, 'hard');
+    const bluePiles = level.blockPiles.filter(p => p.color === 'blue').length;
+    expect(bluePiles).toBeGreaterThan(level.bridges.length + 1);
   });
 });

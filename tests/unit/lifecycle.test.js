@@ -65,6 +65,11 @@ describe('initLifecycle', () => {
     expect(() => mod.initLifecycle({ container: document.body })).not.toThrow();
   });
 
+  it('uses document.body when container is omitted (options.container || document.body false branch)', () => {
+    mod.initLifecycle({}); // no container → options.container is undefined → || document.body
+    expect(document.getElementById('mg-loading')).not.toBeNull();
+  });
+
   it('creates loading overlay in the container', () => {
     mod.initLifecycle({ container: document.body });
     expect(document.getElementById('mg-loading')).not.toBeNull();
@@ -102,6 +107,15 @@ describe('ready', () => {
     mod.ready();
     const loading = document.getElementById('mg-loading');
     expect(loading.style.opacity).toBe('0');
+  });
+
+  it('does not throw when loadingOverlay is removed before 300ms timeout fires (parentNode false branch)', () => {
+    vi.useFakeTimers();
+    mod.ready();
+    const overlay = document.getElementById('mg-loading');
+    overlay.parentNode?.removeChild(overlay); // remove before timeout fires
+    expect(() => vi.advanceTimersByTime(300)).not.toThrow();
+    vi.useRealTimers();
   });
 });
 
@@ -157,6 +171,16 @@ describe('pause', () => {
     mod.ready();
     expect(() => mod.pause()).not.toThrow();
     expect(mod.getState()).toBe('paused');
+  });
+
+  it('cancels pending RAF when one is active (if (rafId !== null) true branch)', () => {
+    // Schedule a RAF while running, then pause — the RAF is cancelled
+    const rafMock = vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(99);
+    const cancelMock = vi.spyOn(window, 'cancelAnimationFrame');
+    mod.requestAnimationFrame(() => {}); // schedules RAF → rafId = 99
+    mod.pause(); // should call cancelAnimationFrame(99) and set rafId = null
+    expect(cancelMock).toHaveBeenCalledWith(99);
+    vi.restoreAllMocks();
   });
 });
 
@@ -241,6 +265,45 @@ describe('handleError', () => {
     expect(() => mod.handleError(new Error('oops'))).not.toThrow();
     expect(() => mod.handleError(null)).not.toThrow();
     expect(() => mod.handleError('string error')).not.toThrow();
+  });
+
+  it('cancels pending RAF when handleError() is called while RAF is active (rafId !== null branch)', () => {
+    vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(77);
+    const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame');
+    mod.requestAnimationFrame(() => {}); // sets rafId = 77
+    mod.handleError(new Error('crash')); // rafId !== null → cancelAnimationFrame(77)
+    expect(cancelSpy).toHaveBeenCalledWith(77);
+    vi.restoreAllMocks();
+  });
+});
+
+// ── handleError — before initLifecycle (errorOverlay null guard) ───────────
+
+describe('handleError — before initLifecycle', () => {
+  it('does not throw when errorOverlay is null (if (errorOverlay) false branch)', () => {
+    // Global beforeEach resets module state; no initLifecycle called here →
+    // errorOverlay is null → if (errorOverlay) block is skipped entirely
+    expect(() => mod.handleError(new Error('no overlay'))).not.toThrow();
+    expect(mod.getState()).toBe('error');
+  });
+});
+
+// ── pause/resume — before initLifecycle (resumeOverlay null guard) ─────────
+
+describe('pause/resume — before initLifecycle (resumeOverlay null guard)', () => {
+  it('does not throw when pause() called without initLifecycle (if(resumeOverlay) false branch)', () => {
+    // ready() sets currentState='running' without creating resumeOverlay
+    mod.ready();
+    expect(() => mod.pause()).not.toThrow();
+    expect(mod.getState()).toBe('paused');
+  });
+
+  it('does not throw when resume() called without initLifecycle (if(resumeOverlay) false branch)', () => {
+    // ready() + pause() without initLifecycle → resumeOverlay is null
+    mod.ready();
+    mod.pause(); // sets state to 'paused', resumeOverlay=null (false branch in pause)
+    expect(() => mod.resume()).not.toThrow();
+    expect(mod.getState()).toBe('running');
   });
 });
 
@@ -367,6 +430,25 @@ describe('setupVisibilityHandler', () => {
   });
 });
 
+// ── window error boundary ─────────────────────────────────────────────────────
+
+describe('window error boundary', () => {
+  it('transitions to error state when window fires error event with e.error (truthy branch)', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    window.dispatchEvent(Object.assign(new Event('error'), { error: new Error('Script error'), message: '' }));
+    expect(mod.getState()).toBe('error');
+  });
+
+  it('transitions to error state using e.message fallback when e.error is null (falsy branch)', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    // e.error is null → falls back to new Error(e.message)
+    window.dispatchEvent(Object.assign(new Event('error'), { error: null, message: 'Script failed' }));
+    expect(mod.getState()).toBe('error');
+  });
+});
+
 // ── unhandledrejection boundary ───────────────────────────────────────────────
 
 describe('unhandledrejection boundary', () => {
@@ -382,5 +464,30 @@ describe('unhandledrejection boundary', () => {
     mod.ready();
     window.dispatchEvent(Object.assign(new Event('unhandledrejection'), { reason: null }));
     expect(mod.getState()).toBe('error');
+  });
+});
+
+// ── handleError — error button calls window.location.reload ───────────────────
+
+describe('handleError — error restart button (restartBtn.onclick branch)', () => {
+  it('clicking the error button calls window.location.reload()', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+
+    // jsdom does not allow vi.spyOn(location, 'reload') — use defineProperty instead
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: reloadMock },
+      writable: true,
+      configurable: true,
+    });
+
+    mod.handleError(new Error('test crash'));
+
+    const btn = document.querySelector('.mg-error-btn');
+    expect(btn).not.toBeNull();
+    btn.click();
+
+    expect(reloadMock).toHaveBeenCalledTimes(1);
   });
 });

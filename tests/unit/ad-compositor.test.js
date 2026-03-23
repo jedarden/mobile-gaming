@@ -7,7 +7,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
 import {
   TEMPLATES,
@@ -20,6 +20,7 @@ import {
   validateTemplate,
   createComposition,
   renderFrame,
+  exportMp4,
 } from '../../src/shared/ad-compositor.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -205,6 +206,16 @@ describe('validateTemplate', () => {
     expect(r.valid).toBe(false);
     expect(r.errors.join(' ')).toMatch(/speedMultiplier/i);
   });
+
+  it('rejects overlays that is not an array (!Array.isArray branch)', () => {
+    const r = validateTemplate({
+      id: 'x', name: 'X',
+      segments: [{ type: 'black', duration: 1000 }],
+      overlays: null, // not an array
+    });
+    expect(r.valid).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/overlays must be an array/i);
+  });
 });
 
 // ─── buildTimeline ────────────────────────────────────────────────────────────
@@ -289,6 +300,10 @@ describe('getActiveEntry', () => {
   it('clamps to last entry for t >= totalDuration', () => {
     const entry = getActiveEntry(tl, 99999);
     expect(entry.segment.type).toBe('black');
+  });
+
+  it('returns null for empty timeline (?? null fallback)', () => {
+    expect(getActiveEntry([], 0)).toBeNull();
   });
 });
 
@@ -380,6 +395,11 @@ describe('getActiveOverlays', () => {
     const active = getActiveOverlays(tmpl, 2500);
     expect(active.some(o => o.content === 'B')).toBe(true);
   });
+
+  it('returns empty array for template with no overlays (filter on empty array)', () => {
+    const emptyOverlays = { id: 't', name: 'T', segments: [], overlays: [] };
+    expect(getActiveOverlays(emptyOverlays, 1000)).toHaveLength(0);
+  });
 });
 
 // ─── overlayProgress ─────────────────────────────────────────────────────────
@@ -427,6 +447,13 @@ describe('createComposition', () => {
     expect(() => createComposition('nonexistent', makeSource())).toThrow();
   });
 
+  it('throws when template object fails validation (if (!validation.valid) branch)', () => {
+    // Passing an object directly bypasses the TEMPLATES lookup but still validates
+    // empty segments → validateTemplate returns valid:false → throws 'Invalid template: ...'
+    const badTemplate = { id: 'bad', name: 'Bad', segments: [], overlays: [] };
+    expect(() => createComposition(badTemplate, makeSource())).toThrow(/invalid template/i);
+  });
+
   it('totalDuration equals sum of segments', () => {
     const comp = createComposition('fail-ad', makeSource());
     expect(comp.totalDuration).toBe(getTotalDuration(TEMPLATES['fail-ad']));
@@ -453,6 +480,34 @@ describe('createComposition', () => {
     // first segment is gameplay at t=0
     comp.getFrameInfo(100);
     expect(source.getFrameAt).toHaveBeenCalled();
+  });
+
+  it('getFrameInfo() returns frame=null when getFrameAt returns null (?? null branch)', () => {
+    // getFrameAt returns null → nullish coalescing ?? null fires → frame is null
+    const source = { ...makeSource(), getFrameAt: vi.fn(() => null) };
+    const comp = createComposition('fail-ad', source);
+    const { frame } = comp.getFrameInfo(100);
+    expect(frame).toBeNull();
+  });
+
+  it('getFrameInfo() returns frame=null when getFrameAt returns undefined (?? null branch)', () => {
+    // getFrameAt returns undefined → ?? null fires → frame is null
+    const source = { ...makeSource(), getFrameAt: vi.fn(() => undefined) };
+    const comp = createComposition('fail-ad', source);
+    const { frame } = comp.getFrameInfo(100);
+    expect(frame).toBeNull();
+  });
+
+  it('getFrameInfo() returns frame=null and sourceTime=-1 during non-gameplay segment (sourceTime>=0 false arm)', () => {
+    // fail-ad segment 1 (black) runs from 2000-2400ms
+    // compositionToSourceTime returns -1 for non-gameplay → sourceTime < 0 → frame = null (false arm)
+    const source = makeSource();
+    const comp = createComposition('fail-ad', source);
+    const { sourceTime, frame } = comp.getFrameInfo(2100); // within the black segment
+    expect(sourceTime).toBe(-1);
+    expect(frame).toBeNull();
+    // getFrameAt must NOT be called when sourceTime < 0
+    expect(source.getFrameAt).not.toHaveBeenCalled();
   });
 });
 
@@ -516,6 +571,44 @@ describe('renderFrame', () => {
     expect(hasCustom).toBe(true);
   });
 
+  it('renders bounce animation overlay without error (no scale/alpha transform applied)', () => {
+    // fail-ad overlays[1] uses animation: 'bounce' — neither zoom nor fade if-block fires
+    const comp = createComposition('fail-ad', makeSource());
+    const ctx = mockCtx();
+    const bounceOverlay = TEMPLATES['fail-ad'].overlays[1]; // animation: 'bounce', trigger: 2600
+    expect(() => renderFrame(ctx, comp, bounceOverlay.trigger + 10)).not.toThrow();
+    expect(ctx.fillText).toHaveBeenCalled(); // overlay rendered with scale=1, alpha=1
+  });
+
+  it('renders none animation overlay without error (no transform applied)', () => {
+    // challenge-ad overlays[1] uses animation: 'none' — neither zoom nor fade if-block fires
+    const comp = createComposition('challenge-ad', makeSource());
+    const ctx = mockCtx();
+    const noneOverlay = TEMPLATES['challenge-ad'].overlays[1]; // animation: 'none', trigger: 800
+    expect(() => renderFrame(ctx, comp, noneOverlay.trigger + 10)).not.toThrow();
+    expect(ctx.fillText).toHaveBeenCalled();
+  });
+
+  it('renders fade animation overlay with alpha < 1 during fade-in (if(overlay.animation==="fade") true branch)', () => {
+    // challenge-ad overlays[0] uses animation: 'fade', trigger: 0, duration: 800
+    // At t=50ms: progress = 50/800 = 0.0625, alpha = min(1, 0.0625*4) = 0.25
+    const comp = createComposition('challenge-ad', makeSource());
+    const ctx = mockCtx();
+    renderFrame(ctx, comp, 50); // overlay active; fade branch sets globalAlpha=0.25
+    // ctx.restore() is a no-op mock so globalAlpha stays at the value set inside _renderOverlay
+    expect(ctx.globalAlpha).toBeLessThan(1);
+    expect(ctx.fillText).toHaveBeenCalled();
+  });
+
+  it('renders slide animation overlay without error (no transform applied)', () => {
+    // drama-ad overlays[1] uses animation: 'slide' — neither zoom nor fade if-block fires
+    const comp = createComposition('drama-ad', makeSource());
+    const ctx = mockCtx();
+    const slideOverlay = TEMPLATES['drama-ad'].overlays[1]; // animation: 'slide', trigger: 3100
+    expect(() => renderFrame(ctx, comp, slideOverlay.trigger + 10)).not.toThrow();
+    expect(ctx.fillText).toHaveBeenCalled();
+  });
+
   it('falls back to putImageData when drawImage throws and frame has .data', () => {
     // Simulate an ImageData frame — drawImage rejects it but putImageData accepts it
     const imageDataFrame = { data: new Uint8ClampedArray(4) };
@@ -535,5 +628,200 @@ describe('renderFrame', () => {
     ctx.drawImage = vi.fn(() => { throw new Error('drawImage failed'); });
     renderFrame(ctx, comp, 0);
     expect(ctx.putImageData).not.toHaveBeenCalled();
+  });
+
+  it('renders overlay with unknown style using ?? fallback (OVERLAY_STYLES[style] ?? OVERLAY_STYLES.normal)', () => {
+    // Build a minimal custom template with an overlay that has an unknown style
+    const customTemplate = {
+      id: 'test-unknown-style',
+      name: 'Test Unknown Style',
+      segments: [{ type: 'outro', duration: 500 }],
+      overlays: [
+        { type: 'text', content: 'Hello', trigger: 0, duration: 400, style: 'unknown-style', animation: 'none' }
+      ],
+    };
+    const comp = createComposition(customTemplate, makeSource());
+    const ctx = mockCtx();
+    // t=10: overlay is active; OVERLAY_STYLES['unknown-style'] is undefined → ?? OVERLAY_STYLES.normal → undefined
+    renderFrame(ctx, comp, 10);
+    // fillText is still called even when style is undefined (mock ctx accepts any font value)
+    expect(ctx.fillText).toHaveBeenCalled();
+  });
+});
+
+// ── renderFrame — ctx without canvas property (ctx.canvas?.width ?? CANVAS_W) ──
+
+describe('renderFrame — ctx without canvas property (?? CANVAS_W/CANVAS_H fallback)', () => {
+  it('uses CANVAS_W/CANVAS_H defaults when ctx has no canvas property (??  fallback branch)', () => {
+    // ctx without .canvas → ctx.canvas is undefined → undefined?.width = undefined
+    // → undefined ?? CANVAS_W = 1080; same for height
+    const ctx = {
+      canvas: undefined,
+      clearRect: vi.fn(),
+      fillRect: vi.fn(),
+      fillText: vi.fn(),
+      drawImage: vi.fn(),
+      putImageData: vi.fn(),
+      createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
+      globalAlpha: 1,
+      fillStyle: '',
+      font: '',
+      textAlign: '',
+      textBaseline: '',
+    };
+    const comp = createComposition(TEMPLATES['fail-ad'], makeSource());
+    // Should not throw and should call clearRect with default 1080x1920
+    expect(() => renderFrame(ctx, comp, 0)).not.toThrow();
+    expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 1080, 1920);
+  });
+});
+
+// ── exportMp4 ──────────────────────────────────────────────────────────────────
+// exportMp4 was previously untested. Covers:
+//  - if(!mimeType) reject path
+//  - catch { return false } in MediaRecorder.isTypeSupported
+//  - onerror with e.error.message (e.error?.message ?? e — true arm)
+//  - onerror without e.error (e.error?.message ?? e — false arm, uses e itself)
+//  - opts.fps ?? EXPORT_FPS default (fps not provided)
+//  - happy path: resolves with Blob
+
+describe('exportMp4', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('rejects when no codec is supported (if(!mimeType) reject branch)', async () => {
+    vi.stubGlobal('MediaRecorder', { isTypeSupported: vi.fn(() => false) });
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn() };
+    await expect(exportMp4({ totalDuration: 0 }, canvas))
+      .rejects.toThrow('No supported MediaRecorder codec found');
+  });
+
+  it('catch { return false } when isTypeSupported throws — still no mimeType → reject', async () => {
+    // All three mimeType probes throw; each catch returns false → no mimeType found
+    vi.stubGlobal('MediaRecorder', {
+      isTypeSupported: vi.fn(() => { throw new Error('not supported'); }),
+    });
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn() };
+    await expect(exportMp4({ totalDuration: 0 }, canvas))
+      .rejects.toThrow('No supported MediaRecorder codec found');
+  });
+
+  it('uses EXPORT_FPS=30 when opts.fps is not provided (opts.fps ?? EXPORT_FPS false arm)', async () => {
+    let capturedFps;
+    const mockRecorder = { start: vi.fn(), stop: vi.fn(), ondataavailable: null, onstop: null, onerror: null };
+    const MockMR = vi.fn(() => mockRecorder);
+    MockMR.isTypeSupported = vi.fn(() => true);
+    vi.stubGlobal('MediaRecorder', MockMR);
+    vi.stubGlobal('requestAnimationFrame', vi.fn()); // don't auto-advance loop
+
+    const canvas = {
+      getContext: vi.fn(() => mockCtx()),
+      captureStream: vi.fn((fps) => { capturedFps = fps; return {}; }),
+    };
+    // totalDuration=0 → loop exits immediately, captureStream(fps) called with default 30
+    exportMp4({ totalDuration: 0 }, canvas); // no opts.fps
+    expect(capturedFps).toBe(30);
+  });
+
+  it('onerror with e.error.message uses message (e.error?.message ?? e — true arm)', async () => {
+    const mockRecorder = { start: vi.fn(), stop: vi.fn(), ondataavailable: null, onstop: null, onerror: null };
+    const MockMR = vi.fn(() => mockRecorder);
+    MockMR.isTypeSupported = vi.fn(() => true);
+    vi.stubGlobal('MediaRecorder', MockMR);
+    vi.stubGlobal('requestAnimationFrame', vi.fn());
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn(() => ({})) };
+
+    // totalDuration=0 → renderNext immediately calls recorder.stop() and returns
+    // without calling renderFrame, so composition needs no getFrameInfo
+    const promise = exportMp4({ totalDuration: 0 }, canvas);
+    mockRecorder.onerror({ error: { message: 'encoder failure' } });
+    await expect(promise).rejects.toThrow('MediaRecorder error: encoder failure');
+  });
+
+  it('onerror without e.error falls back to e (e.error?.message ?? e — false arm)', async () => {
+    const mockRecorder = { start: vi.fn(), stop: vi.fn(), ondataavailable: null, onstop: null, onerror: null };
+    const MockMR = vi.fn(() => mockRecorder);
+    MockMR.isTypeSupported = vi.fn(() => true);
+    vi.stubGlobal('MediaRecorder', MockMR);
+    vi.stubGlobal('requestAnimationFrame', vi.fn());
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn(() => ({})) };
+
+    // totalDuration=0 avoids renderFrame call (loop exits immediately)
+    const promise = exportMp4({ totalDuration: 0 }, canvas);
+    // Fire onerror with no .error property — e.error?.message is undefined → ?? e → e used
+    mockRecorder.onerror({ toString: () => '[raw event]' });
+    await expect(promise).rejects.toThrow('MediaRecorder error:');
+  });
+
+  it('resolves with a Blob when recorder completes (happy path)', async () => {
+    const mockRecorder = { start: vi.fn(), stop: vi.fn(), ondataavailable: null, onstop: null, onerror: null };
+    const MockMR = vi.fn(() => mockRecorder);
+    MockMR.isTypeSupported = vi.fn(() => true);
+    vi.stubGlobal('MediaRecorder', MockMR);
+    // rAF that immediately invokes callback once
+    vi.stubGlobal('requestAnimationFrame', vi.fn(cb => cb()));
+
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn(() => ({})) };
+    // totalDuration=0 → renderNext immediately calls recorder.stop() on first call
+    const composition = { totalDuration: 0, getActiveEntry: vi.fn(() => null), getOverlays: vi.fn(() => []) };
+
+    const promise = exportMp4(composition, canvas);
+    // onstop was set by exportMp4; trigger it to resolve the promise
+    mockRecorder.onstop();
+    const blob = await promise;
+    expect(blob).toBeInstanceOf(Blob);
+  });
+
+  it('executes frame loop body: calls renderFrame and increments t when totalDuration > 0 (loop true arm)', async () => {
+    const mockRecorder = { start: vi.fn(), stop: vi.fn(), ondataavailable: null, onstop: null, onerror: null };
+    const MockMR = vi.fn(() => mockRecorder);
+    MockMR.isTypeSupported = vi.fn(() => true);
+    vi.stubGlobal('MediaRecorder', MockMR);
+    // Synchronous rAF — each renderNext call that requests next frame fires immediately
+    vi.stubGlobal('requestAnimationFrame', vi.fn(cb => cb()));
+
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn(() => ({})) };
+    // totalDuration=100ms, fps defaults to 30 → frameDuration≈33.3ms → ~3 renderFrame calls before stop
+    const getFrameInfo = vi.fn(() => ({ entry: null, frame: null }));
+    const getOverlays = vi.fn(() => []);
+    const composition = { totalDuration: 100, getFrameInfo, getOverlays };
+
+    const promise = exportMp4(composition, canvas);
+    // stop() fires onstop synchronously → resolves promise
+    mockRecorder.onstop();
+    await promise;
+
+    // getFrameInfo is called once per renderFrame call; must have been called at least once
+    // (proving the loop body executed — t=0 < 100 → renderFrame → t+=33.3 → ... → stop)
+    expect(getFrameInfo).toHaveBeenCalled();
+    expect(mockRecorder.stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('ondataavailable skips chunks with size=0 (if(e.data.size>0) false arm)', async () => {
+    const mockRecorder = { start: vi.fn(), stop: vi.fn(), ondataavailable: null, onstop: null, onerror: null };
+    const MockMR = vi.fn(() => mockRecorder);
+    MockMR.isTypeSupported = vi.fn(() => true);
+    vi.stubGlobal('MediaRecorder', MockMR);
+    vi.stubGlobal('requestAnimationFrame', vi.fn());
+
+    const canvas = { getContext: vi.fn(() => mockCtx()), captureStream: vi.fn(() => ({})) };
+    const promise = exportMp4({ totalDuration: 0 }, canvas);
+
+    // Fire ondataavailable with size=0 — should NOT push to chunks
+    mockRecorder.ondataavailable({ data: { size: 0 } });
+    // Fire ondataavailable with size>0 — SHOULD push to chunks
+    const realChunk = new Blob(['x']);
+    mockRecorder.ondataavailable({ data: realChunk });
+    // Trigger onstop — Blob is assembled from chunks (only the size>0 chunk)
+    mockRecorder.onstop();
+
+    const blob = await promise;
+    // The resulting Blob comes from one chunk (the size>0 one), not zero chunks
+    expect(blob.size).toBeGreaterThan(0);
   });
 });
