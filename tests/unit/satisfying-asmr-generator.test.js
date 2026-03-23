@@ -65,6 +65,10 @@ describe('generateLevel', () => {
     for (const p of patterns) {
       expect(['full', 'stripes']).toContain(p);
     }
+    // Verify both pattern types are exercised (seed 0 → 'full', seed 1 → 'stripes')
+    // This ensures the patternFull() case (line 137-139) is deterministically covered.
+    expect(patterns.has('full')).toBe(true);
+    expect(patterns.has('stripes')).toBe(true);
   });
 
   it('medium level uses splatter or checkerboard pattern', () => {
