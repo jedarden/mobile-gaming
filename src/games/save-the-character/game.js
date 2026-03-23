@@ -12,6 +12,7 @@
 import { initStorage, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { haptic } from '../../shared/haptics.js';
 
 import {
   createInitialState,
@@ -311,6 +312,7 @@ class SaveTheCharacterGame {
     // Save progress
     await this.saveProgress();
 
+    haptic('win');
     announce('Correct! The character is saved!');
   }
 
@@ -318,6 +320,7 @@ class SaveTheCharacterGame {
    * Handle lose condition
    */
   handleLose() {
+    haptic('fail');
     announce('Wrong choice! The character was not saved. Try again!');
   }
 

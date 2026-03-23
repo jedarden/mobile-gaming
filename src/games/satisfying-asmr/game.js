@@ -5,6 +5,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { haptic } from '../../shared/haptics.js';
 import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -117,10 +118,12 @@ class SatisfyingGame {
     // Erase just the cleaned cells from dirt canvas
     this.renderer.eraseArea(this.state.cells, gc, gr, SPRAY_RADIUS, this.state.width);
     this.renderer.render(this.state);
+    haptic('tap');
     if (this.renderer.spawnDebris) this.renderer.spawnDebris(px, py);
     this.updateUI();
 
     if (isComplete(this.state)) {
+      haptic('win');
       if (this.renderer.triggerCompletionSparkle) this.renderer.triggerCompletionSparkle();
       setTimeout(() => this.handleWin(), 800);
     }

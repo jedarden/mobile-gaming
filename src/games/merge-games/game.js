@@ -5,6 +5,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { haptic } from '../../shared/haptics.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -109,10 +110,12 @@ class MergeGame {
     this.state = next;
     this.updateUI();
     this.render();
+    haptic('merge');
     if (this.renderer && this.renderer.spawnMergeBurst) {
       this.renderer.spawnMergeBurst(r2, c2, newTier);
     }
     if (this.state.status === 'won') {
+      haptic('win');
       setTimeout(() => this.handleWin(), 250);
     }
   }
