@@ -16,8 +16,7 @@ import {
 import {
   pickGame,
   getTopCandidates,
-  getGameUrl,
-  getAvailableGames
+  getGameUrl
 } from '../shared/quick-play.js';
 import { createSettings, getSettings } from '../shared/settings.js';
 import { renderDashboard } from '../shared/analytics.js';
