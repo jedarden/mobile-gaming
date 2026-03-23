@@ -11,6 +11,7 @@
  */
 
 import { BALL_RADIUS } from './state.js';
+import { getPatternLabel } from '../../shared/color-blind.js';
 
 // Color palette
 const COLORS = {
@@ -64,6 +65,7 @@ export function createRenderer(canvas) {
   let lastState = null;
   let winAnimStarted = false;
   let reducedMotion = false;
+  let colorBlindMode = false;
 
   function now() { return performance.now(); }
 
@@ -142,8 +144,8 @@ export function createRenderer(canvas) {
       renderBackground(ctx, width, height);
       renderGrid(ctx, width, height);
       renderChannels(ctx, state);
-      renderCups(ctx, state, cupPops);
-      renderBalls(ctx, state);
+      renderCups(ctx, state, cupPops, colorBlindMode);
+      renderBalls(ctx, state, colorBlindMode);
       renderPins(ctx, state, pinRipples);
       renderParticles(ctx, particles);
       renderUI(ctx, state, width, height);
@@ -158,7 +160,8 @@ export function createRenderer(canvas) {
       lastState = null;
     },
 
-    setReducedMotion(v) { reducedMotion = v; }
+    setReducedMotion(v) { reducedMotion = v; },
+    setColorBlindMode(v) { colorBlindMode = v; }
   };
 }
 
@@ -225,7 +228,7 @@ function renderChannels(ctx, state) {
 }
 
 /** Cups with scale-pop animation on ball capture */
-function renderCups(ctx, state, cupPops) {
+function renderCups(ctx, state, cupPops, colorBlindMode = false) {
   const t = performance.now();
 
   for (const cup of state.cups) {
@@ -284,6 +287,20 @@ function renderCups(ctx, state, cupPops) {
     ctx.fillStyle = color;
     ctx.fillRect(x + 5, y - 8, topWidth - 10, 6);
 
+    // Color-blind label on stripe
+    if (colorBlindMode) {
+      const label = getPatternLabel(cup.acceptColor);
+      if (label) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x + topWidth / 2, y - 5);
+        ctx.restore();
+      }
+    }
+
     // Glow when captured balls present
     if (cup.captured && cup.captured.length > 0) {
       ctx.shadowColor = color;
@@ -299,7 +316,7 @@ function renderCups(ctx, state, cupPops) {
 }
 
 /** Balls with squash on settling and depth shadow */
-function renderBalls(ctx, state) {
+function renderBalls(ctx, state, colorBlindMode = false) {
   for (const ball of state.balls) {
     if (ball.lost) continue;
 
@@ -349,6 +366,18 @@ function renderBalls(ctx, state) {
     ctx.strokeStyle = 'rgba(255,255,255,0.18)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
+
+    // Color-blind label centered on ball
+    if (colorBlindMode) {
+      const label = getPatternLabel(ball.color);
+      if (label) {
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = `bold ${Math.round(r * 0.9)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, 0, 0);
+      }
+    }
 
     ctx.restore();
   }

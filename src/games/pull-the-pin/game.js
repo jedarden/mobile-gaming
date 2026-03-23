@@ -14,6 +14,7 @@ import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { isColorBlindEnabled } from '../../shared/color-blind.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 
@@ -172,7 +173,8 @@ export function createGame(canvas, options = {}) {
     getState,
     render,
     destroy,
-    setReducedMotion(v) { renderer.setReducedMotion(v); }
+    setReducedMotion(v) { renderer.setReducedMotion(v); },
+    setColorBlindMode(v) { renderer.setColorBlindMode(v); }
   };
 }
 
@@ -250,6 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   game.setReducedMotion(isReducedMotionEnabled());
+  game.setColorBlindMode(isColorBlindEnabled());
 
   function loadLevel(index) {
     const isRetry = index === currentLevelIndex && levelStartTime > 0;

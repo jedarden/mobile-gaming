@@ -12,6 +12,7 @@
  */
 
 import { BUS_COLORS } from './state.js';
+import { getPatternLabel } from '../../shared/color-blind.js';
 
 // Visual constants
 const CELL_SIZE = 60;
@@ -30,6 +31,7 @@ export function createRenderer(canvas) {
   let width = 0;
   let height = 0;
   let reducedMotion = false;
+  let colorBlindMode = false;
 
   /**
    * Resize canvas to fit container
@@ -339,6 +341,18 @@ export function createRenderer(canvas) {
         ctx.fillStyle = color;
       });
 
+      // Color-blind label on stop sign
+      if (colorBlindMode) {
+        const label = getPatternLabel(stop.color);
+        if (label) {
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.font = `bold ${Math.round(7 * scale)}px monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, pos.x + cellSize / 2, pos.y + 4 * scale);
+        }
+      }
+
       // Passenger count badge
       if (stop.waiting.length > 0) {
         ctx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -447,6 +461,18 @@ export function createRenderer(canvas) {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('✓', busX + busWidth - 9 * scale, busY + 11 * scale);
+      }
+
+      // Color-blind label on bus body
+      if (colorBlindMode) {
+        const label = getPatternLabel(bus.color);
+        if (label) {
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.font = `bold ${Math.round(busHeight * 0.4)}px monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, busX + busWidth / 2, busY + busHeight * 0.5);
+        }
       }
 
       ctx.restore();
@@ -631,6 +657,10 @@ export function createRenderer(canvas) {
     reducedMotion = value;
   }
 
+  function setColorBlindMode(value) {
+    colorBlindMode = value;
+  }
+
   /**
    * Get cell size
    */
@@ -649,6 +679,7 @@ export function createRenderer(canvas) {
     animateExit,
     highlightBus,
     setReducedMotion,
+    setColorBlindMode,
     getCellSize,
     get width() { return width; },
     get height() { return height; },

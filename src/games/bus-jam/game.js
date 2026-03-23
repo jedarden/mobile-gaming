@@ -12,6 +12,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { isColorBlindEnabled } from '../../shared/color-blind.js';
 import { getGameDailySeed } from '../../shared/daily.js';
 import { createRNG } from '../../shared/rng.js';
 
@@ -105,6 +106,7 @@ class BusJamGame {
       // Create renderer
       this.renderer = createRenderer(this.canvas);
       this.renderer.setReducedMotion(isReducedMotionEnabled());
+      this.renderer.setColorBlindMode(isColorBlindEnabled());
 
       // Check for daily mode
       const urlParams = new URLSearchParams(window.location.search);
@@ -321,6 +323,12 @@ class BusJamGame {
     document.getElementById('setting-motion').addEventListener('change', (e) => {
       updateSettings({ reducedMotion: e.target.checked, reducedMotionSetByUser: true });
       this.renderer.setReducedMotion(e.target.checked);
+    });
+
+    document.getElementById('setting-color-blind').addEventListener('change', (e) => {
+      updateSettings({ colorBlind: e.target.checked });
+      this.renderer.setColorBlindMode(e.target.checked);
+      this.render();
     });
   }
 
@@ -662,6 +670,7 @@ class BusJamGame {
     document.getElementById('setting-sound').checked = settings.soundEnabled;
     document.getElementById('setting-haptic').checked = settings.hapticEnabled;
     document.getElementById('setting-motion').checked = settings.reducedMotion;
+    document.getElementById('setting-color-blind').checked = settings.colorBlind;
 
     this.settingsOverlay.classList.add('active');
     this.settingsOverlay.setAttribute('aria-hidden', 'false');
