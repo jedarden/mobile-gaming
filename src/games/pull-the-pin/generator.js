@@ -33,7 +33,6 @@ const DIFFICULTY_CONFIG = {
  */
 export function generateLevel(seed, difficulty = 'medium', index = 0) {
   const rng = createRng(seed);
-  const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
   const difficultyNum = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
 
   for (let i = 0; i < 10; i++) {
