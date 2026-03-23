@@ -4,6 +4,7 @@
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
+import { isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { createInitialState, applyMove, getAllMoves } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -47,6 +48,7 @@ class ParkingEscapeGame {
     this.levels = await res.json();
 
     this.renderer = createRenderer(this.canvas);
+    this.renderer.setReducedMotion(isReducedMotionEnabled());
 
     this.input = createInput({
       canvas: this.canvas,
