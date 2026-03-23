@@ -179,6 +179,7 @@ class ParkingEscapeGame {
 
   handleMove(vehicleId, direction, distance) {
     if (!this.state || this.state.status !== 'playing') return;
+    if (this.renderer) this.renderer.setHintVehicle(null);
 
     // Validate move exists
     const moves = getAllMoves(this.state);

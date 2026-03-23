@@ -347,6 +347,7 @@ class WaterSortGame {
 
     // Attempt pour
     if (canPour(this.state, this.selectedTube, tubeIdx)) {
+      this.renderer.setHintTube(null);
       this.executePour(this.selectedTube, tubeIdx);
     } else {
       // Invalid move - switch selection to new tube

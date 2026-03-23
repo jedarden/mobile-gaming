@@ -107,6 +107,7 @@ export function createGame(canvas, options = {}) {
    * Remove a pin and start physics simulation
    */
   function removePin(pinId) {
+    renderer.setHintPin(null);
     gameState = state.removePin(gameState, pinId);
 
     if (onPinRemoved) {
