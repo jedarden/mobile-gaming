@@ -152,18 +152,22 @@ export function createRenderer(canvas) {
     renderUI(ctx, state, width, height);
   }
 
-  function startHintLoop() {
-    if (hintRafId || reducedMotion) return;
+  let loopRafId = null;
+
+  /** Self-terminating loop for hint pulse and confetti animation */
+  function startLoop() {
+    if (loopRafId || reducedMotion) return;
     function loop() {
-      if (!hintPinId || !lastState) { hintRafId = null; return; }
+      const active = hintPinId !== null || particles.length > 0;
+      if (!active || !lastState) { loopRafId = null; return; }
       doRender(lastState);
-      hintRafId = requestAnimationFrame(loop);
+      loopRafId = requestAnimationFrame(loop);
     }
-    hintRafId = requestAnimationFrame(loop);
+    loopRafId = requestAnimationFrame(loop);
   }
 
-  function stopHintLoop() {
-    if (hintRafId) { cancelAnimationFrame(hintRafId); hintRafId = null; }
+  function stopLoop() {
+    if (loopRafId) { cancelAnimationFrame(loopRafId); loopRafId = null; }
   }
 
   return {
@@ -177,15 +181,18 @@ export function createRenderer(canvas) {
       winAnimStarted = false;
       lastState = null;
       hintPinId = null;
-      stopHintLoop();
+      stopLoop();
     },
 
     setReducedMotion(v) { reducedMotion = v; },
     setColorBlindMode(v) { colorBlindMode = v; },
     setHintPin(id) {
       hintPinId = id;
-      if (id) startHintLoop(); else stopHintLoop();
-    }
+      if (id) startLoop();
+      // When cleared, let loop self-terminate naturally (particles may still be active)
+    },
+    /** Called after physics stops if status is won, to drive confetti animation */
+    startLoop
   };
 }
 

@@ -154,6 +154,8 @@ export function createGame(canvas, options = {}) {
       }
 
       render();
+      // After physics stops on win, drive confetti animation via RAF loop
+      if (allDone && gameState.status === 'won') renderer.startLoop();
     }, PHYSICS_TICK_MS);
   }
 
