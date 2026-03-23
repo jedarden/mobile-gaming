@@ -52,6 +52,12 @@ export function createRenderer(canvas) {
   let shakeOffset = { x: 0, y: 0 };
   let flashAlpha = 0;
 
+  // Hint target: pulsing gold glow on the hinted element
+  let hintTargetId = null;
+  let hintRafId = null;
+  let lastState = null;
+  let lastScale = 1;
+
   /**
    * Resize canvas to fit container
    */
@@ -97,6 +103,8 @@ export function createRenderer(canvas) {
    * Draw the full game state
    */
   function render(state, scale = 1) {
+    lastState = state;
+    lastScale = scale;
     clear();
 
     // Apply shake offset
@@ -124,9 +132,10 @@ export function createRenderer(canvas) {
       const isSequenceTarget = state.currentSequence &&
         state.puzzle.type === 'sequence' &&
         state.currentSequence.includes(element.id);
+      const isHinted = element.id === hintTargetId;
 
       if (!element.hidden || isRevealed) {
-        renderElement(element, scale, { isRevealed, isSequenceTarget });
+        renderElement(element, scale, { isRevealed, isSequenceTarget, isHinted });
       }
     });
 
@@ -259,7 +268,7 @@ export function createRenderer(canvas) {
    * Render a puzzle element with sketch-style border wobble
    */
   function renderElement(element, scale, options = {}) {
-    const { isRevealed, isSequenceTarget } = options;
+    const { isRevealed, isSequenceTarget, isHinted } = options;
     const x = element.x * scale;
     const y = element.y * scale;
     const w = (element.w || 60) * scale;
@@ -267,6 +276,20 @@ export function createRenderer(canvas) {
 
     const renderer = SPRITE_RENDERERS[element.type] || SPRITE_RENDERERS.rect;
     const seed = (element.id || '').charCodeAt(0) || 1;
+
+    // Pulsing gold glow for hint target
+    if (isHinted) {
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
+      ctx.save();
+      ctx.shadowColor = `rgba(255, 220, 50, ${0.5 + 0.4 * pulse})`;
+      ctx.shadowBlur = (16 + 8 * pulse) * scale;
+      ctx.strokeStyle = `rgba(255, 200, 0, ${0.8 + 0.2 * pulse})`;
+      ctx.lineWidth = 2.5 * scale;
+      ctx.beginPath();
+      ctx.roundRect(x - 3 * scale, y - 3 * scale, w + 6 * scale, h + 6 * scale, 8 * scale);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // Highlight revealed/target elements
     if (isRevealed || isSequenceTarget) {
@@ -807,6 +830,7 @@ export function createRenderer(canvas) {
     shakeOffset = { x: 0, y: 0 };
     flashAlpha = 0;
     particles = [];
+    stopHintLoop();
   }
 
   /**
@@ -839,6 +863,36 @@ export function createRenderer(canvas) {
   }
 
   /**
+   * Set the hint target element ID. Starts a rAF loop for pulsing animation.
+   * Pass null to clear.
+   */
+  function setHintTarget(id) {
+    hintTargetId = id;
+    if (id) {
+      startHintLoop();
+    } else {
+      stopHintLoop();
+    }
+  }
+
+  function startHintLoop() {
+    if (hintRafId) return; // already running
+    function loop() {
+      if (!hintTargetId || !lastState) { hintRafId = null; return; }
+      render(lastState, lastScale);
+      hintRafId = requestAnimationFrame(loop);
+    }
+    hintRafId = requestAnimationFrame(loop);
+  }
+
+  function stopHintLoop() {
+    if (hintRafId) {
+      cancelAnimationFrame(hintRafId);
+      hintRafId = null;
+    }
+  }
+
+  /**
    * Set reduced motion preference
    */
   function setReducedMotion(value) {
@@ -855,6 +909,7 @@ export function createRenderer(canvas) {
     hitTest,
     getElementAt,
     setReducedMotion,
+    setHintTarget,
     get scale() { return getScale(); },
     get width() { return width; },
     get height() { return height; }

@@ -25,6 +25,7 @@ import { createInput } from './input.js';
 import { audio } from './audio.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createHintSession, getHintTokens } from '../../shared/hints.js';
 
 // Game constants
 const GAME_ID = 'brain-teaser';
@@ -57,6 +58,7 @@ class BrainTeaserGame {
     this.state = null;
     this.renderer = null;
     this.input = null;
+    this.hintSession = null;
 
     // Interaction state
     this.animating = false;
@@ -245,6 +247,30 @@ class BrainTeaserGame {
     // Reset interaction state
     this.animating = false;
 
+    // Reset hint session
+    if (this.hintSession) this.hintSession.destroy();
+    if (this.renderer) this.renderer.setHintTarget(null);
+    this.hintSession = createHintSession({
+      gameId: GAME_ID,
+      level: puzzle,
+      getState: () => this.state,
+      onHighlight: ({ move }) => {
+        if (this.renderer) this.renderer.setHintTarget(move.targetId);
+        // Also show text hint
+        this.showTextHint();
+      },
+      onShowMove: ({ move }) => {
+        if (this.renderer) this.renderer.setHintTarget(move.targetId);
+        this.showTextHint();
+      },
+      onAutoPlay: ({ move }) => {
+        if (this.renderer) this.renderer.setHintTarget(null);
+        this.handleAction(move);
+      },
+      onTokensEmpty: () => { this.updateHintButton(); },
+    });
+    this.updateHintButton();
+
     // Resize and render
     this.handleResize();
     this.updateUI();
@@ -258,6 +284,7 @@ class BrainTeaserGame {
    */
   restartPuzzle() {
     this.levelRetries = (this.levelRetries || 0) + 1;
+    if (this.hintSession) this.hintSession.reset();
     this.startPuzzle(this.currentPuzzleIndex);
     audio.playSelect();
   }
@@ -277,6 +304,9 @@ class BrainTeaserGame {
    */
   async handleAction(action) {
     if (this.animating || this.state.status === 'solved') return;
+
+    // Clear hint highlight on any player action
+    if (this.renderer) this.renderer.setHintTarget(null);
 
     this.animating = true;
     audio.resume();
@@ -383,9 +413,16 @@ class BrainTeaserGame {
   }
 
   /**
-   * Show hint
+   * Show next progressive hint level via shared hint session.
    */
   showHint() {
+    if (this.hintSession) this.hintSession.showHint();
+  }
+
+  /**
+   * Show text hint from puzzle definition (used by hint session callbacks).
+   */
+  showTextHint() {
     const hint = getHint(this.state);
     if (hint) {
       this.hintText.textContent = hint;
@@ -394,6 +431,16 @@ class BrainTeaserGame {
       audio.playSelect();
       announce(`Hint: ${hint}`);
     }
+  }
+
+  /**
+   * Update hint button label with remaining token count.
+   */
+  updateHintButton() {
+    if (!this.btnHint) return;
+    const tokens = getHintTokens();
+    this.btnHint.textContent = `Hint (${tokens})`;
+    this.btnHint.disabled = tokens <= 0;
   }
 
   /**
