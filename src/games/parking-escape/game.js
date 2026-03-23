@@ -4,7 +4,7 @@
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
-import { isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { createInitialState, applyMove, getAllMoves } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -43,6 +43,7 @@ class ParkingEscapeGame {
 
   async init() {
     await initStorage();
+    initAccessibility();
 
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
@@ -118,6 +119,7 @@ class ParkingEscapeGame {
     this.handleResize();
     this.updateUI();
     this.render();
+    announce(`Level ${index + 1}. Slide vehicles to clear a path for the exit car.`);
   }
 
   restartLevel() { this.startLevel(this.currentLevelIndex); }
@@ -198,6 +200,7 @@ class ParkingEscapeGame {
     document.getElementById('stats-summary').textContent = `Escaped in ${moves} move${moves !== 1 ? 's' : ''}!`;
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');
+    announce(`Escaped in ${moves} move${moves !== 1 ? 's' : ''}! ${stars} star${stars !== 1 ? 's' : ''}!`);
   }
 
   handleResize() {

@@ -4,7 +4,7 @@
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
-import { isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -37,6 +37,7 @@ class MergeGame {
 
   async init() {
     await initStorage();
+    initAccessibility();
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
 
@@ -93,6 +94,7 @@ class MergeGame {
     this.handleResize();
     this.updateUI();
     this.render();
+    announce(`Level ${index + 1}. Merge tiles to reach Tier ${level.task.targetTier}.`);
   }
 
   restartLevel() { this.startLevel(this.currentLevelIndex); }
@@ -127,6 +129,7 @@ class MergeGame {
     document.getElementById('stats-summary').textContent = `Reached Tier ${level.task.targetTier} in ${moves} merge${moves !== 1 ? 's' : ''}!`;
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');
+    announce(`Level complete! Reached Tier ${level.task.targetTier} in ${moves} merge${moves !== 1 ? 's' : ''}. ${stars} star${stars !== 1 ? 's' : ''}!`);
   }
 
   handleResize() {

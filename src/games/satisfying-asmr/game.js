@@ -4,7 +4,7 @@
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
-import { isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -41,6 +41,7 @@ class SatisfyingGame {
 
   async init() {
     await initStorage();
+    initAccessibility();
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
 
@@ -98,6 +99,7 @@ class SatisfyingGame {
     this.renderer.buildDirtLayer(this.state.cells, this.state.width, this.state.height);
     this.updateUI();
     this.renderer.render(this.state);
+    announce(`Level ${index + 1}. Clean the surface by spraying dirty areas.`);
   }
 
   restartLevel() { this.startLevel(this.currentLevelIndex); }
@@ -131,6 +133,7 @@ class SatisfyingGame {
     document.getElementById('stats-summary').textContent = `${pct}% of surface cleaned!`;
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');
+    announce(`Sparkling clean! Surface fully cleaned.`);
   }
 
   handleResize() {
