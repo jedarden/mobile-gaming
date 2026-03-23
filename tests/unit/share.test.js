@@ -195,6 +195,15 @@ describe('share', () => {
       expect(result).toBe(false);
     });
 
+    it('returns false when canShare(shareData) returns false (share not permitted)', async () => {
+      mockNavigator.canShare = vi.fn(() => false);
+      vi.resetModules();
+      global.navigator = mockNavigator;
+      const mod = await import('../../src/shared/share.js');
+      const result = await mod.shareViaWebAPI({ title: 'Test' });
+      expect(result).toBe(false);
+    });
+
     it('returns true when user cancels share', async () => {
       mockNavigator.share = vi.fn(async () => {
         const error = new Error('Share cancelled');
@@ -206,6 +215,17 @@ describe('share', () => {
       const mod = await import('../../src/shared/share.js');
       const result = await mod.shareViaWebAPI({ title: 'Test' });
       expect(result).toBe(true);
+    });
+
+    it('returns false when navigator.share throws a non-AbortError (catch else branch)', async () => {
+      mockNavigator.share = vi.fn(async () => {
+        throw new Error('NotAllowedError');
+      });
+      vi.resetModules();
+      global.navigator = mockNavigator;
+      const mod = await import('../../src/shared/share.js');
+      const result = await mod.shareViaWebAPI({ title: 'Test' });
+      expect(result).toBe(false);
     });
   });
 
@@ -267,6 +287,68 @@ describe('share', () => {
       });
 
       expect(result.success).toBe(false);
+    });
+
+    it('uses window.location.href when url is omitted', async () => {
+      const result = await shareModule.shareToPlatform('twitter', {
+        text: 'Hello',
+      });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toContain(encodeURIComponent('https://example.com/game?level=1'));
+    });
+
+    it('uses default text when text is omitted', async () => {
+      const result = await shareModule.shareToPlatform('twitter', {
+        url: 'https://example.com',
+      });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toContain(encodeURIComponent('Check out my gameplay!'));
+    });
+
+    it('copyLink uses window.location.href when url is omitted', async () => {
+      const result = await shareModule.shareToPlatform('copyLink', {});
+      expect(result.success).toBe(true);
+      expect(mockNavigator.clipboard.writeText).toHaveBeenCalledWith('https://example.com/game?level=1');
+    });
+
+    it('handles TikTok share (downloads video, returns deep link)', async () => {
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      const result = await shareModule.shareToPlatform('tiktok', { videoBlob });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toBe('tiktok://');
+      expect(result.message).toContain('TikTok');
+    });
+
+    it('handles Instagram share (downloads video, returns deep link)', async () => {
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      const result = await shareModule.shareToPlatform('instagram', { videoBlob });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toBe('instagram://library');
+      expect(result.message).toContain('Instagram');
+    });
+
+    it('handles Snapchat share (downloads video, returns deep link)', async () => {
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      const result = await shareModule.shareToPlatform('snapchat', { videoBlob });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toBe('snapchat://');
+      expect(result.message).toContain('Snapchat');
+    });
+
+    it('handles YouTube share (downloads video, returns upload URL with title)', async () => {
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      const result = await shareModule.shareToPlatform('youtube', { videoBlob, title: 'My Game' });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toContain('youtube.com/upload');
+      expect(result.openUrl).toContain(encodeURIComponent('My Game'));
+      expect(result.message).toContain('YouTube');
+    });
+
+    it('YouTube share uses default title when omitted', async () => {
+      const videoBlob = new Blob(['video'], { type: 'video/webm' });
+      const result = await shareModule.shareToPlatform('youtube', { videoBlob });
+      expect(result.success).toBe(true);
+      expect(result.openUrl).toContain(encodeURIComponent('My Gameplay'));
     });
   });
 

@@ -189,6 +189,22 @@ describe('validateTemplate', () => {
     });
     expect(r.valid).toBe(false);
   });
+
+  it('rejects non-object primitive (number)', () => {
+    const r = validateTemplate(123);
+    expect(r.valid).toBe(false);
+    expect(r.errors).toContain('Template must be an object');
+  });
+
+  it('rejects speedMultiplier of 0 (non-positive)', () => {
+    const r = validateTemplate({
+      id: 'x', name: 'X',
+      segments: [{ type: 'gameplay', duration: 2000, speedMultiplier: 0 }],
+      overlays: [],
+    });
+    expect(r.valid).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/speedMultiplier/i);
+  });
 });
 
 // ─── buildTimeline ────────────────────────────────────────────────────────────
@@ -498,5 +514,26 @@ describe('renderFrame', () => {
     const calls = ctx.fillText.mock.calls;
     const hasCustom = calls.some(c => c[0] === 'CUSTOM TEXT');
     expect(hasCustom).toBe(true);
+  });
+
+  it('falls back to putImageData when drawImage throws and frame has .data', () => {
+    // Simulate an ImageData frame — drawImage rejects it but putImageData accepts it
+    const imageDataFrame = { data: new Uint8ClampedArray(4) };
+    const source = { ...makeSource(), getFrameAt: vi.fn(() => imageDataFrame) };
+    const comp = createComposition('fail-ad', source);
+    const ctx = mockCtx();
+    ctx.drawImage = vi.fn(() => { throw new Error('drawImage not supported for ImageData'); });
+    renderFrame(ctx, comp, 0); // t=0 is the gameplay segment in fail-ad
+    expect(ctx.putImageData).toHaveBeenCalledWith(imageDataFrame, 0, 0);
+  });
+
+  it('does not call putImageData when drawImage throws but frame has no .data', () => {
+    const opaqueFrame = { type: 'video-frame' }; // no .data property
+    const source = { ...makeSource(), getFrameAt: vi.fn(() => opaqueFrame) };
+    const comp = createComposition('fail-ad', source);
+    const ctx = mockCtx();
+    ctx.drawImage = vi.fn(() => { throw new Error('drawImage failed'); });
+    renderFrame(ctx, comp, 0);
+    expect(ctx.putImageData).not.toHaveBeenCalled();
   });
 });

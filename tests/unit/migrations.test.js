@@ -328,6 +328,17 @@ describe('addDefaults', () => {
     const result = migrator(null);
     expect(result).toEqual({ a: 1 });
   });
+
+  it('handles primitive number input (non-object, non-null)', () => {
+    const migrator = addDefaults({ a: 1, b: 2 });
+    const result = migrator(42);
+    expect(result).toEqual({ a: 1, b: 2 });
+  });
+
+  it('handles primitive string input', () => {
+    const migrator = addDefaults({ x: 'default' });
+    expect(migrator('not-an-object')).toEqual({ x: 'default' });
+  });
 });
 
 // ─── transformEnum helper ──────────────────────────────────────────────────────
@@ -355,6 +366,14 @@ describe('transformEnum', () => {
     const migrator = transformEnum('k', {});
     expect(migrator(null)).toBeNull();
     expect(migrator(42)).toBe(42);
+  });
+
+  it('leaves object unchanged when the target key is absent (key not in result)', () => {
+    const migrator = transformEnum('status', { old: 'new' });
+    // Object has no 'status' key → guard `key in result` is false → no transform
+    const result = migrator({ other: 'value' });
+    expect(result).toEqual({ other: 'value' });
+    expect(result.status).toBeUndefined();
   });
 });
 

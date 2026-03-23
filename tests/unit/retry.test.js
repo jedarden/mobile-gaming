@@ -39,6 +39,7 @@ vi.mock('../../src/shared/audio.js', () => ({
 
 import { ResultType, RetryOverlay, createRetryOverlay } from '../../src/shared/retry.js';
 import { storage } from '../../src/shared/storage.js';
+import { playSound } from '../../src/shared/audio.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -135,6 +136,11 @@ describe('RetryOverlay._formatTime', () => {
   it('handles large values (> 60 minutes)', () => {
     expect(overlay._formatTime(3661)).toBe('61:01');
   });
+
+  it('produces negative output for negative seconds (no clamping)', () => {
+    // -30s: floor(-30/60)=-1, floor(-30%60)=-30 → '-1:-30'
+    expect(overlay._formatTime(-30)).toBe('-1:-30');
+  });
 });
 
 // ─── _getSubtitleText ────────────────────────────────────────────────────────
@@ -143,6 +149,12 @@ describe('RetryOverlay._getSubtitleText', () => {
   it('returns "Great job!" when stats is null', () => {
     const overlay = makeOverlay();
     overlay.stats = null;
+    expect(overlay._getSubtitleText()).toBe('Great job!');
+  });
+
+  it('returns "Great job!" when stats is undefined (also falsy)', () => {
+    const overlay = makeOverlay();
+    overlay.stats = undefined;
     expect(overlay._getSubtitleText()).toBe('Great job!');
   });
 
@@ -180,6 +192,26 @@ describe('RetryOverlay._getSubtitleText', () => {
 
     overlay.stats = { optimality: 0 };
     expect(overlay._getSubtitleText()).toBe('Level cleared!');
+  });
+});
+
+// ─── WIN stats rendering edge cases ──────────────────────────────────────────
+
+describe('WIN stats rendering — undefined vs zero', () => {
+  it('renders moves stat when moves=0 (0 !== undefined)', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.WIN, { optimality: 80, moves: 0, time: 30 });
+    const statValues = overlay.element.querySelectorAll('.mg-retry-stat-value');
+    const texts = Array.from(statValues).map(el => el.textContent);
+    expect(texts.some(t => t === '0')).toBe(true);
+  });
+
+  it('omits time stat when time is undefined', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.WIN, { optimality: 80, moves: 5 }); // no time
+    // The time stat element should not appear
+    const html = overlay.element.innerHTML;
+    expect(html).not.toMatch(/0:00/);
   });
 });
 
@@ -348,6 +380,32 @@ describe('optional button rendering', () => {
   });
 });
 
+// ─── sound effects ────────────────────────────────────────────────────────────
+
+describe('sound effects', () => {
+  beforeEach(() => {
+    vi.mocked(playSound).mockClear();
+  });
+
+  it('plays "success" sound on WIN', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.WIN, { optimality: 80, moves: 5, time: 30 });
+    expect(playSound).toHaveBeenCalledWith('success');
+  });
+
+  it('plays "fail" sound on LOSS', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.LOSS);
+    expect(playSound).toHaveBeenCalledWith('fail');
+  });
+
+  it('plays "fail" sound on STUCK', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.STUCK);
+    expect(playSound).toHaveBeenCalledWith('fail');
+  });
+});
+
 // ─── destroy ──────────────────────────────────────────────────────────────────
 
 describe('destroy', () => {
@@ -362,5 +420,34 @@ describe('destroy', () => {
   it('is safe to call before show()', () => {
     const overlay = makeOverlay();
     expect(() => overlay.destroy()).not.toThrow();
+  });
+
+  it('is safe to call destroy() twice (element.parentNode is null on second call)', () => {
+    const overlay = makeOverlay();
+    overlay.show(ResultType.WIN, { optimality: 100, moves: 3, time: 15 });
+    overlay.destroy();
+    expect(() => overlay.destroy()).not.toThrow();
+  });
+});
+
+// ─── _handleAction — optional callback guards ─────────────────────────────────
+
+describe('_handleAction optional callbacks', () => {
+  it('does not throw when replay action fires but onWatchReplay is null (false branch)', () => {
+    const overlay = makeOverlay({ onWatchReplay: null });
+    // Call _handleAction directly with 'replay' — onWatchReplay is falsy → silently skipped
+    expect(() => overlay._handleAction('replay')).not.toThrow();
+  });
+
+  it('does not throw when undo action fires but onUndo is null (false branch)', () => {
+    const overlay = makeOverlay({ onUndo: null });
+    // Call _handleAction directly with 'undo' — onUndo is falsy → silently skipped
+    expect(() => overlay._handleAction('undo')).not.toThrow();
+  });
+
+  it('does not throw for an unrecognised action (switch default / no-match)', () => {
+    const overlay = makeOverlay();
+    // No case matches 'unknown' — switch falls through silently
+    expect(() => overlay._handleAction('unknown')).not.toThrow();
   });
 });

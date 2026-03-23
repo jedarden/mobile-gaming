@@ -91,6 +91,12 @@ describe('tierToParams — float-difficulty games', () => {
       .toBe(tierToParams('water-sort', 1).difficulty);
   });
 
+  it('rounds fractional tier before clamping (0.4 rounds to 0, then clamps to 1)', () => {
+    // Math.round(0.4) = 0, Math.max(1, 0) = 1
+    expect(tierToParams('water-sort', 0.4).difficulty)
+      .toBe(tierToParams('water-sort', 1).difficulty);
+  });
+
   it('clamps tier above 10 to 10', () => {
     expect(tierToParams('water-sort', 99).difficulty)
       .toBe(tierToParams('water-sort', 10).difficulty);
@@ -146,6 +152,50 @@ describe('streakMultiplier', () => {
   it('returns 1.5 for streak 9', () => { expect(streakMultiplier(9)).toBe(1.5); });
   it('returns 2.0 for streak 10', () => { expect(streakMultiplier(10)).toBe(2.0); });
   it('returns 2.0 for streak 100', () => { expect(streakMultiplier(100)).toBe(2.0); });
+});
+
+// ─── getLevel — generator shapes ─────────────────────────────────────────────
+
+describe('createEndlessSession — generateBatch generator shape', () => {
+  it('uses generateBatch when generateLevel is absent', () => {
+    const batchGenerator = {
+      generateBatch: vi.fn((seed, diff, count) => [{ id: `batch-${seed}`, seed, diff }])
+    };
+    const s = createEndlessSession('water-sort', batchGenerator, { sessionSeed: 5 });
+    const level = s.nextLevel();
+    expect(level).not.toBeNull();
+    expect(level.id).toBe('batch-5');
+  });
+
+  it('returns null when generator has neither generateLevel nor generateBatch', () => {
+    const emptyGenerator = {};
+    const s = createEndlessSession('water-sort', emptyGenerator, { sessionSeed: 5 });
+    expect(s.nextLevel()).toBeNull();
+  });
+
+  it('returns null when generateBatch returns empty array (batch.length === 0)', () => {
+    const emptyBatchGenerator = {
+      generateBatch: vi.fn(() => [])
+    };
+    const s = createEndlessSession('water-sort', emptyBatchGenerator, { sessionSeed: 5 });
+    expect(s.nextLevel()).toBeNull();
+  });
+
+  it('returns null when generateBatch returns null/falsy', () => {
+    const nullBatchGenerator = {
+      generateBatch: vi.fn(() => null)
+    };
+    const s = createEndlessSession('water-sort', nullBatchGenerator, { sessionSeed: 5 });
+    expect(s.nextLevel()).toBeNull();
+  });
+
+  it('generateLevel returning undefined is treated as null (nullish coalescing)', () => {
+    const undefinedGenerator = {
+      generateLevel: vi.fn(() => undefined)
+    };
+    const s = createEndlessSession('water-sort', undefinedGenerator, { sessionSeed: 5 });
+    expect(s.nextLevel()).toBeNull();
+  });
 });
 
 // ─── createEndlessSession ─────────────────────────────────────────────────────
@@ -455,9 +505,45 @@ describe('createEndlessSession — endSession and best score', () => {
     const stored = parseInt(localStorage.getItem('mg:endless:best:water-sort'), 10);
     expect(stored).toBeGreaterThan(50);
   });
+
+  it('endSession() does not update best when score equals existing best (check is >, not >=)', () => {
+    const s = createEndlessSession('water-sort', mockGenerator, { sessionSeed: 1 });
+    s.nextLevel();
+    s.completeLevel(); // score = 100
+    const currentScore = s.getScore().score; // 100
+    // Pre-seed localStorage with exactly the current score
+    localStorage.setItem('mg:endless:best:water-sort', String(currentScore));
+    s.endSession(); // score (100) is NOT > best (100), so no update
+    const stored = parseInt(localStorage.getItem('mg:endless:best:water-sort'), 10);
+    expect(stored).toBe(currentScore); // unchanged — still 100
+  });
 });
 
 // ── createEndlessSessionAsync ──────────────────────────────────────────────
+
+// ── localStorage error resilience ─────────────────────────────────────────────
+
+describe('getBestScore / saveBestScore — catch blocks', () => {
+  it('endSession does not throw when localStorage.setItem throws (saveBestScore catch)', () => {
+    const s = createEndlessSession('water-sort', mockGenerator, { sessionSeed: 1 });
+    s.nextLevel();
+    s.completeLevel(300, 10);
+    const origSetItem = localStorage.setItem.bind(localStorage);
+    const stub = vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError');
+    });
+    expect(() => s.endSession()).not.toThrow();
+    stub.mockRestore();
+  });
+
+  it('createEndlessSession does not throw when localStorage.getItem throws (getBestScore catch)', () => {
+    const stub = vi.spyOn(localStorage, 'getItem').mockImplementationOnce(() => {
+      throw new Error('Storage denied');
+    });
+    expect(() => createEndlessSession('water-sort', mockGenerator, { sessionSeed: 1 })).not.toThrow();
+    stub.mockRestore();
+  });
+});
 
 describe('createEndlessSessionAsync', () => {
   it('throws for unsupported game', async () => {

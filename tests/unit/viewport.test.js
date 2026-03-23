@@ -191,6 +191,15 @@ describe('destroy', () => {
     vp.destroy();
     expect(() => vp.destroy()).not.toThrow();
   });
+
+  it('does not throw when wrapper was already removed from DOM (parentNode guard)', () => {
+    const container = makeContainer();
+    const vp = createViewport(container, { logicalWidth: 390, logicalHeight: 844 });
+    // Manually remove wrapper from DOM before destroy
+    container.removeChild(vp.wrapper);
+    expect(() => vp.destroy()).not.toThrow();
+    expect(container.children.length).toBe(0);
+  });
 });
 
 // ── factory helpers ────────────────────────────────────────────────────────
@@ -219,6 +228,94 @@ describe('createSquareViewport', () => {
     const vp = createSquareViewport(container);
     expect(vp.canvas.width).toBe(LOGICAL_RESOLUTIONS.square.width);
     expect(vp.canvas.height).toBe(LOGICAL_RESOLUTIONS.square.height);
+  });
+});
+
+// ── getScale ───────────────────────────────────────────────────────────────
+
+describe('getScale', () => {
+  it('returns ratio of physical to logical dimensions', () => {
+    const container = makeContainer();
+    const vp = createViewport(container, { logicalWidth: 390, logicalHeight: 844 });
+    // Mock getBoundingClientRect to return double the logical size
+    vp.canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 780, height: 1688 });
+    const scale = vp.getScale();
+    expect(scale.x).toBeCloseTo(2); // 780 / 390
+    expect(scale.y).toBeCloseTo(2); // 1688 / 844
+  });
+});
+
+// ── physicalToLogical / logicalToPhysical ──────────────────────────────────
+
+describe('physicalToLogical', () => {
+  it('converts physical coordinates to logical using scale and offset', () => {
+    const container = makeContainer();
+    const vp = createViewport(container, { logicalWidth: 390, logicalHeight: 844 });
+    // Scale is 2× with canvas at (10, 20) physical offset
+    vp.canvas.getBoundingClientRect = () => ({ left: 10, top: 20, width: 780, height: 1688 });
+    // physical (210, 420) → logical (200/2, 400/2) = (100, 200)
+    const result = vp.physicalToLogical(210, 420);
+    expect(result.x).toBeCloseTo(100);
+    expect(result.y).toBeCloseTo(200);
+  });
+});
+
+describe('logicalToPhysical', () => {
+  it('converts logical coordinates to physical using scale and offset', () => {
+    const container = makeContainer();
+    const vp = createViewport(container, { logicalWidth: 390, logicalHeight: 844 });
+    vp.canvas.getBoundingClientRect = () => ({ left: 10, top: 20, width: 780, height: 1688 });
+    // logical (100, 200) → physical (100*2 + 10, 200*2 + 20) = (210, 420)
+    const result = vp.logicalToPhysical(100, 200);
+    expect(result.x).toBeCloseTo(210);
+    expect(result.y).toBeCloseTo(420);
+  });
+});
+
+// ── _updateCanvasScale — fixed orientation (else branch) ───────────────────
+
+describe('_updateCanvasScale — fixed orientation', () => {
+  it('scales canvas by Math.min(scaleX, scaleY) when orientation is not auto', () => {
+    const container = makeContainer();
+    // Container 300×200, logical 390×844
+    // scaleX = 300/390, scaleY = 200/844 → Math.min picks scaleY
+    container.getBoundingClientRect = () => ({ width: 300, height: 200, left: 0, top: 0 });
+    const vp = createViewport(container, {
+      logicalWidth: 390,
+      logicalHeight: 844,
+      orientation: 'portrait',
+      autoResize: true,
+    });
+    const expected = Math.min(300 / 390, 200 / 844);
+    expect(vp.canvas.style.transform).toBe(`scale(${expected})`);
+  });
+});
+
+// ── _updateCanvasScale — auto orientation sub-branches ─────────────────────
+
+describe('_updateCanvasScale — auto orientation', () => {
+  it('fits to height when container is wider than logical aspect (containerAspect > logicalAspect)', () => {
+    const container = makeContainer();
+    // Container 1200×844: aspect 1.42; logical 390×844: aspect 0.46 → wider → fit to height
+    container.getBoundingClientRect = () => ({ width: 1200, height: 844, left: 0, top: 0 });
+    const vp = createViewport(container, {
+      logicalWidth: 390, logicalHeight: 844,
+      orientation: 'auto', autoResize: true,
+    });
+    const expected = 844 / 844; // containerRect.height / logicalHeight = 1
+    expect(vp.canvas.style.transform).toBe(`scale(${expected})`);
+  });
+
+  it('fits to width when container is taller than logical aspect (containerAspect <= logicalAspect)', () => {
+    const container = makeContainer();
+    // Container 200×1200: aspect 0.17; logical 390×844: aspect 0.46 → taller → fit to width
+    container.getBoundingClientRect = () => ({ width: 200, height: 1200, left: 0, top: 0 });
+    const vp = createViewport(container, {
+      logicalWidth: 390, logicalHeight: 844,
+      orientation: 'auto', autoResize: true,
+    });
+    const expected = 200 / 390; // containerRect.width / logicalWidth
+    expect(vp.canvas.style.transform).toBe(`scale(${expected})`);
   });
 });
 

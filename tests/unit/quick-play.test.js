@@ -88,6 +88,14 @@ describe('Quick Play', () => {
       expect(result.lastPlayed).toBeGreaterThan(0);
     });
 
+    it('should work with no sessionData argument (uses defaults)', () => {
+      const result = recordPlaySession('brain-teaser');
+      expect(result.sessions).toBe(1);
+      expect(result.completed).toBe(0);
+      expect(result.totalSolveTime).toBe(0);
+      expect(result.totalRetries).toBe(0);
+    });
+
     it('should update existing history entry', () => {
       recordPlaySession('water-sort', {
         completed: true,
@@ -114,9 +122,22 @@ describe('Quick Play', () => {
       expect(penalty).toBe(0);
     });
 
+    it('should return 0 when history exists but lastPlayed is null', () => {
+      const penalty = calculateRecencyPenalty({ lastPlayed: null });
+      expect(penalty).toBe(0);
+    });
+
     it('should return 0 for games played over an hour ago', () => {
       const history = {
         lastPlayed: Date.now() - (61 * 60 * 1000) // 61 minutes ago
+      };
+      const penalty = calculateRecencyPenalty(history);
+      expect(penalty).toBe(0);
+    });
+
+    it('should return 0 when timeSincePlay equals exactly RECENCY_WINDOW_MS (>= boundary)', () => {
+      const history = {
+        lastPlayed: Date.now() - (60 * 60 * 1000) // exactly 1 hour ago
       };
       const penalty = calculateRecencyPenalty(history);
       expect(penalty).toBe(0);
@@ -147,6 +168,11 @@ describe('Quick Play', () => {
       expect(bonus).toBe(50);
     });
 
+    it('should return full bonus for undefined history (also falsy)', () => {
+      const bonus = calculateVarietyBonus(undefined);
+      expect(bonus).toBe(50);
+    });
+
     it('should return reduced bonus for played games', () => {
       const history = { sessions: 3 };
       const bonus = calculateVarietyBonus(history);
@@ -158,6 +184,11 @@ describe('Quick Play', () => {
       const history = { sessions: 20 };
       const bonus = calculateVarietyBonus(history);
       expect(bonus).toBe(0);
+    });
+
+    it('should return full bonus when sessions is 0 on a non-null history object', () => {
+      const bonus = calculateVarietyBonus({ sessions: 0 });
+      expect(bonus).toBe(50);
     });
   });
 
@@ -196,6 +227,13 @@ describe('Quick Play', () => {
       };
       const score = calculateDifficultyMatch(history);
       expect(score).toBeLessThan(40);
+    });
+
+    it('caps retryRate at 0.9 for extremely hard games', () => {
+      // retryRate = 99/100 = 0.99, capped to 0.9 → score = 40 * (1 - 0.6) = 16
+      const history = { sessions: 1, totalRetries: 99 };
+      const score = calculateDifficultyMatch(history);
+      expect(score).toBeCloseTo(16, 1);
     });
   });
 
@@ -353,6 +391,17 @@ describe('Quick Play', () => {
       const level = getNextUnsolvedLevel('water-sort', history);
       expect(level).toBe(30);
     });
+
+    it('should return 1 for unknown gameId', () => {
+      const level = getNextUnsolvedLevel('nonexistent-game', {});
+      expect(level).toBe(1);
+    });
+
+    it('should return 1 when history exists but completed is 0', () => {
+      const history = { 'water-sort': { sessions: 2, completed: 0 } };
+      const level = getNextUnsolvedLevel('water-sort', history);
+      expect(level).toBe(1);
+    });
   });
 
   describe('getGameUrl', () => {
@@ -368,6 +417,11 @@ describe('Quick Play', () => {
 
     it('should not add level parameter for level 1', () => {
       const url = getGameUrl('water-sort', 1);
+      expect(url).toBe('/water-sort/');
+    });
+
+    it('should not add level parameter for level 0 (falsy — treated same as omitted)', () => {
+      const url = getGameUrl('water-sort', 0);
       expect(url).toBe('/water-sort/');
     });
   });

@@ -541,6 +541,44 @@ describe('click plays tap sound', () => {
 
 // ─── Multiple instances ───────────────────────────────────────────────────────
 
+// ─── Edge cases ───────────────────────────────────────────────────────────────
+
+describe('createLevelNav — edge cases', () => {
+  it('totalLevels=1 creates exactly one dot', () => {
+    const { nav } = makeLevelNav({ totalLevels: 1 });
+    expect(getLevelDots(nav)).toHaveLength(1);
+  });
+
+  it('totalLevels=1: completing level 0 does not unlock beyond bounds', () => {
+    // maxUnlocked = Math.min(maxCompleted + 1, totalLevels - 1) = Math.min(1, 0) = 0
+    const { nav } = makeLevelNav({ totalLevels: 1, gameId: 'single-level-game' });
+    nav.completeLevel(0);
+    // Level 0 is now completed — verify the dot shows a checkmark (completed state)
+    expect(getLevelDots(nav)[0].textContent).toBe('\u2713');
+  });
+});
+
+// ─── Missing optional callbacks (guard clauses) ──────────────────────────────
+
+describe('optional callback guards', () => {
+  it('clicking unlocked level dot does not throw when onLevelSelect is omitted', () => {
+    const { nav } = makeLevelNav({ totalLevels: 3 }); // no onLevelSelect
+    expect(() => getLevelDots(nav)[0].click()).not.toThrow();
+  });
+
+  it('clicking daily dot does not throw when onDailySelect is omitted', () => {
+    const { nav } = makeLevelNav({ hasDaily: true }); // no onDailySelect
+    const daily = nav.dotsContainer.querySelector('.mg-level-daily');
+    expect(() => daily.click()).not.toThrow();
+  });
+
+  it('clicking endless dot does not throw when onEndlessSelect is omitted', () => {
+    const { nav } = makeLevelNav({ hasEndless: true }); // no onEndlessSelect
+    const endless = nav.dotsContainer.querySelector('.mg-level-endless');
+    expect(() => endless.click()).not.toThrow();
+  });
+});
+
 describe('multiple instances', () => {
   it('different gameIds maintain separate progress', () => {
     const { nav: navA } = makeLevelNav({ gameId: 'sep-a', totalLevels: 3 });

@@ -342,6 +342,18 @@ describe('Fail Speedrun', () => {
         expect(speedrun.getElapsedTime()).toBe(150);
       });
 
+      it('returns null result when recordFail called before recordInput (firstInputTime === null guard)', () => {
+        const speedrun = createFailSpeedrun({
+          gameId: 'pull-the-pin',
+          levelIndex: 0
+        });
+        speedrun.start(); // isRunning=true but firstInputTime still null
+        const result = speedrun.recordFail();
+        expect(result.timeMs).toBeNull();
+        expect(result.isNewBest).toBe(false);
+        expect(result.badgeAwarded).toBe(false);
+      });
+
       it('should stop timing on recordFail', () => {
         const speedrun = createFailSpeedrun({
           gameId: 'pull-the-pin',

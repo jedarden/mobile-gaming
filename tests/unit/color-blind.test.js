@@ -249,6 +249,19 @@ describe('injectPatternDefs', () => {
   it('is a no-op when svgEl is null', () => {
     expect(() => injectPatternDefs(null)).not.toThrow();
   });
+
+  it('is a no-op when svgEl is falsy (e.g., 0 or undefined)', () => {
+    expect(() => injectPatternDefs(0)).not.toThrow();
+    expect(() => injectPatternDefs(undefined)).not.toThrow();
+  });
+
+  it('calling twice does not accumulate duplicate patterns (innerHTML overwrites)', () => {
+    injectPatternDefs(svgEl);
+    const countBefore = svgEl.querySelectorAll('defs pattern').length;
+    injectPatternDefs(svgEl);
+    const countAfter = svgEl.querySelectorAll('defs pattern').length;
+    expect(countAfter).toBe(countBefore);
+  });
 });
 
 describe('removePatternDefs', () => {

@@ -64,6 +64,30 @@ describe('normalizeEvent', () => {
     expect(norm.x).toBe(30);  // 80 - 50
     expect(norm.y).toBe(20);  // 120 - 100
   });
+
+  it('extracts position from changedTouches when touches is empty', () => {
+    const el = makeEl();
+    // Simulate a touchend: touches=[], changedTouches=[{clientX:40, clientY:50}]
+    const fakeEvent = {
+      touches: [],
+      changedTouches: [{ clientX: 40, clientY: 50 }],
+    };
+    const norm = normalizeEvent(el, 'up', fakeEvent);
+    expect(norm.x).toBe(40);
+    expect(norm.y).toBe(50);
+  });
+
+  it('extracts position from touches[0] when touches.length > 0 (active touch branch)', () => {
+    const el = makeEl();
+    // Simulate a touchstart/touchmove: touches has active touch points
+    const fakeEvent = {
+      touches: [{ clientX: 50, clientY: 60 }],
+      changedTouches: [{ clientX: 99, clientY: 99 }], // should NOT be used
+    };
+    const norm = normalizeEvent(el, 'down', fakeEvent);
+    expect(norm.x).toBe(50);
+    expect(norm.y).toBe(60);
+  });
 });
 
 // ── onTap ─────────────────────────────────────────────────────────────────────
@@ -113,6 +137,22 @@ describe('onTap', () => {
     nowSpy.mockRestore();
   });
 
+  it('does not fire when duration is exactly 500ms (check is strictly < 500)', () => {
+    const el = makeEl();
+    const cb = vi.fn();
+    onTap(el, cb);
+
+    const nowSpy = vi.spyOn(Date, 'now');
+    nowSpy.mockReturnValueOnce(0);   // down time
+    nowSpy.mockReturnValueOnce(500); // up time (exactly 500ms — NOT < 500)
+
+    mouseDown(el, 10, 10);
+    mouseUp(el, 11, 10);
+    expect(cb).not.toHaveBeenCalled();
+
+    nowSpy.mockRestore();
+  });
+
   it('cleanup removes listener (no further fires)', () => {
     const el = makeEl();
     const cb = vi.fn();
@@ -121,6 +161,31 @@ describe('onTap', () => {
     mouseDown(el, 10, 10);
     mouseUp(el, 10, 10);
     expect(cb).not.toHaveBeenCalled();
+  });
+
+  it('fires when distance equals threshold exactly (<= is inclusive)', () => {
+    const el = makeEl();
+    const cb = vi.fn();
+    onTap(el, cb); // default threshold = 10
+    mouseDown(el, 0, 0);
+    mouseUp(el, 10, 0); // distance = 10, exactly at threshold
+    expect(cb).toHaveBeenCalledOnce();
+  });
+
+  it('fires when duration is exactly 499ms (< 500 is exclusive of 500)', () => {
+    const el = makeEl();
+    const cb = vi.fn();
+    onTap(el, cb);
+    const nowSpy = vi.spyOn(Date, 'now');
+    // Date.now is called twice per event: once in normalizeEvent, once in the handler
+    nowSpy.mockReturnValueOnce(0);   // normalizeEvent during mouseDown
+    nowSpy.mockReturnValueOnce(0);   // startTime = Date.now() in mouseDown handler
+    nowSpy.mockReturnValueOnce(499); // normalizeEvent during mouseUp
+    nowSpy.mockReturnValueOnce(499); // Date.now() for duration check in mouseUp handler
+    mouseDown(el, 10, 10);
+    mouseUp(el, 11, 10);
+    expect(cb).toHaveBeenCalledOnce();
+    nowSpy.mockRestore();
   });
 });
 
@@ -267,6 +332,28 @@ describe('onSwipe', () => {
     mouseUp(el, 100, 0);
     expect(cb).not.toHaveBeenCalled();
   });
+
+  it('fires for any direction when direction is null (explicit null default)', () => {
+    const el = makeEl();
+    const cb = vi.fn();
+    onSwipe(el, cb, 30, null); // explicit null — accept all directions
+    mouseDown(el, 0, 50);
+    mouseUp(el, 0, 150); // downward swipe
+    expect(cb).toHaveBeenCalledOnce();
+  });
+
+  it('does not fire when swipe duration exceeds timeout (duration > swipeTimeout branch)', () => {
+    vi.useFakeTimers();
+    const el = makeEl();
+    const cb = vi.fn();
+    onSwipe(el, cb, 30);
+    vi.setSystemTime(0);
+    mouseDown(el, 0, 50);
+    vi.setSystemTime(400); // advance 400ms > 300ms swipeTimeout
+    mouseUp(el, 0, 150); // 100px down — passes distance threshold
+    expect(cb).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
 });
 
 // ── removeAllListeners ────────────────────────────────────────────────────────
@@ -288,6 +375,13 @@ describe('removeAllListeners', () => {
     mouseUp(el, 10, 10);
     expect(cb).not.toHaveBeenCalled();
   });
+
+  it('is safe to call twice in a row', () => {
+    const el = makeEl();
+    onTap(el, vi.fn());
+    removeAllListeners();
+    expect(() => removeAllListeners()).not.toThrow();
+  });
 });
 
 // ── disableTouchActions ───────────────────────────────────────────────────────
@@ -303,5 +397,12 @@ describe('disableTouchActions', () => {
     const el = makeEl();
     disableTouchActions(el);
     expect(el.style.userSelect).toBe('none');
+  });
+
+  it('sets webkit prefixed touch properties to none', () => {
+    const el = makeEl();
+    disableTouchActions(el);
+    expect(el.style.webkitTouchCallout).toBe('none');
+    expect(el.style.webkitUserSelect).toBe('none');
   });
 });

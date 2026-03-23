@@ -198,6 +198,13 @@ describe('isDailyCompleted', () => {
     setDate('2026-03-23');
     expect(isDailyCompleted()).toBe(false);
   });
+
+  it('returns false when stored value is truthy but not exactly true (strict ===)', () => {
+    setDate('2026-03-22');
+    // Inject numeric 1 instead of boolean true
+    localStorageMock.setItem('mg:daily', JSON.stringify({ completed: { '2026-03-22': 1 } }));
+    expect(isDailyCompleted()).toBe(false);
+  });
 });
 
 describe('isGameDailyCompleted', () => {
@@ -283,6 +290,26 @@ describe('getDailyStats', () => {
     completeDailyChallenge('pull-the-pin'); // sets date:game (date already set)
     expect(getDailyStats().totalCompleted).toBe(1);
   });
+
+  it('completeDailyChallenge(null) marks only the general daily (no game-specific entry)', () => {
+    setDate('2026-03-22');
+    completeDailyChallenge(null);
+    expect(isDailyCompleted()).toBe(true);
+    // No game-specific key should exist
+    expect(getDailyStats().totalCompleted).toBe(1);
+  });
+
+  it('streak counts yesterday when today is not yet completed (i===0 does not break streak)', () => {
+    // Complete yesterday
+    setDate('2026-03-21');
+    completeDailyChallenge();
+    // Move to today but do NOT complete
+    setDate('2026-03-22');
+    const stats = getDailyStats();
+    // i=0 (today) not completed → no break (i>0 guard)
+    // i=1 (yesterday) completed → streak=1
+    expect(stats.currentStreak).toBe(1);
+  });
 });
 
 // ─── getUpcomingDailies ───────────────────────────────────────────────────────
@@ -346,6 +373,48 @@ describe('getUpcomingDailies', () => {
       expect(entry.level).toBeLessThanOrEqual(50);
     }
   });
+
+  it('returns empty array when days is 0', () => {
+    setDate('2026-03-22');
+    expect(getUpcomingDailies(0)).toEqual([]);
+  });
+
+  it('returns empty array when days is negative', () => {
+    setDate('2026-03-22');
+    expect(getUpcomingDailies(-1)).toEqual([]);
+  });
+
+  it('returns array of length 1 when days is 1', () => {
+    setDate('2026-03-22');
+    expect(getUpcomingDailies(1)).toHaveLength(1);
+    expect(getUpcomingDailies(1)[0].isToday).toBe(true);
+  });
+});
+
+// ─── getDailyData corruption recovery ────────────────────────────────────────
+
+describe('getDailyData corruption recovery', () => {
+  beforeEach(() => { vi.useFakeTimers(); clearStorage(); });
+  afterEach(() => vi.useRealTimers());
+
+  it('returns empty completed object when localStorage contains invalid JSON', () => {
+    setDate('2026-03-22');
+    // Corrupt the storage directly
+    localStorageMock.setItem('mg:daily', '{ not valid json }');
+    // All public functions that call getDailyData internally should return safe defaults
+    expect(isDailyCompleted()).toBe(false);
+    const stats = getDailyStats();
+    expect(stats.totalCompleted).toBe(0);
+    expect(stats.currentStreak).toBe(0);
+    expect(stats.lastCompletedDate).toBe(null);
+  });
+
+  it('returns safe default when localStorage contains empty string (falsy)', () => {
+    setDate('2026-03-22');
+    // Empty string is falsy — getDailyData returns { completed: {} }
+    localStorageMock.setItem('mg:daily', '');
+    expect(isDailyCompleted()).toBe(false);
+  });
 });
 
 // ─── getDailyGames ────────────────────────────────────────────────────────────
@@ -363,5 +432,22 @@ describe('getDailyGames', () => {
     const original = [...games];
     games.push('hacked');
     expect(getDailyGames()).toEqual(original);
+  });
+});
+
+// ─── saveDailyData error resilience ──────────────────────────────────────────
+
+describe('saveDailyData — catch block', () => {
+  beforeEach(() => { vi.useFakeTimers(); clearStorage(); setDate('2026-03-22'); });
+  afterEach(() => vi.useRealTimers());
+
+  it('does not throw when localStorage.setItem throws (quota exceeded)', () => {
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      const err = new Error('QuotaExceededError');
+      err.name = 'QuotaExceededError';
+      throw err;
+    });
+    // completeDailyChallenge calls saveDailyData internally
+    expect(() => completeDailyChallenge()).not.toThrow();
   });
 });

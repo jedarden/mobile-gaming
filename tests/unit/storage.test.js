@@ -34,6 +34,7 @@ import {
   del,
   clear,
   isStorageAvailable,
+  initStorage,
   getSettings,
   updateSettings,
   getGameStats,
@@ -109,6 +110,27 @@ describe('StorageManager — get', () => {
     expect(sm.get('vkey', 'fallback')).toBe('fallback');
   });
 
+  it('returns defaultValue when stored JSON is corrupted (parse error)', () => {
+    _store['mg:broken'] = 'not valid json {';
+    const sm = new StorageManager();
+    expect(sm.get('broken', 'safe-default')).toBe('safe-default');
+  });
+
+  it('returns falsy defaultValue 0 when key not found (not the null default)', () => {
+    const sm = new StorageManager();
+    expect(sm.get('nonexistent', 0)).toBe(0);
+  });
+
+  it('returns falsy defaultValue false when key not found', () => {
+    const sm = new StorageManager();
+    expect(sm.get('nonexistent', false)).toBe(false);
+  });
+
+  it('returns empty string defaultValue when key not found', () => {
+    const sm = new StorageManager();
+    expect(sm.get('nonexistent', '')).toBe('');
+  });
+
   it('uses in-memory cache on second get', () => {
     const sm = new StorageManager();
     sm.set('cached', 'val');
@@ -158,6 +180,41 @@ describe('StorageManager — set', () => {
     const sm = new StorageManager();
     expect(sm.set('k', 'v')).toBe(true);
   });
+
+  it('returns false when setItem throws a non-quota error (SecurityError)', () => {
+    const sm = new StorageManager();
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      const err = new Error('SecurityError');
+      err.name = 'SecurityError';
+      throw err;
+    });
+    expect(sm.set('secure-key', 'data')).toBe(false);
+    expect(sm.get('secure-key')).toBeNull();
+  });
+
+  it('returns true when retry after QuotaExceededError eviction succeeds', () => {
+    const sm = new StorageManager();
+    // First setItem call throws QuotaExceededError; subsequent calls succeed normally
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      const err = new Error('QuotaExceededError');
+      err.name = 'QuotaExceededError';
+      throw err;
+    });
+    expect(sm.set('retry-key', 'data')).toBe(true);
+    expect(sm.get('retry-key')).toBe('data');
+  });
+
+  it('returns false when retry after QuotaExceededError also throws (inner catch branch)', () => {
+    const sm = new StorageManager();
+    // Both the initial setItem AND the retry throw QuotaExceededError
+    localStorageMock.setItem.mockImplementation(() => {
+      const err = new Error('QuotaExceededError');
+      err.name = 'QuotaExceededError';
+      throw err;
+    });
+    expect(sm.set('retry-fail', 'data')).toBe(false);
+    expect(sm.get('retry-fail')).toBeNull();
+  });
 });
 
 // ─── StorageManager.delete ────────────────────────────────────────────────────
@@ -189,6 +246,22 @@ describe('StorageManager — delete', () => {
   it('is safe to call for non-existent key', () => {
     const sm = new StorageManager();
     expect(() => sm.delete('nonexistent')).not.toThrow();
+  });
+});
+
+// ─── StorageManager._evictOldest ─────────────────────────────────────────────
+
+describe('StorageManager — _evictOldest', () => {
+  it('skips eviction accounting when localStorage item is null (if(item) false branch)', () => {
+    const sm = new StorageManager();
+    // Push a phantom key into accessOrder that has no backing localStorage entry
+    sm.accessOrder.push('phantom');
+    sm.cache.set('phantom', 'x');
+    // _evictOldest with large neededBytes — phantom item returns null, freed stays 0,
+    // loop exits when accessOrder empty rather than when freed >= neededBytes
+    sm._evictOldest(9999);
+    expect(sm.accessOrder.length).toBe(0);
+    expect(sm.cache.has('phantom')).toBe(false);
   });
 });
 
@@ -349,5 +422,36 @@ describe('updateGameStats', () => {
 
   it('returns true on success', () => {
     expect(updateGameStats('water-sort', { played: 1 })).toBe(true);
+  });
+});
+
+// ─── initStorage ──────────────────────────────────────────────────────────────
+
+describe('initStorage', () => {
+  it('sets default settings when storage is empty', async () => {
+    await initStorage();
+    const s = getSettings();
+    expect(s.soundEnabled).toBe(true);
+    expect(s.hapticEnabled).toBe(true);
+    expect(s.reducedMotion).toBe(false);
+  });
+
+  it('does not overwrite existing settings', async () => {
+    updateSettings({ soundEnabled: false });
+    await initStorage();
+    expect(getSettings().soundEnabled).toBe(false);
+  });
+
+  it('initializes stats so getGameStats returns a defined object', async () => {
+    await initStorage();
+    expect(getGameStats('any-game')).toBeDefined();
+    expect(typeof getGameStats('any-game')).toBe('object');
+  });
+
+  it('is idempotent when called twice', async () => {
+    await initStorage();
+    updateSettings({ soundEnabled: false });
+    await initStorage(); // should not overwrite
+    expect(getSettings().soundEnabled).toBe(false);
   });
 });

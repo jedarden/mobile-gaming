@@ -149,6 +149,15 @@ describe('pause', () => {
     mod.pause();
     expect(onSave).toHaveBeenCalledTimes(1);
   });
+
+  it('continues pause flow even if onSave throws (try-catch swallows error)', () => {
+    const onSave = vi.fn(() => { throw new Error('Save failed'); });
+    mod.cleanup();
+    mod.initLifecycle({ container: document.body, onSave });
+    mod.ready();
+    expect(() => mod.pause()).not.toThrow();
+    expect(mod.getState()).toBe('paused');
+  });
 });
 
 // ── resume ─────────────────────────────────────────────────────────────────
@@ -197,6 +206,16 @@ describe('resume', () => {
     mod.resume();
     expect(onRestore).toHaveBeenCalledTimes(1);
   });
+
+  it('continues resume flow even if onRestore throws (try-catch swallows error)', () => {
+    const onRestore = vi.fn(() => { throw new Error('Restore failed'); });
+    mod.cleanup();
+    mod.initLifecycle({ container: document.body, onRestore });
+    mod.ready();
+    mod.pause();
+    expect(() => mod.resume()).not.toThrow();
+    expect(mod.getState()).toBe('running');
+  });
 });
 
 // ── handleError ───────────────────────────────────────────────────────────
@@ -225,11 +244,82 @@ describe('handleError', () => {
   });
 });
 
+// ── showResumeOverlay ──────────────────────────────────────────────────────
+
+describe('showResumeOverlay', () => {
+  it('pauses when called while running', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    mod.showResumeOverlay();
+    expect(mod.getState()).toBe('paused');
+  });
+
+  it('is a no-op when already paused', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    mod.pause();
+    mod.showResumeOverlay();
+    // still paused, audio suspended only once
+    expect(mod.getState()).toBe('paused');
+    expect(suspendAudioMock).toHaveBeenCalledTimes(1);
+  });
+});
+
 // ── cancelTrackedRAF ──────────────────────────────────────────────────────
 
 describe('cancelTrackedRAF', () => {
   it('does not throw when no RAF is active', () => {
     expect(() => mod.cancelTrackedRAF()).not.toThrow();
+  });
+});
+
+// ── requestAnimationFrame ─────────────────────────────────────────────────────
+
+describe('requestAnimationFrame', () => {
+  it('returns null when state is not running (loading state)', () => {
+    // Module starts in 'loading' state — no initLifecycle or ready called
+    const result = mod.requestAnimationFrame(() => {});
+    expect(result).toBeNull();
+  });
+
+  it('returns null when state is paused', async () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    mod.pause();
+    const result = mod.requestAnimationFrame(() => {});
+    expect(result).toBeNull();
+  });
+
+  it('does not invoke callback when state changes to paused before RAF fires (inner running check)', () => {
+    // Intercept window.requestAnimationFrame so we can fire it manually
+    let capturedWrapped;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      capturedWrapped = cb;
+      return 42;
+    });
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    const cb = vi.fn();
+    mod.requestAnimationFrame(cb);
+    mod.pause(); // state → 'paused' before RAF fires
+    capturedWrapped(100); // fire the wrapped RAF callback manually
+    expect(cb).not.toHaveBeenCalled(); // inner `if (currentState === 'running')` is false
+    vi.restoreAllMocks();
+  });
+
+  it('cancels pending RAF when pause() is called while RAF is active (rafId !== null branch)', () => {
+    let capturedWrapped;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      capturedWrapped = cb;
+      return 99;
+    });
+    const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame');
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    mod.requestAnimationFrame(() => {}); // sets rafId = 99
+    mod.pause(); // rafId !== null → cancelAnimationFrame(99) called
+    expect(cancelSpy).toHaveBeenCalledWith(99);
+    vi.restoreAllMocks();
   });
 });
 
@@ -246,5 +336,51 @@ describe('cleanup', () => {
 
   it('does not throw when called before initLifecycle', () => {
     expect(() => mod.cleanup()).not.toThrow();
+  });
+});
+
+// ── setupVisibilityHandler ────────────────────────────────────────────────────
+
+describe('setupVisibilityHandler', () => {
+  it('pauses when document becomes hidden', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    mod.setupVisibilityHandler();
+
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(mod.getState()).toBe('paused');
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+  });
+
+  it('shows resume overlay when document becomes visible (else branch)', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    mod.setupVisibilityHandler();
+
+    // First hide (pause), then show (else branch → showResumeOverlay)
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(document.getElementById('mg-resume')).not.toBeNull();
+  });
+});
+
+// ── unhandledrejection boundary ───────────────────────────────────────────────
+
+describe('unhandledrejection boundary', () => {
+  it('transitions to error state when window fires unhandledrejection with a reason', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    window.dispatchEvent(Object.assign(new Event('unhandledrejection'), { reason: new Error('Promise rejected') }));
+    expect(mod.getState()).toBe('error');
+  });
+
+  it('transitions to error state when unhandledrejection has no reason (fallback Error used)', () => {
+    mod.initLifecycle({ container: document.body });
+    mod.ready();
+    window.dispatchEvent(Object.assign(new Event('unhandledrejection'), { reason: null }));
+    expect(mod.getState()).toBe('error');
   });
 });

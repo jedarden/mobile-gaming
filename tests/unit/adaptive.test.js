@@ -190,6 +190,41 @@ describe('recordLevel — success increases tier', () => {
   });
 });
 
+// ─── recordLevel — neutral outcome (partial decay) ───────────────────────────
+
+describe('recordLevel — neutral outcome decays streak', () => {
+  beforeEach(clearGame);
+
+  it('decays a positive streak by 1 after a neutral (neither frustrated nor easy-win) outcome', () => {
+    // Build a positive streak of 2 via easy wins
+    const easy = { retryCount: 0, hintUsage: 0, solveTime: 5000, rapidTapBursts: 0 };
+    recordLevel(GAME, easy, { won: true });
+    recordLevel(GAME, easy, { won: true });
+    expect(getProfile(GAME).streak).toBe(2);
+
+    // A neutral level: moderate frustration, not won → neither branch fires
+    // retryCount=1 gives frustration ~0.09 < 0.7 (not frustrated), won=false (not easy win)
+    recordLevel(GAME, { retryCount: 1, solveTime: 60000 }, { won: false });
+
+    // Streak should decay from 2 to 1
+    expect(getProfile(GAME).streak).toBe(1);
+  });
+
+  it('decays a negative streak by 1 toward 0 after a neutral outcome', () => {
+    // Build a frustration streak of -2
+    const hard = { retryCount: 10, hintUsage: 5, rapidTapBursts: 5, undoRate: 2 };
+    recordLevel(GAME, hard);
+    recordLevel(GAME, hard);
+    expect(getProfile(GAME).streak).toBe(-2);
+
+    // A neutral level: retryCount=1 → frustration ~0.09 < 0.7, won=true but frustration≈0.09 < 0.3 and retryCount=1 ≠ 0 → not easy win
+    recordLevel(GAME, { retryCount: 1 }, { won: true });
+
+    // Streak should decay from -2 to -1
+    expect(getProfile(GAME).streak).toBe(-1);
+  });
+});
+
 // ─── recordLevel — daily exempt ───────────────────────────────────────────────
 
 describe('recordLevel — daily exemption', () => {
@@ -269,6 +304,16 @@ describe('tierToString', () => {
     expect(tierToString(4)).toBe('hard');
     expect(tierToString(5)).toBe('hard');
   });
+
+  it('maps tier 0 and below to easy (condition is tier <= 2)', () => {
+    expect(tierToString(0)).toBe('easy');
+    expect(tierToString(-1)).toBe('easy');
+  });
+
+  it('maps tier 6 and above to hard (condition is tier >= 4)', () => {
+    expect(tierToString(6)).toBe('hard');
+    expect(tierToString(10)).toBe('hard');
+  });
 });
 
 // ─── EMA updates ─────────────────────────────────────────────────────────────
@@ -296,6 +341,30 @@ describe('EMA tracking', () => {
 
 // ─── Multiple games isolation ─────────────────────────────────────────────────
 
+// ─── Storage corruption recovery ──────────────────────────────────────────────
+
+describe('loadProfile — corrupted storage', () => {
+  it('returns default profile when localStorage has invalid JSON', () => {
+    // Use a unique gameId to avoid interference with other tests
+    localStorageMock.setItem('mg:corrupted-game:adaptive', '{ not valid json }');
+    const profile = getProfile('corrupted-game');
+    // loadProfile catch block → returns default profile
+    expect(profile).toBeDefined();
+    expect(typeof profile.tier).toBe('number');
+    expect(profile.tier).toBe(2); // DEFAULT_TIER
+    expect(Array.isArray(profile.history)).toBe(true);
+    expect(profile.ema).toBe(0);
+  });
+
+  it('returns default profile when storage has valid JSON but not an object (e.g., string)', () => {
+    // JSON.parse('"hello"') = "hello" — typeof "hello" !== 'object' → fallback
+    localStorageMock.setItem('mg:string-game:adaptive', '"hello"');
+    const profile = getProfile('string-game');
+    expect(profile.tier).toBe(2);
+    expect(Array.isArray(profile.history)).toBe(true);
+  });
+});
+
 describe('per-game isolation', () => {
   beforeEach(() => localStorageMock.clear());
 
@@ -311,5 +380,28 @@ describe('per-game isolation', () => {
     setTier('parking-escape', 4);
     resetAdaptive('water-sort');
     expect(getTier('parking-escape')).toBe(4);
+  });
+});
+
+// ─── saveProfile and resetAdaptive error resilience ───────────────────────────
+
+describe('saveProfile — catch block', () => {
+  it('does not throw when localStorage.setItem throws (catch swallows QuotaExceeded)', () => {
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      const err = new Error('QuotaExceededError');
+      err.name = 'QuotaExceededError';
+      throw err;
+    });
+    // setTier calls saveProfile internally
+    expect(() => setTier(GAME, 3)).not.toThrow();
+  });
+});
+
+describe('resetAdaptive — catch block', () => {
+  it('does not throw when localStorage.removeItem throws', () => {
+    localStorageMock.removeItem.mockImplementationOnce(() => {
+      throw new Error('Storage denied');
+    });
+    expect(() => resetAdaptive(GAME)).not.toThrow();
   });
 });

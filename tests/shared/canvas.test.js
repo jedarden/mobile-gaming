@@ -119,6 +119,22 @@ describe('canvas', () => {
       getContext2D(el);
       expect(ctx._scaleCalls()).toEqual([[1, 1]]);
     });
+
+    it('uses DPR of 1 when devicePixelRatio is null (falsy || 1 fallback)', () => {
+      const { el, ctx } = createMockCanvasEl();
+      global.window.devicePixelRatio = null;
+
+      getContext2D(el);
+      expect(ctx._scaleCalls()).toEqual([[1, 1]]);
+    });
+
+    it('uses DPR of 1 when devicePixelRatio is 0 (falsy || 1 fallback)', () => {
+      const { el, ctx } = createMockCanvasEl();
+      global.window.devicePixelRatio = 0;
+
+      getContext2D(el);
+      expect(ctx._scaleCalls()).toEqual([[1, 1]]);
+    });
   });
 
   describe('clearCanvas', () => {

@@ -334,6 +334,12 @@ describe('Swipe Navigation', () => {
       reorderGame(0, 10);
       expect(getGameRing()).toEqual(originalRing);
     });
+
+    it('returns early when fromIndex equals ring length (>= boundary, not just >)', () => {
+      const originalRing = getGameRing();
+      reorderGame(4, 0); // ring has 4 items, index 4 is exactly out of bounds
+      expect(getGameRing()).toEqual(originalRing);
+    });
   });
 
   describe('Current Game Index', () => {

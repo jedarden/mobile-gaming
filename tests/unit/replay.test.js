@@ -191,6 +191,35 @@ describe('Replay Encoding', () => {
     });
   });
 
+  describe('decodeReplay error paths', () => {
+    it('throws on binary shorter than 10 bytes', () => {
+      const tooShort = new Uint8Array([0x01, 0x00, 0x00]); // 3 bytes
+      expect(() => decodeReplay(tooShort)).toThrow('Invalid replay data: too short');
+    });
+
+    it('throws on unknown game ID byte in header', () => {
+      // Build a 10-byte header with an unrecognised game ID (0xFF)
+      const binary = new Uint8Array(10);
+      binary[0] = 0xFF; // unknown game ID
+      expect(() => decodeReplay(binary)).toThrow('Unknown game ID byte');
+    });
+
+    it('throws on unknown event type byte in event stream', () => {
+      // Encode a valid replay then tamper with the type byte
+      const encoded = encodeReplay({
+        gameId: 'water-sort',
+        levelId: 1,
+        seed: 1,
+        version: REPLAY_VERSION,
+        events: [{ dt: 0, type: 'tap', x: 0, y: 0, dx: 0, dy: 0 }]
+      });
+      // dt=0 varint is 1 byte (0x00) at offset 10; type byte is at offset 11
+      const tampered = new Uint8Array(encoded);
+      tampered[11] = 0xFF; // invalid type byte
+      expect(() => decodeReplay(tampered)).toThrow('Unknown event type byte');
+    });
+  });
+
   describe('encodeReplayToBase64/decodeReplayFromBase64', () => {
     it('should round-trip via base64', () => {
       const replay = {

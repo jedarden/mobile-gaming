@@ -160,6 +160,39 @@ describe('calculateScore — defaults', () => {
     const result = calculateScore({}, 1, 999, { parMoves: 1, parTime: 0 });
     expect(result.timeScore).toBe(100);
   });
+
+  it('parMoves<0 → moveScore=100 (treated same as 0)', () => {
+    const result = calculateScore({}, 50, 10, { parMoves: -3, parTime: 10 });
+    expect(result.moveScore).toBe(100);
+  });
+
+  it('parTime<0 → timeScore=100 (treated same as 0)', () => {
+    const result = calculateScore({}, 1, 999, { parMoves: 1, parTime: -5 });
+    expect(result.timeScore).toBe(100);
+  });
+
+  it('timeScore is 100 when time exactly equals parTime (ratio = 1.0, <= boundary)', () => {
+    const result = calculateScore({}, 1, 10, { parMoves: 1, parTime: 10 });
+    expect(result.timeScore).toBe(100);
+  });
+
+  it('timeScore is exactly 50 at ratio = 2.0 (midpoint interpolation)', () => {
+    // ratio=2: 100*(1-(2-1)/2) = 100*0.5 = 50
+    const result = calculateScore({}, 1, 20, { parMoves: 1, parTime: 10 });
+    expect(result.timeScore).toBe(50);
+  });
+
+  it('moveScore is exactly 50 at ratio = 2.0 (midpoint interpolation)', () => {
+    // ratio=2: 100*(1-(2-1)/2) = 100*0.5 = 50
+    const result = calculateScore({}, 20, 1, { parMoves: 10, parTime: 0 });
+    expect(result.moveScore).toBe(50);
+  });
+
+  it('timeScore is exactly 0 when time is >= 3x parTime (upper boundary)', () => {
+    // ratio=3: return 0 (>= boundary, inclusive)
+    const result = calculateScore({}, 1, 30, { parMoves: 1, parTime: 10 });
+    expect(result.timeScore).toBe(0);
+  });
 });
 
 // ─── getBestScore / saveBestScore ─────────────────────────────────────────────
@@ -198,6 +231,13 @@ describe('getBestScore / saveBestScore', () => {
     const worse   = calculateScore({}, 20, 10, { parMoves: 5, parTime: 10 });
     saveBestScore('water-sort', 0, perfect);
     expect(saveBestScore('water-sort', 0, worse)).toBe(false);
+  });
+
+  it('saveBestScore returns false when new score equals existing best (check is >, not >=)', () => {
+    const score = calculateScore({}, 5, 10, { parMoves: 5, parTime: 10 });
+    saveBestScore('water-sort', 0, score);
+    // Same score again — optimality is equal, not strictly greater
+    expect(saveBestScore('water-sort', 0, score)).toBe(false);
   });
 
   it('saveBestScore returns true and updates when new score is better', () => {
@@ -259,6 +299,12 @@ describe('getAllBestScores', () => {
     saveBestScore('game-a', 0, score);
     expect(getAllBestScores('game-b')).toEqual({});
   });
+
+  it('skips keys with non-numeric level suffix (!isNaN guard)', () => {
+    localStorageMock.setItem('mg:best-scores:water-sort:invalid', '{"optimality":50}');
+    const all = getAllBestScores('water-sort');
+    expect(Object.keys(all)).toHaveLength(0);
+  });
 });
 
 describe('resetAllScores', () => {
@@ -280,5 +326,17 @@ describe('resetAllScores', () => {
 
   it('is safe to call when no scores exist', () => {
     expect(() => resetAllScores('game-x')).not.toThrow();
+  });
+
+  it('does not throw when localStorage.key throws during iteration (catch block)', () => {
+    localStorageMock.key.mockImplementationOnce(() => { throw new Error('Storage denied'); });
+    expect(() => resetAllScores('water-sort')).not.toThrow();
+  });
+});
+
+describe('getAllBestScores — catch block', () => {
+  it('returns empty object when localStorage.key throws (catch block)', () => {
+    localStorageMock.key.mockImplementationOnce(() => { throw new Error('Storage denied'); });
+    expect(getAllBestScores('water-sort')).toEqual({});
   });
 });

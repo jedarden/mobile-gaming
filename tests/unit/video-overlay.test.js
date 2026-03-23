@@ -256,6 +256,18 @@ describe('drawOutroFrame', () => {
     const ctx = makeCtxMock();
     expect(() => drawOutroFrame(ctx, { stats: { stars: 1 } }, 0.5)).not.toThrow();
   });
+
+  it('draws "0:00" when time is 0', () => {
+    const ctx = makeCtxMock();
+    drawOutroFrame(ctx, { stats: { time: 0, stars: 1 } });
+    const calls = ctx.fillText.mock.calls;
+    expect(calls.some(([text]) => text === '0:00')).toBe(true);
+  });
+
+  it('does not throw when stats is undefined', () => {
+    const ctx = makeCtxMock();
+    expect(() => drawOutroFrame(ctx, {})).not.toThrow();
+  });
 });
 
 // ── drawWatermark ─────────────────────────────────────────────────────────

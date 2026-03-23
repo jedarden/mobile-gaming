@@ -132,6 +132,18 @@ describe('spawn', () => {
     expect(ps.getActiveCount()).toBe(0);
   });
 
+  it('ignores undefined type (no preset match)', () => {
+    const ps = createParticleSystem(null);
+    ps.spawn(undefined, 0, 0);
+    expect(ps.getActiveCount()).toBe(0);
+  });
+
+  it('ignores null type (no preset match)', () => {
+    const ps = createParticleSystem(null);
+    ps.spawn(null, 0, 0);
+    expect(ps.getActiveCount()).toBe(0);
+  });
+
   it('multiple spawns accumulate active count', () => {
     const ps = createParticleSystem(null);
     ps.spawn('sparkle', 0, 0, 3);
@@ -210,6 +222,37 @@ describe('clear', () => {
     ps.clear();
     ps.spawn('sparkle', 0, 0, 3);
     expect(ps.getActiveCount()).toBe(3);
+  });
+});
+
+// ─── isReducedMotion branches ─────────────────────────────────────────────────
+// The source checks `typeof window === 'undefined' || !window.matchMedia`.
+// In node env, window is undefined → isReducedMotion returns false.
+// Use vi.stubGlobal to inject a window object for branch coverage.
+
+describe('spawn — reduced motion', () => {
+  it('skips spawning when matchMedia reports prefers-reduced-motion (matches=true branch)', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+    const ps = createParticleSystem(null);
+    ps.spawn('sparkle', 0, 0, 5);
+    expect(ps.getActiveCount()).toBe(0);
+    vi.unstubAllGlobals();
+  });
+
+  it('spawns normally when matchMedia reports no reduced motion (matches=false branch)', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
+    const ps = createParticleSystem(null);
+    ps.spawn('sparkle', 0, 0, 3);
+    expect(ps.getActiveCount()).toBe(3);
+    vi.unstubAllGlobals();
+  });
+
+  it('spawns normally when window exists but matchMedia is falsy (!window.matchMedia branch)', () => {
+    vi.stubGlobal('window', { matchMedia: null });
+    const ps = createParticleSystem(null);
+    ps.spawn('sparkle', 0, 0, 2);
+    expect(ps.getActiveCount()).toBe(2);
+    vi.unstubAllGlobals();
   });
 });
 

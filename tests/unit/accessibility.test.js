@@ -278,6 +278,38 @@ describe('trapFocus', () => {
     expect(() => trapFocus(container)).not.toThrow();
     container.remove();
   });
+
+  it('wraps Tab forward from last focusable to first', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<button id="ft-first">A</button><button id="ft-last">B</button>';
+    document.body.appendChild(container);
+    trapFocus(container); // focuses ft-first
+    container.querySelector('#ft-last').focus();
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    expect(document.activeElement.id).toBe('ft-first');
+    container.remove();
+  });
+
+  it('wraps Shift+Tab backward from first focusable to last', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<button id="st-first">A</button><button id="st-last">B</button>';
+    document.body.appendChild(container);
+    trapFocus(container); // focuses st-first
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+    expect(document.activeElement.id).toBe('st-last');
+    container.remove();
+  });
+
+  it('ignores non-Tab keypresses (does not move focus)', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<button id="nt-first">A</button><button id="nt-last">B</button>';
+    document.body.appendChild(container);
+    trapFocus(container); // focuses nt-first
+    // Press Enter — not Tab, should be ignored by handleKeyDown
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(document.activeElement.id).toBe('nt-first'); // focus unchanged
+    container.remove();
+  });
 });
 
 // ── onReducedMotionChange ──────────────────────────────────────────────────
@@ -292,5 +324,59 @@ describe('onReducedMotionChange', () => {
   it('unsubscribe does not throw', () => {
     const unsubscribe = onReducedMotionChange(() => {});
     expect(() => unsubscribe()).not.toThrow();
+  });
+
+  it('fires callback when media query changes and no user override is stored', () => {
+    let capturedHandler;
+    const fakeMediaQuery = {
+      matches: false,
+      addEventListener: vi.fn((type, handler) => { capturedHandler = handler; }),
+      removeEventListener: vi.fn(),
+    };
+    matchMediaMock.mockReturnValueOnce(fakeMediaQuery);
+
+    const callback = vi.fn();
+    onReducedMotionChange(callback);
+
+    // No mg:settings in localStorage — should fire callback
+    capturedHandler({ matches: true });
+    expect(callback).toHaveBeenCalledWith(true);
+  });
+
+  it('ignores system change when reducedMotionSetByUser=true (manual override path)', () => {
+    let capturedHandler;
+    const fakeMediaQuery = {
+      matches: false,
+      addEventListener: vi.fn((type, handler) => { capturedHandler = handler; }),
+      removeEventListener: vi.fn(),
+    };
+    matchMediaMock.mockReturnValueOnce(fakeMediaQuery);
+
+    // Set user override in storage
+    localStorageMock.setItem('mg:settings', JSON.stringify({ reducedMotionSetByUser: true, reducedMotion: false }));
+
+    const callback = vi.fn();
+    onReducedMotionChange(callback);
+
+    // System changes to true, but user override should suppress callback
+    capturedHandler({ matches: true });
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  it('still fires callback when localStorage.getItem throws in handler (catch block)', () => {
+    let capturedHandler;
+    const fakeMediaQuery = {
+      matches: false,
+      addEventListener: vi.fn((type, handler) => { capturedHandler = handler; }),
+      removeEventListener: vi.fn(),
+    };
+    matchMediaMock.mockReturnValueOnce(fakeMediaQuery);
+    localStorageMock.getItem.mockImplementationOnce(() => { throw new Error('Storage denied'); });
+
+    const callback = vi.fn();
+    onReducedMotionChange(callback);
+    capturedHandler({ matches: true });
+    // catch swallowed the error; callback still fires with e.matches
+    expect(callback).toHaveBeenCalledWith(true);
   });
 });

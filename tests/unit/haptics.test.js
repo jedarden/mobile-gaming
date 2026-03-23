@@ -12,14 +12,22 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // ─── Hoisted mutable state (available inside vi.mock factory) ─────────────────
 
-const state = vi.hoisted(() => ({ hapticEnabled: true }));
+const state = vi.hoisted(() => ({
+  hapticEnabled: true,
+  globalSettings: undefined, // undefined = use hapticEnabled default; null = simulate missing key
+  legacySettings: undefined, // undefined = null; otherwise returned as legacy settings
+}));
 
 // ─── Mock storage so isHapticEnabled() is controllable ───────────────────────
 
 vi.mock('../../src/shared/storage.js', () => ({
   StorageManager: vi.fn().mockImplementation(() => ({
     get: vi.fn((key) => {
-      if (key === 'global:settings') return { haptic: state.hapticEnabled };
+      if (key === 'global:settings') {
+        if (state.globalSettings !== undefined) return state.globalSettings;
+        return { haptic: state.hapticEnabled };
+      }
+      if (key === 'settings') return state.legacySettings ?? null;
       return null;
     }),
     set: vi.fn(),
@@ -40,6 +48,8 @@ import { PATTERNS, isHapticEnabled, haptic } from '../../src/shared/haptics.js';
 
 beforeEach(() => {
   state.hapticEnabled = true;
+  state.globalSettings = undefined;
+  state.legacySettings = undefined;
   vi.clearAllMocks();
   Object.defineProperty(globalThis, 'navigator', {
     value: { vibrate: vi.fn() },
@@ -100,6 +110,18 @@ describe('isHapticEnabled', () => {
     state.hapticEnabled = false;
     expect(isHapticEnabled()).toBe(false);
   });
+
+  it('falls back to legacy "settings" key when global:settings is null', () => {
+    state.globalSettings = null; // simulate missing global:settings
+    state.legacySettings = { hapticEnabled: false }; // legacy disables haptics
+    expect(isHapticEnabled()).toBe(false);
+  });
+
+  it('returns true (default) when both global and legacy storage keys return null', () => {
+    state.globalSettings = null; // simulate missing global:settings
+    state.legacySettings = undefined; // no legacy settings either
+    expect(isHapticEnabled()).toBe(true); // default: enabled
+  });
 });
 
 // ─── haptic ───────────────────────────────────────────────────────────────────
@@ -117,6 +139,11 @@ describe('haptic', () => {
 
   it('falls back to tap pattern for unknown names', () => {
     haptic('totally_unknown_xyz');
+    expect(globalThis.navigator.vibrate).toHaveBeenCalledWith(PATTERNS.tap);
+  });
+
+  it('falls back to tap pattern for empty string name (PATTERNS[""] is undefined)', () => {
+    haptic('');
     expect(globalThis.navigator.vibrate).toHaveBeenCalledWith(PATTERNS.tap);
   });
 
@@ -162,5 +189,11 @@ describe('haptic', () => {
       writable: true,
     });
     expect(() => haptic('tap')).not.toThrow();
+  });
+
+  it('passes null directly to vibrate (null is not a string, no tap fallback)', () => {
+    haptic(null);
+    // null is not typeof 'string', so pattern = null (no PATTERNS lookup)
+    expect(globalThis.navigator.vibrate).toHaveBeenCalledWith(null);
   });
 });

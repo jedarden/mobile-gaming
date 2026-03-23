@@ -205,6 +205,16 @@ describe('createSoundPattern', () => {
     const pattern = createSoundPattern({ frequency: 220 });
     expect(pattern.frequencyEnd).toBeUndefined();
   });
+
+  it('frequency: 0 falls back to 440 (|| operator treats 0 as falsy)', () => {
+    const pattern = createSoundPattern({ frequency: 0 });
+    expect(pattern.frequency).toBe(440);
+  });
+
+  it('duration: 0 falls back to 0.1 (|| operator treats 0 as falsy)', () => {
+    const pattern = createSoundPattern({ frequency: 440, duration: 0 });
+    expect(pattern.duration).toBe(0.1);
+  });
 });
 
 // ── playSound ─────────────────────────────────────────────────────────────────
@@ -228,6 +238,10 @@ describe('playSound', () => {
   it('returns null for volume=0', () => {
     // playSoundPattern returns null when volume <= 0
     expect(playSound('click', 0)).toBeNull();
+  });
+
+  it('returns null for negative volume', () => {
+    expect(playSound('click', -0.5)).toBeNull();
   });
 });
 

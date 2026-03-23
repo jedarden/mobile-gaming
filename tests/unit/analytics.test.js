@@ -145,6 +145,13 @@ describe('trackLevelAbandon', () => {
     expect(getEvents()[0].reason).toBe('quit');
   });
 
+  it('defaults movesAtAbandon and timeAtAbandon to 0 when omitted', () => {
+    trackLevelAbandon({ gameId: 'parking-escape', levelId: 1 });
+    const [e] = getEvents();
+    expect(e.movesAtAbandon).toBe(0);
+    expect(e.timeAtAbandon).toBe(0);
+  });
+
   it('records provided reason', () => {
     trackLevelAbandon({ gameId: 'parking-escape', levelId: 1, reason: 'skip' });
     expect(getEvents()[0].reason).toBe('skip');
@@ -283,5 +290,36 @@ describe('persistence', () => {
     events.push({ event: 'injected' });
     // The injected event should not appear in the next read
     expect(getEvents()).toHaveLength(1);
+  });
+});
+
+// ─── storage error resilience ─────────────────────────────────────────────────
+
+describe('storage error resilience', () => {
+  beforeEach(clear);
+
+  it('getEvents returns empty array when localStorage has invalid JSON', () => {
+    localStorageMock.setItem('mg:global:analytics', '{ corrupted: json }');
+    expect(getEvents()).toEqual([]);
+  });
+
+  it('trackGameStart does not throw when both write attempts hit quota', () => {
+    localStorageMock.setItem
+      .mockImplementationOnce(() => { throw new Error('QuotaExceededError'); })
+      .mockImplementationOnce(() => { throw new Error('QuotaExceededError'); });
+    expect(() => trackGameStart({ gameId: 'test', levelId: 1 })).not.toThrow();
+  });
+
+  it('retries with trimmed events when first write fails', () => {
+    for (let i = 0; i < 20; i++) {
+      trackGameStart({ gameId: 'test', levelId: i });
+    }
+    // First write attempt throws, retry uses original store implementation
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError');
+    });
+    expect(() => trackGameStart({ gameId: 'test', levelId: 20 })).not.toThrow();
+    // After trimming and retrying, stored events are fewer than 21
+    expect(getEvents().length).toBeLessThan(21);
   });
 });

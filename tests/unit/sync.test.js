@@ -224,6 +224,18 @@ describe('importProgress', () => {
     expect(importProgress('')).toEqual({ success: false, error: 'Invalid code' });
   });
 
+  it('returns success:false for numeric 0 (falsy non-string)', () => {
+    expect(importProgress(0)).toEqual({ success: false, error: 'Invalid code' });
+  });
+
+  it('returns success:false for boolean false (falsy non-string)', () => {
+    expect(importProgress(false)).toEqual({ success: false, error: 'Invalid code' });
+  });
+
+  it('returns success:false for object input (typeof !== string)', () => {
+    expect(importProgress({ code: 'SYNC-XXXX' })).toEqual({ success: false, error: 'Invalid code' });
+  });
+
   it('returns success:false for garbled code', () => {
     expect(importProgress('SYNC-!!!!-XXXXX')).toMatchObject({ success: false });
   });
@@ -257,6 +269,26 @@ describe('importProgress', () => {
 describe('importProgress merge logic', () => {
   beforeEach(() => {
     mockStorage = createMockStorage();
+  });
+
+  it('keeps current score when imported score is equal (> not >=, strict inequality)', () => {
+    mockStorage.set('stats', {
+      'water-sort': { played: 5, completed: 4, stars: 12, lastLevel: 4, highScores: { 0: 100 } },
+    });
+
+    const deviceB = createMockStorage();
+    deviceB.set('stats', {
+      'water-sort': { played: 5, completed: 4, stars: 12, lastLevel: 4, highScores: { 0: 100 } },
+    });
+    const tmpStorage = mockStorage;
+    mockStorage = deviceB;
+    const code = exportProgress();
+    mockStorage = tmpStorage;
+
+    importProgress(code);
+    const stats = mockStorage.get('stats');
+    // Equal scores: imported score (100) is NOT > current (100) → keep current
+    expect(stats['water-sort'].highScores[0]).toBe(100);
   });
 
   it('keeps higher score when both devices have played', () => {
@@ -451,6 +483,32 @@ describe('importProgress direct localStorage keys', () => {
     expect(merged.xp).toBe(2000); // local is higher
     expect(merged.level).toBe(5);
     expect(merged.otherData).toBe('imported'); // imported wins on non-special fields
+  });
+});
+
+// ─── importProgress direct: catch block for corrupted local JSON ─────────────
+
+describe('importProgress direct localStorage — catch block', () => {
+  beforeEach(() => {
+    mockStorage = createMockStorage();
+    localStorage.clear();
+  });
+
+  it('overwrites corrupted local JSON with imported value (catch branch)', () => {
+    // Put valid daily data in localStorage for export
+    const importedDaily = { completed: { '2026-03-20': true } };
+    localStorage.setItem('mg:daily', JSON.stringify(importedDaily));
+    const code = exportProgress();
+
+    // Now corrupt local mg:daily so JSON.parse fails during import
+    localStorage.setItem('mg:daily', '{ corrupted json }');
+    mockStorage = createMockStorage();
+
+    importProgress(code);
+
+    // The catch block should have overwritten with the imported value
+    const restored = JSON.parse(localStorage.getItem('mg:daily'));
+    expect(restored.completed['2026-03-20']).toBe(true);
   });
 });
 

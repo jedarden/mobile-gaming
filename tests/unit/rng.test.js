@@ -93,6 +93,24 @@ describe('nextInt', () => {
     expect(seen.has(0)).toBe(true);
     expect(seen.has(3)).toBe(true);
   });
+
+  it('handles negative range (e.g., [-10, -5])', () => {
+    const rng = createRng(42);
+    for (let i = 0; i < 50; i++) {
+      const v = rng.nextInt(-10, -5);
+      expect(v).toBeGreaterThanOrEqual(-10);
+      expect(v).toBeLessThanOrEqual(-5);
+    }
+  });
+
+  it('handles mixed negative/positive range (e.g., [-3, 3])', () => {
+    const rng = createRng(77);
+    for (let i = 0; i < 100; i++) {
+      const v = rng.nextInt(-3, 3);
+      expect(v).toBeGreaterThanOrEqual(-3);
+      expect(v).toBeLessThanOrEqual(3);
+    }
+  });
 });
 
 // ── shuffle() ─────────────────────────────────────────────────────────────────
@@ -135,6 +153,13 @@ describe('shuffle', () => {
     const rng = createRng(1);
     expect(rng.shuffle([42])).toEqual([42]);
   });
+
+  it('two-element array has correct elements after shuffle', () => {
+    const rng = createRng(999);
+    const shuffled = rng.shuffle([10, 20]);
+    expect(shuffled).toHaveLength(2);
+    expect(shuffled.sort((a, b) => a - b)).toEqual([10, 20]);
+  });
 });
 
 // ── pick() ────────────────────────────────────────────────────────────────────
@@ -174,6 +199,30 @@ describe('pick', () => {
 describe('string seeds', () => {
   it('accepts a string seed without throwing', () => {
     expect(() => createRng('hello')).not.toThrow();
+  });
+
+  it('accepts an empty string seed (FNV-1a base hash)', () => {
+    expect(() => createRng('')).not.toThrow();
+    const rng = createRng('');
+    const v = rng.next();
+    expect(v).toBeGreaterThanOrEqual(0);
+    expect(v).toBeLessThan(1);
+  });
+
+  it('floors float seeds (3.7 behaves as 3)', () => {
+    const a = createRng(3.7);
+    const b = createRng(3);
+    for (let i = 0; i < 5; i++) {
+      expect(a.next()).toBe(b.next());
+    }
+  });
+
+  it('negative numeric seed is unsigned via >>> 0 (no throw)', () => {
+    expect(() => createRng(-42)).not.toThrow();
+    const rng = createRng(-42);
+    const v = rng.next();
+    expect(v).toBeGreaterThanOrEqual(0);
+    expect(v).toBeLessThan(1);
   });
 
   it('string seed is deterministic', () => {

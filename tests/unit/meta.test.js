@@ -206,6 +206,23 @@ describe('getXPProgress', () => {
     const { current } = getXPProgress();
     expect(current).toBeGreaterThanOrEqual(0);
   });
+
+  it('uses formula for level-11+ threshold (levels beyond XP table)', () => {
+    // Seed meta with playerLevel=10 (at boundary of XP table), totalXP=20000
+    // getLevelThreshold(11) = 15000 + (11-10)*4000 = 19000
+    // needed = 19000 - 15000 = 4000
+    localStorageMock.setItem('mg:meta', JSON.stringify({
+      totalXP: 20000,
+      playerLevel: 10,
+      completedLevels: {},
+      streaks: { daily: 0, lastDailyDate: null },
+      achievements: [],
+      firstPlayDate: null,
+      totalPlayTime: 0
+    }));
+    const { needed } = getXPProgress();
+    expect(needed).toBe(4000);
+  });
 });
 
 // ── updateDailyStreak / getDailyStreak ────────────────────────────────────
@@ -239,6 +256,51 @@ describe('getDailyStreak', () => {
   it('returns 1 after first daily activity', () => {
     updateDailyStreak();
     expect(getDailyStreak()).toBe(1);
+  });
+});
+
+describe('updateDailyStreak — broken streak', () => {
+  it('resets streak to 1 when last activity was 2+ days ago', () => {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
+
+    localStorageMock.setItem('mg:meta', JSON.stringify({
+      totalXP: 0,
+      playerLevel: 1,
+      completedLevels: {},
+      streaks: { daily: 5, lastDailyDate: twoDaysAgoStr },
+      achievements: [],
+      firstPlayDate: null,
+      totalPlayTime: 0
+    }));
+
+    const result = updateDailyStreak();
+    expect(result.streak).toBe(1); // streak resets
+    expect(result.isNewDay).toBe(true);
+  });
+});
+
+describe('updateDailyStreak — continuing streak', () => {
+  it('increments streak when last activity was yesterday', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Pre-seed storage with a streak of 1, last played yesterday
+    localStorageMock.setItem('mg:meta', JSON.stringify({
+      totalXP: 0,
+      playerLevel: 1,
+      completedLevels: {},
+      streaks: { daily: 1, lastDailyDate: yesterdayStr },
+      achievements: [],
+      firstPlayDate: null,
+      totalPlayTime: 0
+    }));
+
+    const result = updateDailyStreak();
+    expect(result.streak).toBe(2);
+    expect(result.isNewDay).toBe(true);
   });
 });
 

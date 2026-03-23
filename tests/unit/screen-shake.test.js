@@ -9,7 +9,7 @@
  * prefersReducedMotion() returns false → trigger() always works.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createScreenShake } from '../../src/shared/screen-shake.js';
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -63,6 +63,23 @@ describe('trigger', () => {
     expect(y).toBe(0);
   });
 
+  it('intensity exactly 0 produces no displacement', () => {
+    const shake = createScreenShake({ maxAmplitude: 20 });
+    shake.trigger(0, 200);
+    const { x, y } = shake.update(16);
+    expect(x).toBe(0);
+    expect(y).toBe(0);
+  });
+
+  it('re-trigger with shorter duration keeps the longer remaining duration', () => {
+    const shake = createScreenShake();
+    shake.trigger(1.0, 300);
+    shake.update(100); // 200 ms remaining
+    shake.trigger(1.0, 50); // shorter — Math.max(200, 50) = 200
+    shake.update(190); // consume 190 ms → ~10 ms remaining
+    expect(shake.isActive()).toBe(true); // still active, not the short 50ms
+  });
+
   it('extends remaining duration when re-triggered during active shake', () => {
     const shake = createScreenShake();
     shake.trigger(1.0, 100);
@@ -112,6 +129,28 @@ describe('update', () => {
     shake.trigger(1.0, 100);
     shake.update(110);
     expect(shake.isActive()).toBe(false);
+  });
+
+  it('isActive returns false when remaining is exactly 0 (> not >=)', () => {
+    const shake = createScreenShake();
+    shake.trigger(1.0, 100);
+    shake.update(100); // remaining = 100 - 100 = 0
+    expect(shake.isActive()).toBe(false); // 0 > 0 is false
+  });
+
+  it('update(0) returns {x:0, y:0} when no active shake', () => {
+    const shake = createScreenShake();
+    expect(shake.update(0)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('update(0) on active shake produces no NaN values', () => {
+    const shake = createScreenShake({ maxAmplitude: 20 });
+    shake.trigger(1.0, 500);
+    for (let i = 0; i < 5; i++) {
+      const { x, y } = shake.update(0);
+      expect(Number.isNaN(x)).toBe(false);
+      expect(Number.isNaN(y)).toBe(false);
+    }
   });
 
   it('amplitude is higher early than late (linear decay)', () => {
@@ -195,5 +234,25 @@ describe('maxAmplitude option', () => {
       maxSeen = Math.max(maxSeen, Math.abs(x), Math.abs(y));
     }
     expect(maxSeen).toBeGreaterThan(12);
+  });
+});
+
+// ─── prefersReducedMotion branch ──────────────────────────────────────────────
+
+describe('trigger skips shake when prefers-reduced-motion is set', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('trigger() is a no-op when window.matchMedia returns matches=true', () => {
+    // Stub window and matchMedia so prefersReducedMotion() returns true
+    vi.stubGlobal('window', {
+      matchMedia: () => ({ matches: true }),
+    });
+    const shake = createScreenShake();
+    shake.trigger(1.0, 300);
+    // Should be a no-op — shake remains inactive
+    expect(shake.isActive()).toBe(false);
+    expect(shake.update(16)).toEqual({ x: 0, y: 0 });
   });
 });

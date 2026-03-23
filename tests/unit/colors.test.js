@@ -250,6 +250,20 @@ describe('toCss', () => {
   it('uses rgb(...) when alpha is omitted (default 1)', () => {
     expect(toCss(BLACK)).toMatch(/^rgb\(/);
   });
+
+  it('accepts a raw {r,g,b} object (no .rgb wrapper) — else branch', () => {
+    // When color is not a string and has no .rgb property, it IS the rgb object
+    expect(toCss({ r: 100, g: 150, b: 200 })).toBe('rgb(100, 150, 200)');
+  });
+
+  it('uses rgb(...) when alpha > 1 (only < 1 triggers rgba)', () => {
+    expect(toCss('#FF0000', 2)).toBe('rgb(255, 0, 0)');
+    expect(toCss('#FF0000', 1.5)).toBe('rgb(255, 0, 0)');
+  });
+
+  it('uses rgba(...) when alpha is negative (< 1)', () => {
+    expect(toCss('#FF0000', -0.5)).toBe('rgba(255, 0, 0, -0.5)');
+  });
 });
 
 // ── getLuminance ──────────────────────────────────────────────────────────────

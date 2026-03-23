@@ -214,6 +214,39 @@ describe('isAndroid', () => {
   it('returns false in default jsdom environment', () => {
     expect(isAndroid()).toBe(false);
   });
+
+  it('returns true when user agent contains "Android"', () => {
+    const orig = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Linux; Android 12; Pixel 6) Chrome/99',
+      configurable: true, writable: true,
+    });
+    expect(isAndroid()).toBe(true);
+    Object.defineProperty(navigator, 'userAgent', { value: orig, configurable: true, writable: true });
+  });
+});
+
+describe('isIOS', () => {
+  it('returns true when user agent contains "iPhone"', () => {
+    const orig = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
+      configurable: true, writable: true,
+    });
+    expect(isIOS()).toBe(true);
+    Object.defineProperty(navigator, 'userAgent', { value: orig, configurable: true, writable: true });
+  });
+
+  it('returns true via platform check for iPad with MacIntel + maxTouchPoints > 1 (second OR branch)', () => {
+    // iPadOS reports platform='MacIntel' + maxTouchPoints>1 but no iOS UA string
+    const origPlatform = navigator.platform;
+    const origMTP = navigator.maxTouchPoints;
+    Object.defineProperty(navigator, 'platform', { value: 'MacIntel', configurable: true, writable: true });
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: 5, configurable: true, writable: true });
+    expect(isIOS()).toBe(true);
+    Object.defineProperty(navigator, 'platform', { value: origPlatform, configurable: true, writable: true });
+    Object.defineProperty(navigator, 'maxTouchPoints', { value: origMTP, configurable: true, writable: true });
+  });
 });
 
 // ── getPixelRatio ─────────────────────────────────────────────────────────
@@ -225,5 +258,19 @@ describe('getPixelRatio', () => {
 
   it('returns at least 1', () => {
     expect(getPixelRatio()).toBeGreaterThanOrEqual(1);
+  });
+
+  it('returns 1 when devicePixelRatio is 0 (falsy fallback)', () => {
+    const orig = window.devicePixelRatio;
+    Object.defineProperty(window, 'devicePixelRatio', { value: 0, configurable: true, writable: true });
+    expect(getPixelRatio()).toBe(1);
+    Object.defineProperty(window, 'devicePixelRatio', { value: orig, configurable: true, writable: true });
+  });
+
+  it('returns the actual devicePixelRatio when truthy', () => {
+    const orig = window.devicePixelRatio;
+    Object.defineProperty(window, 'devicePixelRatio', { value: 2, configurable: true, writable: true });
+    expect(getPixelRatio()).toBe(2);
+    Object.defineProperty(window, 'devicePixelRatio', { value: orig, configurable: true, writable: true });
   });
 });

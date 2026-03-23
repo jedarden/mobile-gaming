@@ -126,6 +126,11 @@ describe('spendHintToken', () => {
     expect(_store['hint-tokens'].count).toBe(0);
     expect(spendHintToken()).toBe(false);
   });
+
+  it('returns false when token count is negative (<= 0 covers negatives)', () => {
+    _store['hint-tokens'] = { date: '2026-03-22', count: -3 };
+    expect(spendHintToken()).toBe(false);
+  });
 });
 
 describe('addHintTokens', () => {
@@ -152,6 +157,12 @@ describe('addHintTokens', () => {
   it('works with a zero balance', () => {
     _store['hint-tokens'] = { date: '2026-03-22', count: 0 };
     addHintTokens(2);
+    expect(_store['hint-tokens'].count).toBe(2);
+  });
+
+  it('negative count decrements the balance (no input validation)', () => {
+    _store['hint-tokens'] = { date: '2026-03-22', count: 5 };
+    addHintTokens(-3);
     expect(_store['hint-tokens'].count).toBe(2);
   });
 });
@@ -410,5 +421,25 @@ describe('createHintSession', () => {
     session.destroy();
     vi.advanceTimersByTime(30_000); // should not fire — timer was cleared
     expect(fakeWorker).toBeNull();
+  });
+
+  // ── Worker init failure ────────────────────────────────────────────────────
+
+  it('calls onWorkerError when Worker constructor throws (catch block)', () => {
+    global.Worker = vi.fn(() => { throw new Error('Worker not supported'); });
+    const failSession = makeSession();
+    failSession.showHint();
+    expect(onWorkerError).toHaveBeenCalledWith('Worker init failed: Worker not supported');
+    failSession.destroy();
+  });
+
+  // ── Empty moves guard ──────────────────────────────────────────────────────
+
+  it('does not invoke any callbacks when worker responds with empty moves array', () => {
+    session.showHint();
+    fakeWorker.respond({ moves: [] }); // empty — applyCurrentLevel returns early
+    expect(onHighlight).not.toHaveBeenCalled();
+    expect(onShowMove).not.toHaveBeenCalled();
+    expect(onAutoPlay).not.toHaveBeenCalled();
   });
 });

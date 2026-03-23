@@ -185,6 +185,12 @@ describe('isStateHash', () => {
     expect(isStateHash(null)).toBe(false);
   });
 
+  it('returns false for non-string inputs (number, object, undefined)', () => {
+    expect(isStateHash(42)).toBe(false);
+    expect(isStateHash({})).toBe(false);
+    expect(isStateHash(undefined)).toBe(false);
+  });
+
   it('returns false for non-state hashes', () => {
     expect(isStateHash('#level=5')).toBe(false);
     expect(isStateHash('#/home')).toBe(false);
@@ -225,6 +231,55 @@ describe('decodeState — invalid inputs', () => {
   it('returns null for wrong number of segments', () => {
     expect(decodeState('#s=nodots')).toBeNull();
   });
+
+  it('returns null for boolean false (falsy non-string)', () => {
+    expect(decodeState(false)).toBeNull();
+  });
+
+  it('returns null for numeric 0 (falsy non-string)', () => {
+    expect(decodeState(0)).toBeNull();
+  });
+
+  it('returns null when version is non-numeric', () => {
+    // gameId.abc.somedata → parseInt('abc') = NaN → returns null
+    expect(decodeState('#s=water-sort.abc.somedata')).toBeNull();
+  });
+
+  it('returns null when version segment is empty (two consecutive dots)', () => {
+    // '#s=water-sort..somedata' → versionStr='' → falsy guard fires
+    expect(decodeState('#s=water-sort..somedata')).toBeNull();
+  });
+
+  it('returns null when gameId segment is empty', () => {
+    // '#s=.1.somedata' → gameId='' → falsy guard fires
+    expect(decodeState('#s=.1.somedata')).toBeNull();
+  });
+});
+
+// ─── encodeCompact fallback ───────────────────────────────────────────────────
+
+describe('encodeState — compact fallback (hash > 2000 chars)', () => {
+  it('falls back to compact encoding for very large states with a levelId', () => {
+    // Build a state large enough that compressed+base64 exceeds MAX_URL_LENGTH (2000)
+    const hugeState = {
+      levelId: 'huge-level-id',
+      moves: [{ from: 0, to: 1 }],
+      // Many unique objects to resist compression
+      history: Array.from({ length: 800 }, (_, i) => ({
+        from: i % 13, to: (i * 7 + 3) % 13,
+        color: `#${(i * 123457 & 0xffffff).toString(16).padStart(6, '0')}`,
+        ts: i * 1234.5678,
+      })),
+    };
+    const hash = encodeState('water-sort', hugeState);
+    // Verify the hash can still be decoded (compact path returns valid state)
+    const decoded = decodeState(hash);
+    expect(decoded).not.toBeNull();
+    expect(decoded.gameId).toBe('water-sort');
+    // Compact form strips data down to levelId + moves + _compact marker
+    expect(decoded.state._compact).toBe(true);
+    expect(decoded.state.levelId).toBe('huge-level-id');
+  });
 });
 
 // ─── encodeState validation ───────────────────────────────────────────────────
@@ -233,6 +288,10 @@ describe('encodeState — validation', () => {
   it('throws on missing gameId', () => {
     expect(() => encodeState('', {})).toThrow();
     expect(() => encodeState(null, {})).toThrow();
+  });
+
+  it('throws when gameId is undefined (!gameId branch)', () => {
+    expect(() => encodeState(undefined, {})).toThrow();
   });
 
   it('throws on non-string gameId', () => {

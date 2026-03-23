@@ -109,6 +109,21 @@ describe('color handling', () => {
     strokeCircle(ctx, 10, 10, 5, 'red', 4);
     expect(ctx.lineWidth).toBe(4);
   });
+
+  it('drawCircle falls back to raw object when color has no .hex (|| color branch)', () => {
+    const ctx = makeCtx();
+    const rawColor = { r: 255, g: 0, b: 0 }; // no .hex property
+    drawCircle(ctx, 10, 10, 5, rawColor);
+    // color.hex is undefined → undefined || rawColor → fillStyle = rawColor
+    expect(ctx.fillStyle).toBe(rawColor);
+  });
+
+  it('strokeCircle falls back to raw object when color has no .hex (|| color branch)', () => {
+    const ctx = makeCtx();
+    const rawColor = { r: 0, g: 0, b: 255 }; // no .hex property
+    strokeCircle(ctx, 10, 10, 5, rawColor);
+    expect(ctx.strokeStyle).toBe(rawColor);
+  });
 });
 
 // ── drawCircle ────────────────────────────────────────────────────────────────
@@ -231,6 +246,15 @@ describe('drawRoundedPoly', () => {
     const points = [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 5, y: 10 }];
     drawRoundedPoly(ctx, points, 2, 'blue');
     expect(ctx.beginPath).toHaveBeenCalled();
+    expect(ctx.fill).toHaveBeenCalled();
+  });
+
+  it('skips closing loop when closed=false (no closePath)', () => {
+    const ctx = makeCtx();
+    const points = [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 5, y: 10 }];
+    drawRoundedPoly(ctx, points, 2, 'blue', false);
+    expect(ctx.beginPath).toHaveBeenCalled();
+    expect(ctx.closePath).not.toHaveBeenCalled();
     expect(ctx.fill).toHaveBeenCalled();
   });
 });
@@ -421,5 +445,25 @@ describe('drawTube', () => {
     const segments = [{ color: { hex: '#abcdef' }, fill: 0.5 }];
     drawTube(ctx, 0, 0, 20, 80, segments);
     expect(ctx.fillStyle).toBe('#abcdef');
+  });
+
+  it('falls back to raw color object when segment color has no .hex (|| seg.color branch)', () => {
+    const ctx = makeCtx();
+    const rawColor = { r: 200, g: 100, b: 50 }; // no .hex
+    const segments = [{ color: rawColor, fill: 0.5 }];
+    drawTube(ctx, 0, 0, 20, 80, segments);
+    expect(ctx.fillStyle).toBe(rawColor);
+  });
+
+  it('uses explicit r parameter instead of computing w * 0.35', () => {
+    // With no segments, drawTube calls strokeRect(ctx, x, y, w, h, borderColor, radius, borderWidth)
+    // where radius = r (explicit) not w * 0.35.
+    // We verify that both explicit and computed paths call beginPath (strokeRect with radius > 0).
+    const ctxExplicit = makeCtx();
+    const ctxComputed = makeCtx();
+    drawTube(ctxExplicit, 0, 0, 20, 80, [], '#888', 2, 5); // explicit r=5
+    drawTube(ctxComputed, 0, 0, 20, 80, []);               // computed r=20*0.35=7
+    expect(ctxExplicit.beginPath).toHaveBeenCalled();
+    expect(ctxComputed.beginPath).toHaveBeenCalled();
   });
 });
