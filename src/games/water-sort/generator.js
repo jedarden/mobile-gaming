@@ -109,7 +109,7 @@ function shuffleTubes(colorCount, bufferTubes, maxSegments, shuffleRounds, rng) 
  * @param {number} maxSegments - Max segments per tube
  * @returns {boolean}
  */
-function validateLevel(tubes, maxSegments) {
+function validateLevelInternal(tubes, maxSegments) {
   const state = createInitialState({ tubes, maxSegments });
 
   // Must not be already solved
@@ -144,7 +144,7 @@ export function generateLevel(seed, difficulty = 0.5) {
     const tubes = shuffleTubes(colorCount, bufferTubes, maxSegments, shuffleRounds, rng);
 
     // Validate
-    if (validateLevel(tubes, maxSegments)) {
+    if (validateLevelInternal(tubes, maxSegments)) {
       return {
         id: `ws-gen-${seed}`,
         difficulty,
@@ -178,4 +178,13 @@ export function generateLevels(startSeed, count, difficulty = 0.5) {
   return levels;
 }
 
-export default { generateLevel, generateLevels };
+/**
+ * Validate a level object — exported for integration tests.
+ * @param {{ tubes: string[][], maxSegments: number }} level
+ * @returns {{ valid: boolean }}
+ */
+export function validateLevel(level) {
+  return { valid: validateLevelInternal(level.tubes, level.maxSegments) };
+}
+
+export default { generateLevel, generateLevels, validateLevel };

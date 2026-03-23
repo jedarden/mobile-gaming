@@ -85,12 +85,11 @@ describe('levels.json validity', () => {
 // a { valid, ... } object. We dynamically import each generator and skip
 // gracefully if the export is absent.
 
-// Excluded games and reasons:
-//   water-sort:    validateLevel is a private (unexported) function in generator.js
 const GAMES_WITH_VALIDATORS = [
   'bridge-race',
   'crowd-runner',
   'giant-runner',
+  'water-sort',
   'jelly-shift',
   'makeover-run',
   'merge-games',
