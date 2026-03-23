@@ -32,9 +32,11 @@ class ParkingEscapeGame {
     this.history = [];  // stack of states for undo
     this.renderer = null;
     this.input = null;
+    this._rafId = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this._loop = this._loop.bind(this);
   }
 
   async init() {
@@ -62,6 +64,14 @@ class ParkingEscapeGame {
 
     this.setupButtons();
     this.startLevel(this.currentLevelIndex);
+    this._rafId = requestAnimationFrame(this._loop);
+  }
+
+  _loop() {
+    if (this.state && this.renderer) {
+      this.renderer.render(this.state, null, this._selectedId);
+    }
+    this._rafId = requestAnimationFrame(this._loop);
   }
 
   setupButtons() {
@@ -122,17 +132,39 @@ class ParkingEscapeGame {
       for (let d = distance - 1; d >= 1; d--) {
         const v2 = moves.find(m => m.vehicleId === vehicleId && m.direction === direction && m.distance === d);
         if (v2) { distance = d; break; }
-        if (d === 1) { this.render(); return; }
+        if (d === 1) {
+          // Blocked — screen shake
+          if (this.renderer && this.renderer.shake) this.renderer.shake(250, 3);
+          this.render(); return;
+        }
       }
     }
+
+    // Track old position for slide animation
+    const vehicle = this.state.vehicles.find(v => v.id === vehicleId);
+    const oldX = vehicle ? vehicle.x : 0;
+    const oldY = vehicle ? vehicle.y : 0;
 
     this.history.push(this.state);
     this.state = applyMove(this.state, vehicleId, direction, distance);
     this.updateUI();
     this.render();
 
+    // Trigger slide animation
+    if (vehicle && this.renderer && this.renderer.animateSlide) {
+      const newVehicle = this.state.vehicles.find(v => v.id === vehicleId);
+      if (newVehicle) {
+        this.renderer.animateSlide(vehicleId, oldX, oldY, newVehicle.x, newVehicle.y, distance);
+      }
+    }
+
     if (this.state.status === 'won') {
-      setTimeout(() => this.handleWin(), 300);
+      // Hero exited — spawn particle burst
+      if (this.renderer && this.renderer.onHeroExit) {
+        const exitRow = this.state.grid.exit ? this.state.grid.exit.y : 2;
+        this.renderer.onHeroExit(exitRow);
+      }
+      setTimeout(() => this.handleWin(), 600);
     }
   }
 
