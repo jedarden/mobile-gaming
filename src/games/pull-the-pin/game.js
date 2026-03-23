@@ -9,6 +9,10 @@ import * as state from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInputHandler } from './input.js';
 import levelsData from './levels.json';
+import { initStorage, updateGameStats } from '../../shared/storage.js';
+import { awardLevelComplete } from '../../shared/meta.js';
+import { initAccessibility, announce } from '../../shared/accessibility.js';
+import { haptic } from '../../shared/haptics.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 
@@ -72,6 +76,8 @@ export function createGame(canvas, options = {}) {
     if (onPinRemoved) {
       onPinRemoved(pinId);
     }
+
+    haptic('pin_pull');
 
     if (audio) {
       audio.play('pull');
@@ -172,8 +178,13 @@ export default {
   createGame
 };
 
+const GAME_ID = 'pull-the-pin';
+
 // Initialize game when page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initStorage();
+  initAccessibility();
+
   const canvas = document.getElementById('game-canvas');
   if (!canvas) return;
 
@@ -209,12 +220,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const game = createGame(canvas, {
-    onWin() {
+    async onWin() {
+      haptic('win');
       const hasNext = currentLevelIndex < levels.length - 1;
       showOverlay('Level Complete!', 'All balls reached their cups!', hasNext);
+      announce(`Level ${currentLevelIndex + 1} complete! All balls reached their cups!`);
+      await updateGameStats(GAME_ID, { lastLevel: currentLevelIndex, played: 1, completed: 1, stars: 3 });
+      await awardLevelComplete(GAME_ID, 3, { levelId: currentLevelIndex });
     },
     onLose() {
+      haptic('fail');
       showOverlay('Try Again', 'A ball missed its cup.', false);
+      announce('A ball missed its cup. Try again!');
     },
     onPinRemoved() {
       updateUI(game.getState());
@@ -226,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideOverlay();
     game.loadLevel(levels[index]);
     updateUI(game.getState());
+    announce(`Level ${index + 1}. Pull the pins to guide the balls into the cups.`);
   }
 
   if (overlayRetry) {
