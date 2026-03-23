@@ -67,7 +67,6 @@ export function createRenderer(canvas) {
   let reducedMotion = false;
   let colorBlindMode = false;
   let hintPinId = null;
-  let hintRafId = null;
 
   function now() { return performance.now(); }
 

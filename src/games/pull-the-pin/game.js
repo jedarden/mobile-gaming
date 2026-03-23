@@ -313,6 +313,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const hintBtn = document.getElementById('btn-hint');
+  function updateHintButton() {
+    if (!hintBtn) return;
+    const tokens = getHintTokens();
+    hintBtn.textContent = `Hint (${tokens})`;
+    hintBtn.disabled = tokens <= 0;
+  }
   if (hintBtn) {
     hintBtn.addEventListener('click', () => {
       game.showHint();
