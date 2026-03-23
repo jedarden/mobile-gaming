@@ -12,26 +12,28 @@
 import * as THREE from 'three';
 import { createThreeScene, resizeThreeRenderer, createBasicLights, disposeThreeScene } from '../../shared/three-setup.js';
 
-// Visual constants
+// Visual constants — candy palette
 const CORRIDOR_WIDTH = 6;
 const CORRIDOR_HEIGHT = 4;
 const CORRIDOR_LENGTH = 300;
-const CORRIDOR_COLOR = 0x1a1a2e;
-const CORRIDOR_FLOOR_COLOR = 0x16213e;
-const WALL_COLOR = 0x4a4a6a;
+const CORRIDOR_COLOR = 0x0d1040;
+const CORRIDOR_FLOOR_COLOR = 0x080c2e;
+const WALL_COLOR = 0x2a2060;
 const HOLE_COLORS = {
-  tall: 0x4ecdc4,
-  wide: 0xff6b6b,
-  plus: 0xffd93d
+  tall: 0x00ffcc,
+  wide: 0xff3090,
+  plus: 0xffe000
 };
-const BLOB_COLOR = 0x7c4dff;
-const BLOB_OPACITY = 0.85;
+const BLOB_COLOR = 0xff2d78;    // candy hot pink
+const BLOB_GLOW_COLOR = 0xff80c0;
+const BLOB_OPACITY = 0.88;
 
 export function createRenderer(container) {
   let scene, camera, renderer, canvas;
-  let blobMesh, corridorGroup;
+  let blobMesh, blobGlow, blobLight, corridorGroup;
   let wallMeshes = [];
   let particleSystem = null;
+  let trailParticles = [];
   let reducedMotion = false;
 
   // Animation state
@@ -65,7 +67,7 @@ export function createRenderer(container) {
     });
 
     // Add point light near blob for glow effect
-    const blobLight = new THREE.PointLight(0x7c4dff, 0.5, 15);
+    blobLight = new THREE.PointLight(BLOB_COLOR, 1.2, 20);
     blobLight.position.set(0, 1, 0);
     scene.add(blobLight);
 
@@ -152,6 +154,17 @@ export function createRenderer(container) {
     blobMesh.position.set(0, 0, 0);
     blobMesh.castShadow = true;
     scene.add(blobMesh);
+
+    // Inner glow sphere (slightly larger, emissive)
+    const glowGeo = new THREE.SphereGeometry(0.62, 20, 16);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: BLOB_GLOW_COLOR,
+      transparent: true,
+      opacity: 0.18,
+      side: THREE.BackSide
+    });
+    blobGlow = new THREE.Mesh(glowGeo, glowMat);
+    blobMesh.add(blobGlow);
   }
 
   /**
@@ -206,7 +219,7 @@ export function createRenderer(container) {
       const holeMat = new THREE.MeshBasicMaterial({
         color: holeColor,
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.45,
         side: THREE.DoubleSide
       });
       const holeMesh = new THREE.Mesh(holeGeo, holeMat);
@@ -277,7 +290,7 @@ export function createRenderer(container) {
       particleSystem.material.dispose();
     }
 
-    const count = 30;
+    const count = 60;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const velocities = [];
@@ -344,10 +357,15 @@ export function createRenderer(container) {
    */
   function triggerSquish() {
     if (reducedMotion) return;
-    blobSquishTarget = { x: 1.3, y: 0.7, z: 0.8 };
+    // Anticipation: briefly stretch vertically, then squash hard
+    blobSquishTarget = { x: 0.85, y: 1.3, z: 0.85 };
     setTimeout(() => {
-      blobSquishTarget = { x: 1, y: 1, z: 1 };
-    }, 150);
+      blobSquishTarget = { x: 1.45, y: 0.55, z: 0.9 };
+      setTimeout(() => {
+        blobSquishTarget = { x: 0.9, y: 1.15, z: 0.9 };
+        setTimeout(() => { blobSquishTarget = { x: 1, y: 1, z: 1 }; }, 120);
+      }, 100);
+    }, 60);
   }
 
   /**
@@ -355,8 +373,8 @@ export function createRenderer(container) {
    */
   function triggerSplat() {
     if (reducedMotion) return;
-    blobSquishTarget = { x: 1.8, y: 0.3, z: 0.5 };
-    shakeIntensity = 0.3;
+    blobSquishTarget = { x: 2.2, y: 0.22, z: 0.55 };
+    shakeIntensity = 0.5;
   }
 
   /**
@@ -400,6 +418,18 @@ export function createRenderer(container) {
     if (blobMesh) {
       blobMesh.position.set(0, 0, state.blob.z);
       updateBlobShape(state.blob.width, state.blob.height);
+
+      // Pulse glow based on deformation
+      if (blobGlow && !reducedMotion) {
+        const deform = Math.abs(state.blob.width - 1.0);
+        const pulse = 0.15 + deform * 0.25 + Math.sin(performance.now() * 0.004) * 0.04;
+        blobGlow.material.opacity = pulse;
+      }
+      if (blobLight) {
+        blobLight.position.set(0, 0, state.blob.z);
+        const deform = Math.abs(state.blob.width - 1.0);
+        blobLight.intensity = 1.0 + deform * 0.8;
+      }
     }
 
     // Move corridor to follow blob
