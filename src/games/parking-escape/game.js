@@ -3,6 +3,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { awardLevelComplete } from '../../shared/meta.js';
 import { createInitialState, applyMove, getAllMoves } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -186,6 +187,7 @@ class ParkingEscapeGame {
       completed: 1,
       stars
     });
+    await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, moves });
 
     const starsDisplay = document.getElementById('stars-display');
     starsDisplay.querySelectorAll('.star').forEach((el, i) => {

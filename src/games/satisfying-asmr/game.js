@@ -3,6 +3,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { awardLevelComplete } from '../../shared/meta.js';
 import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -122,6 +123,7 @@ class SatisfyingGame {
   async handleWin() {
     const pct = Math.round(getProgress(this.state) * 100);
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars: 3 });
+    await awardLevelComplete(GAME_ID, 3, { levelId: this.currentLevelIndex });
     document.getElementById('stats-summary').textContent = `${pct}% of surface cleaned!`;
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');

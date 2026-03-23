@@ -3,6 +3,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { awardLevelComplete } from '../../shared/meta.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -115,6 +116,7 @@ class MergeGame {
     const level = this.levels[this.currentLevelIndex];
     const stars = moves <= 5 ? 3 : moves <= 10 ? 2 : 1;
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars });
+    await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, moves });
     document.getElementById('stars-display').querySelectorAll('.star').forEach((el, i) => {
       el.classList.toggle('filled', i < stars);
     });

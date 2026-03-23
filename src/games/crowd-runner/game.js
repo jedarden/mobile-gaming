@@ -6,6 +6,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 
 import {
@@ -210,6 +211,7 @@ class CrowdRunnerGame {
 
       this.renderer.animateResult(true, async () => {
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
+        await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
         await this.saveProgress();
         this.showWinOverlay(stars);
         announce(`Victory! Your crowd of ${this.state.crowdSize} defeated the boss! ${stars} star${stars !== 1 ? 's' : ''}!`);

@@ -6,6 +6,7 @@
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 
 import {
@@ -234,6 +235,7 @@ class MakeoverRunGame {
 
     this.renderer.animateWin(async () => {
       await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
+      await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, score });
       await this.saveProgress();
       this.showWinOverlay(stars, score);
       announce(`Runway complete! Score: ${score} out of 12. ${stars} star${stars !== 1 ? 's' : ''}!`);
