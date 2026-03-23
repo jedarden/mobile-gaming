@@ -33,7 +33,6 @@ export function createRenderer(container) {
   let blobMesh, blobGlow, blobLight, corridorGroup;
   let wallMeshes = [];
   let particleSystem = null;
-  let trailParticles = [];
   let reducedMotion = false;
 
   // Animation state
@@ -41,7 +40,6 @@ export function createRenderer(container) {
   let shakeDecay = 0.9;
   let blobSquish = { x: 1, y: 1, z: 1 };
   let blobSquishTarget = { x: 1, y: 1, z: 1 };
-  let blobBaseGeometry = null;
 
   /**
    * Initialize the Three.js scene
@@ -135,7 +133,6 @@ export function createRenderer(container) {
    */
   function createBlob() {
     const geometry = new THREE.SphereGeometry(0.5, 32, 24);
-    blobBaseGeometry = geometry.clone();
 
     const material = new THREE.MeshPhysicalMaterial({
       color: BLOB_COLOR,

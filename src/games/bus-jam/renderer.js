@@ -18,7 +18,6 @@ const CELL_SIZE = 60;
 const ROAD_COLOR = '#3A3A4A';
 const ROAD_MARKING_COLOR = 'rgba(255, 255, 255, 0.28)';
 const GRASS_COLOR = '#2D5A27';
-const STOP_BASE_COLOR = '#888888';
 const SIDEWALK_COLOR = '#B8A898';
 const SKY_TOP = '#87CEEB';
 const SKY_BOT = '#C8E8F0';
@@ -30,8 +29,6 @@ export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d');
   let width = 0;
   let height = 0;
-  let offsetX = 0;
-  let offsetY = 0;
   let reducedMotion = false;
 
   /**
@@ -65,10 +62,6 @@ export function createRenderer(canvas) {
     canvas.style.height = `${height}px`;
 
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-    // Calculate offset to center
-    offsetX = (containerRect.width - width) / 2;
-    offsetY = 0;
 
     return { width, height, scale };
   }

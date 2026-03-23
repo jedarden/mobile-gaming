@@ -14,7 +14,7 @@
  */
 
 import { createRng } from '../../shared/rng.js';
-import { CATEGORIES, simulatePath, optimalPath, worstPath, calculateStars } from './state.js';
+import { CATEGORIES, simulatePath, optimalPath, worstPath } from './state.js';
 
 // Difficulty parameters: numPairs is the number of station pairs (one +, one -)
 const DIFFICULTY_CONFIG = {

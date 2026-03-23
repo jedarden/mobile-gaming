@@ -18,7 +18,6 @@ import { PLAYER_COLORS, COLLECTIBLE_COLORS } from './state.js';
 // Visual constants
 const GROUND_COLOR = 0x2D5A27;
 const LANE_MARKER_COLOR = 0xFFFFFF;
-const LANE_COUNT = 5;
 const TREE_SPACING = 15;
 const TREE_COUNT = 30;
 
@@ -466,13 +465,6 @@ export function createRenderer(container) {
       stopThreeLoop(animationLoopId);
     }
     disposeThreeScene(scene, renderer);
-  }
-
-  /**
-   * Get canvas element
-   */
-  function getCanvas() {
-    return canvas;
   }
 
   return {

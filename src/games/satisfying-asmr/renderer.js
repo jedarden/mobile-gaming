@@ -11,7 +11,6 @@
  */
 
 const SURFACE_COLOR = '#f0e6d2';
-const DIRT_BASE = '#5a3e2b';
 
 // Color reveal patterns (pastel rainbow under the dirt)
 const REVEAL_PALETTES = {

@@ -27,7 +27,6 @@ let startTime = 0;
 let maxDuration = 60000; // 60 seconds default
 
 // Circular buffer configuration
-const CIRCULAR_BUFFER_DURATION = 30000; // 30 seconds
 const CIRCULAR_BUFFER_MAX_CHUNKS = 900; // ~30 chunks/sec * 30 sec
 
 // Output configuration for 9:16 vertical format
@@ -341,20 +340,6 @@ async function convertWithVideoEncoder(webmBlob) {
  * @returns {Promise<Blob>}
  */
 async function remuxToMP4(webmBlob) {
-  const arrayBuffer = await webmBlob.arrayBuffer();
-
-  // Create muxer for H.264 video
-  const muxer = new Muxer({
-    target: new ArrayBufferTarget(),
-    video: {
-      codec: 'avc',
-      width: OUTPUT_WIDTH,
-      height: OUTPUT_HEIGHT,
-      frameRate: FRAME_RATE
-    },
-    fastStart: 'in-memory'
-  });
-
   // For a proper implementation, we would need to:
   // 1. Decode the WebM frames using VideoDecoder
   // 2. Re-encode to H.264 using VideoEncoder
