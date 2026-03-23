@@ -11,7 +11,7 @@ import { createInputHandler } from './input.js';
 import levelsData from './levels.json';
 import { initStorage, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
-import { initAccessibility, announce } from '../../shared/accessibility.js';
+import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
@@ -170,7 +170,8 @@ export function createGame(canvas, options = {}) {
     reset,
     getState,
     render,
-    destroy
+    destroy,
+    setReducedMotion(v) { renderer.setReducedMotion(v); }
   };
 }
 
@@ -237,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateUI(game.getState());
     }
   });
+  game.setReducedMotion(isReducedMotionEnabled());
 
   function loadLevel(index) {
     currentLevelIndex = index;

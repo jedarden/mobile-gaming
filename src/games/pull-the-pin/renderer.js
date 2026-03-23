@@ -63,6 +63,7 @@ export function createRenderer(canvas) {
   const particles = [];           // confetti particles
   let lastState = null;
   let winAnimStarted = false;
+  let reducedMotion = false;
 
   function now() { return performance.now(); }
 
@@ -95,7 +96,7 @@ export function createRenderer(canvas) {
     // Level complete confetti
     if (state.status === 'won' && !winAnimStarted) {
       winAnimStarted = true;
-      spawnConfetti(width, height);
+      if (!reducedMotion) spawnConfetti(width, height);
     }
     if (state.status !== 'won') winAnimStarted = false;
 
@@ -155,7 +156,9 @@ export function createRenderer(canvas) {
       particles.length = 0;
       winAnimStarted = false;
       lastState = null;
-    }
+    },
+
+    setReducedMotion(v) { reducedMotion = v; }
   };
 }
 
