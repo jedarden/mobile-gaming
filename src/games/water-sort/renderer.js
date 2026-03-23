@@ -43,6 +43,8 @@ export function createRenderer(canvas) {
   let reducedMotion = false;
   let colorBlindMode = false;
   let hintTubeIndex = null;
+  let hintRafId = null;
+  let lastStateRef = null;
   let animating = false;
   let animData = null;
 
@@ -182,8 +184,9 @@ export function createRenderer(canvas) {
 
     // Hint highlight
     if (tubeIdx === hintTubeIndex) {
-      ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
-      ctx.shadowBlur = 20 * s;
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
+      ctx.shadowColor = `rgba(255, 215, 0, ${0.5 + 0.4 * pulse})`;
+      ctx.shadowBlur = (14 + 10 * pulse) * s;
     }
 
     // Tube background (glass)
@@ -335,6 +338,7 @@ export function createRenderer(canvas) {
    * Draw the full game state
    */
   function render(state) {
+    lastStateRef = state;
     updateBubbles();
     clear();
 
@@ -539,11 +543,26 @@ export function createRenderer(canvas) {
     colorBlindMode = value;
   }
 
+  function startHintLoop() {
+    if (hintRafId || reducedMotion) return;
+    function loop() {
+      if (hintTubeIndex === null || !lastStateRef) { hintRafId = null; return; }
+      render(lastStateRef);
+      hintRafId = requestAnimationFrame(loop);
+    }
+    hintRafId = requestAnimationFrame(loop);
+  }
+
+  function stopHintLoop() {
+    if (hintRafId) { cancelAnimationFrame(hintRafId); hintRafId = null; }
+  }
+
   /**
    * Set hint tube index
    */
   function setHintTube(index) {
     hintTubeIndex = index;
+    if (index !== null) startHintLoop(); else stopHintLoop();
   }
 
   /**

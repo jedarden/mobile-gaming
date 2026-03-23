@@ -264,10 +264,11 @@ export function createRenderer(canvas) {
 
     // Hint highlight ring
     if (v.id === hintVehicleId) {
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
       ctx.save();
-      ctx.shadowColor = 'rgba(255, 215, 0, 0.9)';
-      ctx.shadowBlur = 18;
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+      ctx.shadowColor = `rgba(255, 215, 0, ${0.6 + 0.3 * pulse})`;
+      ctx.shadowBlur = 14 + 8 * pulse;
+      ctx.strokeStyle = `rgba(255, 215, 0, ${0.7 + 0.3 * pulse})`;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.roundRect(px - 2, py - 2, pw + 4, ph + 4, 6);

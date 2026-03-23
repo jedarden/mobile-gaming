@@ -67,6 +67,7 @@ export function createRenderer(canvas) {
   let reducedMotion = false;
   let colorBlindMode = false;
   let hintPinId = null;
+  let hintRafId = null;
 
   function now() { return performance.now(); }
 
@@ -137,20 +138,36 @@ export function createRenderer(canvas) {
     }
   }
 
-  return {
-    render(state) {
-      updateAnimations(state);
-      updateParticles();
+  function doRender(state) {
+    updateAnimations(state);
+    updateParticles();
 
-      renderBackground(ctx, width, height);
-      renderGrid(ctx, width, height);
-      renderChannels(ctx, state);
-      renderCups(ctx, state, cupPops, colorBlindMode);
-      renderBalls(ctx, state, colorBlindMode);
-      renderPins(ctx, state, pinRipples, hintPinId);
-      renderParticles(ctx, particles);
-      renderUI(ctx, state, width, height);
-    },
+    renderBackground(ctx, width, height);
+    renderGrid(ctx, width, height);
+    renderChannels(ctx, state);
+    renderCups(ctx, state, cupPops, colorBlindMode);
+    renderBalls(ctx, state, colorBlindMode);
+    renderPins(ctx, state, pinRipples, hintPinId);
+    renderParticles(ctx, particles);
+    renderUI(ctx, state, width, height);
+  }
+
+  function startHintLoop() {
+    if (hintRafId || reducedMotion) return;
+    function loop() {
+      if (!hintPinId || !lastState) { hintRafId = null; return; }
+      doRender(lastState);
+      hintRafId = requestAnimationFrame(loop);
+    }
+    hintRafId = requestAnimationFrame(loop);
+  }
+
+  function stopHintLoop() {
+    if (hintRafId) { cancelAnimationFrame(hintRafId); hintRafId = null; }
+  }
+
+  return {
+    render(state) { doRender(state); },
 
     /** Let external code reset win animation on new level */
     resetAnimations() {
@@ -160,11 +177,15 @@ export function createRenderer(canvas) {
       winAnimStarted = false;
       lastState = null;
       hintPinId = null;
+      stopHintLoop();
     },
 
     setReducedMotion(v) { reducedMotion = v; },
     setColorBlindMode(v) { colorBlindMode = v; },
-    setHintPin(id) { hintPinId = id; }
+    setHintPin(id) {
+      hintPinId = id;
+      if (id) startHintLoop(); else stopHintLoop();
+    }
   };
 }
 
