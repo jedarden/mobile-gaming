@@ -5,7 +5,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   generateLevel,
-  generateLevels
+  generateLevels,
+  validateLevel
 } from '../../src/games/water-sort/generator.js';
 
 describe('generateLevel', () => {
@@ -299,5 +300,28 @@ describe('generateLevels edge cases', () => {
     const levels = generateLevels(5000, 8, 0.5);
     const ids = new Set(levels.map(l => l.id));
     expect(ids.size).toBe(levels.length);
+  });
+});
+
+describe('validateLevel', () => {
+  it('returns { valid: true } for a generated level', () => {
+    let level = null;
+    for (let s = 0; s < 20; s++) {
+      level = generateLevel(s, 0.5);
+      if (level) break;
+    }
+    expect(level).not.toBeNull();
+    const result = validateLevel(level);
+    expect(result).toHaveProperty('valid', true);
+  });
+
+  it('returns { valid: false } for an already-solved level', () => {
+    // A level where every tube is either full of one color or empty is solved
+    const solvedLevel = {
+      tubes: [['red', 'red', 'red', 'red'], ['blue', 'blue', 'blue', 'blue'], []],
+      maxSegments: 4
+    };
+    const result = validateLevel(solvedLevel);
+    expect(result).toHaveProperty('valid', false);
   });
 });
