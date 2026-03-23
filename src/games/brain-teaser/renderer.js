@@ -1,12 +1,12 @@
 /**
- * Brain Teaser - Canvas Renderer
+ * Brain Teaser - Canvas Renderer (polished)
  *
- * Renders puzzle elements with:
- * - Sprites and shapes for elements
- * - Prompt text at top
- * - "Only 1% can solve this!" banner (optional)
- * - Decoy failure animations (shake, red flash)
- * - Solution celebration (sparkle particles)
+ * Visual improvements:
+ * - Notebook/lined-paper background for doodle-puzzle aesthetic
+ * - Handwriting-style font for prompt text
+ * - Sketch wobble on element borders (three slightly offset strokes)
+ * - Rainbow confetti rain on celebration
+ * - Comedic fail reaction: big emoji face + dramatic shake
  */
 
 // Visual constants
@@ -14,10 +14,14 @@ const CANVAS_WIDTH = 390;
 const CANVAS_HEIGHT = 600;
 const PADDING = 20;
 
-// Colors
+// Handwriting font stack (Comic Sans as fallback for notebook feel)
+const HAND_FONT = "'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive";
+
+// Colors — warm cream notebook palette
 const COLORS = {
-  background: '#1a1a2e',
-  prompt: '#ffffff',
+  background: '#fdf6e3',       // warm cream
+  notebookLine: 'rgba(100,140,200,0.18)',
+  prompt: '#2a2a2a',           // dark ink
   banner: '#ff6b6b',
   bannerText: '#ffffff',
   element: '#4a4a6a',
@@ -26,8 +30,13 @@ const COLORS = {
   text: '#ffffff',
   success: '#4ade80',
   error: '#ef4444',
-  sparkle: ['#ffd700', '#ff69b4', '#00ffff', '#7cfc00', '#ff6347']
+  sparkle: ['#ffd700', '#ff69b4', '#00ffff', '#7cfc00', '#ff6347', '#9b59b6', '#3498db']
 };
+
+/** Deterministic wobble offset — creates hand-drawn feel */
+function wobble(seed) {
+  return ((seed * 7919) % 7 - 3) * 0.7;
+}
 
 // Element sprite renderers
 const SPRITE_RENDERERS = {
@@ -113,9 +122,8 @@ export function createRenderer(canvas) {
     ctx.save();
     ctx.translate(shakeOffset.x, shakeOffset.y);
 
-    // Background
-    ctx.fillStyle = COLORS.background;
-    ctx.fillRect(0, 0, width, height);
+    // Notebook background
+    renderNotebook(scale);
 
     // Banner (optional)
     if (state.puzzle.showBanner) {
@@ -154,6 +162,47 @@ export function createRenderer(canvas) {
   }
 
   /**
+   * Render lined-paper notebook background
+   */
+  function renderNotebook(scale) {
+    // Cream fill
+    ctx.fillStyle = COLORS.background;
+    ctx.fillRect(0, 0, width, height);
+
+    // Red margin line
+    ctx.strokeStyle = 'rgba(220,80,80,0.25)';
+    ctx.lineWidth = 1.5 * scale;
+    const marginX = 38 * scale;
+    ctx.beginPath();
+    ctx.moveTo(marginX, 0);
+    ctx.lineTo(marginX, height);
+    ctx.stroke();
+
+    // Horizontal ruled lines
+    ctx.strokeStyle = COLORS.notebookLine;
+    ctx.lineWidth = 1 * scale;
+    const lineSpacing = 28 * scale;
+    const startY = 24 * scale;
+    for (let y = startY; y < height; y += lineSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Subtle paper texture: tiny grain dots
+    ctx.fillStyle = 'rgba(180,150,80,0.04)';
+    for (let i = 0; i < 120; i++) {
+      const seed = i * 6271;
+      const gx = ((seed * 1009) % 1000) / 1000 * width;
+      const gy = ((seed * 2017) % 1000) / 1000 * height;
+      ctx.beginPath();
+      ctx.arc(gx, gy, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  /**
    * Render the "Only 1% can solve this!" banner
    */
   function renderBanner(scale) {
@@ -164,10 +213,10 @@ export function createRenderer(canvas) {
     ctx.fillRect(0, bannerY, width, bannerHeight);
 
     ctx.fillStyle = COLORS.bannerText;
-    ctx.font = `bold ${14 * scale}px sans-serif`;
+    ctx.font = `bold ${14 * scale}px ${HAND_FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Only 1% can solve this!', width / 2, bannerY + bannerHeight / 2);
+    ctx.fillText('Only 1% can solve this! 🤔', width / 2, bannerY + bannerHeight / 2);
   }
 
   /**
@@ -178,7 +227,7 @@ export function createRenderer(canvas) {
     const adjustedY = promptY * scale;
 
     ctx.fillStyle = COLORS.prompt;
-    ctx.font = `bold ${18 * scale}px sans-serif`;
+    ctx.font = `bold ${18 * scale}px ${HAND_FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
@@ -206,7 +255,7 @@ export function createRenderer(canvas) {
   }
 
   /**
-   * Render a puzzle element
+   * Render a puzzle element with sketch-style border wobble
    */
   function renderElement(element, scale, options = {}) {
     const { isRevealed, isSequenceTarget } = options;
@@ -216,7 +265,32 @@ export function createRenderer(canvas) {
     const h = (element.h || 60) * scale;
 
     const renderer = SPRITE_RENDERERS[element.type] || SPRITE_RENDERERS.rect;
+    const seed = (element.id || '').charCodeAt(0) || 1;
+
+    // Highlight revealed/target elements
+    if (isRevealed || isSequenceTarget) {
+      ctx.save();
+      ctx.shadowColor = isRevealed ? '#4ade80' : '#ffd700';
+      ctx.shadowBlur = 12 * scale;
+    }
+
     renderer(ctx, { ...element, x, y, w, h, scale, isRevealed, isSequenceTarget });
+
+    // Sketch border: 2 slightly offset thin strokes = hand-drawn feel
+    if (element.type !== 'text' && element.type !== 'hidden') {
+      ctx.strokeStyle = 'rgba(40,30,20,0.25)';
+      ctx.lineWidth = 1.5 * scale;
+      ctx.setLineDash([]);
+      for (let pass = 0; pass < 2; pass++) {
+        const ox = wobble(seed + pass * 13) * scale;
+        const oy = wobble(seed + pass * 7 + 3) * scale;
+        ctx.beginPath();
+        ctx.roundRect(x + ox, y + oy, w + ox * 0.3, h + oy * 0.3, 6 * scale);
+        ctx.stroke();
+      }
+    }
+
+    if (isRevealed || isSequenceTarget) ctx.restore();
   }
 
   /**
@@ -544,8 +618,12 @@ export function createRenderer(canvas) {
     ctx.fillRect(el.x, el.y, el.w, el.h);
   }
 
+  // Fail emoji overlay alpha
+  let failEmojiAlpha = 0;
+  let failEmojiScale = 1;
+
   /**
-   * Play shake animation
+   * Play shake + comedic fail reaction
    */
   function playShake(targetId, callback) {
     if (reducedMotion) {
@@ -554,23 +632,28 @@ export function createRenderer(canvas) {
     }
 
     return new Promise(resolve => {
-      const duration = 400;
+      const duration = 600;
       const startTime = performance.now();
+      failEmojiAlpha = 1;
+      failEmojiScale = 1.5;
 
       function animate(time) {
         const elapsed = time - startTime;
         const progress = elapsed / duration;
 
         if (progress < 1) {
-          // Shake effect
-          const intensity = Math.sin(progress * Math.PI * 8) * (1 - progress) * 10;
+          const intensity = Math.sin(progress * Math.PI * 10) * (1 - progress) * 12;
           shakeOffset.x = intensity;
-          flashAlpha = (1 - progress) * 0.3;
+          shakeOffset.y = Math.sin(progress * Math.PI * 7) * (1 - progress) * 5;
+          flashAlpha = progress < 0.15 ? progress / 0.15 * 0.35 : (1 - progress) * 0.1;
+          failEmojiAlpha = Math.max(0, 1 - progress * 2);
+          failEmojiScale = 1.5 - progress * 0.5;
           animationFrame = requestAnimationFrame(animate);
         } else {
           shakeOffset.x = 0;
           shakeOffset.y = 0;
           flashAlpha = 0;
+          failEmojiAlpha = 0;
           if (callback) callback();
           resolve();
         }
@@ -581,7 +664,7 @@ export function createRenderer(canvas) {
   }
 
   /**
-   * Play celebration animation
+   * Play enhanced celebration — confetti rain from top + burst from center
    */
   function playCelebration(callback) {
     if (reducedMotion) {
@@ -589,38 +672,54 @@ export function createRenderer(canvas) {
       return Promise.resolve();
     }
 
-    // Create particles
     particles = [];
-    for (let i = 0; i < 50; i++) {
+    // Burst from center
+    for (let i = 0; i < 35; i++) {
+      const angle = (i / 35) * Math.PI * 2;
+      const speed = 4 + Math.random() * 10;
       particles.push({
-        x: width / 2,
-        y: height / 2,
-        vx: (Math.random() - 0.5) * 15,
-        vy: (Math.random() - 0.5) * 15 - 5,
-        size: Math.random() * 8 + 4,
+        x: width / 2, y: height / 2,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 3,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.25,
+        w: 6 + Math.random() * 8,
+        h: 3 + Math.random() * 5,
         color: COLORS.sparkle[Math.floor(Math.random() * COLORS.sparkle.length)],
-        life: 1,
-        decay: 0.01 + Math.random() * 0.02
+        life: 1, decay: 0.012 + Math.random() * 0.01
+      });
+    }
+    // Rain from top
+    for (let i = 0; i < 30; i++) {
+      particles.push({
+        x: Math.random() * width, y: -10 - Math.random() * 60,
+        vx: (Math.random() - 0.5) * 3,
+        vy: 3 + Math.random() * 4,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.18,
+        w: 5 + Math.random() * 7,
+        h: 3 + Math.random() * 4,
+        color: COLORS.sparkle[Math.floor(Math.random() * COLORS.sparkle.length)],
+        life: 1, decay: 0.008 + Math.random() * 0.008
       });
     }
 
     return new Promise(resolve => {
-      const duration = 2000;
+      const duration = 2400;
       const startTime = performance.now();
 
       function animate(time) {
         const elapsed = time - startTime;
         const progress = elapsed / duration;
 
-        // Update particles
         particles.forEach(p => {
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.3; // gravity
+          p.vy += 0.18;
+          p.vx *= 0.99;
+          p.rot += p.rotV;
           p.life -= p.decay;
         });
-
-        // Remove dead particles
         particles = particles.filter(p => p.life > 0);
 
         if (progress < 1 && particles.length > 0) {
@@ -637,17 +736,38 @@ export function createRenderer(canvas) {
   }
 
   /**
-   * Render particles
+   * Render confetti particles
    */
   function renderParticles(scale) {
-    particles.forEach(p => {
-      ctx.globalAlpha = p.life;
+    for (const p of particles) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, p.life * 1.5);
       ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * scale, 0, Math.PI * 2);
-      ctx.fill();
-    });
+      if (p.w && p.rot !== undefined) {
+        // Rectangular confetti
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillRect(-p.w / 2 * scale, -p.h / 2 * scale, p.w * scale, p.h * scale);
+      } else {
+        // Circle sparkle fallback
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (p.size || 4) * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
     ctx.globalAlpha = 1;
+
+    // Fail emoji overlay
+    if (failEmojiAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = failEmojiAlpha;
+      ctx.font = `${80 * scale * failEmojiScale}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('😤', width / 2, height / 2);
+      ctx.restore();
+    }
   }
 
   /**
