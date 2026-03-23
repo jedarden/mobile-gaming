@@ -257,6 +257,7 @@ class WaterSortGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -292,7 +293,6 @@ class WaterSortGame {
     this.selectedTube = null;
     this.animating = false;
     this.levelStartTime = Date.now();
-    this.levelRetries = 0;
     this.levelUndos = 0;
 
     this.handleResize();

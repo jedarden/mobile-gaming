@@ -129,6 +129,7 @@ class ParkingEscapeGame {
     else this.levelRetries = 0;
     this.currentLevelIndex = index;
     this.levelStartTime = Date.now();
+    this.levelUndos = 0;
     const level = this.levels[index];
     this.state = createInitialState(level);
     this.history = [];
@@ -233,6 +234,7 @@ class ParkingEscapeGame {
   undo() {
     if (this.history.length === 0) return;
     this.state = this.history.pop();
+    this.levelUndos = (this.levelUndos || 0) + 1;
     this.updateUI();
     this.render();
   }
@@ -247,6 +249,7 @@ class ParkingEscapeGame {
       retryCount: this.levelRetries || 0,
       solveTime,
       hintUsage: this.hintSession?.level ?? 0,
+      undoRate: this.state.moves > 0 ? (this.levelUndos || 0) / this.state.moves : 0,
     }, { won: true });
 
     await updateGameStats(GAME_ID, {
