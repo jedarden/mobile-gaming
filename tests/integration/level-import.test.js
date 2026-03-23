@@ -13,9 +13,12 @@
 
 import { describe, it, expect } from 'vitest';
 
-// ── State factories ──────────────────────────────────────────────────────────
+// ── State factories & game-logic validators ───────────────────────────────────
 
-import { createInitialState as brainTeaserState }    from '../../src/games/brain-teaser/state.js';
+import {
+  createInitialState as brainTeaserState,
+  validatePuzzle,
+} from '../../src/games/brain-teaser/state.js';
 import { createInitialState as bridgeRaceState }      from '../../src/games/bridge-race/state.js';
 import { createInitialState as busJamState }          from '../../src/games/bus-jam/state.js';
 import { createInitialState as crowdRunnerState }     from '../../src/games/crowd-runner/state.js';
@@ -26,7 +29,10 @@ import { createInitialState as mergeGamesState }      from '../../src/games/merg
 import { createInitialState as parkingEscapeState }   from '../../src/games/parking-escape/state.js';
 import { createInitialState as pullThePinState }      from '../../src/games/pull-the-pin/state.js';
 import { createInitialState as satisfyingAsmrState }  from '../../src/games/satisfying-asmr/state.js';
-import { createInitialState as saveTheCharacterState } from '../../src/games/save-the-character/state.js';
+import {
+  createInitialState as saveTheCharacterState,
+  validateScenario,
+} from '../../src/games/save-the-character/state.js';
 import { createInitialState as waterSortState }       from '../../src/games/water-sort/state.js';
 
 // ── Level catalogs ───────────────────────────────────────────────────────────
@@ -181,4 +187,52 @@ describe('cross-game level import', () => {
       });
     });
   }
+});
+
+// ── brain-teaser: validatePuzzle on every level ──────────────────────────────
+//
+// brain-teaser has no generator.js so it is excluded from level-coverage.test.js.
+// validatePuzzle() in state.js checks cross-field invariants (e.g. solution
+// targetId/sourceId must reference actual element ids) that JSON schema cannot
+// enforce without complex if/then/else constructs.
+
+describe('brain-teaser — validatePuzzle on full catalog', () => {
+  it('every puzzle passes validatePuzzle (solution element IDs match catalog)', () => {
+    for (const level of brainTeaserLevels) {
+      const result = validatePuzzle(level);
+      expect(
+        result.valid,
+        `level ${level.id}: ${result.errors?.join(', ')}`
+      ).toBe(true);
+    }
+  });
+});
+
+// ── save-the-character: validateScenario on every level ──────────────────────
+//
+// The JSON schema validates structure but cannot enforce the game-logic
+// invariant that each scenario has exactly one correct choice.
+// validateScenario() in state.js checks this; running it against the full
+// level catalog ensures no future level breaks the invariant.
+
+describe('save-the-character — validateScenario on full catalog', () => {
+  it('every scenario passes validateScenario (including exactly-one-correct invariant)', () => {
+    for (const level of saveTheCharacterLevels) {
+      const result = validateScenario(level);
+      expect(
+        result.valid,
+        `level ${level.id}: ${result.errors?.join(', ')}`
+      ).toBe(true);
+    }
+  });
+
+  it('every scenario has exactly one correct choice', () => {
+    for (const level of saveTheCharacterLevels) {
+      const correctCount = level.choices.filter(c => c.correct === true).length;
+      expect(
+        correctCount,
+        `level ${level.id}: has ${correctCount} correct choice(s), expected 1`
+      ).toBe(1);
+    }
+  });
 });
