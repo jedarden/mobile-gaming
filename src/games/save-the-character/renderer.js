@@ -86,6 +86,7 @@ export function createRenderer(canvas) {
   }
 
   function spawnWinBurst() {
+    if (reducedMotion) return;
     const cx = width / 2;
     const cy = height * 0.4;
     const colors = ['#FFD700', '#FF69B4', '#00FFFF', '#ADFF2F', '#FFE66D', '#FF8C69'];
@@ -107,6 +108,7 @@ export function createRenderer(canvas) {
   }
 
   function spawnLoseBurst() {
+    if (reducedMotion) return;
     const cx = width / 2;
     const cy = height * 0.4;
     for (let i = 0; i < 25; i++) {
