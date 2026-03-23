@@ -400,13 +400,17 @@ function buildFinishArch(courseLength) {
  */
 export function createRenderer(container) {
   let scene, camera, renderer, canvas;
-  let character, charGroup;
+  let character, charGroup, charGlow, charLight;
   let stationMeshes = [];
   let finishArch    = null;
   let reducedMotion = false;
 
   let lastCourseLength = null;
   let lastStationCount = 0;
+
+  // Tier upgrade sparkles
+  const sparkles = [];
+  let prevAppearance = null;
 
   const dummy = new THREE.Object3D();
 
@@ -424,10 +428,18 @@ export function createRenderer(container) {
     canvas   = result.canvas;
 
     createBasicLights(scene, {
-      ambientIntensity: 0.6,
-      directionalIntensity: 0.9,
+      ambientIntensity: 0.55,
+      directionalIntensity: 0.85,
       directionalPosition: new THREE.Vector3(5, 14, -6)
     });
+
+    // Warm pink fill light
+    const fill = new THREE.DirectionalLight(0xffcce0, 0.3);
+    fill.position.set(-4, 6, 10);
+    scene.add(fill);
+
+    // Fog for runway depth
+    scene.fog = new THREE.Fog(0xFFE4F0, 80, 220);
 
     buildRunway();
     buildWalls();
@@ -435,6 +447,22 @@ export function createRenderer(container) {
     character = buildCharacter();
     charGroup = character.group;
     scene.add(charGroup);
+
+    // Character glow aura
+    const glowGeo = new THREE.SphereGeometry(1.6, 12, 10);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xFFD700,
+      transparent: true,
+      opacity: 0,
+      side: THREE.BackSide
+    });
+    charGlow = new THREE.Mesh(glowGeo, glowMat);
+    charGlow.position.set(0, 1.3, 0);
+    charGroup.add(charGlow);
+
+    // Point light that follows character
+    charLight = new THREE.PointLight(0xFFD700, 0, 10);
+    scene.add(charLight);
   }
 
   // ── Ground ────────────────────────────────────────────────────────────────
@@ -477,6 +505,77 @@ export function createRenderer(container) {
       wall.position.set(side * COURSE_HALF_WIDTH, 0.75, 1000);
       scene.add(wall);
     });
+  }
+
+  // ── Sparkles ──────────────────────────────────────────────────────────────
+
+  function spawnTierSparkle(worldX, worldZ) {
+    if (reducedMotion) return;
+    const colors = [0xFFD700, 0xFF69B4, 0xFFFFFF, 0xFFE066, 0xFF80C0];
+    for (let i = 0; i < 35; i++) {
+      const angle = (i / 35) * Math.PI * 2 + Math.random() * 0.3;
+      const speed = 0.05 + Math.random() * 0.12;
+      sparkles.push({
+        x: worldX + (Math.random() - 0.5) * 0.8,
+        y: 1.0 + Math.random() * 1.5,
+        z: worldZ + (Math.random() - 0.5) * 0.8,
+        vx: Math.cos(angle) * speed,
+        vy: 0.06 + Math.random() * 0.04,
+        vz: Math.sin(angle) * speed,
+        life: 1,
+        r: 0.05 + Math.random() * 0.07,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        mesh: null
+      });
+    }
+    // Build Point cloud for new sparkles
+    rebuildSparkleCloud();
+  }
+
+  let sparkleCloud = null;
+  function rebuildSparkleCloud() {
+    if (sparkleCloud) { scene.remove(sparkleCloud); sparkleCloud = null; }
+    if (sparkles.length === 0) return;
+    const positions = new Float32Array(sparkles.length * 3);
+    for (let i = 0; i < sparkles.length; i++) {
+      positions[i * 3] = sparkles[i].x;
+      positions[i * 3 + 1] = sparkles[i].y;
+      positions[i * 3 + 2] = sparkles[i].z;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      color: 0xFFD700, size: 0.18, transparent: true, opacity: 1,
+      blending: THREE.AdditiveBlending, sizeAttenuation: true
+    });
+    sparkleCloud = new THREE.Points(geo, mat);
+    scene.add(sparkleCloud);
+  }
+
+  function updateSparkles() {
+    for (let i = sparkles.length - 1; i >= 0; i--) {
+      const s = sparkles[i];
+      s.x += s.vx; s.y += s.vy; s.z += s.vz;
+      s.vy -= 0.003;
+      s.life -= 0.035;
+      if (s.life <= 0) sparkles.splice(i, 1);
+    }
+    if (sparkleCloud) {
+      if (sparkles.length === 0) {
+        scene.remove(sparkleCloud);
+        sparkleCloud = null;
+        return;
+      }
+      const positions = sparkleCloud.geometry.attributes.position.array;
+      for (let i = 0; i < sparkles.length && i * 3 + 2 < positions.length; i++) {
+        positions[i * 3] = sparkles[i].x;
+        positions[i * 3 + 1] = sparkles[i].y;
+        positions[i * 3 + 2] = sparkles[i].z;
+      }
+      sparkleCloud.geometry.attributes.position.needsUpdate = true;
+      const avgLife = sparkles.reduce((s, p) => s + p.life, 0) / sparkles.length;
+      sparkleCloud.material.opacity = avgLife;
+    }
   }
 
   // ── Station arches ────────────────────────────────────────────────────────
@@ -526,6 +625,33 @@ export function createRenderer(container) {
     charGroup.position.set(worldX, CHAR_Y_OFFSET, state.z);
     character.update(state.appearance);
 
+    // Detect tier upgrades → spawn sparkle
+    if (prevAppearance) {
+      const cats = ['outfit', 'hair', 'makeup', 'accessories'];
+      const upgraded = cats.some(c => (state.appearance[c] || 0) > (prevAppearance[c] || 0));
+      if (upgraded) spawnTierSparkle(worldX, state.z);
+    }
+    prevAppearance = { ...state.appearance };
+
+    // Update sparkles
+    updateSparkles();
+
+    // Update character glow aura based on overall tier
+    if (charGlow && !reducedMotion) {
+      const cats = ['outfit', 'hair', 'makeup', 'accessories'];
+      const totalTier = cats.reduce((s, c) => s + (state.appearance[c] || 0), 0);
+      const maxTier = cats.length * 3;
+      const glow = totalTier / maxTier;
+      charGlow.material.opacity = glow * 0.22;
+      charGlow.scale.setScalar(1 + glow * 0.3);
+    }
+    if (charLight) {
+      charLight.position.set(worldX, 2, state.z);
+      const cats = ['outfit', 'hair', 'makeup', 'accessories'];
+      const totalTier = cats.reduce((s, c) => s + (state.appearance[c] || 0), 0);
+      charLight.intensity = totalTier * 0.12;
+    }
+
     // Gentle bob animation
     if (!reducedMotion && state.status === 'running') {
       const t = Date.now() * 0.008;
@@ -555,13 +681,25 @@ export function createRenderer(container) {
   function animateWin(onComplete) {
     if (reducedMotion) { if (onComplete) onComplete(); return; }
 
-    const startTime = performance.now();
-    const duration  = 1200;
+    // Burst of sparkles at win
+    if (charGroup) {
+      for (let i = 0; i < 4; i++) {
+        setTimeout(() => spawnTierSparkle(charGroup.position.x, charGroup.position.z), i * 200);
+      }
+    }
 
-    function step(now) {
-      const t = Math.min((now - startTime) / duration, 1);
-      charGroup.rotation.y = Math.sin(t * Math.PI * 4) * 0.5;
-      charGroup.position.y = CHAR_Y_OFFSET + Math.sin(t * Math.PI) * 0.8;
+    const startTime = performance.now();
+    const duration  = 1800;
+
+    function step(ts) {
+      const t = Math.min((ts - startTime) / duration, 1);
+      charGroup.rotation.y = Math.sin(t * Math.PI * 6) * 0.55;
+      charGroup.position.y = CHAR_Y_OFFSET + Math.sin(t * Math.PI * 2) * 1.2 * (1 - t * 0.5);
+      if (charGlow) {
+        charGlow.material.opacity = 0.2 + Math.sin(t * Math.PI * 4) * 0.15;
+        charGlow.scale.setScalar(1.3 + Math.sin(t * Math.PI * 3) * 0.2);
+      }
+      updateSparkles();
       renderer.render(scene, camera);
       if (t < 1) {
         requestAnimationFrame(step);
@@ -587,6 +725,9 @@ export function createRenderer(container) {
   function resetLevel() {
     lastCourseLength = null;
     lastStationCount = 0;
+    prevAppearance   = null;
+    sparkles.length  = 0;
+    if (sparkleCloud) { scene.remove(sparkleCloud); sparkleCloud = null; }
   }
 
   function destroy() {
