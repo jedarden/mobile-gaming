@@ -293,8 +293,22 @@ describe('simulateStep', () => {
     expect(next.balls[0].y).toBe(700);
   });
 
+  it('accepts "playing" status (same simulation logic as "animating")', () => {
+    // createInitialState sets status='playing'; simulateStep accepts both animating AND playing
+    const state = createInitialState(makeSolvableLevel()); // status='playing'
+    const next = simulateStep(state);
+    expect(next.tick).toBe(1);
+    expect(next.balls[0].vy).toBeGreaterThan(0); // gravity applied
+  });
+
   it('is a no-op when status is not animating or playing', () => {
     const state = { ...createInitialState(makeSolvableLevel()), status: 'won' };
+    const next = simulateStep(state);
+    expect(next).toBe(state);
+  });
+
+  it('is a no-op when status is "lost"', () => {
+    const state = { ...createInitialState(makeSolvableLevel()), status: 'lost' };
     const next = simulateStep(state);
     expect(next).toBe(state);
   });
@@ -309,6 +323,20 @@ describe('simulateStep', () => {
     };
     const next = simulateStep(state);
     expect(next.balls[0].lost).toBe(true);
+  });
+
+  it('does not mark ball as lost when new y is exactly 600 (boundary exclusive)', () => {
+    // GRAVITY=0.3: ball at y=599.7 with vy=0 → y_new = 599.7+0.3 = 600.0, which is NOT > 600
+    const level = makeSolvableLevel();
+    level.cups = [];
+    const state = {
+      ...createInitialState(level),
+      status: 'animating',
+      balls: [{ id: 'ball1', x: 100, y: 599.7, vx: 0, vy: 0, color: 'red', settled: false, lost: false, cupId: null }],
+    };
+    const next = simulateStep(state);
+    expect(next.balls[0].lost).toBe(false);
+    expect(next.balls[0].y).toBe(600);
   });
 });
 
@@ -327,6 +355,16 @@ describe('checkWin', () => {
   it('returns "lost" when ball settles in wrong-color cup', () => {
     const level = makeSolvableLevel();
     level.cups[0].acceptColor = 'blue'; // ball is red, cup is blue
+    const state = {
+      ...createInitialState(level),
+      balls: [{ id: 'ball1', x: 100, y: 200, vx: 0, vy: 0, color: 'red', settled: true, lost: false, cupId: 'cup1' }],
+    };
+    expect(checkWin(state)).toBe('lost');
+  });
+
+  it('returns "lost" when ball settles in cup with null acceptColor (null !== ball.color)', () => {
+    const level = makeSolvableLevel();
+    level.cups[0].acceptColor = null; // null !== 'red' → lost
     const state = {
       ...createInitialState(level),
       balls: [{ id: 'ball1', x: 100, y: 200, vx: 0, vy: 0, color: 'red', settled: true, lost: false, cupId: 'cup1' }],
@@ -353,6 +391,17 @@ describe('checkWin', () => {
     const state = createInitialState(makeLevel());
     expect(checkWin(state)).toBe('animating');
   });
+
+  it('returns "won" when settled ball has null cupId (skips loss check, allSettled=true)', () => {
+    // ball.settled=true, ball.cupId=null → `if (ball.settled && ball.cupId)` is false
+    // → skips loss check → allSettled=true → 'won'
+    const level = makeSolvableLevel();
+    const state = {
+      ...createInitialState(level),
+      balls: [{ id: 'ball1', x: 100, y: 200, vx: 0, vy: 0, color: 'red', settled: true, lost: false, cupId: null }],
+    };
+    expect(checkWin(state)).toBe('won');
+  });
 });
 
 // ── simulateToCompletion ──────────────────────────────────────────────────
@@ -377,6 +426,19 @@ describe('simulateToCompletion', () => {
     const state = createInitialState(level);
     const final = simulateToCompletion(state);
     expect(final.status).toBe('won');
+  });
+
+  it('exhausts MAX_TICKS loop when ball never settles or gets lost (upward-moving ball)', () => {
+    // Ball with strong upward velocity (vy=-6) and tiny gravity (0.003): never reaches y=600
+    // in 2000 ticks, so loop runs to completion without early break
+    const state = {
+      pins: [], cups: [], channels: [], gravity: 0.003, status: 'animating', tick: 0, removedPins: [],
+      balls: [{ id: 'b1', x: 160, y: 100, vx: 0, vy: -6, color: 'red', settled: false, lost: false, cupId: null }],
+    };
+    const final = simulateToCompletion(state);
+    expect(final.tick).toBe(MAX_TICKS); // loop ran all iterations
+    expect(final.balls[0].settled).toBe(false);
+    expect(final.balls[0].lost).toBe(false);
   });
 });
 

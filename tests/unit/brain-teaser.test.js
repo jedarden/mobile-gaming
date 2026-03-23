@@ -132,6 +132,27 @@ describe('Brain Teaser State', () => {
       const state3 = applyAction(state2, { action: 'tap', targetId: 'circle2' });
       expect(state3.interactions).toHaveLength(2);
     });
+
+    it('records irrelevant tap action without changing status or attempts', () => {
+      // circle3 is not in decoyActions, not the solution — completely irrelevant
+      const state = createInitialState({ ...mockPuzzle, decoyActions: [] });
+      const next = applyAction(state, { action: 'tap', targetId: 'circle1' });
+      expect(next.status).toBe('playing');
+      expect(next.attempts).toBe(0);
+      expect(next.interactions).toHaveLength(1);
+    });
+
+    it('uses custom decoy response type for animation', () => {
+      const puzzle = {
+        ...mockPuzzle,
+        decoyActions: [
+          { action: 'tap', targetId: 'circle1', response: 'bounce', message: 'Nope!' }
+        ]
+      };
+      const state = createInitialState(puzzle);
+      const next = applyAction(state, { action: 'tap', targetId: 'circle1' });
+      expect(next.animation.type).toBe('bounce');
+    });
   });
 
   describe('cloneState', () => {
@@ -202,6 +223,93 @@ describe('Brain Teaser State', () => {
 
       expect(result.valid).toBe(false);
       expect(result.errors.some(e => e.includes('Invalid puzzle type'))).toBe(true);
+    });
+
+    it('should detect missing title', () => {
+      const result = validatePuzzle({ ...mockPuzzle, title: undefined });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Missing puzzle title');
+    });
+
+    it('should detect missing prompt', () => {
+      const result = validatePuzzle({ ...mockPuzzle, prompt: undefined });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Missing puzzle prompt');
+    });
+
+    it('should detect missing type', () => {
+      const result = validatePuzzle({ ...mockPuzzle, type: undefined });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Missing puzzle type');
+    });
+
+    it('should detect drag solution missing sourceId', () => {
+      const result = validatePuzzle({
+        ...mockPuzzle,
+        type: 'drag',
+        solution: { action: 'drag', targetId: 'circle1' }
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('sourceId'))).toBe(true);
+    });
+
+    it('should detect drag solution missing targetId', () => {
+      const result = validatePuzzle({
+        ...mockPuzzle,
+        type: 'drag',
+        solution: { action: 'drag', sourceId: 'circle1' }
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('targetId'))).toBe(true);
+    });
+
+    it('should detect sequence solution missing steps array', () => {
+      const result = validatePuzzle({
+        ...mockPuzzle,
+        type: 'sequence',
+        solution: { action: 'sequence' }
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('steps'))).toBe(true);
+    });
+
+    it('should detect tap solution missing targetId', () => {
+      // solution.action='tap' but no targetId — line 273-275 in state.js
+      const result = validatePuzzle({
+        ...mockPuzzle,
+        solution: { action: 'tap' }, // no targetId
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.toLowerCase().includes('targetid'))).toBe(true);
+    });
+
+    it('rejects puzzle with non-array elements (truthy but not an array)', () => {
+      const result = validatePuzzle({ ...mockPuzzle, elements: {} });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('Missing or invalid elements array'))).toBe(true);
+    });
+
+    it('should detect duplicate element ids', () => {
+      const result = validatePuzzle({
+        ...mockPuzzle,
+        elements: [
+          { id: 'dup', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true },
+          { id: 'dup', type: 'circle', x: 100, y: 0, w: 60, h: 60, clickable: true }
+        ],
+        solution: { action: 'tap', targetId: 'dup' }
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('Duplicate element id'))).toBe(true);
+    });
+
+    it('should detect sequence step not found in elements', () => {
+      const result = validatePuzzle({
+        ...mockPuzzle,
+        type: 'sequence',
+        solution: { action: 'sequence', steps: ['circle1', 'ghost-id'] }
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('"ghost-id"') && e.includes('not found'))).toBe(true);
     });
   });
 
@@ -291,6 +399,25 @@ describe('Brain Teaser State', () => {
         expect(state.currentSequence).toEqual([]);
         expect(state.attempts).toBe(1);
       expect(state.animation.type).toBe('shake');
+    });
+
+    it('non-tap action on sequence puzzle does not add to sequence', () => {
+      const seqPuzzle = {
+        id: 'seq-003',
+        title: 'Non-tap Test',
+        prompt: 'Tap in order',
+        type: 'sequence',
+        elements: [
+          { id: 'x', type: 'rect', x: 50, y: 200, w: 60, h: 60, clickable: true }
+        ],
+        solution: { action: 'sequence', steps: ['x'] },
+        decoyActions: [],
+        difficulty: 1
+      };
+      const state = createInitialState(seqPuzzle);
+      const next = applyAction(state, { action: 'drag', sourceId: 'x', targetId: 'y' });
+      expect(next.currentSequence).toEqual([]);
+      expect(next.status).toBe('playing');
     });
   });
 });
@@ -522,5 +649,127 @@ describe('revealElement', () => {
   it('does not mutate original revealedElements', () => {
     revealElement(state, 'x');
     expect(state.revealedElements).toHaveLength(0);
+  });
+});
+
+describe('createInitialState edge cases', () => {
+  it('falls back to difficulty 1 when difficulty is 0', () => {
+    const puzzle = {
+      id: 'e1', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'tap', targetId: 'a' },
+      decoyActions: [],
+      difficulty: 0,
+    };
+    const state = createInitialState(puzzle);
+    expect(state.puzzle.difficulty).toBe(1);
+  });
+
+  it('uses empty decoyActions array when decoyActions is null', () => {
+    const puzzle = {
+      id: 'e2', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'a', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'tap', targetId: 'a' },
+      decoyActions: null,
+    };
+    const state = createInitialState(puzzle);
+    expect(state.puzzle.decoyActions).toEqual([]);
+  });
+});
+
+describe('getInteractiveElements additional cases', () => {
+  it('includes element with hidden: false even when not clickable or draggable', () => {
+    const puzzle = {
+      id: 'gi1', title: 'T', prompt: 'P', type: 'tap',
+      elements: [
+        { id: 'label', type: 'label', x: 0, y: 0, w: 100, h: 30, hidden: false },
+      ],
+      solution: { action: 'tap', targetId: 'label' },
+      decoyActions: [],
+      difficulty: 1,
+    };
+    const state = createInitialState(puzzle);
+    // !hidden = !false = true → included
+    expect(getInteractiveElements(state).some(e => e.id === 'label')).toBe(true);
+  });
+});
+
+describe('applyAction when already solved', () => {
+  it('sets animation to null when action arrives after solve', () => {
+    const puzzle = {
+      id: 's1', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'circle1', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'tap', targetId: 'circle1' },
+      decoyActions: [],
+      difficulty: 1,
+    };
+    const state = createInitialState(puzzle);
+    const solved = applyAction(state, { action: 'tap', targetId: 'circle1' });
+    expect(solved.status).toBe('solved');
+    // Give solved state a non-null animation then apply another action
+    const withAnim = { ...solved, animation: { type: 'celebration', target: {} } };
+    const again = applyAction(withAnim, { action: 'tap', targetId: 'circle1' });
+    expect(again.animation).toBeNull();
+    expect(again.status).toBe('solved');
+  });
+});
+
+describe('validatePuzzle decoy reference validation', () => {
+  const basePuzzle = {
+    id: 'd1', title: 'T', prompt: 'P', type: 'tap',
+    elements: [
+      { id: 'circle1', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true },
+    ],
+    solution: { action: 'tap', targetId: 'circle1' },
+  };
+
+  it('detects decoy targetId not found in elements', () => {
+    const result = validatePuzzle({
+      ...basePuzzle,
+      decoyActions: [{ action: 'tap', targetId: 'ghost' }],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('"ghost"') && e.includes('not found'))).toBe(true);
+  });
+
+  it('accepts decoy with valid element reference', () => {
+    const result = validatePuzzle({
+      ...basePuzzle,
+      decoyActions: [{ action: 'tap', targetId: 'circle1', response: 'shake', message: 'Nope' }],
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('detects decoy sourceId not found in elements (drag decoy missing source)', () => {
+    const dragBasePuzzle = {
+      id: 'd2', title: 'T', prompt: 'P', type: 'drag',
+      elements: [
+        { id: 'key', type: 'rect', x: 0, y: 0, w: 40, h: 40, draggable: true },
+        { id: 'door', type: 'rect', x: 100, y: 0, w: 40, h: 40 },
+      ],
+      solution: { action: 'drag', sourceId: 'key', targetId: 'door' },
+    };
+    const result = validatePuzzle({
+      ...dragBasePuzzle,
+      decoyActions: [{ action: 'drag', sourceId: 'ghost-source', targetId: 'door' }],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('ghost-source') && e.includes('not found'))).toBe(true);
+  });
+});
+
+describe('actionsMatch — default switch branch', () => {
+  it('unknown action type (e.g. "rotate") does not solve the puzzle even when types match', () => {
+    const puzzle = {
+      id: 'rot-001', title: 'T', prompt: 'P', type: 'tap',
+      elements: [{ id: 'el1', type: 'circle', x: 0, y: 0, w: 60, h: 60, clickable: true }],
+      solution: { action: 'rotate', targetId: 'el1' },
+      decoyActions: [],
+      difficulty: 1,
+    };
+    const state = createInitialState(puzzle);
+    // Both action and solution have action='rotate'; actionsMatch hits default → false
+    const next = applyAction(state, { action: 'rotate', targetId: 'el1' });
+    expect(next.status).not.toBe('solved');
   });
 });

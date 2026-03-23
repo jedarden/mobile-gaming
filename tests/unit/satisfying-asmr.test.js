@@ -81,6 +81,12 @@ describe('clean', () => {
     const next = clean(state, 0, 0);
     expect(next).toBe(state);
   });
+
+  it('status check fires before bounds check (won + out-of-bounds returns early)', () => {
+    const state = { ...createInitialState(FULL_LEVEL), status: 'won' };
+    // Out-of-bounds coords would normally trigger the bounds guard, but status fires first
+    expect(clean(state, 999, 999)).toBe(state);
+  });
 });
 
 describe('cleanArea', () => {
@@ -113,6 +119,16 @@ describe('cleanArea', () => {
     const state = createInitialState(FULL_LEVEL);
     const next = cleanArea(state, 0, 0, 2);
     expect(next.cleanedCount).toBeGreaterThan(0);
+  });
+
+  it('includes cells exactly on the radius boundary (> is exclusive, so boundary IS cleaned)', () => {
+    // 5×5 grid, cleanArea centered at (2,2) radius=2
+    // Cell at (4,2): dx=2 dy=0, dx²+dy²=4, radius²=4 → 4>4 is false → included
+    const level = { width: 5, height: 5, cells: Array(25).fill(1), patternType: 'full', totalDirt: 25 };
+    const state = createInitialState(level);
+    const next = cleanArea(state, 2, 2, 2);
+    const idx = 2 * 5 + 4; // y=2, x=4
+    expect(next.cells[idx]).toBe(0);
   });
 });
 
@@ -255,6 +271,16 @@ describe('cleanArea — multi-pass and state transitions', () => {
     expect(next.status).toBe('won');
   });
 
+  it('non-integer radius uses Math.ceil for loop bounds (radius 1.5 includes corners at distance sqrt(2))', () => {
+    const s1 = createInitialState(FULL_LEVEL);
+    const s2 = createInitialState(FULL_LEVEL);
+    // radius=1.5: ceil=2, circle check dx^2+dy^2 <= 2.25 → includes (±1,±1) at distance sqrt(2)≈1.414
+    // radius=1.0: ceil=1, circle check dx^2+dy^2 <= 1.0 → excludes diagonal corners
+    const r15 = cleanArea(s1, 2, 2, 1.5);
+    const r10 = cleanArea(s2, 2, 2, 1.0);
+    expect(r15.cleanedCount).toBeGreaterThan(r10.cleanedCount);
+  });
+
   it('cleanArea adds delta correctly to cleanedCount', () => {
     const state = createInitialState(FULL_LEVEL);
     // Pre-clean one cell manually
@@ -262,6 +288,58 @@ describe('cleanArea — multi-pass and state transitions', () => {
     const afterArea = cleanArea(half, 2, 2, 1);
     // cleanArea at (2,2) radius 1 will cover some cells; none of them is (0,0)
     expect(afterArea.cleanedCount).toBeGreaterThan(half.cleanedCount);
+  });
+});
+
+describe('WIN_THRESHOLD', () => {
+  it('is exactly 0.95', () => {
+    expect(WIN_THRESHOLD).toBe(0.95);
+  });
+});
+
+describe('createInitialState — patternType default', () => {
+  it('defaults patternType to "full" when not provided', () => {
+    const level = { width: 2, height: 2, cells: [1, 1, 1, 1], totalDirt: 4 };
+    const state = createInitialState(level);
+    expect(state.patternType).toBe('full');
+  });
+
+  it('recalculates totalDirt from cells, ignoring mismatched level.totalDirt', () => {
+    const level = { width: 2, height: 2, cells: [1, 1, 1, 1], patternType: 'full', totalDirt: 999 };
+    const state = createInitialState(level);
+    expect(state.totalDirt).toBe(4); // 4 dirty cells, not 999
+  });
+
+  it('uses provided patternType', () => {
+    const level = { width: 2, height: 2, cells: [1, 1, 0, 0], patternType: 'stripes', totalDirt: 2 };
+    const state = createInitialState(level);
+    expect(state.patternType).toBe('stripes');
+  });
+
+  it('defaults patternType to "full" when null (|| treats null as falsy)', () => {
+    const level = { width: 2, height: 2, cells: [1, 1, 1, 1], totalDirt: 4, patternType: null };
+    const state = createInitialState(level);
+    expect(state.patternType).toBe('full');
+  });
+});
+
+describe('clean — exact boundary conditions', () => {
+  it('returns same state when x equals width (exact boundary)', () => {
+    const state = createInitialState(FULL_LEVEL); // width=4
+    expect(clean(state, 4, 0)).toBe(state);
+  });
+
+  it('returns same state when y equals height (exact boundary)', () => {
+    const state = createInitialState(FULL_LEVEL); // height=4
+    expect(clean(state, 0, 4)).toBe(state);
+  });
+});
+
+describe('cleanArea — outside-grid center', () => {
+  it('centered entirely outside grid is a no-op', () => {
+    const state = createInitialState(FULL_LEVEL);
+    const next = cleanArea(state, -10, -10, 1);
+    expect(next).toBe(state);
   });
 });
 

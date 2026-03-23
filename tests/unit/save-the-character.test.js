@@ -232,6 +232,37 @@ describe('getChoices', () => {
     expect(choices).toHaveLength(3);
     expect(choices[0].id).toBe('c1');
   });
+
+  it('returns the same array reference from state.scenario.choices', () => {
+    const state = createInitialState(makeScenario());
+    expect(getChoices(state)).toBe(state.scenario.choices);
+  });
+});
+
+// ── resolveChoice — third choice ─────────────────────────────────────────
+
+describe('resolveChoice — all incorrect choices lead to lost', () => {
+  it('c3 (incorrect) resolves to lost', () => {
+    const state = createInitialState(makeScenario());
+    const animating = selectChoice(state, 'c3'); // c3: correct=false
+    const resolved = resolveChoice(animating);
+    expect(resolved.status).toBe('lost');
+  });
+});
+
+// ── nextScenario — completely fresh state ────────────────────────────────
+
+describe('nextScenario — state freshness', () => {
+  it('interactions/history from old scenario are not carried over', () => {
+    // After resolving a scenario, nextScenario should return pristine choosing state
+    let state = createInitialState(makeScenario());
+    state = selectChoice(state, 'c1');
+    state = resolveChoice(state); // status: won
+    const next = nextScenario(state, makeScenario({ id: 'sc-fresh' }));
+    expect(next.status).toBe('choosing');
+    expect(next.selectedChoice).toBeNull();
+    expect(next.scenario.id).toBe('sc-fresh');
+  });
 });
 
 // ── validateScenario ──────────────────────────────────────────────────────
@@ -269,6 +300,12 @@ describe('validateScenario', () => {
     delete scenario.choices;
     const result = validateScenario(scenario);
     expect(result.valid).toBe(false);
+  });
+
+  it('reports error when choices is a non-array type', () => {
+    const result = validateScenario(makeScenario({ choices: 'not-an-array' }));
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('invalid choices'))).toBe(true);
   });
 
   it('reports error when fewer than 2 choices', () => {
@@ -335,5 +372,41 @@ describe('validateScenario', () => {
     });
     const result = validateScenario(scenario);
     expect(result.valid).toBe(false);
+  });
+
+  it('reports error for choice with missing id (empty string)', () => {
+    const scenario = makeScenario({
+      choices: [
+        { id: '', label: 'A', correct: true },
+        { id: 'c2', label: 'B', correct: false },
+      ],
+    });
+    const result = validateScenario(scenario);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('missing id'))).toBe(true);
+  });
+
+  it('reports error for choice with non-boolean correct field', () => {
+    const scenario = makeScenario({
+      choices: [
+        { id: 'c1', label: 'A', correct: 'yes' },
+        { id: 'c2', label: 'B', correct: false },
+      ],
+    });
+    const result = validateScenario(scenario);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('missing correct boolean'))).toBe(true);
+  });
+
+  it('reports error when correct field is missing (undefined)', () => {
+    const scenario = makeScenario({
+      choices: [
+        { id: 'c1', label: 'A' },
+        { id: 'c2', label: 'B', correct: false },
+      ],
+    });
+    const result = validateScenario(scenario);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('missing correct boolean'))).toBe(true);
   });
 });

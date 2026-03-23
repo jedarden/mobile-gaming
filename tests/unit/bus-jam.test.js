@@ -239,14 +239,44 @@ describe('findPath', () => {
     expect(findPath(state, bus, 1, 2)).toBeNull();
   });
 
-  it('returns empty path when already at target', () => {
+  it('returns null when bus occupies the target cell itself', () => {
     const state = createInitialState(makeLevel());
     const bus = state.buses[0]; // at (1,1)
-    const path = findPath(state, bus, 1, 1);
-    // Target is occupied by the bus itself... so getBusAt returns the bus, returns null
-    // Actually the bus is at (1,1) and getBusAt(state, 1,1) returns bus (not null)
-    // So findPath returns null because target is occupied
-    expect(path).toBeNull();
+    // bus IS at (1,1) → getBusAt returns the bus → returns null
+    expect(findPath(state, bus, 1, 1)).toBeNull();
+  });
+
+  it('path elements have x, y, and direction fields', () => {
+    const state = createInitialState(makeLevel());
+    const bus = state.buses[0]; // at (1,1)
+    const path = findPath(state, bus, 3, 3);
+    expect(path).not.toBeNull();
+    for (const step of path) {
+      expect(typeof step.x).toBe('number');
+      expect(typeof step.y).toBe('number');
+      expect(typeof step.direction).toBe('string');
+    }
+  });
+
+  it('last step in path is at the target cell', () => {
+    const state = createInitialState(makeLevel());
+    const bus = state.buses[0]; // at (1,1)
+    const path = findPath(state, bus, 3, 3);
+    expect(path).not.toBeNull();
+    const last = path[path.length - 1];
+    expect(last.x).toBe(3);
+    expect(last.y).toBe(3);
+  });
+
+  it('finds direct single-step path to adjacent road cell', () => {
+    const state = createInitialState(makeLevel());
+    const bus = state.buses[0]; // at (1,1); (1,2) is adjacent road
+    const path = findPath(state, bus, 1, 2);
+    expect(path).not.toBeNull();
+    expect(path.length).toBe(1);
+    // Path elements are the NEXT cells visited (not the starting position)
+    expect(path[0].x).toBe(1);
+    expect(path[0].y).toBe(2);
   });
 });
 
@@ -311,6 +341,32 @@ describe('boardPassenger', () => {
     const state = createInitialState(level);
     expect(boardPassenger(state, state.buses[0])).toBe(false);
   });
+
+  it('returns { stop, passenger } with correct data', () => {
+    const state = createInitialState(makeLevel());
+    const bus = state.buses[0]; // red bus adjacent to red stop s1
+    const result = boardPassenger(state, bus);
+    expect(result).not.toBe(false);
+    expect(result.stop).toBeDefined();
+    expect(result.stop.id).toBe('s1');
+    expect(result.passenger).toBe('p1'); // first waiting passenger
+  });
+
+  it('boarding all passengers empties the stop', () => {
+    const state = createInitialState(makeLevel()); // stop has 2 waiting
+    const bus = state.buses[0];
+    boardPassenger(state, bus);  // board p1
+    boardPassenger(state, bus);  // board p2 (bus now full)
+    expect(state.stops[0].waiting).toHaveLength(0);
+    expect(bus.passengers).toBe(2);
+  });
+
+  it('returns false when stop has no waiting passengers', () => {
+    const level = makeLevel();
+    level.stops[0].waiting = [];
+    const state = createInitialState(level);
+    expect(boardPassenger(state, state.buses[0])).toBe(false);
+  });
 });
 
 // ── canExit / executeExit ─────────────────────────────────────────────────
@@ -343,6 +399,11 @@ describe('canExit', () => {
     level.buses[0].exited = true;
     const state = createInitialState(level);
     expect(canExit(state, state.buses[0])).toBe(false);
+  });
+
+  it('returns false for null bus', () => {
+    const state = createInitialState(makeLevel());
+    expect(canExit(state, null)).toBe(false);
   });
 });
 
@@ -463,9 +524,26 @@ describe('calculateStars', () => {
     expect(calculateStars(8, 6)).toBe(2);
   });
 
+  it('gives 2 stars when ratio is exactly 1.5 (boundary inclusive)', () => {
+    expect(calculateStars(15, 10)).toBe(2); // 15/10 = 1.5
+  });
+
+  it('gives 2 stars when ratio is between 1.0 (exclusive) and 1.5 (exclusive)', () => {
+    expect(calculateStars(6, 5)).toBe(2); // 6/5 = 1.2
+    expect(calculateStars(7, 6)).toBe(2); // 7/6 ≈ 1.167
+  });
+
   it('gives 1 star when moves exceed 1.5x optimal', () => {
     expect(calculateStars(10, 5)).toBe(1);
     expect(calculateStars(20, 5)).toBe(1);
+  });
+
+  it('gives 2 stars when ratio is just above 1.0 (exclusive upper bound of 3-star)', () => {
+    expect(calculateStars(11, 10)).toBe(2); // 1.1 > 1.0 → not 3 stars
+  });
+
+  it('gives 1 star when ratio is just above 1.5 (exclusive upper bound of 2-star)', () => {
+    expect(calculateStars(16, 10)).toBe(1); // 1.6 > 1.5 → not 2 stars
   });
 });
 
@@ -496,6 +574,19 @@ describe('getHint', () => {
     expect(hint.exit).toBeDefined();
   });
 
+  it('skips exit hint when full bus is already at exit (path.length === 0, empty array is truthy but fails > 0)', () => {
+    // Bus positioned exactly at the exit: findPath returns [] (empty path), not null
+    // Condition: path && path.length > 0 → true && false → skipped
+    const level = makeLevel({
+      buses: [{ id: 'b1', x: 3, y: 3, color: 'red', passengers: 2, capacity: 2, exited: false }],
+    });
+    const state = createInitialState(level);
+    const hint = getHint(state);
+    // Bus is already at exit — priority 2 skips (path.length=0)
+    // Falls through to priority 3 or 4 (or null if nothing else matches)
+    expect(hint === null || hint.type !== 'exit').toBe(true);
+  });
+
   it('returns move hint when stop has no waiting passengers (priority 4 fallback)', () => {
     // Empty stop → canBoard null, bus not full, no move-to-stop path either
     const level = makeLevel({
@@ -514,6 +605,20 @@ describe('getHint', () => {
     });
     const state = createInitialState(level);
     expect(getHint(state)).toBeNull();
+  });
+
+  it('returns move hint (priority 3) when bus is not adjacent but can path to matching stop', () => {
+    // Bus at (1,3): not adjacent to stop at (1,0), not full — priority 1 & 2 skip
+    // Path exists from (1,3) → (1,1) which is adjacent to (1,0) — priority 3 fires
+    const level = makeLevel({
+      buses: [{ id: 'b1', x: 1, y: 3, color: 'red', passengers: 0, capacity: 2, exited: false }],
+    });
+    const state = createInitialState(level);
+    const hint = getHint(state);
+    expect(hint).not.toBeNull();
+    expect(hint.type).toBe('move');
+    expect(hint.stop).toBeDefined();
+    expect(hint.stop.id).toBe('s1');
   });
 });
 

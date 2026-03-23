@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
+  LIQUID_COLORS,
   createInitialState,
   canPour,
   pour,
@@ -225,6 +226,14 @@ describe('Water Sort State', () => {
       });
       expect(isTubeComplete(state, 0)).toBe(false);
     });
+
+    it('returns false for tube with maxSegments-1 same-color segments (not full)', () => {
+      const state = createInitialState({
+        tubes: [['red', 'red', 'red'], []],
+        maxSegments: 4
+      });
+      expect(isTubeComplete(state, 0)).toBe(false);
+    });
   });
 
   describe('getValidMoves', () => {
@@ -303,6 +312,18 @@ describe('Water Sort State', () => {
       expect(undone.tubes[0].segments).toEqual(['red', 'blue', 'blue']);
       expect(undone.tubes[2].segments).toEqual([]);
     });
+
+    it('always resets selectedTube to null even when prev state had one selected', () => {
+      // Store a state with selectedTube=2 in history, then undo back to it
+      const base = createInitialState({ tubes: [['red', 'blue'], ['blue'], []], maxSegments: 4 });
+      const withSelected = { ...base, selectedTube: 2 };
+      const history = createGameHistory(100);
+      history.push(withSelected); // pointer=0: state with selectedTube=2
+      history.push(cloneState(pour(base, 0, 2))); // pointer=1: poured state
+      const undone = undo(base, history);
+      expect(undone).not.toBeNull();
+      expect(undone.selectedTube).toBeNull(); // Override: selectedTube always reset
+    });
   });
 
   describe('cloneState', () => {
@@ -316,6 +337,16 @@ describe('Water Sort State', () => {
       cloned.tubes[0].segments[0] = 'yellow';
       expect(state.tubes[0].segments[0]).toBe('red');
     });
+
+    it('always resets selectedTube to null', () => {
+      const state = createInitialState({
+        tubes: [['red'], []],
+        maxSegments: 4
+      });
+      state.selectedTube = 0;
+      const cloned = cloneState(state);
+      expect(cloned.selectedTube).toBeNull();
+    });
   });
 
   describe('calculateStars', () => {
@@ -327,8 +358,59 @@ describe('Water Sort State', () => {
       expect(calculateStars(7, 5)).toBe(2);
     });
 
+    it('returns 2 stars when ratio is exactly 1.5 (boundary inclusive)', () => {
+      expect(calculateStars(15, 10)).toBe(2); // 15/10 = 1.5
+    });
+
     it('returns 1 star at 2x optimal', () => {
       expect(calculateStars(12, 5)).toBe(1);
+    });
+
+    it('returns 1 star when ratio is just above 1.5 (1.5 is 2-star upper bound, exclusive)', () => {
+      expect(calculateStars(151, 100)).toBe(1); // 1.51 > 1.5 → not 2 stars
+    });
+  });
+
+  describe('pour — win condition', () => {
+    it('sets status to "won" when the winning pour completes the puzzle', () => {
+      // Simple 1-color puzzle: one sorted tube + one buffer
+      const state = createInitialState({
+        tubes: [['red', 'red', 'red'], ['red'], []],
+        maxSegments: 4
+      });
+      // Pour red from tube 1 (top=red) to tube 0 (top=red, has room for 1 more)
+      const next = pour(state, 1, 0);
+      // tube 0 now has 4 reds (complete) and tube 1 is empty → win
+      expect(next.status).toBe('won');
+    });
+
+    it('keeps status "playing" after a valid non-winning pour', () => {
+      // Multiple colors — pouring one segment does not complete the puzzle
+      const state = createInitialState({
+        tubes: [['red', 'blue', 'blue'], ['blue'], []],
+        maxSegments: 4
+      });
+      // Pour blue from tube 1 to empty tube 2 — valid but not a win
+      const next = pour(state, 1, 2);
+      expect(next.status).toBe('playing');
+    });
+  });
+
+  describe('getValidMoves — format', () => {
+    it('each valid move is a [from, to] pair', () => {
+      const state = createInitialState({
+        tubes: [['red', 'blue', 'red'], ['blue', 'red', 'blue'], []],
+        maxSegments: 4
+      });
+      const moves = getValidMoves(state);
+      expect(moves.length).toBeGreaterThan(0);
+      for (const move of moves) {
+        expect(Array.isArray(move)).toBe(true);
+        expect(move.length).toBe(2);
+        const [from, to] = move;
+        expect(typeof from).toBe('number');
+        expect(typeof to).toBe('number');
+      }
     });
   });
 
@@ -358,5 +440,93 @@ describe('Water Sort State', () => {
       expect(s.tubes[2].segments).toEqual(['red', 'red']);
       expect(s.moves).toBe(3);
     });
+  });
+});
+
+describe('LIQUID_COLORS', () => {
+  it('is an object mapping color names to hex strings', () => {
+    expect(typeof LIQUID_COLORS).toBe('object');
+    const keys = Object.keys(LIQUID_COLORS);
+    expect(keys.length).toBeGreaterThan(0);
+    for (const hex of Object.values(LIQUID_COLORS)) {
+      expect(hex).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+
+  it('includes red and blue', () => {
+    expect(LIQUID_COLORS).toHaveProperty('red');
+    expect(LIQUID_COLORS).toHaveProperty('blue');
+  });
+});
+
+describe('canPour — out-of-bounds indices', () => {
+  it('returns false for negative fromIdx', () => {
+    const state = createInitialState({
+      tubes: [['red'], []],
+      maxSegments: 4
+    });
+    expect(canPour(state, -1, 1)).toBe(false);
+  });
+
+  it('returns false for fromIdx >= tubes.length', () => {
+    const state = createInitialState({
+      tubes: [['red'], []],
+      maxSegments: 4
+    });
+    expect(canPour(state, 2, 1)).toBe(false);
+  });
+
+  it('returns false for negative toIdx', () => {
+    const state = createInitialState({
+      tubes: [['red'], []],
+      maxSegments: 4
+    });
+    expect(canPour(state, 0, -1)).toBe(false);
+  });
+
+  it('returns false for toIdx >= tubes.length', () => {
+    const state = createInitialState({
+      tubes: [['red'], []],
+      maxSegments: 4
+    });
+    expect(canPour(state, 0, 2)).toBe(false);
+  });
+});
+
+describe('undo — null when cannot undo', () => {
+  it('returns null when only one state has been pushed (nothing to go back to)', () => {
+    const state = createInitialState({
+      tubes: [['red', 'blue'], ['green']],
+      maxSegments: 4
+    });
+    const history = createGameHistory(100);
+    history.push(cloneState(state)); // pointer=0, canUndo()=false
+    expect(undo(state, history)).toBeNull();
+  });
+
+  it('returns null with an empty history', () => {
+    const state = createInitialState({
+      tubes: [['red'], []],
+      maxSegments: 4
+    });
+    const history = createGameHistory(100);
+    // No states pushed — pointer=-1
+    expect(undo(state, history)).toBeNull();
+  });
+
+  it('returns null on second undo (already at first state)', () => {
+    const state = createInitialState({
+      tubes: [['red', 'blue', 'blue'], ['blue'], []],
+      maxSegments: 4
+    });
+    const history = createGameHistory(100);
+    history.push(cloneState(state));
+    const poured = pour(state, 0, 2);
+    history.push(cloneState(poured));
+    // First undo: succeeds
+    const undone = undo(poured, history);
+    expect(undone).not.toBeNull();
+    // Second undo: pointer back to 0, canUndo()=false → null
+    expect(undo(undone, history)).toBeNull();
   });
 });

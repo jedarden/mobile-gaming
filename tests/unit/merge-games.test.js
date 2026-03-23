@@ -91,6 +91,27 @@ describe('getMerges', () => {
     });
     expect(getMerges(state)).toHaveLength(0);
   });
+
+  it('finds pair at right edge of grid (c+1 < width boundary)', () => {
+    // In a 3-wide grid, pair at columns 1 and 2 — c+1=3 which equals width, so it should NOT try to check column 3
+    const state = createInitialState({
+      width: 3, height: 1,
+      grid: [[0, 2, 2]],
+      task: { targetTier: 3, targetCount: 1 }
+    });
+    const merges = getMerges(state);
+    expect(merges).toHaveLength(1);
+    expect(merges[0]).toMatchObject({ r1: 0, c1: 1, r2: 0, c2: 2 });
+  });
+
+  it('returns empty for completely empty grid', () => {
+    const state = createInitialState({
+      width: 2, height: 2,
+      grid: [[0, 0], [0, 0]],
+      task: { targetTier: 2, targetCount: 1 }
+    });
+    expect(getMerges(state)).toHaveLength(0);
+  });
 });
 
 describe('applyMerge', () => {
@@ -115,6 +136,26 @@ describe('applyMerge', () => {
   it('returns same state for non-adjacent cells', () => {
     const state = createInitialState(SIMPLE_LEVEL);
     const next = applyMerge(state, 0, 0, 2, 2);
+    expect(next).toBe(state);
+  });
+
+  it('returns same state when source cell is empty (0)', () => {
+    const state = createInitialState({
+      width: 2, height: 1,
+      grid: [[0, 1]],
+      task: { targetTier: 2, targetCount: 1 }
+    });
+    const next = applyMerge(state, 0, 0, 0, 1);
+    expect(next).toBe(state);
+  });
+
+  it('returns same state when target cell is empty (0)', () => {
+    const state = createInitialState({
+      width: 2, height: 1,
+      grid: [[1, 0]],
+      task: { targetTier: 2, targetCount: 1 }
+    });
+    const next = applyMerge(state, 0, 0, 0, 1);
     expect(next).toBe(state);
   });
 
@@ -167,6 +208,16 @@ describe('isComplete', () => {
     const state = createInitialState(MULTI_LEVEL);
     const next = applyMerge(state, 0, 0, 0, 1); // produces one tier-3
     expect(isComplete(next)).toBe(false); // need 2
+  });
+
+  it('returns true when count exceeds targetCount (>= not just ===)', () => {
+    // 2 tier-3 items, targetCount=1 → 2 >= 1 is true
+    const state = createInitialState({
+      width: 3, height: 1,
+      grid: [[3, 3, 0]],
+      task: { targetTier: 3, targetCount: 1 }
+    });
+    expect(isComplete(state)).toBe(true);
   });
 });
 
@@ -324,5 +375,127 @@ describe('encodeGrid — canonical form', () => {
   it('uses | as row separator', () => {
     const g = [[1, 2], [3, 4]];
     expect(encodeGrid(g)).toContain('|');
+  });
+});
+
+describe('applyMerge — diagonal adjacency', () => {
+  it('returns same state when cells are diagonally adjacent (dr+dc=2)', () => {
+    // (0,0) and (1,1) are diagonally adjacent — not a valid merge
+    const state = createInitialState({
+      width: 2, height: 2,
+      grid: [[1, 0], [0, 1]],
+      task: { targetTier: 2, targetCount: 1 }
+    });
+    const next = applyMerge(state, 0, 0, 1, 1);
+    expect(next).toBe(state);
+  });
+
+  it('returns same state when same cell is provided as both source and target (dr+dc=0)', () => {
+    const state = createInitialState(SIMPLE_LEVEL);
+    const next = applyMerge(state, 0, 0, 0, 0);
+    // dr=0, dc=0, dr+dc=0 ≠ 1 → adjacency check fails
+    expect(next).toBe(state);
+  });
+});
+
+describe('applyMerge — multi-target win condition', () => {
+  const TWO_TARGET_LEVEL = {
+    width: 4,
+    height: 1,
+    grid: [[2, 2, 2, 2]],
+    task: { targetTier: 3, targetCount: 2 }
+  };
+
+  it('does not win after first of two required merges', () => {
+    const state = createInitialState(TWO_TARGET_LEVEL);
+    const next = applyMerge(state, 0, 0, 0, 1); // [3, 0, 2, 2]
+    expect(next.status).toBe('playing');
+    expect(countTier(next, 3)).toBe(1);
+  });
+
+  it('wins after both required merges are complete', () => {
+    let state = createInitialState(TWO_TARGET_LEVEL);
+    state = applyMerge(state, 0, 0, 0, 1); // [3, 0, 2, 2]
+    state = applyMerge(state, 0, 2, 0, 3); // [3, 0, 3, 0]
+    expect(countTier(state, 3)).toBe(2);
+    expect(state.status).toBe('won');
+    expect(state.moves).toBe(2);
+  });
+});
+
+describe('getMerges — single isolated item', () => {
+  it('returns empty when only one item exists with no same-tier neighbors', () => {
+    const state = createInitialState({
+      width: 3, height: 3,
+      grid: [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+      task: { targetTier: 2, targetCount: 1 }
+    });
+    expect(getMerges(state)).toHaveLength(0);
+  });
+});
+
+describe('isComplete', () => {
+  it('returns true when targetCount is met exactly', () => {
+    const state = createInitialState({
+      width: 2, height: 1,
+      grid: [[3, 3]],
+      task: { targetTier: 3, targetCount: 2 }
+    });
+    expect(isComplete(state)).toBe(true);
+  });
+
+  it('returns true when targetCount is exceeded (more than required)', () => {
+    const state = createInitialState({
+      width: 3, height: 1,
+      grid: [[3, 3, 3]],
+      task: { targetTier: 3, targetCount: 2 }
+    });
+    expect(isComplete(state)).toBe(true);
+  });
+});
+
+describe('applyMerge — direction symmetry', () => {
+  it('up-merge: result lands at the lower cell (r1>r2)', () => {
+    // applyMerge(state, r1=1, c1=0, r2=0, c2=0) merges upward;
+    // tier+1 goes to (1,0) and (0,0) becomes empty
+    const state = createInitialState({
+      width: 1, height: 2,
+      grid: [[2], [2]],
+      task: { targetTier: 3, targetCount: 1 }
+    });
+    const next = applyMerge(state, 1, 0, 0, 0);
+    expect(next.grid[1][0]).toBe(3); // result at source (r1,c1)
+    expect(next.grid[0][0]).toBe(0); // (r2,c2) cleared
+    expect(next.status).toBe('won');
+  });
+
+  it('left-merge: result lands at the right cell (c1>c2)', () => {
+    // applyMerge(state, r1=0, c1=1, r2=0, c2=0) merges leftward;
+    // tier+1 goes to (0,1) and (0,0) becomes empty
+    const state = createInitialState({
+      width: 2, height: 1,
+      grid: [[2, 2]],
+      task: { targetTier: 3, targetCount: 1 }
+    });
+    const next = applyMerge(state, 0, 1, 0, 0);
+    expect(next.grid[0][1]).toBe(3); // result at source (r1,c1)
+    expect(next.grid[0][0]).toBe(0); // (r2,c2) cleared
+    expect(next.status).toBe('won');
+  });
+
+  it('up-merge and down-merge of same pair produce different result positions', () => {
+    const level = {
+      width: 1, height: 2,
+      grid: [[1], [1]],
+      task: { targetTier: 2, targetCount: 1 }
+    };
+    const down = applyMerge(createInitialState(level), 0, 0, 1, 0);
+    const up   = applyMerge(createInitialState(level), 1, 0, 0, 0);
+    // Down: tier+1 at row 0, row 1 empty
+    expect(down.grid[0][0]).toBe(2);
+    expect(down.grid[1][0]).toBe(0);
+    // Up: tier+1 at row 1, row 0 empty
+    expect(up.grid[1][0]).toBe(2);
+    expect(up.grid[0][0]).toBe(0);
   });
 });
