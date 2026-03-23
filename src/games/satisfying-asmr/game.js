@@ -111,10 +111,12 @@ class SatisfyingGame {
     // Erase just the cleaned cells from dirt canvas
     this.renderer.eraseArea(this.state.cells, gc, gr, SPRAY_RADIUS, this.state.width);
     this.renderer.render(this.state);
+    if (this.renderer.spawnDebris) this.renderer.spawnDebris(px, py);
     this.updateUI();
 
     if (isComplete(this.state)) {
-      setTimeout(() => this.handleWin(), 300);
+      if (this.renderer.triggerCompletionSparkle) this.renderer.triggerCompletionSparkle();
+      setTimeout(() => this.handleWin(), 800);
     }
   }
 
