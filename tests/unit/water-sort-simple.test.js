@@ -13,7 +13,9 @@ import {
   calculateStars,
   createGameHistory,
   pour,
-  cloneState
+  cloneState,
+  topColor,
+  checkWin
 } from '../../src/games/water-sort/state.js';
 
 describe('LIQUID_COLORS', () => {
@@ -167,5 +169,42 @@ describe('pour — additional edge cases', () => {
     // complete tube (all same color) should not allow pour
     const s1 = pour(state, 0, 1);
     expect(s1).toBe(state); // complete tubes cannot pour
+  });
+});
+
+// ── topColor — empty tube returns null ───────────────────────────────────────
+
+describe('topColor', () => {
+  it('returns null for an empty tube (segments.length === 0 branch)', () => {
+    // state.js line 57: if (tube.segments.length === 0) return null
+    const emptyTube = { id: 0, segments: [] };
+    expect(topColor(emptyTube)).toBeNull();
+  });
+
+  it('returns the last segment for a non-empty tube', () => {
+    const tube = { id: 0, segments: ['red', 'blue', 'green'] };
+    expect(topColor(tube)).toBe('green');
+  });
+});
+
+// ── checkWin — empty tube is skipped (continue branch) ───────────────────────
+
+describe('checkWin — empty tube handling', () => {
+  it('skips empty tubes and returns true when all non-empty tubes are complete (continue branch)', () => {
+    // state.js line 194: if (tube.segments.length === 0) continue
+    // A state where one tube is empty (buffer) and the rest are full-same-color
+    const state = createInitialState({
+      tubes: [['red', 'red', 'red', 'red'], [], ['blue', 'blue', 'blue', 'blue']],
+      maxSegments: 4,
+    });
+    expect(checkWin(state)).toBe(true);
+  });
+
+  it('returns false when an empty tube exists alongside an incomplete non-empty tube', () => {
+    const state = createInitialState({
+      tubes: [['red', 'red', 'red'], [], ['blue', 'blue', 'blue', 'blue']],
+      maxSegments: 4,
+    });
+    expect(checkWin(state)).toBe(false); // tube 0 has only 3 segments, not 4
   });
 });
