@@ -325,6 +325,70 @@ describe('parking-escape solver', () => {
   });
 });
 
+// ─── merge-games solver ───────────────────────────────────────────────────────
+
+describe('merge-games solver', () => {
+  function makeState(grid, targetTier = 3, targetCount = 1) {
+    return {
+      grid,
+      width: grid[0].length,
+      height: grid.length,
+      task: { targetTier, targetCount },
+    };
+  }
+
+  it('returns a move for a simple adjacent pair', () => {
+    // 2×1 grid with two tier-1 tiles — one merge available
+    const state = makeState([[1, 1]]);
+    dispatch({ gameId: 'merge-games', state, level: {} });
+    const result = postMessageMock.mock.calls[0][0];
+    expect(result).toHaveProperty('moves');
+    expect(result.moves).toHaveLength(1);
+    expect(result.moves[0]).toMatchObject({ r1: 0, c1: 0, r2: 0, c2: 1 });
+  });
+
+  it('returns a vertical merge when available', () => {
+    // 2×1 column with two tier-1 tiles
+    const state = makeState([[1], [1]]);
+    dispatch({ gameId: 'merge-games', state, level: {} });
+    const { moves } = postMessageMock.mock.calls[0][0];
+    expect(moves[0]).toMatchObject({ r1: 0, c1: 0, r2: 1, c2: 0 });
+  });
+
+  it('posts error when no merges available', () => {
+    // Grid with no adjacent same-tier tiles
+    const state = makeState([[1, 2], [3, 1]]);
+    dispatch({ gameId: 'merge-games', state, level: {} });
+    expect(postMessageMock).toHaveBeenCalledWith({
+      error: 'Solver could not find a solution',
+    });
+  });
+
+  it('prefers the merge that produces a tier closest to targetTier', () => {
+    // tier-1 pair (result tier 2) and tier-2 pair (result tier 3 = targetTier)
+    const state = makeState([[1, 1, 2, 2]], 3);
+    dispatch({ gameId: 'merge-games', state, level: {} });
+    const { moves } = postMessageMock.mock.calls[0][0];
+    // tier-2+tier-2 → result tier 3 is closer to targetTier=3 than tier-1+tier-1 → result tier 2
+    expect(moves[0]).toMatchObject({ r1: 0, c1: 2, r2: 0, c2: 3 });
+  });
+
+  it('posts error when state has no task', () => {
+    const state = { grid: [[1, 1]], width: 2, height: 1, task: null };
+    dispatch({ gameId: 'merge-games', state, level: {} });
+    const result = postMessageMock.mock.calls[0][0];
+    expect(result).toSatisfy(r => 'error' in r);
+  });
+
+  it('handles empty grid gracefully', () => {
+    const state = makeState([[0, 0], [0, 0]]);
+    dispatch({ gameId: 'merge-games', state, level: {} });
+    expect(postMessageMock).toHaveBeenCalledWith({
+      error: 'Solver could not find a solution',
+    });
+  });
+});
+
 // ─── Error handling ───────────────────────────────────────────────────────────
 
 describe('error handling', () => {

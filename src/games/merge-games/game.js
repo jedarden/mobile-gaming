@@ -7,6 +7,7 @@ import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createHintSession, getHintTokens } from '../../shared/hints.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -34,6 +35,7 @@ class MergeGame {
     this.state = null;
     this.renderer = null;
     this.input = null;
+    this.hintSession = null;
     this.handleResize = this.handleResize.bind(this);
   }
 
@@ -66,6 +68,10 @@ class MergeGame {
     this.btnPrev.addEventListener('click', () => this.prevLevel());
     this.btnNext.addEventListener('click', () => this.nextLevel());
     this.btnSettings.addEventListener('click', () => this.showSettings());
+    const hintBtn = document.getElementById('btn-hint');
+    if (hintBtn) hintBtn.addEventListener('click', () => {
+      if (this.hintSession) this.hintSession.showHint();
+    });
     document.getElementById('btn-replay').addEventListener('click', () => {
       this.winOverlay.classList.remove('active');
       this.winOverlay.setAttribute('aria-hidden', 'true');
@@ -95,13 +101,48 @@ class MergeGame {
     this.currentLevelIndex = index;
     const level = this.levels[index];
     this.state = createInitialState(level);
+
+    // Reset hint session
+    if (this.hintSession) { this.hintSession.destroy(); }
+    this.hintSession = createHintSession({
+      gameId: GAME_ID,
+      level,
+      getState: () => this.state,
+      onHighlight: ({ move }) => {
+        if (this.renderer) this.renderer.setHintCells(move.r1, move.c1, move.r2, move.c2);
+        this.render();
+      },
+      onShowMove: ({ move }) => {
+        if (this.renderer) this.renderer.setHintCells(move.r1, move.c1, move.r2, move.c2);
+        this.render();
+      },
+      onAutoPlay: ({ move }) => {
+        if (this.renderer) this.renderer.setHintCells(null, null, null, null);
+        this.handleMerge(move.r1, move.c1, move.r2, move.c2);
+      },
+      onTokensEmpty: () => { this.updateHintButton(); },
+    });
+    this.updateHintButton();
+
     this.handleResize();
     this.updateUI();
     this.render();
     announce(`Level ${index + 1}. Merge tiles to reach Tier ${level.task.targetTier}.`);
   }
 
-  restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
+  updateHintButton() {
+    const btn = document.getElementById('btn-hint');
+    if (!btn) return;
+    const tokens = getHintTokens();
+    btn.textContent = `Hint (${tokens})`;
+    btn.disabled = tokens <= 0;
+  }
+
+  restartLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
+    if (this.hintSession) this.hintSession.reset();
+    this.startLevel(this.currentLevelIndex);
+  }
   prevLevel() { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel() { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
 
@@ -109,6 +150,8 @@ class MergeGame {
     if (!this.state || this.state.status !== 'playing') return;
     const next = applyMerge(this.state, r1, c1, r2, c2);
     if (next === this.state) return; // invalid
+    // Clear hint after any move
+    if (this.renderer) this.renderer.setHintCells(null, null, null, null);
     const newTier = next.grid[r2][c2];
     this.state = next;
     this.updateUI();

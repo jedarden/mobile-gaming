@@ -11,6 +11,7 @@
  *   - 'water-sort':     BFS solver, returns [{from, to}]
  *   - 'pull-the-pin':   BFS over pin removals, returns [{pinId}]
  *   - 'brain-teaser':   reads solution from level, returns [{action, targetId}]
+ *   - 'merge-games':    greedy best-merge, returns [{r1, c1, r2, c2}]
  */
 
 // ─── Parking Escape Solver ────────────────────────────────────────────────────
@@ -212,6 +213,45 @@ function solvePullThePin(state) {
   return sorted.map(p => ({ pinId: p.id }));
 }
 
+// ─── Merge Games Solver ───────────────────────────────────────────────────────
+
+function solveMergeGames(state) {
+  const { grid, width, height, task } = state;
+  if (!task) return null;
+
+  const targetTier = task.targetTier;
+  const pairs = [];
+
+  for (let r = 0; r < height; r++) {
+    for (let c = 0; c < width; c++) {
+      if (!grid[r][c]) continue;
+      const tier = grid[r][c];
+      // Right neighbor
+      if (c + 1 < width && grid[r][c + 1] === tier) {
+        pairs.push({ r1: r, c1: c, r2: r, c2: c + 1, resultTier: tier + 1 });
+      }
+      // Down neighbor
+      if (r + 1 < height && grid[r + 1][c] === tier) {
+        pairs.push({ r1: r, c1: c, r2: r + 1, c2: c, resultTier: tier + 1 });
+      }
+    }
+  }
+
+  if (pairs.length === 0) return null;
+
+  // Prefer the merge that produces the result closest to (but not exceeding) targetTier
+  pairs.sort((a, b) => {
+    const distA = Math.abs(a.resultTier - targetTier);
+    const distB = Math.abs(b.resultTier - targetTier);
+    if (distA !== distB) return distA - distB;
+    // Among equal distances, prefer higher resulting tier
+    return b.resultTier - a.resultTier;
+  });
+
+  const best = pairs[0];
+  return [{ r1: best.r1, c1: best.c1, r2: best.r2, c2: best.c2 }];
+}
+
 // ─── Brain Teaser ─────────────────────────────────────────────────────────────
 
 function solveBrainTeaser(level) {
@@ -239,6 +279,9 @@ self.onmessage = function ({ data }) {
         break;
       case 'brain-teaser':
         moves = solveBrainTeaser(level);
+        break;
+      case 'merge-games':
+        moves = solveMergeGames(state);
         break;
       default:
         self.postMessage({ error: `No solver for game: ${gameId}` });

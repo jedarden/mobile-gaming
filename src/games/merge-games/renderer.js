@@ -36,6 +36,8 @@ export function createRenderer(canvas) {
   let offsetX = 0;
   let offsetY = 0;
   let reducedMotion = false;
+  // Hint cells: highlighted pair to merge
+  let hintCells = null; // null or { r1, c1, r2, c2 }
 
   // Merge burst particles: { x, y, vx, vy, color, life, r }
   const particles = [];
@@ -108,7 +110,7 @@ export function createRenderer(canvas) {
     }
   }
 
-  function drawCell(r, c, tier, highlight, dragging) {
+  function drawCell(r, c, tier, highlight, dragging, isHinted) {
     const { x, y, w, h } = cellRect(r, c);
 
     // Scale pop from merge
@@ -134,6 +136,20 @@ export function createRenderer(canvas) {
 
     const color = TIER_COLORS[Math.min(tier, TIER_COLORS.length - 1)] || '#888';
     const alpha = dragging ? 0.25 : 1;
+
+    // Hint glow for suggested merge cells
+    if (isHinted) {
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
+      ctx.save();
+      ctx.shadowColor = `rgba(255, 220, 50, ${0.5 + 0.4 * pulse})`;
+      ctx.shadowBlur = 16 + 6 * pulse;
+      ctx.strokeStyle = `rgba(255, 200, 0, ${0.8 + 0.2 * pulse})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(x - 2, y - 2, w + 4, h + 4, CELL_RADIUS + 2);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     ctx.save();
     if (scale !== 1) {
@@ -217,7 +233,11 @@ export function createRenderer(canvas) {
         const tier = state.grid[r][c];
         const isDragging = drag && drag.fromR === r && drag.fromC === c;
         const isHighlight = drag && tier !== 0 && tier === state.grid[drag.fromR]?.[drag.fromC] && !(r === drag.fromR && c === drag.fromC);
-        drawCell(r, c, tier, isHighlight, isDragging);
+        const isHinted = hintCells !== null && tier !== 0 && (
+          (r === hintCells.r1 && c === hintCells.c1) ||
+          (r === hintCells.r2 && c === hintCells.c2)
+        );
+        drawCell(r, c, tier, isHighlight, isDragging, isHinted);
       }
     }
 
@@ -280,7 +300,11 @@ export function createRenderer(canvas) {
 
   function setReducedMotion(v) { reducedMotion = v; }
 
-  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, getCellSize: () => cellSize };
+  function setHintCells(r1, c1, r2, c2) {
+    hintCells = (r1 === null) ? null : { r1, c1, r2, c2 };
+  }
+
+  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, setHintCells, getCellSize: () => cellSize };
 }
 
 function lighten(hex, pct) {
