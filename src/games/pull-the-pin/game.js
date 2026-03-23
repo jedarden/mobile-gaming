@@ -34,6 +34,7 @@ export function createGame(canvas, options = {}) {
    */
   function loadLevel(level) {
     gameState = state.createInitialState(level);
+    renderer.resetAnimations();
 
     // Setup input handling
     if (inputHandler) {
