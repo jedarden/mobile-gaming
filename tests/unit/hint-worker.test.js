@@ -74,6 +74,18 @@ describe('brain-teaser solver', () => {
     expect(postMessageMock).toHaveBeenCalledWith({ moves: [solution] });
   });
 
+  it('returns sequence solution with steps array wrapped in moves', () => {
+    // Sequence puzzles have a solution with action:"sequence" and a steps array.
+    // The hint-worker passes the whole solution object as a single move — the
+    // game.js callbacks then pick the correct step via currentSequence.length.
+    const solution = { action: 'sequence', steps: ['btn1', 'btn2', 'btn3'] };
+    dispatch({ gameId: 'brain-teaser', state: {}, level: { solution } });
+    expect(postMessageMock).toHaveBeenCalledWith({ moves: [solution] });
+    // Verify steps are intact: game.js indexes into moves[0].steps
+    const { moves } = postMessageMock.mock.calls[0][0];
+    expect(moves[0].steps).toEqual(['btn1', 'btn2', 'btn3']);
+  });
+
   it('posts error when level has no solution', () => {
     dispatch({ gameId: 'brain-teaser', state: {}, level: {} });
     expect(postMessageMock).toHaveBeenCalledWith({

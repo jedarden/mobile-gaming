@@ -282,6 +282,32 @@ describe('onDrag', () => {
     expect(cb).toHaveBeenCalledOnce();
     expect(cb.mock.calls[0][0].isDragging).toBe(true);
   });
+
+  it('mouseleave fires end callback with isDragging:false — (mouseleave → onUp)', () => {
+    // mouseleave is registered to onUp so leaving the element mid-drag should end it
+    const el = makeEl();
+    const cb = vi.fn();
+    onDrag(el, cb, 5);
+    mouseDown(el, 0, 0);
+    mouseMove(el, 10, 0); // exceed threshold → isDragging=true
+    cb.mockClear();
+    el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    expect(cb).toHaveBeenCalledOnce();
+    expect(cb.mock.calls[0][0].isDragging).toBe(false);
+  });
+
+  it('touchcancel fires end callback with isDragging:false — (touchcancel → onUp)', () => {
+    // touchcancel is registered to onUp so a cancelled touch should end the drag
+    const el = makeEl();
+    const cb = vi.fn();
+    onDrag(el, cb, 5);
+    mouseDown(el, 0, 0);
+    mouseMove(el, 10, 0); // exceed threshold → isDragging=true
+    cb.mockClear();
+    el.dispatchEvent(new Event('touchcancel', { bubbles: true }));
+    expect(cb).toHaveBeenCalledOnce();
+    expect(cb.mock.calls[0][0].isDragging).toBe(false);
+  });
 });
 
 // ── onSwipe ───────────────────────────────────────────────────────────────────

@@ -879,6 +879,39 @@ describe('actionsMatch — sequence step length mismatch (steps.length !== steps
   });
 });
 
+// ── actionsMatch — sequence happy path (auto-play scenario) ──────────────────
+// The hint system's onAutoPlay sends a full {action:'sequence', steps:[...]} to
+// applyAction. This exercises the actionsMatch 'sequence' case returning true —
+// the path that is NOT covered by individual-tap sequence tests above.
+
+describe('actionsMatch — sequence happy path (direct sequence action solves puzzle)', () => {
+  const seqPuzzle = {
+    id: 'seq-ap-001', title: 'T', prompt: 'P', type: 'sequence',
+    elements: [
+      { id: 'x', type: 'rect', x: 0, y: 0, w: 60, h: 60, clickable: true },
+      { id: 'y', type: 'rect', x: 70, y: 0, w: 60, h: 60, clickable: true },
+    ],
+    solution: { action: 'sequence', steps: ['x', 'y'] },
+    decoyActions: [],
+    difficulty: 1,
+  };
+
+  it('solves puzzle when a full matching sequence action is applied directly (actionsMatch returns true)', () => {
+    const state = createInitialState(seqPuzzle);
+    // Mimics the auto-play path: hint system sends the complete solution object
+    const next = applyAction(state, { action: 'sequence', steps: ['x', 'y'] });
+    expect(next.status).toBe('solved');
+    expect(next.animation.type).toBe('celebration');
+  });
+
+  it('does not solve when same-length steps differ in content (actionsMatch every() returns false)', () => {
+    const state = createInitialState(seqPuzzle);
+    // Same length as solution (['x','y']) but different step → every() fails → returns false
+    const next = applyAction(state, { action: 'sequence', steps: ['x', 'z'] });
+    expect(next.status).not.toBe('solved');
+  });
+});
+
 describe('findDecoy — non-array truthy decoyActions (!Array.isArray branch)', () => {
   it('applyAction handles non-array decoyActions gracefully (findDecoy returns null)', () => {
     // Manually build a state bypassing createInitialState to set decoyActions to an object
@@ -957,5 +990,27 @@ describe('validatePuzzle — sequence steps truthy non-array (!Array.isArray tru
     });
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.toLowerCase().includes('steps'))).toBe(true);
+  });
+});
+
+// ── validatePuzzle — solution.sourceId not found in elements ──────────────────
+// state.js line 305-306: separate branch for sourceId reference check.
+// Existing tests cover targetId-not-found and missing-sourceId, but not the
+// case where sourceId is present but references a non-existent element.
+
+describe('validatePuzzle — solution sourceId not found in elements (if(sourceId && !has) branch)', () => {
+  it('reports error when drag solution sourceId refers to an element not in elements array', () => {
+    const result = validatePuzzle({
+      id: 'drag-src-001', title: 'T', prompt: 'P', type: 'drag',
+      elements: [
+        { id: 'key', type: 'rect', x: 0, y: 0, w: 40, h: 40, draggable: true },
+        { id: 'door', type: 'rect', x: 100, y: 0, w: 40, h: 40 },
+      ],
+      // sourceId exists but refers to 'ghost-key' which is not in elements
+      solution: { action: 'drag', sourceId: 'ghost-key', targetId: 'door' },
+      decoyActions: [],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('ghost-key') && e.includes('not found'))).toBe(true);
   });
 });
