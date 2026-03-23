@@ -15,6 +15,7 @@ import { initAccessibility, announce, isReducedMotionEnabled } from '../../share
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { isColorBlindEnabled } from '../../shared/color-blind.js';
+import { createHintSession, getHintTokens } from '../../shared/hints.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 
@@ -33,6 +34,7 @@ export function createGame(canvas, options = {}) {
   let renderer = createRenderer(canvas);
   let inputHandler = null;
   let physicsInterval = null;
+  let hintSession = null;
 
   /**
    * Load a level
@@ -51,10 +53,42 @@ export function createGame(canvas, options = {}) {
       onTapMiss: () => {}
     });
 
+    // Reset hint session for new level
+    if (hintSession) { hintSession.destroy(); }
+    hintSession = createHintSession({
+      gameId: 'pull-the-pin',
+      level,
+      getState: () => gameState,
+      onHighlight: ({ move }) => {
+        renderer.setHintPin(move.pinId);
+        render();
+      },
+      onShowMove: ({ move }) => {
+        renderer.setHintPin(move.pinId);
+        render();
+      },
+      onAutoPlay: ({ move }) => {
+        renderer.setHintPin(null);
+        if (gameState && gameState.status === 'playing') {
+          removePin(move.pinId);
+        }
+      },
+      onTokensEmpty: updateHintButton,
+    });
+    updateHintButton();
+
     // Initial render
     render();
 
     return gameState;
+  }
+
+  function updateHintButton() {
+    const btn = document.getElementById('btn-hint');
+    if (!btn) return;
+    const tokens = getHintTokens();
+    btn.textContent = `Hint (${tokens})`;
+    btn.disabled = tokens <= 0;
   }
 
   /**
@@ -147,6 +181,7 @@ export function createGame(canvas, options = {}) {
    */
   function reset(level) {
     stopPhysics();
+    if (hintSession) hintSession.reset();
     loadLevel(level || gameState);
   }
 
@@ -165,6 +200,10 @@ export function createGame(canvas, options = {}) {
     if (inputHandler) {
       inputHandler.destroy();
     }
+    if (hintSession) {
+      hintSession.destroy();
+      hintSession = null;
+    }
   }
 
   return {
@@ -173,6 +212,7 @@ export function createGame(canvas, options = {}) {
     getState,
     render,
     destroy,
+    showHint() { if (hintSession) hintSession.showHint(); },
     setReducedMotion(v) { renderer.setReducedMotion(v); },
     setColorBlindMode(v) { renderer.setColorBlindMode(v); }
   };
@@ -264,6 +304,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     game.loadLevel(levels[index]);
     updateUI(game.getState());
     announce(`Level ${index + 1}. Pull the pins to guide the balls into the cups.`);
+  }
+
+  const hintBtn = document.getElementById('btn-hint');
+  if (hintBtn) {
+    hintBtn.addEventListener('click', () => game.showHint());
   }
 
   if (overlayRetry) {

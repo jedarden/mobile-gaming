@@ -66,6 +66,7 @@ export function createRenderer(canvas) {
   let winAnimStarted = false;
   let reducedMotion = false;
   let colorBlindMode = false;
+  let hintPinId = null;
 
   function now() { return performance.now(); }
 
@@ -146,7 +147,7 @@ export function createRenderer(canvas) {
       renderChannels(ctx, state);
       renderCups(ctx, state, cupPops, colorBlindMode);
       renderBalls(ctx, state, colorBlindMode);
-      renderPins(ctx, state, pinRipples);
+      renderPins(ctx, state, pinRipples, hintPinId);
       renderParticles(ctx, particles);
       renderUI(ctx, state, width, height);
     },
@@ -158,10 +159,12 @@ export function createRenderer(canvas) {
       particles.length = 0;
       winAnimStarted = false;
       lastState = null;
+      hintPinId = null;
     },
 
     setReducedMotion(v) { reducedMotion = v; },
-    setColorBlindMode(v) { colorBlindMode = v; }
+    setColorBlindMode(v) { colorBlindMode = v; },
+    setHintPin(id) { hintPinId = id; }
   };
 }
 
@@ -392,7 +395,7 @@ function getCupBallPosition(state, cupId, ball) {
 }
 
 /** Pins with ripple-ring on removal */
-function renderPins(ctx, state, pinRipples) {
+function renderPins(ctx, state, pinRipples, hintPinId = null) {
   const t = performance.now();
 
   // Draw removal ripples first (behind everything)
@@ -416,6 +419,20 @@ function renderPins(ctx, state, pinRipples) {
     const y = pin.y;
     const pw = 40;
     const ph = 12;
+
+    // Hint glow
+    if (pin.id === hintPinId) {
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
+      ctx.save();
+      ctx.shadowColor = `rgba(255, 220, 50, ${0.5 + 0.4 * pulse})`;
+      ctx.shadowBlur = 18 + 8 * pulse;
+      ctx.beginPath();
+      ctx.roundRect(x - pw / 2 - 4, y - ph / 2 - 4, pw + 8, ph + 8, 8);
+      ctx.strokeStyle = `rgba(255, 200, 0, ${0.8 + 0.2 * pulse})`;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // Drop shadow
     ctx.save();
