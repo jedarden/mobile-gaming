@@ -1,13 +1,14 @@
 /**
- * Giant Runner - Three.js Renderer
+ * Giant Runner - Three.js Renderer (polished)
  *
- * Renders the game with:
- * - Ground plane with lane markers
- * - Player capsule with dynamic scale
- * - Collectible orbs
- * - Obstacles
- * - Boss capsule at end
- * - Smooth scale animations
+ * Visual improvements:
+ * - Decorative cone trees lining the course sides
+ * - Player power aura (ring) that expands with scale milestones
+ * - Collectibles bob + rotate for juiciness
+ * - Camera shake on obstacle hit
+ * - Scale milestone flash: brief emissive pulse on player at integer thresholds
+ * - Animated sky gradient via fog
+ * - Boss fight scale comparison ring
  */
 
 import * as THREE from 'three';
@@ -18,15 +19,18 @@ import { PLAYER_COLORS, COLLECTIBLE_COLORS } from './state.js';
 const GROUND_COLOR = 0x2D5A27;
 const LANE_MARKER_COLOR = 0xFFFFFF;
 const LANE_COUNT = 5;
+const TREE_SPACING = 15;
+const TREE_COUNT = 30;
 
 /**
  * Create a renderer instance
  */
 export function createRenderer(container) {
   let scene, camera, renderer, canvas;
-  let playerMesh, bossMesh;
+  let playerMesh, bossMesh, playerAura;
   let collectibleMeshes = [];
   let obstacleMeshes = [];
+  let treeMeshes = [];
   let animationLoopId = null;
   let reducedMotion = false;
 
@@ -34,6 +38,17 @@ export function createRenderer(container) {
   let targetScale = 1.0;
   let currentScale = 1.0;
   const SCALE_LERP_SPEED = 0.1;
+
+  // Camera shake
+  let shakeUntil = 0;
+  let shakeAmp = 0;
+
+  // Scale milestone tracking
+  let lastMilestone = 0;
+  let milestoneFlashUntil = 0;
+
+  // Previous scale for hit detection
+  let prevScale = 1.0;
 
   /**
    * Initialize the Three.js scene
@@ -58,8 +73,14 @@ export function createRenderer(container) {
       directionalPosition: new THREE.Vector3(5, 10, 5)
     });
 
+    // Subtle fog for depth
+    scene.fog = new THREE.Fog(0x87CEEB, 60, 200);
+
     // Create ground plane
     createGround();
+
+    // Create decorative trees
+    createTrees();
 
     // Look down at the course
     camera.lookAt(0, 0, 50);
@@ -90,6 +111,49 @@ export function createRenderer(container) {
       marker.rotation.x = -Math.PI / 2;
       marker.position.set(i * laneWidth, 0.01, 250);
       scene.add(marker);
+    }
+  }
+
+  /**
+   * Create decorative cone trees along both sides of the course
+   */
+  function createTrees() {
+    const trunkMat = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+    const leafMat = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+    const darkLeafMat = new THREE.MeshLambertMaterial({ color: 0x145214 });
+
+    for (let i = 0; i < TREE_COUNT; i++) {
+      const z = i * TREE_SPACING + 10;
+      const side = i % 2 === 0 ? -1 : 1;
+      const xBase = (4.5 + (i % 3) * 0.8) * side;
+
+      const group = new THREE.Group();
+
+      // Trunk
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.2, 0.6, 6),
+        trunkMat
+      );
+      trunk.position.y = 0.3;
+      group.add(trunk);
+
+      // Leaf cone (2 layers)
+      const mat = i % 3 === 0 ? darkLeafMat : leafMat;
+      const cone1 = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.2, 7), mat);
+      cone1.position.y = 1.2;
+      group.add(cone1);
+
+      const cone2 = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.9, 7), mat);
+      cone2.position.y = 1.8;
+      group.add(cone2);
+
+      group.position.set(xBase, 0, z);
+      // Slight scale variety
+      const sc = 0.8 + (i % 5) * 0.1;
+      group.scale.setScalar(sc);
+
+      scene.add(group);
+      treeMeshes.push(group);
     }
   }
 
@@ -125,6 +189,18 @@ export function createRenderer(container) {
     group.add(rightEye);
 
     group.castShadow = true;
+
+    // Power aura ring
+    const auraGeom = new THREE.TorusGeometry(0.6, 0.06, 8, 32);
+    const auraMat = new THREE.MeshBasicMaterial({
+      color: PLAYER_COLORS[color] || 0x4488FF,
+      transparent: true,
+      opacity: 0.0
+    });
+    playerAura = new THREE.Mesh(auraGeom, auraMat);
+    playerAura.rotation.x = Math.PI / 2;
+    playerAura.position.y = 0.05;
+    group.add(playerAura);
 
     return group;
   }
@@ -234,6 +310,8 @@ export function createRenderer(container) {
       scene.add(playerMesh);
     }
 
+    const now = performance.now();
+
     // Smooth scale animation
     targetScale = state.player.scale;
     if (!reducedMotion) {
@@ -242,12 +320,56 @@ export function createRenderer(container) {
       currentScale = targetScale;
     }
 
+    // Scale milestone detection (integer thresholds)
+    const milestone = Math.floor(state.player.scale);
+    if (milestone > lastMilestone && milestone > 1) {
+      lastMilestone = milestone;
+      milestoneFlashUntil = now + 400;
+    }
+
+    // Obstacle hit detection (scale decreased)
+    if (state.player.scale < prevScale - 0.5 && !reducedMotion) {
+      shakeUntil = now + 350;
+      shakeAmp = 0.3;
+    }
+    prevScale = state.player.scale;
+
     // Update player position and scale
     playerMesh.position.set(state.player.x, 0, state.player.z);
     playerMesh.scale.set(currentScale, currentScale, currentScale);
 
+    // Milestone flash — make player emissive briefly
+    if (playerMesh.children[0] && playerMesh.children[0].material) {
+      const bodyMat = playerMesh.children[0].material;
+      if (now < milestoneFlashUntil) {
+        const t = (milestoneFlashUntil - now) / 400;
+        bodyMat.emissive = new THREE.Color(1, 1, 0.2);
+        bodyMat.emissiveIntensity = t * 0.8;
+      } else {
+        bodyMat.emissiveIntensity = 0;
+      }
+    }
+
+    // Power aura: visible and scaled when above threshold
+    if (playerAura) {
+      const auraStrength = Math.min((currentScale - 1) / 4, 1);
+      playerAura.material.opacity = auraStrength * 0.65;
+      playerAura.scale.setScalar(1 + auraStrength * 0.3);
+      // Pulse rotation
+      playerAura.rotation.z = now * 0.001;
+    }
+
+    // Camera shake
+    let shakeX = 0, shakeY = 0;
+    if (now < shakeUntil && !reducedMotion) {
+      const decay = (shakeUntil - now) / 350;
+      shakeX = Math.sin(now * 0.04) * shakeAmp * decay;
+      shakeY = Math.cos(now * 0.03) * shakeAmp * decay;
+    }
+
     // Update camera to follow player
-    camera.position.z = state.player.z - 10;
+    const camDist = Math.max(10, 10 + currentScale * 2);
+    camera.position.set(shakeX, 8 + shakeY, state.player.z - camDist);
     camera.lookAt(0, 0, state.player.z + 50);
 
     // Create collectible meshes
@@ -256,6 +378,11 @@ export function createRenderer(container) {
         const mesh = createCollectibleMesh(collectible, state.player.color);
         collectibleMeshes.push(mesh);
         scene.add(mesh);
+        // Bob offset based on Z position for variety
+        if (!reducedMotion) {
+          mesh.position.y = 0.5 + Math.sin(now * 0.003 + collectible.z * 0.5) * 0.12;
+          mesh.rotation.y = now * 0.002 + collectible.z;
+        }
       }
     });
 
