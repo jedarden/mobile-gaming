@@ -257,6 +257,21 @@ describe('recorder', () => {
       expect(stream).toBeDefined();
       expect(stream.getTracks().length).toBe(2); // video + audio
     });
+
+    it('uses video stream only when audioContext provided but initAudioCapture not called (ctx && audioDestination false branch)', () => {
+      // recorder.js line 167: `if (ctx && audioDestination)` — ctx is truthy (audioContext
+      // option passed) but audioDestination is null (initAudioCapture never called).
+      // Condition short-circuits to false → else branch: combinedStream = videoStream.
+      const canvas = createMockCanvas();
+      const mockCtx = { createMediaStreamDestination: vi.fn() };
+      // No initAudioCapture call → audioDestination remains null
+      const stream = recorderModule.startCapture(canvas, { audioContext: mockCtx });
+      expect(stream).toBeDefined();
+      // Only video tracks (no audio combined since audioDestination was null)
+      expect(stream.getTracks().length).toBe(1);
+      // initAudioCapture creates the destination; it should NOT have been called
+      expect(mockCtx.createMediaStreamDestination).not.toHaveBeenCalled();
+    });
   });
 
   describe('startRecording', () => {
