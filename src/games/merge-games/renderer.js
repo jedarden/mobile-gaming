@@ -324,7 +324,8 @@ export function createRenderer(canvas) {
 
   function setHintCells(r1, c1, r2, c2) {
     hintCells = (r1 === null) ? null : { r1, c1, r2, c2 };
-    if (hintCells) startLoop(); else stopLoop();
+    // Start loop when a hint is set; let it self-terminate when all animations end
+    if (hintCells) startLoop();
   }
 
   return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, setHintCells, stopLoop, getCellSize: () => cellSize };
