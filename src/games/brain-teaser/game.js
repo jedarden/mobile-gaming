@@ -255,11 +255,14 @@ class BrainTeaserGame {
       level: puzzle,
       getState: () => this.state,
       onHighlight: ({ move }) => {
-        if (this.renderer) this.renderer.setHintTarget(move.targetId);
+        // For drag actions highlight the source (what to pick up); for tap highlight the target
+        const hintId = (move.action === 'drag' && move.sourceId) ? move.sourceId : move.targetId;
+        if (this.renderer) this.renderer.setHintTarget(hintId);
         // Also show text hint
         this.showTextHint();
       },
       onShowMove: ({ move }) => {
+        // At level 2, show the destination/target regardless of action type
         if (this.renderer) this.renderer.setHintTarget(move.targetId);
         this.showTextHint();
       },
