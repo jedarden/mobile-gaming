@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Bridge Race', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/bridge-race/index.html');
+    await page.goto('/bridge-race/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

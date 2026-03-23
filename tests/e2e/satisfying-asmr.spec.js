@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Satisfying Clean', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/satisfying-asmr/index.html');
+    await page.goto('/satisfying-asmr/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

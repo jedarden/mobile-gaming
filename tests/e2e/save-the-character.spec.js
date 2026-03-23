@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Save the Character', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/save-the-character/index.html');
+    await page.goto('/save-the-character/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

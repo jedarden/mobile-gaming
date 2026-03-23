@@ -6,7 +6,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const HUB_URL = '/src/hub/index.html';
+const HUB_URL = '/';
 
 test.describe('Hub Page', () => {
   test.beforeEach(async ({ page }) => {

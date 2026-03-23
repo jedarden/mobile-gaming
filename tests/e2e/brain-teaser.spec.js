@@ -6,7 +6,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const GAME_URL = '/src/games/brain-teaser/index.html';
+const GAME_URL = '/brain-teaser/';
 
 test.describe('Brain Teaser Game', () => {
   test.beforeEach(async ({ page }) => {

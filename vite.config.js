@@ -1,8 +1,9 @@
 // vite.config.js
 import { defineConfig } from 'vite';
-import { readdirSync, existsSync, renameSync, rmSync, copyFileSync } from 'fs';
+import { readdirSync, existsSync, renameSync, rmSync, copyFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -52,6 +53,11 @@ function flattenSrcOutput() {
       if (existsSync(hubIndex)) {
         copyFileSync(hubIndex, resolve(__dirname, 'dist/index.html'));
       }
+
+      // Write version.json with the current git SHA for deploy verification
+      let sha = 'unknown';
+      try { sha = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim(); } catch (_) {}
+      writeFileSync(resolve(__dirname, 'dist/version.json'), JSON.stringify({ sha }));
     }
   };
 }

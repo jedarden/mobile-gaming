@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Makeover Run', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/makeover-run/index.html');
+    await page.goto('/makeover-run/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:deploy": "playwright test --config playwright.deploy.config.js",
     "test:levels": "node scripts/validate-levels.js",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og": "node scripts/generate-og.js",

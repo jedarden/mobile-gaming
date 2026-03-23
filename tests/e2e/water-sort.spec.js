@@ -3,7 +3,7 @@ import { solve } from '../solvers/water-sort-solver.js';
 
 test.describe('Water Sort', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/water-sort/index.html');
+    await page.goto('/water-sort/');
   });
 
   test('loads game and displays tubes', async ({ page }) => {

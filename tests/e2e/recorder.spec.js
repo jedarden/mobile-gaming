@@ -7,7 +7,7 @@
 import { test, expect } from '@playwright/test';
 
 // Use a game that has canvas for testing
-const GAME_URL = '/src/games/jelly-shift/index.html';
+const GAME_URL = '/jelly-shift/';
 
 test.describe('Video Recording Module', () => {
   test.beforeEach(async ({ page }) => {

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Bus Jam', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/bus-jam/index.html');
+    await page.goto('/bus-jam/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

@@ -6,8 +6,8 @@
 
 import { test, expect } from '@playwright/test';
 
-const WATER_SORT_URL = '/src/games/water-sort/index.html';
-const BRAIN_TEASER_URL = '/src/games/brain-teaser/index.html';
+const WATER_SORT_URL = '/water-sort/';
+const BRAIN_TEASER_URL = '/brain-teaser/';
 
 test.describe('Swipe Navigation', () => {
   test.describe('Game Ring Indicator', () => {

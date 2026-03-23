@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Parking Escape', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/parking-escape/index.html');
+    await page.goto('/parking-escape/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Giant Runner', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/giant-runner/index.html');
+    await page.goto('/giant-runner/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

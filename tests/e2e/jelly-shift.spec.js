@@ -6,7 +6,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const GAME_URL = '/src/games/jelly-shift/index.html';
+const GAME_URL = '/jelly-shift/';
 
 test.describe('Jelly Shift Game', () => {
   test.beforeEach(async ({ page }) => {

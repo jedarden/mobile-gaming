@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Merge Games', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/merge-games/index.html');
+    await page.goto('/merge-games/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

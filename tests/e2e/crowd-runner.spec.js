@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Crowd Runner', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/crowd-runner/index.html');
+    await page.goto('/crowd-runner/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Pull the Pin', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/games/pull-the-pin/index.html');
+    await page.goto('/pull-the-pin/');
   });
 
   test('loads game and displays level 1', async ({ page }) => {
