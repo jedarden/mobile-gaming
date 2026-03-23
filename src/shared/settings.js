@@ -8,7 +8,7 @@
 
 import { storage } from './storage.js';
 import { playTap } from './audio.js';
-import { BLUE, GRAY, WHITE, BLUISH_GREEN } from './colors.js';
+import { BLUE, GRAY, BLUISH_GREEN } from './colors.js';
 
 /** Storage key for settings */
 const SETTINGS_KEY = 'global:settings';

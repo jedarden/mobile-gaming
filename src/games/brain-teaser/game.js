@@ -298,7 +298,7 @@ class BrainTeaserGame {
   /**
    * Handle drag start
    */
-  handleDragStart(element) {
+  handleDragStart(_element) {
     if (this.animating || this.state.status === 'solved') return;
     audio.playSelect();
   }
@@ -306,7 +306,7 @@ class BrainTeaserGame {
   /**
    * Handle drag move
    */
-  handleDragMove(element, dx, dy) {
+  handleDragMove(_element, _dx, _dy) {
     // Could add visual feedback here
   }
 

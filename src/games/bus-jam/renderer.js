@@ -620,7 +620,7 @@ export function createRenderer(canvas) {
   /**
    * Highlight a bus (for hints)
    */
-  function highlightBus(bus, scale) {
+  function highlightBus(_bus, _scale) {
     // This is handled in renderBuses via selectedBus
   }
 

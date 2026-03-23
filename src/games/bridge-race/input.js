@@ -22,14 +22,12 @@ const DRAG_SENSITIVITY = 0.015;
 export function createInput({ element, onMove }) {
   let cleanupDrag = null;
   let activeMove = { dx: 0, dz: 0 };
-  let pointerDown = false;
 
   function init() {
     disableTouchActions(element);
 
     cleanupDrag = onDrag(element, ({ dx, dy, isDragging }) => {
       if (isDragging) {
-        pointerDown = true;
         activeMove = {
           dx: dx * DRAG_SENSITIVITY * ENTITY_SPEED,
           dz: dy * DRAG_SENSITIVITY * ENTITY_SPEED
@@ -37,7 +35,6 @@ export function createInput({ element, onMove }) {
         if (onMove) onMove(activeMove);
       } else {
         activeMove = { dx: 0, dz: 0 };
-        pointerDown = false;
       }
     });
 

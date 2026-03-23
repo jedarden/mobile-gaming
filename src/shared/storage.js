@@ -68,7 +68,7 @@ export class StorageManager {
       this.cache.set(key, parsed.data);
       this._updateAccess(key);
       return parsed.data;
-    } catch (e) {
+    } catch (_e) {
       // Storage unavailable or corrupted
       return defaultValue;
     }

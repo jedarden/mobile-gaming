@@ -8,7 +8,6 @@
  * - Progress tracking via shared storage module
  */
 
-import { getGameStats } from '../shared/storage.js';
 import {
   getDailyChallenge,
   isDailyCompleted

@@ -26,7 +26,7 @@ class BusJamAudio {
     try {
       this.context = new (window.AudioContext || window.webkitAudioContext)();
       this.initialized = true;
-    } catch (e) {
+    } catch (_e) {
       console.warn('Web Audio API not supported');
     }
   }

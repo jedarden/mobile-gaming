@@ -6,7 +6,7 @@
  */
 
 import { storage } from './storage.js';
-import { BLUISH_GREEN, BLUE, ORANGE, VERMILION, GRAY, WHITE, BLACK } from './colors.js';
+import { BLUISH_GREEN, BLUE, ORANGE, GRAY } from './colors.js';
 import { playSound } from './audio.js';
 
 const STORAGE_KEY_PREFIX = 'failures:';

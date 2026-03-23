@@ -90,7 +90,7 @@ export function createInput(options) {
   /**
    * Handle drag move
    */
-  function handleDragMove({ x, y, dx, dy, isDragging }) {
+  function handleDragMove({ _x, _y, dx, dy, isDragging }) {
     if (!isDragging || !draggedElement) return;
 
     if (onDragMove) {

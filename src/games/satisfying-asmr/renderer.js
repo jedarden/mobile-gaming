@@ -44,8 +44,6 @@ export function createRenderer(canvas) {
   let rafId = null;
   let lastState = null;
 
-  function now() { return performance.now(); }
-
   // ── Internal animation loop (runs while particles/sparkles are alive) ─────
   function startLoop() {
     if (rafId) return;
@@ -182,7 +180,7 @@ export function createRenderer(canvas) {
     buildGrainCanvas(canvasW, canvasH);
   }
 
-  function buildDirtLayer(cells, w, h) {
+  function buildDirtLayer(cells, w, _h) {
     if (!dirtCtx) return;
     dirtCtx.clearRect(0, 0, canvasW, canvasH);
 

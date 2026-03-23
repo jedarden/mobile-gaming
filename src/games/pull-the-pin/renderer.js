@@ -102,7 +102,7 @@ export function createRenderer(canvas) {
     lastState = state;
   }
 
-  function spawnConfetti(w, h) {
+  function spawnConfetti(w, _h) {
     const colors = Object.values(COLORS);
     for (let i = 0; i < 60; i++) {
       particles.push({

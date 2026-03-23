@@ -206,7 +206,6 @@ export function createRenderer(canvas) {
 
     // Draw liquid segments (bottom to top)
     const segments = tube.segments;
-    const maxSegs = state.maxSegments;
     for (let i = 0; i < segments.length; i++) {
       const segIdx = segments.length - 1 - i; // draw from top visually
       const color = segments[segIdx];
@@ -259,7 +258,6 @@ export function createRenderer(canvas) {
    * Update bubble particles
    */
   function updateBubbles() {
-    const t = performance.now();
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
       b.y -= b.vy;
@@ -323,7 +321,7 @@ export function createRenderer(canvas) {
 
       // During animation, modify tube rendering
       if (animating && animData) {
-        const { fromIdx, toIdx, count, progress } = animData;
+        const { fromIdx, toIdx, count } = animData;
 
         if (i === fromIdx) {
           // Draw source tube with fewer segments during animation
@@ -468,7 +466,6 @@ export function createRenderer(canvas) {
         // Spawn bubbles rising in destination tube after landing
         if (progress >= 0.85 && !bubblesSpawned) {
           bubblesSpawned = true;
-          const toPos = getTubePosition(toIdx, state);
           const th = TUBE_HEIGHT * s;
           const tw = TUBE_WIDTH * s;
           for (let i = 0; i < 5; i++) {

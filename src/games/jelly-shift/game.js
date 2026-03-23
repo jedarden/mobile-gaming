@@ -498,7 +498,7 @@ class JellyShiftGame {
   /**
    * Handle swipe navigation load (navigate to another game)
    */
-  handleSwipeNavLoad(gameId) {
+  handleSwipeNavLoad(_gameId) {
     // Save current state before navigating away
     const state = this.getStateForSwipeNav();
     if (state) {

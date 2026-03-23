@@ -37,7 +37,6 @@ const OUTPUT_HEIGHT = 1920;
 // Timing constants (in milliseconds)
 const INTRO_DURATION = 1500; // 1.5 seconds
 const OUTRO_DURATION = 2000; // 2 seconds
-const FADE_DURATION = 300; // 300ms fade transitions
 
 // Colors
 const COLORS = {
@@ -185,7 +184,6 @@ export function drawOutroFrame(ctx, options, progress = 1) {
 
   // Draw stats
   const statsY = OUTPUT_HEIGHT * 0.35;
-  const statsSpacing = 100;
   const statsWidth = 300;
 
   // Moves

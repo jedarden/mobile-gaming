@@ -102,7 +102,6 @@ class SatisfyingGame {
   handleSpray(px, py) {
     if (!this.state || this.state.status !== 'playing') return;
 
-    const cellSize = this.renderer.getCellSize();
     const { gc, gr } = this.renderer.pixelToGrid(px, py);
     const next = cleanArea(this.state, gc, gr, SPRAY_RADIUS);
     if (next === this.state) return; // nothing changed

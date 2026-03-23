@@ -327,7 +327,7 @@ export function createShareOverlay(options, onClose = null) {
  * @param {Object} options - Share options
  * @returns {string}
  */
-function renderPlatformButtons(options) {
+function renderPlatformButtons(_options) {
   const availablePlatforms = getAvailablePlatforms();
 
   // Try Web Share API first button

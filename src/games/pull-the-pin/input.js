@@ -15,7 +15,7 @@
  * @returns {Object} Input handler with cleanup method
  */
 export function createInputHandler(canvas, callbacks) {
-  const { onPinTap, onTapMiss } = callbacks;
+  const { onPinTap, onTapMiss: _onTapMiss } = callbacks;
 
   // Track touch/mouse state
   let isDown = false;
@@ -51,8 +51,6 @@ export function createInputHandler(canvas, callbacks) {
    */
   function hitTestPin(x, y, pin) {
     // Pin is a rectangle with handle
-    const pinWidth = 50; // Including handle
-    const pinHeight = 20;
     const handleRadius = 10;
 
     // Check main body

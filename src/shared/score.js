@@ -8,7 +8,7 @@
 
 import { storage } from './storage.js';
 import { playSound } from './audio.js';
-import { BLUISH_GREEN, BLUE, ORANGE, GRAY, WHITE, YELLOW } from './colors.js';
+import { BLUISH_GREEN, BLUE, ORANGE, GRAY, YELLOW } from './colors.js';
 
 /** Storage key prefix for best scores */
 const SCORE_KEY_PREFIX = 'best-scores:';
@@ -18,13 +18,6 @@ const WEIGHTS = {
   moves: 0.4,    // 40% weight for move efficiency
   time: 0.3,     // 30% weight for time efficiency
   optimal: 0.3,  // 30% weight for optimality
-};
-
-/** Time bonus thresholds (seconds) */
-const TIME_THRESHOLDS = {
-  fast: 10,     // Under 10s = fast bonus
-  normal: 30,   // 10-30s = normal
-  slow: 60,     // 30-60s = slow
 };
 
 /** Score rating thresholds */

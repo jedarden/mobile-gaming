@@ -75,7 +75,7 @@ export function calculateAverageScale(level, startScale = DEFAULT_START_SCALE, r
       }
     }
 
-    for (const obstacle of (level.obstacles || [])) {
+    for (const _obstacle of (level.obstacles || [])) {
       if (nextRandom() < 0.2) {
         scale = Math.max(MIN_SCALE, scale - OBSTACLE_PENALTY);
       }

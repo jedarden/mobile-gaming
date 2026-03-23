@@ -263,7 +263,6 @@ export function createRenderer(canvas) {
 
   /** Draw exit particles */
   function updateAndDrawParticles() {
-    const t = performance.now();
     for (let i = exitParticles.length - 1; i >= 0; i--) {
       const p = exitParticles[i];
       p.x += p.vx;

@@ -17,9 +17,6 @@ import { createRng } from '../../shared/rng.js';
 const GRID_W = 16;
 const GRID_H = 16;
 
-/** Pattern types mapped to difficulty labels */
-const PATTERN_TYPES = ['full', 'splatter', 'stripes', 'checkerboard'];
-
 const DIFFICULTY_CONFIG = {
   easy:   { patternTypes: ['full', 'stripes'],             coverageFraction: [0.85, 1.0]  },
   medium: { patternTypes: ['splatter', 'checkerboard'],    coverageFraction: [0.50, 0.75] },

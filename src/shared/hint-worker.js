@@ -36,7 +36,7 @@ function solveParking(state) {
     return vehicles.map(v => `${v.id}:${v.x},${v.y}`).sort().join('|');
   }
 
-  function buildOcc(vehicles, w, h) {
+  function buildOcc(vehicles, _w, _h) {
     const occ = {};
     for (const v of vehicles) {
       if (v.orientation === 'horizontal') {

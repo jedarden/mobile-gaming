@@ -10,7 +10,7 @@
  */
 
 import { createRng } from '../../shared/rng.js';
-import { createInitialState, simulateToCompletion, checkWin, removePin } from './state.js';
+import { createInitialState, simulateToCompletion, removePin } from './state.js';
 
 // Generation parameters
 const CANVAS_WIDTH = 320;

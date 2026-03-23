@@ -19,7 +19,6 @@ let recordedChunks = [];
 let circularBuffer = [];
 let isRecording = false;
 let isPassiveMode = false;
-let audioContext = null;
 let audioDestination = null;
 let videoStream = null;
 let combinedStream = null;
@@ -77,7 +76,7 @@ export function getBestMimeType() {
  * @param {HTMLCanvasElement} gameCanvas - Source game canvas
  * @returns {{ canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D }}
  */
-export function createOutputCanvas(gameCanvas) {
+export function createOutputCanvas(_gameCanvas) {
   const canvas = document.createElement('canvas');
   canvas.width = OUTPUT_WIDTH;
   canvas.height = OUTPUT_HEIGHT;
@@ -131,7 +130,6 @@ export function calculateGamePosition(gameWidth, gameHeight) {
  * @returns {MediaStreamAudioDestinationNode}
  */
 export function initAudioCapture(ctx) {
-  audioContext = ctx;
   audioDestination = ctx.createMediaStreamDestination();
   return audioDestination;
 }

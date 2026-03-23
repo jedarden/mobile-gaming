@@ -179,7 +179,7 @@ export function checkWin(state) {
  * @param {number} maxMoves - BFS depth limit (default 40)
  * @returns {{ cost: number, path: Array }|null}
  */
-export function solve(level, maxMoves = 40) {
+export function solve(level, _maxMoves = 40) {
   const vehicles = level.grid.vehicles;
   const width = level.grid.width;
   const height = level.grid.height;

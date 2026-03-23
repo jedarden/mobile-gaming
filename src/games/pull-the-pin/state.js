@@ -193,7 +193,7 @@ export function simulateStep(state) {
   const newBalls = state.balls.map(ball => {
     if (ball.settled || ball.lost) return ball;
 
-    let { x, y, vx, vy, color } = ball;
+    let { x, y, vx, vy } = ball;
 
     // Apply gravity
     vy = roundTo(vy + state.gravity, PRECISION);

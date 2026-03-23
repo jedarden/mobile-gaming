@@ -486,7 +486,7 @@ function setupGestureDetection(element, callbacks) {
     }
   };
 
-  const handleEnd = (e) => {
+  const handleEnd = (_e) => {
     if (!gestureState.isActive) return;
 
     const dx = gestureState.currentX - gestureState.startX;
@@ -579,7 +579,6 @@ function handleSwipeMove(dx, progress) {
   if (indicatorElement) {
     const strip = indicatorElement.querySelector('.swipe-nav-strip');
     if (strip) {
-      const iconWidth = 32; // 24px icon + 8px gap
       strip.style.transform = `translateX(${dx * 0.3}px)`;
     }
   }
@@ -596,7 +595,7 @@ function handleSwipeMove(dx, progress) {
  * @param {number} velocity - Swipe velocity
  * @param {Object} options - Options
  */
-function handleSwipeEnd(direction, velocity, { onLoadGame, onRestoreState }) {
+function handleSwipeEnd(direction, velocity, { onLoadGame: _onLoadGame, onRestoreState: _onRestoreState }) {
   if (isTransitioning) return;
 
   isTransitioning = true;

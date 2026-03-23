@@ -16,7 +16,7 @@ import { disableTouchActions } from '../../shared/input.js';
  * @param {Function} options.onUndo    - () => void
  * @returns {{ init, destroy }}
  */
-export function createInput({ canvas, renderer, getState, onMove, onUndo }) {
+export function createInput({ canvas, renderer, getState, onMove, onUndo: _onUndo }) {
   let drag = null; // { vehicleId, axis, startPx, startPy, currentDx, currentDy }
   let listeners = [];
 
@@ -68,7 +68,7 @@ export function createInput({ canvas, renderer, getState, onMove, onUndo }) {
     }
   }
 
-  function onPointerUp(e) {
+  function onPointerUp(_e) {
     if (!drag) return;
     const state = getState();
     if (state) {

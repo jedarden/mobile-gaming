@@ -38,7 +38,7 @@ export function createInput({ canvas, onSpray }) {
     onSpray(x, y);
   }
 
-  function onUp(e) { active = false; }
+  function onUp(_e) { active = false; }
 
   function init() {
     disableTouchActions(canvas);

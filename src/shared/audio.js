@@ -143,7 +143,7 @@ function playSoundPattern(pattern, volume = 1) {
     }, (duration + 0.1) * 1000);
 
     return gainNode;
-  } catch (e) {
+  } catch (_e) {
     // Audio failed (context not allowed, etc.)
     return null;
   }

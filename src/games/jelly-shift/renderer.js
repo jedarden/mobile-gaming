@@ -198,7 +198,7 @@ export function createRenderer(container) {
     const group = new THREE.Group();
     const hole = wall.hole;
     const holeColor = HOLE_COLORS[hole.shape] || 0xffffff;
-    const wallThickness = 0.3;
+    const _wallThickness = 0.3;
 
     // Full wall plane (background)
     const wallGeo = new THREE.PlaneGeometry(CORRIDOR_WIDTH, CORRIDOR_HEIGHT);

@@ -55,7 +55,7 @@ export function createRenderer(canvas) {
   /**
    * Resize canvas to fit container
    */
-  function resize(state) {
+  function resize(_state) {
     const container = canvas.parentElement;
     if (!container) return { width, height, scale: 1 };
 

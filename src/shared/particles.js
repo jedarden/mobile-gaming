@@ -93,7 +93,7 @@ function createParticle() {
  * @param {number} [height=0]  - Canvas height
  * @returns {Object} Particle system interface
  */
-export function createParticleSystem(ctx, width = 0, height = 0) {
+export function createParticleSystem(ctx, _width = 0, _height = 0) {
   const pool = Array.from({ length: POOL_SIZE }, createParticle);
   let activeCount = 0;
 

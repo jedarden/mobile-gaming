@@ -19,7 +19,6 @@ export function createInput({ canvas, renderer, getState, onMerge }) {
   function getPoint(e) {
     const touch = e.touches ? e.touches[0] : e;
     const rect = canvas.getBoundingClientRect();
-    const dpr = 1; // style coords
     return {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
@@ -49,11 +48,10 @@ export function createInput({ canvas, renderer, getState, onMerge }) {
     if (state) renderer.render(state, drag);
   }
 
-  function onUp(e) {
+  function onUp(_e) {
     if (!drag) return;
     const state = getState();
     if (state) {
-      const { x, y } = getPoint(e.changedTouches ? e : e);
       const cell = renderer.canvasToCell(drag.px, drag.py);
       if (cell && !(cell.r === drag.fromR && cell.c === drag.fromC)) {
         const dr = Math.abs(cell.r - drag.fromR);
