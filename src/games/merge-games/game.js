@@ -98,9 +98,13 @@ class MergeGame {
     if (!this.state || this.state.status !== 'playing') return;
     const next = applyMerge(this.state, r1, c1, r2, c2);
     if (next === this.state) return; // invalid
+    const newTier = next.grid[r2][c2];
     this.state = next;
     this.updateUI();
     this.render();
+    if (this.renderer && this.renderer.spawnMergeBurst) {
+      this.renderer.spawnMergeBurst(r2, c2, newTier);
+    }
     if (this.state.status === 'won') {
       setTimeout(() => this.handleWin(), 250);
     }
