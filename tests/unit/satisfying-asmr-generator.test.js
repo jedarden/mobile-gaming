@@ -107,6 +107,45 @@ describe('generateLevel', () => {
       expect(fraction).toBeGreaterThanOrEqual(0.2);
     }
   });
+
+  it('hard level uses splatter or stripes pattern', () => {
+    const patterns = new Set();
+    for (let s = 0; s < 20; s++) {
+      const level = generateLevel(s, 'hard', 0);
+      patterns.add(level.patternType);
+    }
+    for (const p of patterns) {
+      expect(['splatter', 'stripes']).toContain(p);
+    }
+  });
+
+  it('medium level coverage fraction is in [0.50, 0.75]', () => {
+    for (let s = 0; s < 5; s++) {
+      const level = generateLevel(s * 11, 'medium', 0);
+      const fraction = level.totalDirt / (GRID_W * GRID_H);
+      expect(fraction).toBeGreaterThanOrEqual(0.5);
+      expect(fraction).toBeLessThanOrEqual(0.75);
+    }
+  });
+
+  it('hard level coverage is lower than easy level coverage (on average)', () => {
+    // Hard levels target lower coverage fractions than easy levels
+    let hardTotal = 0;
+    let easyTotal = 0;
+    const samples = 10;
+    for (let s = 0; s < samples; s++) {
+      hardTotal += generateLevel(s * 7, 'hard', 0).totalDirt;
+      easyTotal += generateLevel(s * 7, 'easy', 0).totalDirt;
+    }
+    expect(hardTotal / samples).toBeLessThan(easyTotal / samples);
+  });
+
+  it('level includes difficulty field', () => {
+    for (const diff of ['easy', 'medium', 'hard']) {
+      const level = generateLevel(42, diff, 0);
+      expect(level.difficulty).toBe(diff);
+    }
+  });
 });
 
 describe('validateLevel', () => {

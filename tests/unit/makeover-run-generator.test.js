@@ -168,6 +168,23 @@ describe('validateLevel', () => {
     expect(result.valid).toBe(false);
     expect(result.reason).toMatch(/stars/i);
   });
+
+  it('rejects a level where worst path score exceeds 1 star (worst.stars > 1 branch)', () => {
+    // All positive stations at x=0 — worstPath goes to x=0 (no negative alternative)
+    // and hits all positive stations → score=maxScore → worst.stars=3 > 1
+    const base = generateLevel(1, 'easy');
+    const allPositiveAtCenter = base.stations.map(s => ({
+      ...s,
+      positive: true,
+      x: 0,
+      type: 'hair',
+      upgrade: 'hair',
+      amount: 1,
+    }));
+    const result = validateLevel({ ...base, stations: allPositiveAtCenter });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/stars/i);
+  });
 });
 
 // ── generateBatch ────────────────────────────────────────────────────────────

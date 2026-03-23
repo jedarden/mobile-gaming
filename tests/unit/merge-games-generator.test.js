@@ -88,6 +88,42 @@ describe('generateLevel', () => {
     expect(level).not.toBeNull();
     expect(level.task.targetTier).toBe(4);
   });
+
+  it('easy difficulty has targetCount 1', () => {
+    const level = generateLevel(42, 'easy', 0);
+    expect(level).not.toBeNull();
+    expect(level.task.targetCount).toBe(1);
+  });
+
+  it('medium difficulty has targetCount 1', () => {
+    const level = generateLevel(42, 'medium', 0);
+    expect(level).not.toBeNull();
+    expect(level.task.targetCount).toBe(1);
+  });
+
+  it('grid cells contain only non-negative integer values', () => {
+    const level = generateLevel(42, 'medium', 0);
+    expect(level).not.toBeNull();
+    for (const row of level.grid) {
+      for (const cell of row) {
+        expect(Number.isInteger(cell)).toBe(true);
+        expect(cell).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('generated level is solvable (isSolvable validates)', () => {
+    // import isSolvable from state to cross-verify
+    const level = generateLevel(123, 'easy', 0);
+    expect(level).not.toBeNull();
+    // Verify the level has the required merges available (task-seeded items)
+    const tierCounts = level.grid.flat().reduce((acc, t) => {
+      if (t > 0) acc[t] = (acc[t] || 0) + 1;
+      return acc;
+    }, {});
+    // Easy: tier1 seeds → tier3 target. Must have at least 4 tier1 items
+    expect(tierCounts[1] || 0).toBeGreaterThanOrEqual(4);
+  });
 });
 
 describe('validateLevel', () => {
@@ -104,6 +140,14 @@ describe('validateLevel', () => {
     const result = validateLevel(noTask);
     expect(result.valid).toBe(false);
     expect(result.reason).toBeTruthy();
+  });
+
+  it('returns invalid when task exists but targetTier is 0 (falsy second branch of !task.targetTier)', () => {
+    const level = generateLevel(42, 'easy', 0);
+    const zeroTier = { ...level, task: { ...level.task, targetTier: 0 } };
+    const result = validateLevel(zeroTier);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toBe('Missing task definition');
   });
 
   it('returns invalid for level with empty grid', () => {

@@ -164,6 +164,25 @@ describe('validateLevel', () => {
     expect(result.valid).toBe(false);
     expect(result.reason).toMatch(/not strictly increasing/i);
   });
+
+  it('rejects a level where bridge z values are decreasing (< lastZ also triggers <= check)', () => {
+    const level = generateLevel(1, 'medium');
+    if (level.bridges.length < 2) return;
+    const [first, second, ...rest] = level.bridges;
+    // Make second bridge z less than first — also fails bridge.z <= lastZ
+    const badBridges = [first, { ...second, z: first.z - 5 }, ...rest];
+    const result = validateLevel({ ...level, bridges: badBridges });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/not strictly increasing/i);
+  });
+
+  it('null blockPiles falls back to [] via || operator, causing insufficient blue blocks', () => {
+    const level = generateLevel(1, 'easy');
+    // null blockPiles → (null || []) = [] → zero blue blocks → invalid
+    const result = validateLevel({ ...level, blockPiles: null });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/Insufficient blue blocks/i);
+  });
 });
 
 // ── generateBatch ────────────────────────────────────────────────────────────

@@ -159,18 +159,19 @@ describe('validateLevel', () => {
   });
 
   it('rejects a level where optimal margin is below 1.2x', () => {
-    // Boss at 95% of optimal so margin < 1.2
-    const base = generateLevel(1, 'easy');
-    const levels = generateBatch(1, 'easy', 1);
-    if (levels.length === 0) return;
-    const validLevel = levels[0];
-    // Set boss to just below optimal (tight margin, < 1.2x)
-    // We need to know the optimal crowd — use boss.size / bossFraction (0.75 for easy)
-    const approxOptimal = Math.round(validLevel.boss.size / 0.75);
-    const tightBossSize = Math.ceil(approxOptimal / 1.1); // margin would be ~1.1x < 1.2x
-    const result = validateLevel({ ...validLevel, boss: { size: tightBossSize } });
-    // This may or may not fail depending on exact values; just verify shape
-    expect(typeof result.valid).toBe('boolean');
+    // Construct a level where optimal=11, boss=10 → margin=1.1 < 1.2 → rejected
+    // optimal(11) > boss(10) so line 175 passes; then margin 1.10 < 1.2 hits line 180
+    const level = {
+      id: 'test-margin',
+      startingCrowd: 10,
+      courseLength: 100,
+      speed: 2,
+      gates: [{ z: 50, left: { op: '+', value: 1 }, right: { op: '-', value: 9 }, crossed: false }],
+      boss: { size: 10 },
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/Optimal margin too small/i);
   });
 
   it('rejects a level where worst path also beats the boss', () => {
@@ -187,6 +188,38 @@ describe('validateLevel', () => {
     const result = validateLevel(level);
     expect(result.valid).toBe(false);
     expect(result.reason).toMatch(/No losing path/i);
+  });
+
+  it('rejects when optimal exactly equals boss size (boundary of <= condition)', () => {
+    // No gates: optimal = worst = startingCrowd = boss.size = 10
+    // optimal (10) <= boss (10) → "No winning path"
+    const level = {
+      id: 'test-exact-boundary',
+      startingCrowd: 10,
+      courseLength: 100,
+      speed: 2,
+      gates: [],
+      boss: { size: 10 }
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/No winning path/i);
+  });
+
+  it('accepts when worst path exactly equals boss size (worst > boss is false)', () => {
+    // One gate with asymmetric ops: good side +10 (optimal=20), bad side +0 (worst=10)
+    // optimal=20 > boss=10, margin=2.0 >= 1.2; worst=10 NOT > boss=10 → valid
+    const level = {
+      id: 'test-worst-boundary',
+      startingCrowd: 10,
+      courseLength: 100,
+      speed: 2,
+      gates: [{ z: 50, left: { op: '+', value: 10 }, right: { op: '+', value: 0 }, crossed: false }],
+      boss: { size: 10 }
+    };
+    const result = validateLevel(level);
+    expect(result.valid).toBe(true);
+    expect(result.reason).toBe('OK');
   });
 });
 

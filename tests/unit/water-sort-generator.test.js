@@ -125,6 +125,25 @@ describe('generateLevel', () => {
     expect(typeof level.optimal).toBe('number');
     expect(level.optimal).toBeGreaterThan(0);
   });
+
+  it('uses default difficulty 0.5 when no difficulty argument is provided', () => {
+    let level = null;
+    for (let s = 1; s <= 30; s++) {
+      level = generateLevel(s); // no difficulty arg → defaults to 0.5
+      if (level) break;
+    }
+    expect(level).not.toBeNull();
+    expect(level.difficulty).toBe(0.5);
+  });
+
+  it('result is always null or an object with tubes (return-type contract)', () => {
+    // generateLevel returns null|Object — never throws, never returns other types
+    for (let s = 0; s < 20; s++) {
+      const result = generateLevel(s, 0.5);
+      const valid = result === null || (typeof result === 'object' && Array.isArray(result.tubes));
+      expect(valid).toBe(true);
+    }
+  });
 });
 
 describe('generateLevels', () => {
@@ -193,6 +212,30 @@ describe('colorCount ranges by difficulty', () => {
     expect(level).not.toBeNull();
     expect(level.colorCount).toBeGreaterThanOrEqual(7);
     expect(level.colorCount).toBeLessThanOrEqual(8);
+  });
+
+  it('exact boundary d=0.33 selects medium preset (not easy; < 0.33 is exclusive)', () => {
+    // d=0.32 → easy (colorCount 3–4); d=0.33 → medium (colorCount 5–6)
+    let easyLevel = null;
+    for (let s = 0; s < 50 && !easyLevel; s++) easyLevel = generateLevel(s, 0.32);
+    let medLevel = null;
+    for (let s = 0; s < 50 && !medLevel; s++) medLevel = generateLevel(s, 0.33);
+    expect(easyLevel).not.toBeNull();
+    expect(medLevel).not.toBeNull();
+    expect(easyLevel.colorCount).toBeLessThanOrEqual(4);
+    expect(medLevel.colorCount).toBeGreaterThanOrEqual(5);
+  });
+
+  it('exact boundary d=0.66 selects hard preset (not medium; < 0.66 is exclusive)', () => {
+    // d=0.65 → medium (colorCount 5–6); d=0.66 → hard (colorCount 7–8)
+    let medLevel = null;
+    for (let s = 0; s < 50 && !medLevel; s++) medLevel = generateLevel(s, 0.65);
+    let hardLevel = null;
+    for (let s = 0; s < 50 && !hardLevel; s++) hardLevel = generateLevel(s, 0.66);
+    expect(medLevel).not.toBeNull();
+    expect(hardLevel).not.toBeNull();
+    expect(medLevel.colorCount).toBeLessThanOrEqual(6);
+    expect(hardLevel.colorCount).toBeGreaterThanOrEqual(7);
   });
 });
 

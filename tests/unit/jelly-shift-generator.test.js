@@ -169,6 +169,21 @@ describe('isTransitionAchievable', () => {
     const hole = { shape: 'tall', width: 0.5, height: 2.0 };
     expect(isTransitionAchievable(hole, hole, 5, speed)).toBe(true);
   });
+
+  it('else branch: wide→tall (rangeB left of rangeA) — achievable with large spacing', () => {
+    // rangeA = {2.0, 2.0}, rangeB = {0.4, 0.4} → rangeB.max (0.4) < rangeA.min (2.0)
+    // minTransitionDist = rangeA.min - rangeB.max = 1.6 (else branch)
+    const holeA = { shape: 'wide', width: 2.0, height: 0.5 };
+    const holeB = { shape: 'tall', width: 0.4, height: 2.5 };
+    expect(isTransitionAchievable(holeA, holeB, 1000, speed)).toBe(true);
+  });
+
+  it('else branch: wide→tall (rangeB left of rangeA) — not achievable with tiny spacing', () => {
+    // Same as above but spacing=1 → maxReshapeDist ≈ 0.067 < 1.6 → false
+    const holeA = { shape: 'wide', width: 2.0, height: 0.5 };
+    const holeB = { shape: 'tall', width: 0.4, height: 2.5 };
+    expect(isTransitionAchievable(holeA, holeB, 1, speed)).toBe(false);
+  });
 });
 
 // ── generateLevel ──────────────────────────────────────────────────────────
@@ -279,6 +294,16 @@ describe('generateLevel', () => {
     }
   });
 
+  it('hard levels: wall[0] is never plus (i > 0 condition skips first wall even with usePlusHoles)', () => {
+    // Source: usePlusHoles && i > 0 && i % 3 === 0 — i=0 fails i > 0, so wall[0] uses tall/wide
+    for (let seed = 1; seed <= 20; seed++) {
+      const level = generateLevel(seed, 'hard');
+      if (level.walls.length > 0) {
+        expect(level.walls[0].hole.shape).not.toBe('plus');
+      }
+    }
+  });
+
   it('level id encodes difficulty and seed', () => {
     const level = generateLevel(42, 'hard', 3);
     expect(level.id).toContain('hard');
@@ -344,6 +369,12 @@ describe('validateLevel', () => {
 
   it('accepts a level with zero walls', () => {
     const result = validateLevel({ id: 'empty', speed: 2.0, walls: [] });
+    expect(result.valid).toBe(true);
+  });
+
+  it('null speed falls back to BASE_SPEED via || operator (no crash, still valid)', () => {
+    // level.speed || BASE_SPEED — null speed uses BASE_SPEED for transition checks
+    const result = validateLevel({ id: 'null-speed', speed: null, walls: [] });
     expect(result.valid).toBe(true);
   });
 

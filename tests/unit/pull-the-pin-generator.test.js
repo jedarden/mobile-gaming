@@ -148,6 +148,20 @@ describe('generateLevel', () => {
       }
     });
   });
+
+  describe('unknown difficulty fallback', () => {
+    it('falls back to medium config for an unknown difficulty string', () => {
+      // Medium has 3 colors → 3 cups and 3 balls
+      for (let seed = 1; seed <= 30; seed++) {
+        const level = generateLevel(seed, 'legendary');
+        if (level !== null) {
+          expect(level.cups.length).toBe(3); // same as medium
+          expect(level.balls.length).toBe(3);
+          break;
+        }
+      }
+    });
+  });
 });
 
 // ── isLevelSolvable ──────────────────────────────────────────────────────────
@@ -232,6 +246,34 @@ describe('findSolution', () => {
       expect(JSON.stringify(sol1)).toBe(JSON.stringify(sol2));
     }
   });
+
+  it('returns [] when pins=[] and ball pre-positioned inside matching cup (pins.length===0 won branch)', () => {
+    // Ball already inside the cup capture zone — simulator settles it immediately → won
+    const level = {
+      pins: [],
+      balls: [{ id: 'b1', x: 155, y: 350, color: 'red' }],
+      cups: [{ id: 'cup1', x: 100, y: 300, width: 100, height: 120, acceptColor: 'red' }],
+      channels: [],
+      gravity: 0.003,
+      difficulty: 1,
+    };
+    const sol = findSolution(level);
+    expect(sol).toEqual([]);  // empty array: no pins to remove, level instantly won
+  });
+
+  it('returns null when pins=[] and ball falls off screen (pins.length===0 null branch)', () => {
+    // Ball falls freely — no cup to catch it — goes lost → status !== "won" → null
+    const level = {
+      pins: [],
+      balls: [{ id: 'b1', x: 160, y: 100, color: 'red' }],
+      cups: [],  // no cups → ball falls past y=600 → lost
+      channels: [],
+      gravity: 0.003,
+      difficulty: 1,
+    };
+    const sol = findSolution(level);
+    expect(sol).toBeNull();
+  });
 });
 
 // ── validateLevel ────────────────────────────────────────────────────────────
@@ -256,6 +298,24 @@ describe('validateLevel', () => {
 
   it('rejects a level missing required fields', () => {
     const result = validateLevel({ difficulty: 1 });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/Missing required fields/i);
+  });
+
+  it('rejects a level missing pins (has balls and cups but no pins)', () => {
+    const levels = generateBatch(1, 'easy', 1);
+    if (levels.length === 0) return;
+    const { balls, cups } = levels[0];
+    const result = validateLevel({ balls, cups });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/Missing required fields/i);
+  });
+
+  it('rejects a level missing balls (has pins and cups but no balls)', () => {
+    const levels = generateBatch(1, 'easy', 1);
+    if (levels.length === 0) return;
+    const { pins, cups } = levels[0];
+    const result = validateLevel({ pins, cups });
     expect(result.valid).toBe(false);
     expect(result.reason).toMatch(/Missing required fields/i);
   });

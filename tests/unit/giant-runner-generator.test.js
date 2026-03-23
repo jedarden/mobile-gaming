@@ -96,6 +96,29 @@ describe('calculateAverageScale', () => {
     expect(avg100).toBeGreaterThan(0);
     expect(avg10).toBeGreaterThan(0);
   });
+
+  it('obstacles reduce average scale (20% hit chance per obstacle)', () => {
+    const base = { playerColor: 'blue', collectibles: [], obstacles: [], boss: { scale: 1 } };
+    const withObstacles = {
+      ...base,
+      obstacles: Array.from({ length: 10 }, (_, i) => ({ x: 0, z: i * 50, width: 1.5 })),
+    };
+    const avgNoObs   = calculateAverageScale(base, 1.0, 100);
+    const avgWithObs = calculateAverageScale(withObstacles, 1.0, 100);
+    // 10 obstacles × 20% hit rate × 0.2 penalty ≈ 0.4 expected deduction
+    expect(avgWithObs).toBeLessThan(avgNoObs);
+  });
+
+  it('average scale never goes below MIN_SCALE (0.1) even with heavy penalties', () => {
+    const level = {
+      playerColor: 'blue',
+      collectibles: Array.from({ length: 20 }, () => ({ color: 'red', value: 1.0 })),
+      obstacles: Array.from({ length: 20 }, (_, i) => ({ x: 0, z: i * 10, width: 1.5 })),
+      boss: { scale: 1 }
+    };
+    const avg = calculateAverageScale(level, 1.0, 100);
+    expect(avg).toBeGreaterThanOrEqual(0.1 - 1e-9); // MIN_SCALE = 0.1 (allow float rounding)
+  });
 });
 
 // ── generateLevel ──────────────────────────────────────────────────────────
@@ -216,6 +239,18 @@ describe('generateBatch', () => {
 });
 
 // ── Additional structure and range invariants ─────────────────────────────
+
+describe('generateLevel — unknown difficulty fallback', () => {
+  it('falls back to medium config for an unknown difficulty string', () => {
+    // DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium (line 130)
+    const level = generateLevel(42, 'legendary', 0);
+    expect(level).toBeDefined();
+    expect(level.id).toBeDefined();
+    // Same config as medium — courseLength should be in medium range [300, 450]
+    expect(level.courseLength).toBeGreaterThanOrEqual(300);
+    expect(level.courseLength).toBeLessThanOrEqual(450);
+  });
+});
 
 describe('generateLevel — difficulty ranges', () => {
   it('easy courseLength is within [200, 300]', () => {

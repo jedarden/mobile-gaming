@@ -84,6 +84,52 @@ describe('generateLevel', () => {
     expect(found).toBe(true);
   }, 30000);
 
+  it('hard difficulty: difficulty score uses 8 + Math.round(targetMoves / 15) formula', () => {
+    // Try just one seed; skip if generation times out (hard puzzles require 17+ moves)
+    const level = generateLevel(0, 'hard', 0);
+    if (!level) return; // skip if seed 0 produces no hard level
+    // difficulty = 8 + round(cost / 15) for hard (the ternary else branch)
+    expect(level.difficulty).toBe(8 + Math.round(level.targetMoves / 15));
+    expect(level.targetMoves).toBeGreaterThanOrEqual(17);
+    expect(level.targetMoves).toBeLessThanOrEqual(30);
+  }, 60000);
+
+  it('easy difficulty: difficulty score uses 2 + Math.round(targetMoves / 4) formula', () => {
+    let level = null;
+    for (let s = 0; s < 20; s++) {
+      level = generateLevel(s, 'easy', 0);
+      if (level) break;
+    }
+    if (!level) return;
+    expect(level.difficulty).toBe(2 + Math.round(level.targetMoves / 4));
+  });
+
+  it('medium difficulty: difficulty score uses 5 + Math.round(targetMoves / 8) formula', () => {
+    let level = null;
+    for (let s = 0; s < 30; s++) {
+      level = generateLevel(s, 'medium', 0);
+      if (level) break;
+    }
+    if (!level) return;
+    expect(level.difficulty).toBe(5 + Math.round(level.targetMoves / 8));
+  });
+
+  it('generated levels include both horizontal and vertical non-hero vehicles', () => {
+    let hasHoriz = false, hasVert = false;
+    for (let seed = 0; seed < 20; seed++) {
+      const level = generateLevel(seed, 'easy', 0);
+      if (!level) continue;
+      for (const v of level.grid.vehicles) {
+        if (v.type === 'hero') continue;
+        if (v.orientation === 'horizontal') hasHoriz = true;
+        if (v.orientation === 'vertical') hasVert = true;
+      }
+      if (hasHoriz && hasVert) break;
+    }
+    expect(hasHoriz).toBe(true);
+    expect(hasVert).toBe(true);
+  });
+
   it('id encodes difficulty and index', () => {
     // Use easy to avoid slow hard-level generation in tests
     let level = null;
@@ -169,6 +215,22 @@ describe('validateLevel', () => {
     }
     if (!level) return; // skip if generation failed in test environment
     expect(validateLevel(level).valid).toBe(true);
+  });
+});
+
+describe('generateLevel — unknown difficulty', () => {
+  it('falls back to medium config for an unknown difficulty string', () => {
+    // DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium (line 106)
+    const level = generateLevel(42, 'legendary', 0);
+    // Should not throw and should return a level or null (medium config is used)
+    if (level) {
+      expect(level.id).toBeDefined();
+      expect(level.grid).toBeDefined();
+    }
+    // Verify it produces same result as medium for same seed
+    const mediumLevel = generateLevel(42, 'medium', 0);
+    // Both use same config → same structure (may both be null or both be a level)
+    expect((level === null)).toBe((mediumLevel === null));
   });
 });
 
