@@ -1,13 +1,13 @@
 /**
- * Crowd Runner - Three.js Renderer
+ * Crowd Runner - Three.js Renderer (polished)
  *
- * Scene elements:
- *  - Ground plane with center divider
- *  - Side walls
- *  - Crowd: InstancedMesh of spheres (count = crowdSize, up to MAX_CROWD)
- *  - Gates: colored arch panels with canvas-texture operation labels
- *  - Boss: large red sphere cluster
- *  - Camera: chase-cam behind and above the crowd
+ * Visual improvements:
+ * - Crowd personality: per-instance bounce/wobble + tiny eyes on each blob
+ * - Swarming motion: position jitter seeded by instance index
+ * - Growth pop: brief scale burst when crowd size increases
+ * - Gate impact: camera shake on gate crossing
+ * - Dust trail: small particle spheres drift behind the crowd
+ * - Improved lighting with shadows
  */
 
 import * as THREE from 'three';
@@ -18,12 +18,12 @@ import {
 } from '../../shared/three-setup.js';
 
 // World dimensions
-const COURSE_HALF_WIDTH = 6;   // total width = 12 units
-const LANE_WORLD = 3.5;        // crowd X = laneOffset * LANE_WORLD
+const COURSE_HALF_WIDTH = 6;
+const LANE_WORLD = 3.5;
 const CAMERA_HEIGHT   = 10;
 const CAMERA_BACK     = 14;
 const CAMERA_LOOKAHEAD = 25;
-const VIEW_DISTANCE    = 180;  // show gates within this range ahead
+const VIEW_DISTANCE    = 180;
 
 // Crowd rendering
 const MAX_CROWD = 300;
@@ -35,23 +35,27 @@ const CROWD_Y = CROWD_RADIUS;
 const GATE_HEIGHT    = 4.5;
 const GATE_WIDTH     = 4.5;
 const GATE_THICKNESS = 0.4;
-const GATE_LEFT_X    = -COURSE_HALF_WIDTH / 2;   // center of left lane
-const GATE_RIGHT_X   =  COURSE_HALF_WIDTH / 2;   // center of right lane
+const GATE_LEFT_X    = -COURSE_HALF_WIDTH / 2;
+const GATE_RIGHT_X   =  COURSE_HALF_WIDTH / 2;
 
 // Boss
 const BOSS_BASE_RADIUS = 1.2;
 
+// Dust trail
+const MAX_DUST = 60;
+
 /**
- * Hexagonal ring formation: returns array of {x, y, z} for `count` crowd members.
+ * Hexagonal ring formation with per-instance jitter.
  */
-function buildCrowdPositions(count, cx, cz) {
+function buildCrowdPositions(count, cx, cz, time) {
   const positions = [];
   let placed = 0;
   let ring = 0;
 
   while (placed < count) {
     if (ring === 0) {
-      positions.push({ x: cx, y: CROWD_Y, z: cz });
+      const bob = Math.sin(time * 0.004) * 0.06;
+      positions.push({ x: cx, y: CROWD_Y + bob, z: cz });
       placed++;
       ring = 1;
     } else {
@@ -59,10 +63,15 @@ function buildCrowdPositions(count, cx, cz) {
       for (let i = 0; i < spotsInRing && placed < count; i++) {
         const angle = (i / spotsInRing) * Math.PI * 2;
         const r = ring * CROWD_SPACING;
+        // Per-instance wobble using position-seeded sine
+        const seed = placed * 0.41 + ring * 1.57;
+        const bobY = Math.sin(time * 0.004 + seed) * 0.07;
+        const jitterX = Math.sin(seed * 127.1) * 0.06;
+        const jitterZ = Math.sin(seed * 311.7) * 0.06;
         positions.push({
-          x: cx + Math.cos(angle) * r,
-          y: CROWD_Y,
-          z: cz + Math.sin(angle) * r
+          x: cx + Math.cos(angle) * r + jitterX,
+          y: CROWD_Y + bobY,
+          z: cz + Math.sin(angle) * r + jitterZ
         });
         placed++;
       }
@@ -73,26 +82,16 @@ function buildCrowdPositions(count, cx, cz) {
   return positions;
 }
 
-/**
- * Determine whether an op is "good" (boosts crowd) vs "bad".
- * Used for gate colour.
- */
 function isGoodOp(op) {
   if (op.op === '+') return true;
   if (op.op === '×' && op.value > 1) return true;
   return false;
 }
 
-/**
- * Format an operation as a display string: "+10", "×3", "−5", "÷2"
- */
 function formatOp(op) {
   return `${op.op}${op.value}`;
 }
 
-/**
- * Create a canvas texture with operation text.
- */
 function makeOpTexture(op) {
   const good = isGoodOp(op);
   const canvas = document.createElement('canvas');
@@ -100,14 +99,24 @@ function makeOpTexture(op) {
   canvas.height = 128;
   const ctx = canvas.getContext('2d');
 
-  // Background
-  ctx.fillStyle = good ? '#1a7a1a' : '#7a1a1a';
+  // Background with gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, good ? '#28bb28' : '#bb2828');
+  grad.addColorStop(1, good ? '#145214' : '#521414');
+  ctx.fillStyle = grad;
   ctx.roundRect(4, 4, 248, 120, 16);
   ctx.fill();
 
-  // Text
+  // Sheen
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.roundRect(4, 4, 248, 60, [16, 16, 0, 0]);
+  ctx.fill();
+
+  // Text with shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur = 4;
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 60px Arial, sans-serif';
+  ctx.font = 'bold 64px Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(formatOp(op), 128, 64);
@@ -115,9 +124,6 @@ function makeOpTexture(op) {
   return new THREE.CanvasTexture(canvas);
 }
 
-/**
- * Build a gate group (left + right arches) for a level gate.
- */
 function buildGateMeshes(gate) {
   const group = new THREE.Group();
   group.position.set(0, 0, gate.z);
@@ -130,18 +136,17 @@ function buildGateMeshes(gate) {
   for (const { cx, op } of sides) {
     const good = isGoodOp(op);
 
-    // Main panel
     const panelGeo  = new THREE.BoxGeometry(GATE_WIDTH, GATE_HEIGHT, GATE_THICKNESS);
     const panelMat  = new THREE.MeshPhongMaterial({
       color: good ? 0x22aa22 : 0xaa2222,
       transparent: true,
-      opacity: 0.75
+      opacity: 0.78,
+      shininess: 60
     });
     const panel = new THREE.Mesh(panelGeo, panelMat);
     panel.position.set(cx, GATE_HEIGHT / 2, 0);
     group.add(panel);
 
-    // Text sprite
     const texture  = makeOpTexture(op);
     const spriteMat = new THREE.SpriteMaterial({ map: texture });
     const sprite   = new THREE.Sprite(spriteMat);
@@ -149,26 +154,22 @@ function buildGateMeshes(gate) {
     sprite.position.set(cx, GATE_HEIGHT / 2, GATE_THICKNESS);
     group.add(sprite);
 
-    // Left post
     const postGeo = new THREE.BoxGeometry(0.3, GATE_HEIGHT, GATE_THICKNESS);
     const postMat = new THREE.MeshPhongMaterial({ color: good ? 0x145214 : 0x521414 });
     const lPost = new THREE.Mesh(postGeo, postMat);
     lPost.position.set(cx - GATE_WIDTH / 2, GATE_HEIGHT / 2, 0);
     group.add(lPost);
 
-    // Right post
     const rPost = new THREE.Mesh(postGeo, postMat);
     rPost.position.set(cx + GATE_WIDTH / 2, GATE_HEIGHT / 2, 0);
     group.add(rPost);
 
-    // Top bar
     const barGeo = new THREE.BoxGeometry(GATE_WIDTH + 0.3, 0.4, GATE_THICKNESS);
     const bar = new THREE.Mesh(barGeo, postMat);
     bar.position.set(cx, GATE_HEIGHT, 0);
     group.add(bar);
   }
 
-  // Center divider (thin vertical rod between arches)
   const divGeo = new THREE.BoxGeometry(0.15, GATE_HEIGHT, GATE_THICKNESS);
   const divMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
   const div = new THREE.Mesh(divGeo, divMat);
@@ -178,15 +179,10 @@ function buildGateMeshes(gate) {
   return group;
 }
 
-/**
- * Build a boss sphere cluster mesh.
- * Size scales with boss.size (cube-root for radius).
- */
 function buildBossMesh(bossSize) {
   const group = new THREE.Group();
   const scale = Math.cbrt(bossSize) * 0.55;
 
-  // Main body
   const bodyGeo = new THREE.SphereGeometry(BOSS_BASE_RADIUS, 24, 16);
   const bodyMat = new THREE.MeshPhongMaterial({ color: 0xcc2222, shininess: 80 });
   const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -194,7 +190,6 @@ function buildBossMesh(bossSize) {
   body.scale.set(scale, scale, scale);
   group.add(body);
 
-  // Angry eyes
   const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
   const eyeGeo = new THREE.SphereGeometry(0.18, 8, 8);
   [-0.5, 0.5].forEach(xOff => {
@@ -207,7 +202,6 @@ function buildBossMesh(bossSize) {
     group.add(eye);
   });
 
-  // Size label above boss
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 128;
   const ctx = canvas.getContext('2d');
@@ -218,7 +212,7 @@ function buildBossMesh(bossSize) {
   ctx.font = 'bold 56px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`💀 ${bossSize}`, 128, 64);
+  ctx.fillText(`\u{1F480} ${bossSize}`, 128, 64);
   const texture = new THREE.CanvasTexture(canvas);
   const labelMat = new THREE.SpriteMaterial({ map: texture });
   const label = new THREE.Sprite(labelMat);
@@ -229,20 +223,31 @@ function buildBossMesh(bossSize) {
   return group;
 }
 
-/**
- * Create and return a renderer instance.
- */
 export function createRenderer(container) {
   let scene, camera, renderer, canvas;
-  let crowdMesh, bossMesh;
+  let crowdMesh, eyeMesh, bossMesh;
   let gateMeshGroups = [];
+  let dustMeshes = [];
   const dummy = new THREE.Object3D();
   let reducedMotion = false;
+
+  // Camera shake
+  let shakeUntil = 0;
+  let shakeAmp = 0;
+
+  // Growth pop
+  let popUntil = 0;
+  let prevCrowdSize = 0;
+
+  // Dust state
+  const dustParticles = []; // { x, y, z, life, r }
+
+  function now() { return performance.now(); }
 
   function init() {
     const result = createThreeScene(container, {
       fov: 55,
-      backgroundColor: 0x87CEEB,   // sky blue
+      backgroundColor: 0x87CEEB,
       antialias: true,
       cameraPosition: new THREE.Vector3(0, CAMERA_HEIGHT, -CAMERA_BACK)
     });
@@ -253,18 +258,26 @@ export function createRenderer(container) {
     canvas   = result.canvas;
 
     createBasicLights(scene, {
-      ambientIntensity: 0.55,
-      directionalIntensity: 0.85,
-      directionalPosition: new THREE.Vector3(6, 12, -5)
+      ambientIntensity: 0.5,
+      directionalIntensity: 0.9,
+      directionalPosition: new THREE.Vector3(8, 15, -8)
     });
+
+    // Add second fill light for crowd depth
+    const fillLight = new THREE.DirectionalLight(0xaaccff, 0.3);
+    fillLight.position.set(-6, 6, 10);
+    scene.add(fillLight);
+
+    // Soft fog
+    scene.fog = new THREE.Fog(0x87CEEB, 80, 250);
 
     buildGround();
     buildWalls();
     buildCrowd();
+    buildDustPool();
   }
 
-  // ── Ground ────────────────────────────────────────────────────────────────
-
+  // ── Ground ─────────────────────────────────────────────────────────────────
   function buildGround() {
     const geo = new THREE.PlaneGeometry(COURSE_HALF_WIDTH * 2, 2000);
     const mat = new THREE.MeshLambertMaterial({ color: 0x3a7a3a });
@@ -274,7 +287,6 @@ export function createRenderer(container) {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // Center lane divider line
     const lineGeo = new THREE.PlaneGeometry(0.12, 2000);
     const lineMat = new THREE.MeshBasicMaterial({
       color: 0xffffff, transparent: true, opacity: 0.35
@@ -285,8 +297,7 @@ export function createRenderer(container) {
     scene.add(line);
   }
 
-  // ── Side walls ────────────────────────────────────────────────────────────
-
+  // ── Walls ──────────────────────────────────────────────────────────────────
   function buildWalls() {
     const wallGeo = new THREE.BoxGeometry(0.4, 2, 2000);
     const wallMat = new THREE.MeshLambertMaterial({ color: 0xc8a050 });
@@ -297,49 +308,133 @@ export function createRenderer(container) {
     });
   }
 
-  // ── Crowd InstancedMesh ───────────────────────────────────────────────────
-
+  // ── Crowd InstancedMesh (body + eyes) ──────────────────────────────────────
   function buildCrowd() {
-    const geo = new THREE.SphereGeometry(CROWD_RADIUS, 8, 6);
-    const mat = new THREE.MeshPhongMaterial({ color: 0x4DABF7, shininess: 60 });
-    crowdMesh = new THREE.InstancedMesh(geo, mat, MAX_CROWD);
+    // Body spheres
+    const bodyGeo = new THREE.SphereGeometry(CROWD_RADIUS, 8, 6);
+    const bodyMat = new THREE.MeshPhongMaterial({ color: 0x4DABF7, shininess: 80 });
+    crowdMesh = new THREE.InstancedMesh(bodyGeo, bodyMat, MAX_CROWD);
     crowdMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    // Hide all instances initially
+
+    // Eye spheres (small black dots on the front of each blob)
+    const eyeGeo = new THREE.SphereGeometry(0.07, 6, 4);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    eyeMesh = new THREE.InstancedMesh(eyeGeo, eyeMat, MAX_CROWD * 2);
+    eyeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
     for (let i = 0; i < MAX_CROWD; i++) {
       dummy.position.set(0, -1000, 0);
       dummy.updateMatrix();
       crowdMesh.setMatrixAt(i, dummy.matrix);
+      eyeMesh.setMatrixAt(i * 2,     dummy.matrix);
+      eyeMesh.setMatrixAt(i * 2 + 1, dummy.matrix);
     }
+
     crowdMesh.instanceMatrix.needsUpdate = true;
+    eyeMesh.instanceMatrix.needsUpdate = true;
     scene.add(crowdMesh);
+    scene.add(eyeMesh);
   }
 
-  function updateCrowd(crowdSize, cx, cz) {
+  function updateCrowd(crowdSize, cx, cz, time) {
     const visCount = Math.min(crowdSize, MAX_CROWD);
-    const positions = buildCrowdPositions(visCount, cx, cz);
+    const positions = buildCrowdPositions(visCount, cx, cz, time);
+
+    // Growth pop scale
+    const popScale = popUntil > time
+      ? 1 + 0.25 * Math.sin(((popUntil - time) / 350) * Math.PI)
+      : 1;
 
     for (let i = 0; i < MAX_CROWD; i++) {
       if (i < visCount) {
-        dummy.position.set(positions[i].x, positions[i].y, positions[i].z);
+        const pos = positions[i];
+        dummy.position.set(pos.x, pos.y, pos.z);
+        dummy.scale.setScalar(popScale);
+        dummy.updateMatrix();
+        crowdMesh.setMatrixAt(i, dummy.matrix);
+
+        // Eyes: two black dots at front-top of sphere
+        const er = CROWD_RADIUS * 0.85;
         dummy.scale.setScalar(1);
+        dummy.position.set(pos.x - 0.09, pos.y + er * 0.55, pos.z + er * 0.72);
+        dummy.updateMatrix();
+        eyeMesh.setMatrixAt(i * 2, dummy.matrix);
+
+        dummy.position.set(pos.x + 0.09, pos.y + er * 0.55, pos.z + er * 0.72);
+        dummy.updateMatrix();
+        eyeMesh.setMatrixAt(i * 2 + 1, dummy.matrix);
       } else {
         dummy.position.set(0, -1000, 0);
         dummy.scale.setScalar(0);
+        dummy.updateMatrix();
+        crowdMesh.setMatrixAt(i, dummy.matrix);
+        eyeMesh.setMatrixAt(i * 2,     dummy.matrix);
+        eyeMesh.setMatrixAt(i * 2 + 1, dummy.matrix);
       }
-      dummy.updateMatrix();
-      crowdMesh.setMatrixAt(i, dummy.matrix);
     }
+
     crowdMesh.instanceMatrix.needsUpdate = true;
     crowdMesh.count = visCount;
+    eyeMesh.instanceMatrix.needsUpdate = true;
+    eyeMesh.count = visCount * 2;
   }
 
-  // ── Gates ─────────────────────────────────────────────────────────────────
+  // ── Dust trail ─────────────────────────────────────────────────────────────
+  function buildDustPool() {
+    const dustGeo = new THREE.SphereGeometry(0.12, 4, 3);
+    const dustMat = new THREE.MeshBasicMaterial({
+      color: 0xbbaa88, transparent: true, opacity: 0.4
+    });
+    for (let i = 0; i < MAX_DUST; i++) {
+      const m = new THREE.Mesh(dustGeo, dustMat);
+      m.visible = false;
+      scene.add(m);
+      dustMeshes.push(m);
+    }
+  }
 
+  function spawnDust(cx, cz) {
+    for (let i = 0; i < 3; i++) {
+      const slot = dustParticles.length < MAX_DUST
+        ? dustParticles.length
+        : dustParticles.findIndex(p => p.life <= 0);
+      if (slot < 0 || slot >= MAX_DUST) return;
+      const dp = {
+        x: cx + (Math.random() - 0.5) * 2.5,
+        y: 0.08 + Math.random() * 0.15,
+        z: cz + 0.5 + Math.random() * 2,
+        vx: (Math.random() - 0.5) * 0.04,
+        vy: 0.02 + Math.random() * 0.02,
+        life: 1
+      };
+      if (slot === dustParticles.length) dustParticles.push(dp);
+      else dustParticles[slot] = dp;
+    }
+  }
+
+  function updateDust() {
+    for (let i = 0; i < dustParticles.length; i++) {
+      const p = dustParticles[i];
+      if (p.life <= 0) {
+        dustMeshes[i].visible = false;
+        continue;
+      }
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.025;
+      const m = dustMeshes[i];
+      m.visible = true;
+      m.position.set(p.x, p.y, p.z);
+      const sc = p.life * 0.9;
+      m.scale.setScalar(sc);
+      m.material.opacity = p.life * 0.35;
+    }
+  }
+
+  // ── Gates ──────────────────────────────────────────────────────────────────
   function setupGates(gates) {
-    // Remove old gates
     gateMeshGroups.forEach(g => scene.remove(g));
     gateMeshGroups = [];
-
     gates.forEach(gate => {
       const group = buildGateMeshes(gate);
       scene.add(group);
@@ -356,8 +451,7 @@ export function createRenderer(container) {
     });
   }
 
-  // ── Boss ──────────────────────────────────────────────────────────────────
-
+  // ── Boss ───────────────────────────────────────────────────────────────────
   function setupBoss(boss) {
     if (bossMesh) scene.remove(bossMesh);
     bossMesh = buildBossMesh(boss.size);
@@ -365,16 +459,16 @@ export function createRenderer(container) {
     scene.add(bossMesh);
   }
 
-  // ── Render loop ───────────────────────────────────────────────────────────
-
+  // ── Render ─────────────────────────────────────────────────────────────────
   let lastBossSize = null;
   let lastGateCount = 0;
+  let lastCrossedCount = 0;
 
   function render(state) {
+    const t = now();
     const crowdX = state.laneOffset * LANE_WORLD;
     const crowdZ = state.position;
 
-    // Lazily set up boss and gates on first render with this level
     if (lastBossSize !== state.boss.size) {
       setupBoss(state.boss);
       lastBossSize = state.boss.size;
@@ -384,46 +478,71 @@ export function createRenderer(container) {
       lastGateCount = state.gates.length;
     }
 
-    // Update crowd instances
-    updateCrowd(state.crowdSize, crowdX, crowdZ);
+    // Detect gate crossing → camera shake
+    const crossedCount = state.gates.filter(g => g.crossed).length;
+    if (crossedCount > lastCrossedCount && !reducedMotion) {
+      shakeUntil = t + 300;
+      shakeAmp = 0.25;
+    }
+    lastCrossedCount = crossedCount;
 
-    // Gate visibility
+    // Detect crowd growth → scale pop
+    if (state.crowdSize > prevCrowdSize && !reducedMotion) {
+      popUntil = t + 350;
+    }
+    prevCrowdSize = state.crowdSize;
+
+    // Update crowd with time for bounce
+    updateCrowd(state.crowdSize, crowdX, crowdZ, t);
+
+    // Spawn and update dust trail
+    if (!reducedMotion && state.status === 'playing') {
+      spawnDust(crowdX, crowdZ);
+    }
+    updateDust();
+
     updateGateVisibility(state.gates, crowdZ);
 
-    // Camera: follow crowd from behind and above
+    // Camera shake
+    let shakeX = 0, shakeY = 0;
+    if (t < shakeUntil && !reducedMotion) {
+      const decay = (shakeUntil - t) / 300;
+      shakeX = Math.sin(t * 0.05) * shakeAmp * decay;
+      shakeY = Math.cos(t * 0.04) * shakeAmp * decay * 0.5;
+    }
+
     const camZ = crowdZ - CAMERA_BACK;
     const camX = crowdX * 0.3;
     if (reducedMotion) {
       camera.position.set(camX, CAMERA_HEIGHT, camZ);
     } else {
       camera.position.x += (camX - camera.position.x) * 0.08;
-      camera.position.y  = CAMERA_HEIGHT;
+      camera.position.y  = CAMERA_HEIGHT + shakeY;
       camera.position.z += (camZ - camera.position.z) * 0.12;
+      camera.position.x += shakeX;
     }
     camera.lookAt(crowdX * 0.2, 1, crowdZ + CAMERA_LOOKAHEAD);
 
-    // Boss pulse on win
     if (bossMesh && state.status === 'won') {
-      const t = Date.now() * 0.003;
-      bossMesh.scale.setScalar(1 + 0.08 * Math.sin(t));
+      const ts = t * 0.003;
+      bossMesh.scale.setScalar(1 + 0.08 * Math.sin(ts));
     }
 
     renderer.render(scene, camera);
   }
 
-  // ── Win / lose animation ──────────────────────────────────────────────────
-
+  // ── Win/lose animation ─────────────────────────────────────────────────────
   function animateResult(won, onComplete) {
     if (reducedMotion) {
       if (onComplete) onComplete();
       return;
     }
 
-    const startTime = performance.now();
+    const startTime = now();
     const duration  = won ? 1200 : 600;
 
-    function step(now) {
-      const t = Math.min((now - startTime) / duration, 1);
+    function step(ts) {
+      const t = Math.min((ts - startTime) / duration, 1);
       if (bossMesh) {
         if (won) {
           bossMesh.scale.setScalar(1 + t * 0.4 * Math.sin(t * Math.PI * 6));
@@ -441,8 +560,7 @@ export function createRenderer(container) {
     requestAnimationFrame(step);
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
-
+  // ── Public API ─────────────────────────────────────────────────────────────
   function resize(width, height) {
     resizeThreeRenderer(renderer, camera, width, height);
   }
@@ -454,6 +572,10 @@ export function createRenderer(container) {
   function resetLevel() {
     lastBossSize  = null;
     lastGateCount = 0;
+    lastCrossedCount = 0;
+    prevCrowdSize = 0;
+    dustParticles.length = 0;
+    dustMeshes.forEach(m => { m.visible = false; });
   }
 
   function destroy() {
