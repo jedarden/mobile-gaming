@@ -20,6 +20,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 const GAME_ID   = 'crowd-runner';
 const LEVELS_URL = './levels.json';
@@ -148,6 +149,8 @@ class CrowdRunnerGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -211,6 +214,7 @@ class CrowdRunnerGame {
       const stars = calculateStars(this.state.crowdSize, this.state.boss.size);
 
       this.renderer.animateResult(true, async () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
         await this.saveProgress();
@@ -220,13 +224,14 @@ class CrowdRunnerGame {
       });
     } else {
       this.renderer.animateResult(false, () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
         this.showLoseOverlay();
         announce(`Defeated! Your crowd of ${this.state.crowdSize} was too small for the boss of ${this.state.boss.size}.`);
       });
     }
   }
 
-  restartLevel() { this.startLevel(this.currentLevelIndex); }
+  restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
   prevLevel()    { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel()    { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
 

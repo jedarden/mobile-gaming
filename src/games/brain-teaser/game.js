@@ -24,6 +24,7 @@ import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { audio } from './audio.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 // Game constants
 const GAME_ID = 'brain-teaser';
@@ -233,6 +234,8 @@ class BrainTeaserGame {
   startPuzzle(index) {
     if (index < 0 || index >= this.puzzles.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentPuzzleIndex) this.levelRetries = 0;
     this.currentPuzzleIndex = index;
     const puzzle = this.puzzles[index];
 
@@ -254,6 +257,7 @@ class BrainTeaserGame {
    * Restart current puzzle
    */
   restartPuzzle() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
     this.startPuzzle(this.currentPuzzleIndex);
     audio.playSelect();
   }
@@ -333,6 +337,9 @@ class BrainTeaserGame {
   async handleSolved() {
     audio.playWin();
     haptic('win');
+
+    // Record adaptive difficulty signal
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
 
     // Update stats
     await updateGameStats(GAME_ID, {

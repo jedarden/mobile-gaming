@@ -29,6 +29,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 const GAME_ID   = 'jelly-shift';
 const LEVELS_URL = './levels.json';
@@ -206,6 +207,8 @@ class JellyShiftGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -308,6 +311,7 @@ class JellyShiftGame {
 
       // Continue rendering for a moment to show completion
       setTimeout(async () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
         await updateGameStats(GAME_ID, {
           played: 1,
           completed: 1,
@@ -327,6 +331,7 @@ class JellyShiftGame {
       }, 500);
     } else {
       setTimeout(() => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
         this.showLoseOverlay();
         announce(`Splat! You hit wall ${this.state.wallsPassed + 1}. Score: ${this.state.score}`);
       }, 1000);
@@ -337,6 +342,7 @@ class JellyShiftGame {
    * Restart current level
    */
   restartLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
     this.startLevel(this.currentLevelIndex);
   }
 

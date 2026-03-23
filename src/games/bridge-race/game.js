@@ -23,6 +23,7 @@ import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
 import { createRng }      from '../../shared/rng.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 const GAME_ID   = 'bridge-race';
 const LEVELS_URL = './levels.json';
@@ -160,6 +161,8 @@ class BridgeRaceGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -249,6 +252,7 @@ class BridgeRaceGame {
       const stars = calculateStars(this.state);
 
       this.renderer.animateResult(true, async () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
         await this.saveProgress();
@@ -258,13 +262,14 @@ class BridgeRaceGame {
       });
     } else {
       this.renderer.animateResult(false, () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
         this.showLoseOverlay();
         announce('An opponent reached the finish first! Try again!');
       });
     }
   }
 
-  restartLevel() { this.startLevel(this.currentLevelIndex); }
+  restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
   prevLevel()    { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel()    { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
 

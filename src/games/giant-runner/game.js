@@ -30,6 +30,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 // Game constants
 const GAME_ID = 'giant-runner';
@@ -232,6 +233,8 @@ class GiantRunnerGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -331,6 +334,7 @@ class GiantRunnerGame {
 
       // Animate boss fight
       this.renderer.animateBossFight(true, async () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
         // Update stats
         await updateGameStats(GAME_ID, {
           played: 1,
@@ -352,6 +356,7 @@ class GiantRunnerGame {
     } else {
       // Animate loss
       this.renderer.animateBossFight(false, () => {
+        recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
         this.showLoseOverlay();
         announce('Defeat! The boss was too powerful. Try again!');
       });
@@ -362,6 +367,7 @@ class GiantRunnerGame {
    * Restart current level
    */
   restartLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
     this.startLevel(this.currentLevelIndex);
   }
 

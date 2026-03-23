@@ -6,6 +6,7 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -89,6 +90,8 @@ class MergeGame {
 
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
     this.state = createInitialState(level);
@@ -98,7 +101,7 @@ class MergeGame {
     announce(`Level ${index + 1}. Merge tiles to reach Tier ${level.task.targetTier}.`);
   }
 
-  restartLevel() { this.startLevel(this.currentLevelIndex); }
+  restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
   prevLevel() { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel() { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
 
@@ -121,6 +124,7 @@ class MergeGame {
   }
 
   async handleWin() {
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
     const moves = this.state.moves;
     const level = this.levels[this.currentLevelIndex];
     const stars = moves <= 5 ? 3 : moves <= 10 ? 2 : 1;

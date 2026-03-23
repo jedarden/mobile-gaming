@@ -22,6 +22,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 const GAME_ID   = 'makeover-run';
 const LEVELS_URL = './levels.json';
@@ -165,6 +166,8 @@ class MakeoverRunGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -235,6 +238,7 @@ class MakeoverRunGame {
     const stars = this.state.stars;
 
     this.renderer.animateWin(async () => {
+      recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
       await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
       await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, score });
       await this.saveProgress();
@@ -244,7 +248,7 @@ class MakeoverRunGame {
     });
   }
 
-  restartLevel() { this.startLevel(this.currentLevelIndex); }
+  restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
   prevLevel()    { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel()    { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
 

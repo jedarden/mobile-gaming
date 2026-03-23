@@ -13,6 +13,7 @@ import { initStorage, getGameStats, updateGameStats } from '../../shared/storage
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 import {
   createInitialState,
@@ -178,6 +179,8 @@ class SaveTheCharacterGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -300,6 +303,9 @@ class SaveTheCharacterGame {
    * Handle win condition
    */
   async handleWin() {
+    // Record adaptive difficulty signal
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
+
     // Update stats
     await updateGameStats(GAME_ID, {
       played: 1,
@@ -320,6 +326,7 @@ class SaveTheCharacterGame {
    * Handle lose condition
    */
   handleLose() {
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
     haptic('fail');
     announce('Wrong choice! The character was not saved. Try again!');
   }
@@ -341,6 +348,7 @@ class SaveTheCharacterGame {
    * Retry current level
    */
   retryLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
     this.startLevel(this.currentLevelIndex);
   }
 

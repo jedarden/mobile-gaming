@@ -35,6 +35,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { audio } from './audio.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 
 // Game constants
 const GAME_ID = 'bus-jam';
@@ -329,6 +330,8 @@ class BusJamGame {
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
 
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
 
@@ -354,6 +357,7 @@ class BusJamGame {
    * Restart current level
    */
   restartLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
     this.startLevel(this.currentLevelIndex);
     audio.playSelect();
   }
@@ -534,6 +538,9 @@ class BusJamGame {
     const stars = calculateStars(this.state.moves, level.optimal);
 
     audio.playWin();
+
+    // Record adaptive difficulty signal
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
 
     // Update stats
     await updateGameStats(GAME_ID, {

@@ -6,6 +6,7 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { recordLevel } from '../../shared/adaptive.js';
 import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
@@ -92,6 +93,8 @@ class SatisfyingGame {
 
   startLevel(index) {
     if (index < 0 || index >= this.levels.length) return;
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
     this.state = createInitialState(level);
@@ -103,7 +106,7 @@ class SatisfyingGame {
     announce(`Level ${index + 1}. Clean the surface by spraying dirty areas.`);
   }
 
-  restartLevel() { this.startLevel(this.currentLevelIndex); }
+  restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
   prevLevel() { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel() { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
 
@@ -130,6 +133,7 @@ class SatisfyingGame {
   }
 
   async handleWin() {
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
     const pct = Math.round(getProgress(this.state) * 100);
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars: 3 });
     await awardLevelComplete(GAME_ID, 3, { levelId: this.currentLevelIndex });
