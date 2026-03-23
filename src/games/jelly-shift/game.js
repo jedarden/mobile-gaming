@@ -28,6 +28,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
+import { haptic } from '../../shared/haptics.js';
 
 const GAME_ID   = 'jelly-shift';
 const LEVELS_URL = './levels.json';
@@ -257,6 +258,7 @@ class JellyShiftGame {
           const holeColor = wall.hole.shape === 'tall' ? 0x4ecdc4
             : wall.hole.shape === 'wide' ? 0xff6b6b : 0xffd93d;
           this.renderer.triggerSquish();
+          haptic('tap');
           this.renderer.spawnParticles(
             { x: 0, y: 0, z: wall.z },
             holeColor
@@ -264,6 +266,7 @@ class JellyShiftGame {
         } else if (collision.result === 'fail') {
           this.state = failWall(this.state);
           this.renderer.triggerSplat();
+          haptic('fail');
         }
       }
 
@@ -318,6 +321,7 @@ class JellyShiftGame {
 
         await this.saveProgress();
 
+        haptic('win');
         this.showWinOverlay(stars);
         announce(`Level Complete! ${stars} stars! Score: ${this.state.score}`);
       }, 500);

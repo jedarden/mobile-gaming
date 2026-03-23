@@ -34,6 +34,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { audio } from './audio.js';
+import { haptic } from '../../shared/haptics.js';
 
 // Game constants
 const GAME_ID = 'bus-jam';
@@ -498,6 +499,7 @@ class BusJamGame {
       if (!result) break;
 
       audio.playBoard();
+      haptic('collect');
       await this.renderer.animateBoarding(result.stop, bus, this.renderer.scale, () => {});
 
       // Check if bus is now full
@@ -526,6 +528,7 @@ class BusJamGame {
    * Handle win condition
    */
   async handleWin() {
+    haptic('win');
     this.state.won = true;
     const level = this.levels[this.currentLevelIndex];
     const stars = calculateStars(this.state.moves, level.optimal);

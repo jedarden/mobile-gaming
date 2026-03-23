@@ -29,6 +29,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
+import { haptic } from '../../shared/haptics.js';
 
 // Game constants
 const GAME_ID = 'giant-runner';
@@ -280,6 +281,7 @@ class GiantRunnerGame {
       const collectibleCollisions = checkCollectibleCollisions(this.state);
       for (const idx of collectibleCollisions) {
         this.state = collect(this.state, idx);
+        haptic('collect');
       }
 
       // Check obstacle collisions
@@ -343,6 +345,7 @@ class GiantRunnerGame {
         await this.saveProgress();
 
         // Show win overlay
+        haptic('win');
         this.showWinOverlay(stars);
         announce(`Victory! You defeated the boss! ${stars} stars!`);
       });

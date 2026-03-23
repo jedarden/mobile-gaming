@@ -23,6 +23,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { audio } from './audio.js';
+import { haptic } from '../../shared/haptics.js';
 
 // Game constants
 const GAME_ID = 'brain-teaser';
@@ -286,6 +287,7 @@ class BrainTeaserGame {
     } else if (newState.animation) {
       // Play decoy animation
       this.render();
+      haptic('error');
       await this.renderer.playAnimation(newState.animation);
       this.state = { ...this.state, animation: null };
     }
@@ -330,6 +332,7 @@ class BrainTeaserGame {
    */
   async handleSolved() {
     audio.playWin();
+    haptic('win');
 
     // Update stats
     await updateGameStats(GAME_ID, {

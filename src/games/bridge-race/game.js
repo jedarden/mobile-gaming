@@ -22,6 +22,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
 import { createRng }      from '../../shared/rng.js';
+import { haptic } from '../../shared/haptics.js';
 
 const GAME_ID   = 'bridge-race';
 const LEVELS_URL = './levels.json';
@@ -251,6 +252,7 @@ class BridgeRaceGame {
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
         await this.saveProgress();
+        haptic('win');
         this.showWinOverlay(stars);
         announce(`You won! ${stars} star${stars !== 1 ? 's' : ''}! All bridges completed!`);
       });

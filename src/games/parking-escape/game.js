@@ -8,6 +8,7 @@ import { initAccessibility, announce, isReducedMotionEnabled } from '../../share
 import { createInitialState, applyMove, getAllMoves } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
+import { haptic } from '../../shared/haptics.js';
 
 const GAME_ID = 'parking-escape';
 const LEVELS_URL = './levels.json';
@@ -140,6 +141,7 @@ class ParkingEscapeGame {
         if (d === 1) {
           // Blocked — screen shake
           if (this.renderer && this.renderer.shake) this.renderer.shake(250, 3);
+          haptic('error');
           this.render(); return;
         }
       }
@@ -152,6 +154,7 @@ class ParkingEscapeGame {
 
     this.history.push(this.state);
     this.state = applyMove(this.state, vehicleId, direction, distance);
+    haptic('tap');
     this.updateUI();
     this.render();
 
@@ -169,6 +172,7 @@ class ParkingEscapeGame {
         const exitRow = this.state.grid.exit ? this.state.grid.exit.y : 2;
         this.renderer.onHeroExit(exitRow);
       }
+      haptic('win');
       setTimeout(() => this.handleWin(), 600);
     }
   }

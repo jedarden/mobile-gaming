@@ -31,6 +31,7 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { generateLevel } from './generator.js';
+import { haptic } from '../../shared/haptics.js';
 
 // Game constants
 const GAME_ID = 'water-sort';
@@ -326,6 +327,7 @@ class WaterSortGame {
 
     // Apply pour
     this.state = pour(this.state, fromIdx, toIdx);
+    haptic('tap');
     this.selectedTube = null;
 
     // Animate
@@ -333,14 +335,17 @@ class WaterSortGame {
 
     // Trigger scale-pop if destination tube is now complete
     if (isTubeComplete(this.state, toIdx)) {
+      haptic('collect');
       this.renderer.triggerTubePop(toIdx);
     }
 
     // Check win
     if (checkWin(this.state)) {
       this.state.status = 'won';
+      haptic('win');
       this.handleWin();
     } else if (isStuck(this.state)) {
+      haptic('fail');
       this.state.status = 'stuck';
     }
 

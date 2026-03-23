@@ -19,6 +19,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
+import { haptic } from '../../shared/haptics.js';
 
 const GAME_ID   = 'crowd-runner';
 const LEVELS_URL = './levels.json';
@@ -213,6 +214,7 @@ class CrowdRunnerGame {
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
         await this.saveProgress();
+        haptic('win');
         this.showWinOverlay(stars);
         announce(`Victory! Your crowd of ${this.state.crowdSize} defeated the boss! ${stars} star${stars !== 1 ? 's' : ''}!`);
       });

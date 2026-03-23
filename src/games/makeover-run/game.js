@@ -21,6 +21,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
+import { haptic } from '../../shared/haptics.js';
 
 const GAME_ID   = 'makeover-run';
 const LEVELS_URL = './levels.json';
@@ -237,6 +238,7 @@ class MakeoverRunGame {
       await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
       await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, score });
       await this.saveProgress();
+      haptic('win');
       this.showWinOverlay(stars, score);
       announce(`Runway complete! Score: ${score} out of 12. ${stars} star${stars !== 1 ? 's' : ''}!`);
     });
