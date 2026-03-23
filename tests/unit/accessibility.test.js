@@ -250,6 +250,18 @@ describe('focusElement', () => {
     div.remove();
   });
 
+  it('does not overwrite tabindex when element already has one (!hasAttribute false branch)', () => {
+    // accessibility.js: `if (!el.hasAttribute('tabindex') && !el.matches(...))` —
+    // when hasAttribute('tabindex') is true, the whole condition is false (short-circuit)
+    // and no new tabindex is written. Exercises the left-arm false path.
+    const div = document.createElement('div');
+    div.setAttribute('tabindex', '0');
+    document.body.appendChild(div);
+    focusElement(div);
+    expect(div.getAttribute('tabindex')).toBe('0'); // unchanged — not overwritten with '-1'
+    div.remove();
+  });
+
   it('does not throw when element is null', () => {
     expect(() => focusElement(null)).not.toThrow();
   });
