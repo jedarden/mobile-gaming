@@ -214,6 +214,9 @@ class SaveTheCharacterGame {
     // Select the choice
     this.state = selectChoice(this.state, choice.id);
 
+    // Press feedback
+    if (this.renderer.setPressedChoice) this.renderer.setPressedChoice(choiceIndex);
+
     // Start animation
     this.animationStartTime = performance.now();
     this.renderer.setAnimationProgress(0);
@@ -261,8 +264,10 @@ class SaveTheCharacterGame {
         this.resultDisplayTime = timestamp;
 
         if (isWon(this.state)) {
+          if (this.renderer.triggerWinEffect) this.renderer.triggerWinEffect();
           this.handleWin();
         } else if (isLost(this.state)) {
+          if (this.renderer.triggerLoseEffect) this.renderer.triggerLoseEffect();
           this.handleLose();
         }
       }
