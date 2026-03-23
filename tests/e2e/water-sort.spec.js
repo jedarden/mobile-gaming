@@ -1,25 +1,30 @@
+/**
+ * Water Sort - E2E Tests (Playwright)
+ */
+
 import { test, expect } from '@playwright/test';
-import { solve } from '../solvers/water-sort-solver.js';
+
+const GAME_URL = '/water-sort/';
 
 test.describe('Water Sort', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/water-sort/');
+    await page.goto(GAME_URL);
+    await page.waitForSelector('#game-canvas', { timeout: 10000 });
   });
 
-  test('loads game and displays tubes', async ({ page }) => {
-    const canvas = page.locator('#game-canvas');
-    await expect(canvas).toBeVisible();
+  test('loads game page with correct title', async ({ page }) => {
+    await expect(page).toHaveTitle(/Water Sort/i);
+  });
 
-    // Check level display shows 1
+  test('displays initial stats on level 1', async ({ page }) => {
     await expect(page.locator('#level-display')).toHaveText('1');
+    await expect(page.locator('#moves-display')).toHaveText('0');
+    await expect(page.locator('#level-progress')).toContainText('Level 1');
   });
 
-  test('displays correct number of tubes for level 1', async ({ page }) => {
+  test('canvas is visible and has non-zero dimensions', async ({ page }) => {
     const canvas = page.locator('#game-canvas');
     await expect(canvas).toBeVisible();
-
-    // Level 1 has 3 tubes
-    // Verify the canvas is rendered (has non-zero dimensions)
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
     expect(box.width).toBeGreaterThan(0);
@@ -30,46 +35,58 @@ test.describe('Water Sort', () => {
     await expect(page.locator('#btn-undo')).toBeDisabled();
   });
 
-  test('tap tube to select and deselect', async ({ page }) => {
-    const canvas = page.locator('#game-canvas');
-    await expect(canvas).toBeVisible();
-
-    const box = await canvas.boundingBox();
-    // Tap the first tube area (left side of canvas)
-    await page.tap('#game-canvas', { position: { x: box.width * 0.2, y: box.height * 0.5 } });
-
-    // Tap the same area to deselect
-    await page.tap('#game-canvas', { position: { x: box.width * 0.2, y: box.height * 0.5 } });
+  test('has all navigation and action buttons', async ({ page }) => {
+    await expect(page.locator('#btn-undo')).toBeVisible();
+    await expect(page.locator('#btn-restart')).toBeVisible();
+    await expect(page.locator('#btn-prev')).toBeVisible();
+    await expect(page.locator('#btn-next')).toBeVisible();
   });
 
-  test('restart button resets the level', async ({ page }) => {
-    await expect(page.locator('#moves-display')).toHaveText('0');
-    await page.click('#btn-restart');
-    await expect(page.locator('#moves-display')).toHaveText('0');
+  test('prev button disabled on first level', async ({ page }) => {
+    await expect(page.locator('#btn-prev')).toBeDisabled();
   });
 
   test('level navigation works', async ({ page }) => {
-    // Next level should be enabled
     await expect(page.locator('#btn-next')).toBeEnabled();
-
-    // Prev should be disabled on level 1
-    await expect(page.locator('#btn-prev')).toBeDisabled();
-
-    // Go to next level
     await page.click('#btn-next');
     await expect(page.locator('#level-display')).toHaveText('2');
     await expect(page.locator('#level-progress')).toContainText('Level 2');
-
-    // Go back
     await page.click('#btn-prev');
     await expect(page.locator('#level-display')).toHaveText('1');
   });
 
-  test('settings overlay opens and closes', async ({ page }) => {
+  test('restart button resets the level', async ({ page }) => {
+    await page.click('#btn-restart');
+    await expect(page.locator('#moves-display')).toHaveText('0');
+    await expect(page.locator('#level-display')).toHaveText('1');
+  });
+
+  test('tap tube to select and deselect', async ({ page }) => {
+    const canvas = page.locator('#game-canvas');
+    const box = await canvas.boundingBox();
+    await page.tap('#game-canvas', { position: { x: box.width * 0.2, y: box.height * 0.5 } });
+    await page.tap('#game-canvas', { position: { x: box.width * 0.2, y: box.height * 0.5 } });
+  });
+
+  test('settings overlay opens with all toggles', async ({ page }) => {
+    await page.click('#btn-settings');
+    const overlay = page.locator('#settings-overlay');
+    await expect(overlay).toHaveAttribute('aria-hidden', 'false');
+    await expect(page.locator('#setting-sound')).toBeVisible();
+    await expect(page.locator('#setting-haptic')).toBeVisible();
+    await expect(page.locator('#setting-motion')).toBeVisible();
+  });
+
+  test('settings overlay closes', async ({ page }) => {
     await page.click('#btn-settings');
     await expect(page.locator('#settings-overlay')).toHaveAttribute('aria-hidden', 'false');
-
     await page.click('#btn-close-settings');
     await expect(page.locator('#settings-overlay')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  test('win overlay starts hidden and is accessible', async ({ page }) => {
+    const overlay = page.locator('#win-overlay');
+    await expect(overlay).toHaveAttribute('role', 'dialog');
+    await expect(overlay).toHaveAttribute('aria-hidden', 'true');
   });
 });
