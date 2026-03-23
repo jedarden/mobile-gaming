@@ -362,8 +362,6 @@ function renderPlatformButtons(options) {
  * @param {Object} options - Share options
  */
 async function handlePlatformShare(platformId, options) {
-  const messageEl = shareOverlay?.querySelector('#share-message');
-
   if (platformId === 'native') {
     const success = await shareViaWebAPI(options);
     if (success) {

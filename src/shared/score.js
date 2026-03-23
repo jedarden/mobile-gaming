@@ -372,7 +372,7 @@ export function showLevelComplete(options = {}) {
   }
 
   // Build stats HTML
-  const bestScore = gameId ? getBestScore(gameId, levelIndex) : null;
+  const bestScore = gameId ? getBestScore(gameId, levelIndex) : null; // eslint-disable-line no-unused-vars
 
   overlay.innerHTML = `
     <div class="mg-score-card">
