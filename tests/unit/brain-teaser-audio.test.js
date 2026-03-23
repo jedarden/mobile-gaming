@@ -124,4 +124,108 @@ describe('BrainTeaserAudio', () => {
     expect(audio.toggleMute()).toBe(false);
     expect(audio.muted).toBe(false);
   });
+
+  // ── playTone() happy path ──────────────────────────────────────────────────
+
+  it('playTone() creates oscillator and gain node when context is set — happy path', () => {
+    const mockCtx = createMockContext();
+    audio.context = mockCtx;
+    audio.playTone(440, 0.1);
+    expect(mockCtx.createOscillator).toHaveBeenCalledOnce();
+    expect(mockCtx.createGain).toHaveBeenCalledOnce();
+  });
+
+  it('playTone() connects oscillator → gain → destination', () => {
+    const mockCtx = createMockContext();
+    const osc = { connect: vi.fn(), type: '', start: vi.fn(), stop: vi.fn(), frequency: { setValueAtTime: vi.fn() } };
+    const gain = { connect: vi.fn(), gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() } };
+    mockCtx.createOscillator.mockReturnValue(osc);
+    mockCtx.createGain.mockReturnValue(gain);
+    audio.context = mockCtx;
+    audio.playTone(440, 0.1);
+    expect(osc.connect).toHaveBeenCalledWith(gain);
+    expect(gain.connect).toHaveBeenCalledWith(mockCtx.destination);
+  });
+
+  it('playTone() sets oscillator type from parameter (square)', () => {
+    const mockCtx = createMockContext();
+    const osc = { connect: vi.fn(), type: '', start: vi.fn(), stop: vi.fn(), frequency: { setValueAtTime: vi.fn() } };
+    const gain = { connect: vi.fn(), gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() } };
+    mockCtx.createOscillator.mockReturnValue(osc);
+    mockCtx.createGain.mockReturnValue(gain);
+    audio.context = mockCtx;
+    audio.playTone(300, 0.1, 'square');
+    expect(osc.type).toBe('square');
+  });
+
+  it('playTone() scales volume by masterVolume (adjustedVolume = volume * masterVolume)', () => {
+    const mockCtx = createMockContext();
+    const osc = { connect: vi.fn(), type: '', start: vi.fn(), stop: vi.fn(), frequency: { setValueAtTime: vi.fn() } };
+    const gain = { connect: vi.fn(), gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() } };
+    mockCtx.createOscillator.mockReturnValue(osc);
+    mockCtx.createGain.mockReturnValue(gain);
+    audio.context = mockCtx;
+    audio.masterVolume = 0.5;
+    audio.playTone(440, 0.1, 'sine', 0.4);
+    // adjustedVolume = 0.4 * 0.5 = 0.2
+    expect(gain.gain.setValueAtTime).toHaveBeenCalledWith(0.2, mockCtx.currentTime);
+  });
+
+  it('playTone() calls oscillator.start() and oscillator.stop()', () => {
+    const mockCtx = createMockContext();
+    const osc = { connect: vi.fn(), type: '', start: vi.fn(), stop: vi.fn(), frequency: { setValueAtTime: vi.fn() } };
+    const gain = { connect: vi.fn(), gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() } };
+    mockCtx.createOscillator.mockReturnValue(osc);
+    mockCtx.createGain.mockReturnValue(gain);
+    audio.context = mockCtx;
+    audio.playTone(440, 0.2);
+    expect(osc.start).toHaveBeenCalledOnce();
+    expect(osc.stop).toHaveBeenCalledOnce();
+  });
+
+  // ── Sound method wrappers ─────────────────────────────────────────────────
+
+  it('playSelect() calls createOscillator once (single synchronous playTone call)', () => {
+    const mockCtx = createMockContext();
+    audio.context = mockCtx;
+    audio.playSelect();
+    expect(mockCtx.createOscillator).toHaveBeenCalledTimes(1);
+  });
+
+  it('playTap() calls createOscillator once (single synchronous playTone call)', () => {
+    const mockCtx = createMockContext();
+    audio.context = mockCtx;
+    audio.playTap();
+    expect(mockCtx.createOscillator).toHaveBeenCalledTimes(1);
+  });
+
+  it('playCorrect() calls createOscillator 3 times after all timers fire', () => {
+    vi.useFakeTimers();
+    const mockCtx = createMockContext();
+    audio.context = mockCtx;
+    audio.playCorrect();
+    vi.runAllTimers();
+    expect(mockCtx.createOscillator).toHaveBeenCalledTimes(3);
+    vi.useRealTimers();
+  });
+
+  it('playWrong() calls createOscillator 2 times after all timers fire', () => {
+    vi.useFakeTimers();
+    const mockCtx = createMockContext();
+    audio.context = mockCtx;
+    audio.playWrong();
+    vi.runAllTimers();
+    expect(mockCtx.createOscillator).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it('playWin() calls createOscillator 4 times (4 notes) after all timers fire', () => {
+    vi.useFakeTimers();
+    const mockCtx = createMockContext();
+    audio.context = mockCtx;
+    audio.playWin();
+    vi.runAllTimers();
+    expect(mockCtx.createOscillator).toHaveBeenCalledTimes(4);
+    vi.useRealTimers();
+  });
 });
