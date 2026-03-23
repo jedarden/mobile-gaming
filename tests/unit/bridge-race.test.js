@@ -965,3 +965,41 @@ describe('aiTick — random wander dz is always non-negative (Math.abs forward b
     expect(dz).toBeGreaterThanOrEqual(0);
   });
 });
+
+// ── aiTick — unknown ai type falls through to random logic ───────────────────
+
+describe('aiTick — unknown ai type falls through to random/wander logic', () => {
+  it('returns a valid movement vector when ai type is neither greedy nor random', () => {
+    // state.js: `if (opponent.ai === 'greedy') return greedyMove();` then falls through
+    // to the random-wander block for all other values — this tests the implicit else path
+    const level = makeLevel();
+    const state = createInitialState(level);
+    // Patch first opponent to have an unknown AI type
+    const patchedState = {
+      ...state,
+      opponents: state.opponents.map((opp, i) =>
+        i === 0 ? { ...opp, ai: 'unknown-type' } : opp
+      ),
+    };
+    const rng = { next: () => 0.9 }; // roll=0.9 ≥ 0.7 → wander branch
+    const result = aiTick(patchedState, 0, 1 / 60, rng);
+    expect(typeof result.dx).toBe('number');
+    expect(typeof result.dz).toBe('number');
+    expect(result.dz).toBeGreaterThanOrEqual(0); // forward bias from Math.abs
+  });
+
+  it('unknown ai type with roll < 0.7 calls greedyMove() (70% greedy even for unknowns)', () => {
+    const level = makeLevel();
+    const state = createInitialState(level);
+    const patchedState = {
+      ...state,
+      opponents: state.opponents.map((opp, i) =>
+        i === 0 ? { ...opp, ai: null } : opp // null is also not 'greedy'
+      ),
+    };
+    const rng = { next: () => 0.3 }; // roll=0.3 < 0.7 → greedyMove()
+    const result = aiTick(patchedState, 0, 1 / 60, rng);
+    expect(typeof result.dx).toBe('number');
+    expect(typeof result.dz).toBe('number');
+  });
+});
