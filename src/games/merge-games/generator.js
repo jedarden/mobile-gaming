@@ -124,8 +124,6 @@ export function generateLevel(seed, difficulty = 'medium', index = 0) {
 
   // Place seed blocks for taskCount target items
   const task = { targetTier: config.targetTier, targetCount: config.targetCount };
-  const depth = config.targetTier - config.seedTier;
-  const blockRows = Math.max(1, 1 << (depth - 1)); // rows per block
   const blockCols = 2;
 
   let placed = true;
@@ -136,7 +134,6 @@ export function generateLevel(seed, difficulty = 'medium', index = 0) {
       // Not enough columns - use higher seedTier to save space
       // Fall back: use tier-2 seeds instead of tier-1 for second block
       const seedTier2 = config.seedTier + 1;
-      const depth2 = config.targetTier - seedTier2;
       const block = buildSeedBlock(config.targetTier, seedTier2, 0, startCol > 0 ? startCol : 0);
       // Place in remaining columns
       for (const { r, c, tier } of block.cells) {

@@ -513,7 +513,6 @@ export function createRenderer(canvas) {
     }
 
     return new Promise(resolve => {
-      const cellSize = CELL_SIZE * scale;
       const duration = 400; // ms per cell
       let stepIndex = 0;
 
@@ -569,7 +568,6 @@ export function createRenderer(canvas) {
     }
 
     return new Promise(resolve => {
-      const cellSize = CELL_SIZE * scale;
       const duration = 300;
 
       // Simple animation - flash effect
