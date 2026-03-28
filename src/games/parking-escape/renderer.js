@@ -1,7 +1,8 @@
 /**
- * Parking Escape - Canvas Renderer (polished)
+ * Parking Escape - Phaser Renderer
  *
- * Visual improvements:
+ * Migrated from Canvas 2D to Phaser 3 game framework.
+ * Visual improvements preserved:
  * - Asphalt texture with painted parking-space markings
  * - Toy-car 3D shading (top face highlight + right/bottom shadow face)
  * - Selection lift: expanded drop-shadow when vehicle is selected
@@ -10,457 +11,76 @@
  * - Screen shake on blocked drag
  */
 
+import Phaser from 'phaser';
+
 const PADDING = 16;
 const EXIT_COLOR = '#FFD700';
 const HERO_COLOR = '#E74C3C';
 const HERO_GLOW = 'rgba(231,76,60,0.5)';
 const ANIM_DURATION = 180; // ms per cell slide
 
-// Ease out back
-function easeOutBack(t) {
-  const c1 = 1.70158;
-  const c3 = c1 + 1;
-  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-}
-
-export function createRenderer(canvas) {
-  const ctx = canvas.getContext('2d');
-  let cellSize = 60;
-  let offsetX = PADDING;
-  let offsetY = PADDING;
-  let reducedMotion = false;
-  let hintVehicleId = null;
-
-  // Animation: per-vehicle slide { fromX, fromY, toX, toY, startTime, cells }
-  const slideAnims = new Map();
-
-  // Shake state
-  let shakeUntil = 0;
-  let shakeAmplitude = 4;
-
-  // Exit particles
-  const exitParticles = [];
-
-  // Cached asphalt gradient/pattern
-  let asphaltGrad = null;
-  let lastCellSize = 0;
-
-  function setReducedMotion(v) { reducedMotion = v; }
-  function setHintVehicle(id) { hintVehicleId = id; }
-
-  function resize(state) {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const avail = Math.min(rect.width, rect.height) - PADDING * 2;
-    cellSize = Math.floor(avail / state.grid.width);
-    const gridPx = cellSize * state.grid.width;
-    offsetX = (rect.width - gridPx) / 2;
-    offsetY = (rect.height - gridPx) / 2;
-
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Invalidate cached gradient
-    if (cellSize !== lastCellSize) { asphaltGrad = null; lastCellSize = cellSize; }
-  }
-
-  function gridToCanvas(col, row) {
-    return { x: offsetX + col * cellSize, y: offsetY + row * cellSize };
-  }
-
-  function canvasToGrid(px, py) {
-    return {
-      col: Math.floor((px - offsetX) / cellSize),
-      row: Math.floor((py - offsetY) / cellSize)
-    };
-  }
-
-  /** Build asphalt radial gradient (cached) */
-  function getAsphaltGrad(w, h) {
-    if (asphaltGrad) return asphaltGrad;
-    const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.7);
-    g.addColorStop(0, '#383838');
-    g.addColorStop(0.6, '#2a2a2a');
-    g.addColorStop(1, '#1e1e1e');
-    asphaltGrad = g;
-    return g;
-  }
-
-  /** Draw asphalt with parking-space marking lines */
-  function drawGrid(state) {
-    const gw = state.grid.width;
-    const gh = state.grid.height;
-    const gridPxW = gw * cellSize;
-    const gridPxH = gh * cellSize;
-
-    // Outer border
-    ctx.beginPath();
-    ctx.roundRect(offsetX - 2, offsetY - 2, gridPxW + 4, gridPxH + 4, 10);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Asphalt fill
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(offsetX, offsetY, gridPxW, gridPxH, 8);
-    ctx.clip();
-    ctx.fillStyle = getAsphaltGrad(gridPxW, gridPxH);
-    // Offset gradient to grid coords
-    ctx.translate(offsetX, offsetY);
-    ctx.fillRect(0, 0, gridPxW, gridPxH);
-    ctx.translate(-offsetX, -offsetY);
-
-    // Subtle asphalt grain dots
-    ctx.fillStyle = 'rgba(255,255,255,0.025)';
-    for (let c = 0; c < gw; c++) {
-      for (let r = 0; r < gh; r++) {
-        // deterministic "random" spots per cell
-        const seed = c * 37 + r * 17;
-        const sx = offsetX + c * cellSize + (seed % 23) / 23 * cellSize;
-        const sy = offsetY + r * cellSize + ((seed * 13) % 31) / 31 * cellSize;
-        ctx.beginPath();
-        ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // Parking space lines (dashed yellow)
-    ctx.strokeStyle = 'rgba(255, 230, 100, 0.22)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([cellSize * 0.2, cellSize * 0.3]);
-    for (let c = 1; c < gw; c++) {
-      const x = offsetX + c * cellSize;
-      ctx.beginPath();
-      ctx.moveTo(x, offsetY + 4);
-      ctx.lineTo(x, offsetY + gridPxH - 4);
-      ctx.stroke();
-    }
-    for (let r = 1; r < gh; r++) {
-      const y = offsetY + r * cellSize;
-      ctx.beginPath();
-      ctx.moveTo(offsetX + 4, y);
-      ctx.lineTo(offsetX + gridPxW - 4, y);
-      ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    ctx.restore();
-
-    // Exit gap + arrow
-    const exit = state.grid.exit;
-    const ey = offsetY + exit.y * cellSize + 4;
-    const eh = cellSize - 8;
-    // Clear border to show gap
-    ctx.clearRect(offsetX + gridPxW - 3, ey, 8, eh);
-
-    // Exit glow cone
-    const ax = offsetX + gridPxW + 6;
-    const ay = offsetY + exit.y * cellSize + cellSize / 2;
-    const cone = ctx.createRadialGradient(ax, ay, 0, ax, ay, cellSize);
-    cone.addColorStop(0, 'rgba(255,215,0,0.35)');
-    cone.addColorStop(1, 'rgba(255,215,0,0)');
-    ctx.fillStyle = cone;
-    ctx.fillRect(ax - cellSize, ay - cellSize / 2, cellSize + 10, cellSize);
-
-    // Arrow
-    ctx.fillStyle = EXIT_COLOR;
-    ctx.shadowColor = EXIT_COLOR;
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.moveTo(ax, ay - 9);
-    ctx.lineTo(ax + 15, ay);
-    ctx.lineTo(ax, ay + 9);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-
-  /** 3D toy-car shading on a vehicle */
-  function drawVehicle(v, pixelOffsetX = 0, pixelOffsetY = 0, isSelected = false) {
-    const margin = 4;
-    const pos = gridToCanvas(v.x, v.y);
-    const pw = v.width * cellSize - margin * 2;
-    const ph = v.height * cellSize - margin * 2;
-    let px = pos.x + margin + pixelOffsetX;
-    let py = pos.y + margin + pixelOffsetY;
-    const r = Math.min(12, cellSize / 5);
-    const depth = Math.round(cellSize * 0.10); // side-face depth
-
-    const isHero = v.type === 'hero';
-
-    // Selection / hero shadow
-    ctx.save();
-    if (isHero || isSelected) {
-      ctx.shadowColor = isHero ? HERO_GLOW : 'rgba(255,255,255,0.45)';
-      ctx.shadowBlur = isSelected ? 22 : 16;
-      ctx.shadowOffsetY = isSelected ? 4 : 2;
-    }
-
-    // Bottom/right side face (shadow)
-    const sideColor = darken(v.color, 30);
-    ctx.beginPath();
-    ctx.roundRect(px + depth, py + depth, pw, ph, r);
-    ctx.fillStyle = sideColor;
-    ctx.fill();
-    ctx.restore();
-
-    // Main top face
-    const topGrad = ctx.createLinearGradient(px, py, px, py + ph);
-    topGrad.addColorStop(0, lighten(v.color, 22));
-    topGrad.addColorStop(0.5, v.color);
-    topGrad.addColorStop(1, darken(v.color, 12));
-    ctx.beginPath();
-    ctx.roundRect(px, py, pw, ph, r);
-    ctx.fillStyle = topGrad;
-    ctx.fill();
-
-    // Border
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Top highlight strip
-    ctx.fillStyle = 'rgba(255,255,255,0.28)';
-    ctx.beginPath();
-    ctx.roundRect(px + 4, py + 3, pw - 8, ph * 0.22, r * 0.5);
-    ctx.fill();
-
-    // Windows
-    ctx.fillStyle = 'rgba(200,240,255,0.35)';
-    if (v.orientation === 'horizontal') {
-      const ww = pw * 0.28;
-      const wh = ph * 0.38;
-      const wy = py + ph * 0.2;
-      ctx.fillRect(px + pw * 0.1, wy, ww, wh);
-      ctx.fillRect(px + pw * 0.62, wy, ww, wh);
-    } else {
-      const ww = pw * 0.52;
-      const wh = ph * 0.14;
-      const wx = px + pw * 0.24;
-      ctx.fillRect(wx, py + ph * 0.1, ww, wh);
-      if (v.height >= 3) ctx.fillRect(wx, py + ph * 0.45, ww, wh);
-    }
-
-    // Windshield glare diagonal
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.beginPath();
-    if (v.orientation === 'horizontal') {
-      ctx.moveTo(px + pw * 0.1, py + ph * 0.2);
-      ctx.lineTo(px + pw * 0.38, py + ph * 0.2);
-      ctx.lineTo(px + pw * 0.28, py + ph * 0.58);
-      ctx.lineTo(px + pw * 0.1, py + ph * 0.58);
-    } else {
-      ctx.moveTo(px + pw * 0.24, py + ph * 0.1);
-      ctx.lineTo(px + pw * 0.76, py + ph * 0.1);
-      ctx.lineTo(px + pw * 0.65, py + ph * 0.24);
-      ctx.lineTo(px + pw * 0.24, py + ph * 0.24);
-    }
-    ctx.closePath();
-    ctx.fill();
-
-    // Hint highlight ring
-    if (v.id === hintVehicleId) {
-      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
-      ctx.save();
-      ctx.shadowColor = `rgba(255, 215, 0, ${0.6 + 0.3 * pulse})`;
-      ctx.shadowBlur = 14 + 8 * pulse;
-      ctx.strokeStyle = `rgba(255, 215, 0, ${0.7 + 0.3 * pulse})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(px - 2, py - 2, pw + 4, ph + 4, 6);
-      ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  /** Draw exit particles */
-  function updateAndDrawParticles() {
-    for (let i = exitParticles.length - 1; i >= 0; i--) {
-      const p = exitParticles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.15;
-      p.life -= 0.018;
-      if (p.life <= 0) { exitParticles.splice(i, 1); continue; }
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, p.life * 1.5);
-      ctx.fillStyle = p.color;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot += p.rotV);
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  /** Spawn exit celebration burst */
-  function spawnExitBurst(exitRow) {
-    const colors = [HERO_COLOR, EXIT_COLOR, '#fff', '#ff8c42', '#ff3cac'];
-    const x = offsetX + (6 * cellSize) + 20; // right of grid
-    const y = offsetY + exitRow * cellSize + cellSize / 2;
-    for (let i = 0; i < 40; i++) {
-      const angle = (Math.random() * Math.PI * 2);
-      const speed = 2 + Math.random() * 5;
-      exitParticles.push({
-        x, y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 2,
-        rot: Math.random() * Math.PI * 2,
-        rotV: (Math.random() - 0.5) * 0.2,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        w: 4 + Math.random() * 6,
-        h: 3 + Math.random() * 4,
-        life: 0.8 + Math.random() * 0.4
-      });
-    }
-  }
-
-  /** Get shake offset */
-  function getShake() {
-    const t = performance.now();
-    if (t > shakeUntil) return { dx: 0, dy: 0 };
-    const phase = (t * 0.03) % (Math.PI * 2);
-    const decay = (shakeUntil - t) / 300;
-    const amp = shakeAmplitude * decay;
-    return { dx: Math.cos(phase * 3.7) * amp, dy: Math.sin(phase * 2.9) * amp };
-  }
-
-  /**
-   * Compute vehicle draw position accounting for slide animation
-   */
-  function getVehicleDrawPos(v, drag) {
-    if (drag && drag.vehicleId === v.id) {
-      return { pixelOffsetX: drag.dx || 0, pixelOffsetY: drag.dy || 0 };
-    }
-
-    const anim = slideAnims.get(v.id);
-    if (!anim) return { pixelOffsetX: 0, pixelOffsetY: 0 };
-
-    const t = performance.now();
-    const elapsed = (t - anim.startTime) / anim.duration;
-    if (elapsed >= 1) {
-      slideAnims.delete(v.id);
-      return { pixelOffsetX: 0, pixelOffsetY: 0 };
-    }
-
-    const eased = reducedMotion ? 1 : easeOutBack(elapsed);
-    const dx = (anim.toGridX - anim.fromGridX) * cellSize;
-    const dy = (anim.toGridY - anim.fromGridY) * cellSize;
-    // Current position is anim.toGridX/Y (already in state), animate from the old pos
-    return {
-      pixelOffsetX: dx * (eased - 1),
-      pixelOffsetY: dy * (eased - 1)
-    };
-  }
-
-  function render(state, drag, selectedId) {
-    const W = parseInt(canvas.style.width) || canvas.width;
-    const H = parseInt(canvas.style.height) || canvas.height;
-    const shake = getShake();
-
-    ctx.save();
-    ctx.translate(shake.dx, shake.dy);
-    ctx.clearRect(-10, -10, W + 20, H + 20);
-
-    drawGrid(state);
-
-    // Draw non-dragged, non-hero vehicles first
-    for (const v of state.vehicles) {
-      if (drag && drag.vehicleId === v.id) continue;
-      if (v.type === 'hero') continue;
-      const { pixelOffsetX, pixelOffsetY } = getVehicleDrawPos(v, null);
-      drawVehicle(v, pixelOffsetX, pixelOffsetY, selectedId === v.id);
-    }
-
-    // Hero on top (so its glow renders above other cars)
-    const hero = state.vehicles.find(v => v.type === 'hero');
-    if (hero && !(drag && drag.vehicleId === hero.id)) {
-      const { pixelOffsetX, pixelOffsetY } = getVehicleDrawPos(hero, null);
-      drawVehicle(hero, pixelOffsetX, pixelOffsetY, selectedId === hero.id);
-    }
-
-    // Dragging vehicle on top of everything
-    if (drag) {
-      const v = state.vehicles.find(veh => veh.id === drag.vehicleId);
-      if (v) drawVehicle(v, drag.dx || 0, drag.dy || 0, true);
-    }
-
-    updateAndDrawParticles();
-
-    ctx.restore();
-
-    // Win overlay
-    if (state.status === 'won') {
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.fillRect(0, 0, W, H);
-    }
-  }
-
-  /** Animate a vehicle sliding from its old grid position to new */
-  function animateSlide(vehicleId, fromGridX, fromGridY, toGridX, toGridY, cells) {
-    if (reducedMotion) return;
-    slideAnims.set(vehicleId, {
-      fromGridX, fromGridY, toGridX, toGridY,
-      startTime: performance.now(),
-      duration: ANIM_DURATION * Math.max(1, cells)
-    });
-  }
-
-  /** Trigger screen shake on blocked move */
-  function shake(durationMs = 300, amplitude = 4) {
-    if (reducedMotion) return;
-    shakeUntil = performance.now() + durationMs;
-    shakeAmplitude = amplitude;
-  }
-
-  /** Call when hero exits — spawns particle burst at exit */
-  function onHeroExit(exitRow) {
-    spawnExitBurst(exitRow);
-  }
-
-  function hitTestVehicle(px, py, state) {
-    const { col, row } = canvasToGrid(px, py);
-    for (const v of state.vehicles) {
-      if (v.orientation === 'horizontal') {
-        if (row === v.y && col >= v.x && col < v.x + v.width) return v.id;
-      } else {
-        if (col === v.x && row >= v.y && row < v.y + v.height) return v.id;
-      }
-    }
-    return null;
-  }
-
-  function computeSnapMove(vehicle, dx, dy) {
-    if (vehicle.orientation === 'horizontal') {
-      const cells = Math.round(dx / cellSize);
-      if (cells === 0) return null;
-      return { direction: cells > 0 ? 'right' : 'left', distance: Math.abs(cells) };
-    } else {
-      const cells = Math.round(dy / cellSize);
-      if (cells === 0) return null;
-      return { direction: cells > 0 ? 'down' : 'up', distance: Math.abs(cells) };
-    }
-  }
+/**
+ * Layout utilities - pure functions for grid positioning
+ */
+export function calculateLayout(gridWidth, gridHeight, containerWidth, containerHeight) {
+  const avail = Math.min(containerWidth, containerHeight) - PADDING * 2;
+  const cellSize = Math.floor(avail / gridWidth);
+  const gridPx = cellSize * gridWidth;
 
   return {
-    resize,
-    render,
-    hitTestVehicle,
-    computeSnapMove,
-    animateSlide,
-    shake,
-    onHeroExit,
-    setReducedMotion,
-    setHintVehicle,
-    getCellSize: () => cellSize,
-    getOffset: () => ({ x: offsetX, y: offsetY })
+    cellSize,
+    offsetX: (containerWidth - gridPx) / 2,
+    offsetY: (containerHeight - gridPx) / 2,
+    gridWidth,
+    gridHeight
   };
 }
 
+export function gridToCanvas(col, row, layout) {
+  return {
+    x: layout.offsetX + col * layout.cellSize,
+    y: layout.offsetY + row * layout.cellSize
+  };
+}
+
+export function canvasToGrid(px, py, layout) {
+  return {
+    col: Math.floor((px - layout.offsetX) / layout.cellSize),
+    row: Math.floor((py - layout.offsetY) / layout.cellSize)
+  };
+}
+
+/**
+ * Hit-test for vehicle at canvas coordinates - pure function
+ */
+export function hitTestVehicleAt(px, py, state, layout) {
+  const { col, row } = canvasToGrid(px, py, layout);
+  for (const v of state.vehicles) {
+    if (v.orientation === 'horizontal') {
+      if (row === v.y && col >= v.x && col < v.x + v.width) return v.id;
+    } else {
+      if (col === v.x && row >= v.y && row < v.y + v.height) return v.id;
+    }
+  }
+  return null;
+}
+
+/**
+ * Compute snap move from drag delta - pure function
+ */
+export function computeSnapMoveFromDelta(vehicle, dx, dy, cellSize) {
+  if (vehicle.orientation === 'horizontal') {
+    const cells = Math.round(dx / cellSize);
+    if (cells === 0) return null;
+    return { direction: cells > 0 ? 'right' : 'left', distance: Math.abs(cells) };
+  } else {
+    const cells = Math.round(dy / cellSize);
+    if (cells === 0) return null;
+    return { direction: cells > 0 ? 'down' : 'up', distance: Math.abs(cells) };
+  }
+}
+
+// Color utilities
 function lighten(hex, pct) {
   const n = parseInt(hex.replace('#', ''), 16);
   const a = Math.round(2.55 * pct);
@@ -479,4 +99,765 @@ function darken(hex, pct) {
   return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
 }
 
-export default { createRenderer };
+/**
+ * Parking Escape Phaser Scene
+ */
+class ParkingEscapeScene extends Phaser.Scene {
+  constructor() {
+    super('ParkingEscapeScene');
+    this.gridGraphics = null;
+    this.vehicleGraphics = new Map();
+    this.vehicleContainers = new Map();
+    this.exitParticles = [];
+    this.hintVehicleId = null;
+    this.reducedMotion = false;
+    this.slideTweens = new Map();
+    this.hintTweens = new Map();
+    this.shakeTween = null;
+    this.state = null;
+    this.layout = null;
+    this.drag = null;
+    this.selectedId = null;
+  }
+
+  init(data) {
+    this.state = data.state;
+    this.reducedMotion = data.reducedMotion || false;
+    this.onDragStart = data.onDragStart;
+    this.onDragMove = data.onDragMove;
+    this.onDragEnd = data.onDragEnd;
+  }
+
+  create() {
+    this.updateLayout();
+    this.drawGrid();
+    this.createVehicleObjects();
+    this.setupInput();
+  }
+
+  updateLayout() {
+    const { width, height } = this.scale;
+    this.layout = calculateLayout(
+      this.state.grid.width,
+      this.state.grid.height,
+      width,
+      height
+    );
+  }
+
+  drawGrid() {
+    // Create or clear grid graphics
+    if (this.gridGraphics) {
+      this.gridGraphics.destroy();
+    }
+    this.gridGraphics = this.add.graphics();
+
+    const { cellSize, offsetX, offsetY } = this.layout;
+    const gw = this.state.grid.width;
+    const gh = this.state.grid.height;
+    const gridPxW = gw * cellSize;
+    const gridPxH = gh * cellSize;
+
+    // Outer border
+    this.gridGraphics.lineStyle(2, 0xffffff, 0.15);
+    this.gridGraphics.strokeRoundedRect(offsetX - 2, offsetY - 2, gridPxW + 4, gridPxH + 4, 10);
+
+    // Asphalt fill with gradient effect
+    const centerX = offsetX + gridPxW / 2;
+    const centerY = offsetY + gridPxH / 2;
+    const maxRadius = Math.max(gridPxW, gridPxH) * 0.7;
+
+    // Base dark color
+    this.gridGraphics.fillStyle(0x2a2a2a, 1);
+    this.gridGraphics.fillRoundedRect(offsetX, offsetY, gridPxW, gridPxH, 8);
+
+    // Subtle gradient overlay
+    this.gridGraphics.fillStyle(0x383838, 0.5);
+    this.gridGraphics.fillRoundedRect(offsetX, offsetY, gridPxW, gridPxH * 0.4, 8);
+
+    // Asphalt grain dots
+    this.gridGraphics.fillStyle(0xffffff, 0.025);
+    for (let c = 0; c < gw; c++) {
+      for (let r = 0; r < gh; r++) {
+        const seed = c * 37 + r * 17;
+        const sx = offsetX + c * cellSize + (seed % 23) / 23 * cellSize;
+        const sy = offsetY + r * cellSize + ((seed * 13) % 31) / 31 * cellSize;
+        this.gridGraphics.fillCircle(sx, sy, 1.5);
+      }
+    }
+
+    // Parking space lines (dashed yellow)
+    this.gridGraphics.lineStyle(1.5, 0xffe664, 0.22);
+    for (let c = 1; c < gw; c++) {
+      const x = offsetX + c * cellSize;
+      // Draw dashed line manually
+      for (let y = offsetY + 4; y < offsetY + gridPxH - 4; y += cellSize * 0.5) {
+        const dashLen = cellSize * 0.2;
+        this.gridGraphics.beginPath();
+        this.gridGraphics.moveTo(x, y);
+        this.gridGraphics.lineTo(x, Math.min(y + dashLen, offsetY + gridPxH - 4));
+        this.gridGraphics.strokePath();
+      }
+    }
+    for (let r = 1; r < gh; r++) {
+      const y = offsetY + r * cellSize;
+      for (let x = offsetX + 4; x < offsetX + gridPxW - 4; x += cellSize * 0.5) {
+        const dashLen = cellSize * 0.2;
+        this.gridGraphics.beginPath();
+        this.gridGraphics.moveTo(x, y);
+        this.gridGraphics.lineTo(Math.min(x + dashLen, offsetX + gridPxW - 4), y);
+        this.gridGraphics.strokePath();
+      }
+    }
+
+    // Exit gap and arrow
+    const exit = this.state.grid.exit;
+    const exitY = offsetY + exit.y * cellSize + 4;
+    const exitH = cellSize - 8;
+
+    // Clear border for exit gap
+    this.gridGraphics.clear();
+    this.gridGraphics.fillStyle(0x000000, 0);
+    this.gridGraphics.fillRect(offsetX + gridPxW - 3, exitY, 8, exitH);
+
+    // Redraw the grid elements up to the exit
+    this.gridGraphics = this.add.graphics();
+
+    // Outer border (with gap for exit)
+    this.gridGraphics.lineStyle(2, 0xffffff, 0.15);
+    // Top border
+    this.gridGraphics.beginPath();
+    this.gridGraphics.moveTo(offsetX - 2, offsetY - 2);
+    this.gridGraphics.lineTo(offsetX + gridPxW + 2, offsetY - 2);
+    this.gridGraphics.strokePath();
+    // Left border
+    this.gridGraphics.beginPath();
+    this.gridGraphics.moveTo(offsetX - 2, offsetY - 2);
+    this.gridGraphics.lineTo(offsetX - 2, offsetY + gridPxH + 2);
+    this.gridGraphics.strokePath();
+    // Bottom border
+    this.gridGraphics.beginPath();
+    this.gridGraphics.moveTo(offsetX - 2, offsetY + gridPxH + 2);
+    this.gridGraphics.lineTo(offsetX + gridPxW + 2, offsetY + gridPxH + 2);
+    this.gridGraphics.strokePath();
+    // Right border (with gap for exit)
+    this.gridGraphics.beginPath();
+    this.gridGraphics.moveTo(offsetX + gridPxW + 2, offsetY - 2);
+    this.gridGraphics.lineTo(offsetX + gridPxW + 2, exitY);
+    this.gridGraphics.strokePath();
+    this.gridGraphics.beginPath();
+    this.gridGraphics.moveTo(offsetX + gridPxW + 2, exitY + exitH);
+    this.gridGraphics.lineTo(offsetX + gridPxW + 2, offsetY + gridPxH + 2);
+    this.gridGraphics.strokePath();
+
+    // Asphalt fill
+    this.gridGraphics.fillStyle(0x2a2a2a, 1);
+    this.gridGraphics.fillRoundedRect(offsetX, offsetY, gridPxW, gridPxH, 8);
+    this.gridGraphics.fillStyle(0x383838, 0.5);
+    this.gridGraphics.fillRect(offsetX, offsetY, gridPxW, gridPxH * 0.4);
+
+    // Grain dots
+    this.gridGraphics.fillStyle(0xffffff, 0.025);
+    for (let c = 0; c < gw; c++) {
+      for (let r = 0; r < gh; r++) {
+        const seed = c * 37 + r * 17;
+        const sx = offsetX + c * cellSize + (seed % 23) / 23 * cellSize;
+        const sy = offsetY + r * cellSize + ((seed * 13) % 31) / 31 * cellSize;
+        this.gridGraphics.fillCircle(sx, sy, 1.5);
+      }
+    }
+
+    // Parking space lines
+    this.gridGraphics.lineStyle(1.5, 0xffe664, 0.22);
+    for (let c = 1; c < gw; c++) {
+      const x = offsetX + c * cellSize;
+      for (let y = offsetY + 4; y < offsetY + gridPxH - 4; y += cellSize * 0.5) {
+        const dashLen = cellSize * 0.2;
+        this.gridGraphics.beginPath();
+        this.gridGraphics.moveTo(x, y);
+        this.gridGraphics.lineTo(x, Math.min(y + dashLen, offsetY + gridPxH - 4));
+        this.gridGraphics.strokePath();
+      }
+    }
+    for (let r = 1; r < gh; r++) {
+      const y = offsetY + r * cellSize;
+      for (let x = offsetX + 4; x < offsetX + gridPxW - 4; x += cellSize * 0.5) {
+        const dashLen = cellSize * 0.2;
+        this.gridGraphics.beginPath();
+        this.gridGraphics.moveTo(x, y);
+        this.gridGraphics.lineTo(Math.min(x + dashLen, offsetX + gridPxW - 4), y);
+        this.gridGraphics.strokePath();
+      }
+    }
+
+    // Exit glow cone
+    const ax = offsetX + gridPxW + 6;
+    const ay = offsetY + exit.y * cellSize + cellSize / 2;
+
+    const glowGraphics = this.add.graphics();
+    glowGraphics.fillStyle(0xffd700, 0.35);
+    glowGraphics.fillTriangle(
+      ax, ay,
+      ax + cellSize, ay - cellSize / 2,
+      ax + cellSize, ay + cellSize / 2
+    );
+    glowGraphics.fillStyle(0xffd700, 0.15);
+    glowGraphics.fillTriangle(
+      ax, ay,
+      ax + cellSize * 1.5, ay - cellSize * 0.7,
+      ax + cellSize * 1.5, ay + cellSize * 0.7
+    );
+
+    // Exit arrow
+    const arrowGraphics = this.add.graphics();
+    arrowGraphics.fillStyle(0xffd700, 1);
+    arrowGraphics.beginPath();
+    arrowGraphics.moveTo(ax, ay - 9);
+    arrowGraphics.lineTo(ax + 15, ay);
+    arrowGraphics.lineTo(ax, ay + 9);
+    arrowGraphics.closePath();
+    arrowGraphics.fillPath();
+
+    // Arrow glow
+    arrowGraphics.fillStyle(0xffd700, 0.3);
+    arrowGraphics.fillCircle(ax + 7, ay, 18);
+  }
+
+  createVehicleObjects() {
+    // Clear existing vehicle objects
+    this.vehicleGraphics.forEach(g => g.destroy());
+    this.vehicleContainers.forEach(c => c.destroy());
+    this.vehicleGraphics.clear();
+    this.vehicleContainers.clear();
+
+    for (const v of this.state.vehicles) {
+      this.createVehicleGraphics(v);
+    }
+
+    this.updateVehiclePositions();
+  }
+
+  createVehicleGraphics(v) {
+    const { cellSize, offsetX, offsetY } = this.layout;
+    const margin = 4;
+    const pos = gridToCanvas(v.x, v.y, this.layout);
+    const pw = v.width * cellSize - margin * 2;
+    const ph = v.height * cellSize - margin * 2;
+    const r = Math.min(12, cellSize / 5);
+    const depth = Math.round(cellSize * 0.10);
+
+    const container = this.add.container(pos.x + margin, pos.y + margin);
+    const graphics = this.add.graphics();
+
+    const isHero = v.type === 'hero';
+
+    // Side face (shadow)
+    const sideColor = Phaser.Display.Color.HexStringToColor(darken(v.color, 30)).color;
+    graphics.fillStyle(sideColor, 1);
+    graphics.fillRoundedRect(depth, depth, pw, ph, r);
+
+    // Top face gradient
+    const topColor = Phaser.Display.Color.HexStringToColor(v.color).color;
+    const lightColor = Phaser.Display.Color.HexStringToColor(lighten(v.color, 22)).color;
+    const darkColor = Phaser.Display.Color.HexStringToColor(darken(v.color, 12)).color;
+
+    // Main body
+    graphics.fillStyle(topColor, 1);
+    graphics.fillRoundedRect(0, 0, pw, ph, r);
+
+    // Gradient overlay (top highlight)
+    graphics.fillStyle(lightColor, 0.4);
+    graphics.fillRoundedRect(0, 0, pw, ph * 0.5, r);
+
+    // Border
+    graphics.lineStyle(1.5, 0xffffff, 0.22);
+    graphics.strokeRoundedRect(0, 0, pw, ph, r);
+
+    // Top highlight strip
+    graphics.fillStyle(0xffffff, 0.28);
+    graphics.fillRoundedRect(4, 3, pw - 8, ph * 0.22, r * 0.5);
+
+    // Windows
+    graphics.fillStyle(0xc8f0ff, 0.35);
+    if (v.orientation === 'horizontal') {
+      const ww = pw * 0.28;
+      const wh = ph * 0.38;
+      const wy = ph * 0.2;
+      graphics.fillRect(pw * 0.1, wy, ww, wh);
+      graphics.fillRect(pw * 0.62, wy, ww, wh);
+    } else {
+      const ww = pw * 0.52;
+      const wh = ph * 0.14;
+      const wx = pw * 0.24;
+      graphics.fillRect(wx, ph * 0.1, ww, wh);
+      if (v.height >= 3) graphics.fillRect(wx, ph * 0.45, ww, wh);
+    }
+
+    // Windshield glare
+    graphics.fillStyle(0xffffff, 0.12);
+    if (v.orientation === 'horizontal') {
+      graphics.beginPath();
+      graphics.moveTo(pw * 0.1, ph * 0.2);
+      graphics.lineTo(pw * 0.38, ph * 0.2);
+      graphics.lineTo(pw * 0.28, ph * 0.58);
+      graphics.lineTo(pw * 0.1, ph * 0.58);
+      graphics.closePath();
+      graphics.fillPath();
+    } else {
+      graphics.beginPath();
+      graphics.moveTo(pw * 0.24, ph * 0.1);
+      graphics.lineTo(pw * 0.76, ph * 0.1);
+      graphics.lineTo(pw * 0.65, ph * 0.24);
+      graphics.lineTo(pw * 0.24, ph * 0.24);
+      graphics.closePath();
+      graphics.fillPath();
+    }
+
+    // Hero glow
+    if (isHero) {
+      const glowGraphics = this.add.graphics();
+      glowGraphics.lineStyle(3, 0xe74c3c, 0.5);
+      glowGraphics.strokeRoundedRect(-4, -4, pw + 8, ph + 8, r + 2);
+      container.add(glowGraphics);
+    }
+
+    container.add(graphics);
+    this.vehicleContainers.set(v.id, container);
+    this.vehicleGraphics.set(v.id, graphics);
+  }
+
+  updateVehiclePositions() {
+    for (const v of this.state.vehicles) {
+      const container = this.vehicleContainers.get(v.id);
+      if (!container) continue;
+
+      const margin = 4;
+      const pos = gridToCanvas(v.x, v.y, this.layout);
+      container.setPosition(pos.x + margin, pos.y + margin);
+
+      // Bring hero to top
+      if (v.type === 'hero') {
+        container.setDepth(10);
+      }
+    }
+  }
+
+  setupInput() {
+    this.input.on('pointerdown', (pointer) => {
+      if (this.state.status !== 'playing') return;
+
+      const vehicleId = hitTestVehicleAt(pointer.x, pointer.y, this.state, this.layout);
+      if (!vehicleId) return;
+
+      const vehicle = this.state.vehicles.find(v => v.id === vehicleId);
+      if (!vehicle) return;
+
+      this.drag = {
+        vehicleId,
+        axis: vehicle.orientation === 'horizontal' ? 'x' : 'y',
+        startX: pointer.x,
+        startY: pointer.y,
+        currentDx: 0,
+        currentDy: 0
+      };
+
+      // Bring dragged vehicle to top
+      const container = this.vehicleContainers.get(vehicleId);
+      if (container) {
+        container.setDepth(100);
+      }
+
+      if (this.onDragStart) {
+        this.onDragStart(vehicleId);
+      }
+    });
+
+    this.input.on('pointermove', (pointer) => {
+      if (!this.drag) return;
+
+      this.drag.currentDx = this.drag.axis === 'x' ? pointer.x - this.drag.startX : 0;
+      this.drag.currentDy = this.drag.axis === 'y' ? pointer.y - this.drag.startY : 0;
+
+      // Update vehicle position visually
+      const container = this.vehicleContainers.get(this.drag.vehicleId);
+      const vehicle = this.state.vehicles.find(v => v.id === this.drag.vehicleId);
+      if (container && vehicle) {
+        const margin = 4;
+        const pos = gridToCanvas(vehicle.x, vehicle.y, this.layout);
+        container.setPosition(
+          pos.x + margin + this.drag.currentDx,
+          pos.y + margin + this.drag.currentDy
+        );
+      }
+
+      if (this.onDragMove) {
+        this.onDragMove(this.drag.vehicleId, this.drag.currentDx, this.drag.currentDy);
+      }
+    });
+
+    this.input.on('pointerup', (pointer) => {
+      if (!this.drag) return;
+
+      const vehicle = this.state.vehicles.find(v => v.id === this.drag.vehicleId);
+      if (vehicle && this.onDragEnd) {
+        this.onDragEnd(this.drag.vehicleId, this.drag.currentDx, this.drag.currentDy);
+      }
+
+      this.drag = null;
+    });
+  }
+
+  setState(newState) {
+    this.state = newState;
+    this.updateLayout();
+    this.drawGrid();
+    this.createVehicleObjects();
+  }
+
+  setReducedMotion(value) {
+    this.reducedMotion = value;
+  }
+
+  setHintVehicle(vehicleId) {
+    // Clear existing hint tweens
+    this.hintTweens.forEach(tween => tween.stop());
+    this.hintTweens.clear();
+
+    this.hintVehicleId = vehicleId;
+
+    if (vehicleId !== null && !this.reducedMotion) {
+      const container = this.vehicleContainers.get(vehicleId);
+      const graphics = this.vehicleGraphics.get(vehicleId);
+      if (container && graphics) {
+        // Pulsing hint glow
+        this.hintTweens.set(vehicleId, this.tweens.add({
+          targets: container,
+          alpha: { from: 1, to: 0.7 },
+          duration: 300,
+          yoyo: true,
+          repeat: -1
+        }));
+      }
+    } else {
+      // Reset alpha for all vehicles
+      this.vehicleContainers.forEach((container, id) => {
+        container.setAlpha(1);
+      });
+    }
+  }
+
+  render(state, drag, selectedId) {
+    this.state = state;
+    this.drag = drag;
+    this.selectedId = selectedId;
+
+    // Update vehicle positions
+    for (const v of state.vehicles) {
+      const container = this.vehicleContainers.get(v.id);
+      if (!container) {
+        this.createVehicleGraphics(v);
+        continue;
+      }
+
+      const margin = 4;
+      let pos = gridToCanvas(v.x, v.y, this.layout);
+      let offsetX = 0;
+      let offsetY = 0;
+
+      // Apply drag offset
+      if (drag && drag.vehicleId === v.id) {
+        offsetX = drag.dx || 0;
+        offsetY = drag.dy || 0;
+      }
+
+      container.setPosition(pos.x + margin + offsetX, pos.y + margin + offsetY);
+
+      // Selection highlight
+      const isSelected = selectedId === v.id || (drag && drag.vehicleId === v.id);
+      if (isSelected) {
+        container.setDepth(100);
+      } else if (v.type === 'hero') {
+        container.setDepth(10);
+      } else {
+        container.setDepth(1);
+      }
+    }
+
+    // Win overlay
+    if (state.status === 'won') {
+      if (!this.winOverlay) {
+        this.winOverlay = this.add.graphics();
+        this.winOverlay.setDepth(1000);
+      }
+      this.winOverlay.clear();
+      this.winOverlay.fillStyle(0x000000, 0.35);
+      this.winOverlay.fillRect(0, 0, this.scale.width, this.scale.height);
+    } else if (this.winOverlay) {
+      this.winOverlay.clear();
+    }
+  }
+
+  animateSlide(vehicleId, fromGridX, fromGridY, toGridX, toGridY, cells) {
+    if (this.reducedMotion) return;
+
+    const container = this.vehicleContainers.get(vehicleId);
+    if (!container) return;
+
+    // Stop existing tween for this vehicle
+    const existingTween = this.slideTweens.get(vehicleId);
+    if (existingTween) existingTween.stop();
+
+    const { cellSize } = this.layout;
+    const margin = 4;
+    const targetPos = gridToCanvas(toGridX, toGridY, this.layout);
+
+    this.slideTweens.set(vehicleId, this.tweens.add({
+      targets: container,
+      x: targetPos.x + margin,
+      y: targetPos.y + margin,
+      duration: ANIM_DURATION * Math.max(1, cells),
+      ease: 'Back.easeOut',
+      onComplete: () => {
+        this.slideTweens.delete(vehicleId);
+      }
+    }));
+  }
+
+  shake(durationMs = 300, amplitude = 4) {
+    if (this.reducedMotion) return;
+
+    // Stop existing shake
+    if (this.shakeTween) this.shakeTween.stop();
+
+    const cam = this.cameras.main;
+    const originalX = cam.scrollX;
+    const originalY = cam.scrollY;
+
+    this.shakeTween = this.tweens.add({
+      targets: cam,
+      scrollX: originalX + amplitude,
+      scrollY: originalY + amplitude,
+      duration: 50,
+      yoyo: true,
+      repeat: Math.floor(durationMs / 100),
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        cam.scrollX = originalX;
+        cam.scrollY = originalY;
+      }
+    });
+  }
+
+  onHeroExit(exitRow) {
+    if (this.reducedMotion) return;
+
+    const { cellSize, offsetX, offsetY } = this.layout;
+    const x = offsetX + (6 * cellSize) + 20;
+    const y = offsetY + exitRow * cellSize + cellSize / 2;
+
+    const colors = [0xe74c3c, 0xffd700, 0xffffff, 0xff8c42, 0xff3cac];
+
+    // Create particle emitter
+    const particles = this.add.particles(x, y, null, {
+      speed: { min: 100, max: 300 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.5, end: 0 },
+      lifespan: 800,
+      quantity: 40,
+      emitting: false
+    });
+
+    // Emit burst
+    particles.explode(40);
+
+    // Create manual particles since we don't have a texture
+    for (let i = 0; i < 40; i++) {
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 100 + Math.random() * 200;
+      const size = 4 + Math.random() * 6;
+
+      const particle = this.add.graphics();
+      particle.fillStyle(color, 1);
+      particle.fillRect(-size / 2, -size / 2, size, size * 0.75);
+      particle.setPosition(x, y);
+      particle.setRotation(Math.random() * Math.PI * 2);
+      particle.setDepth(500);
+
+      this.tweens.add({
+        targets: particle,
+        x: x + Math.cos(angle) * speed,
+        y: y + Math.sin(angle) * speed - 100,
+        alpha: 0,
+        rotation: particle.rotation + (Math.random() - 0.5) * 2,
+        duration: 800 + Math.random() * 400,
+        ease: 'Quad.easeOut',
+        onComplete: () => particle.destroy()
+      });
+    }
+  }
+
+  resize(state) {
+    this.state = state;
+    this.updateLayout();
+    this.drawGrid();
+    this.createVehicleObjects();
+  }
+
+  // API methods for external access
+  hitTestVehicle(px, py) {
+    return hitTestVehicleAt(px, py, this.state, this.layout);
+  }
+
+  computeSnapMove(vehicle, dx, dy) {
+    return computeSnapMoveFromDelta(vehicle, dx, dy, this.layout.cellSize);
+  }
+}
+
+/**
+ * Create renderer instance - returns Phaser game and API
+ */
+export function createRenderer(canvas) {
+  let game = null;
+  let scene = null;
+  let lastState = null;
+  let reducedMotion = false;
+  let hintVehicleId = null;
+
+  const gameConfig = {
+    type: Phaser.AUTO,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 390,
+      height: 844,
+      parent: canvas.parentElement,
+      canvas: canvas
+    },
+    scene: ParkingEscapeScene,
+    backgroundColor: '#1a1a2e',
+    transparent: true
+  };
+
+  function init() {
+    game = new Phaser.Game(gameConfig);
+  }
+
+  function getScene() {
+    if (!scene) {
+      scene = game.scene.getScene('ParkingEscapeScene');
+    }
+    return scene;
+  }
+
+  function resize(state) {
+    lastState = state;
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.resize(state);
+    }
+  }
+
+  function render(state, drag, selectedId) {
+    lastState = state;
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.render(state, drag, selectedId);
+    }
+  }
+
+  function hitTestVehicle(px, py, state) {
+    const s = getScene();
+    if (!s || !s.layout) return null;
+    return hitTestVehicleAt(px, py, state, s.layout);
+  }
+
+  function computeSnapMove(vehicle, dx, dy, _state) {
+    const s = getScene();
+    if (!s || !s.layout) return null;
+    return computeSnapMoveFromDelta(vehicle, dx, dy, s.layout.cellSize);
+  }
+
+  function animateSlide(vehicleId, fromGridX, fromGridY, toGridX, toGridY, cells) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.animateSlide(vehicleId, fromGridX, fromGridY, toGridX, toGridY, cells);
+    }
+  }
+
+  function shake(durationMs = 300, amplitude = 4) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.shake(durationMs, amplitude);
+    }
+  }
+
+  function onHeroExit(exitRow) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.onHeroExit(exitRow);
+    }
+  }
+
+  function setReducedMotion(value) {
+    reducedMotion = value;
+    const s = getScene();
+    if (s) {
+      s.setReducedMotion(value);
+    }
+  }
+
+  function setHintVehicle(id) {
+    hintVehicleId = id;
+    const s = getScene();
+    if (s) {
+      s.setHintVehicle(id);
+    }
+  }
+
+  function setCallbacks({ onDragStart, onDragMove, onDragEnd }) {
+    const s = getScene();
+    if (s) {
+      s.onDragStart = onDragStart;
+      s.onDragMove = onDragMove;
+      s.onDragEnd = onDragEnd;
+    }
+  }
+
+  function getCellSize() {
+    const s = getScene();
+    return s && s.layout ? s.layout.cellSize : 60;
+  }
+
+  function getOffset() {
+    const s = getScene();
+    return s && s.layout ? { x: s.layout.offsetX, y: s.layout.offsetY } : { x: 16, y: 16 };
+  }
+
+  // Initialize the game
+  init();
+
+  return {
+    resize,
+    render,
+    hitTestVehicle,
+    computeSnapMove,
+    animateSlide,
+    shake,
+    onHeroExit,
+    setReducedMotion,
+    setHintVehicle,
+    setCallbacks,
+    getCellSize,
+    getOffset
+  };
+}
+
+export default {
+  createRenderer,
+  calculateLayout,
+  gridToCanvas,
+  canvasToGrid,
+  hitTestVehicleAt,
+  computeSnapMoveFromDelta
+};

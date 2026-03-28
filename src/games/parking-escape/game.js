@@ -1,5 +1,7 @@
 /**
  * Parking Escape - Game Logic
+ *
+ * Migrated to Phaser 3. The render loop is now handled by the Phaser Scene.
  */
 
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
@@ -38,11 +40,10 @@ class ParkingEscapeGame {
     this.hintSession = null;
     this.renderer = null;
     this.input = null;
-    this._rafId = null;
+    this._selectedId = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this._loop = this._loop.bind(this);
   }
 
   async init() {
@@ -51,6 +52,12 @@ class ParkingEscapeGame {
 
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
+
+    // Initialize state before renderer (needed for Phaser scene init)
+    const stats = getGameStats(GAME_ID);
+    this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
+    const level = this.levels[this.currentLevelIndex];
+    this.state = createInitialState(level);
 
     this.renderer = createRenderer(this.canvas);
     this.renderer.setReducedMotion(isReducedMotionEnabled());
@@ -62,24 +69,17 @@ class ParkingEscapeGame {
       onMove: (vehicleId, direction, distance) => this.handleMove(vehicleId, direction, distance),
       onUndo: () => this.undo()
     });
-    this.input.init();
-
-    const stats = getGameStats(GAME_ID);
-    this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
 
     window.addEventListener('resize', this.handleResize);
     document.addEventListener('keydown', this.handleKeyDown);
 
     this.setupButtons();
-    this.startLevel(this.currentLevelIndex);
-    this._rafId = requestAnimationFrame(this._loop);
-  }
 
-  _loop() {
-    if (this.state && this.renderer) {
-      this.renderer.render(this.state, null, this._selectedId);
-    }
-    this._rafId = requestAnimationFrame(this._loop);
+    // Now start the level (state already created)
+    this.startLevel(this.currentLevelIndex);
+
+    // Initialize input after renderer is ready
+    this.input.init();
   }
 
   setupButtons() {
