@@ -13,7 +13,7 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 4. ✅ **Parking Escape** — Complete
 5. ✅ **Satisfying ASMR** — Complete
 6. ✅ **Pull the Pin** — Complete
-7. ⏳ **Shared utilities cleanup** — Next
+7. ✅ **Shared utilities cleanup** — Complete
 
 ---
 
@@ -207,7 +207,24 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ## In Progress
 
-*None yet - next iteration will do shared utilities cleanup*
+*None - all migrations complete*
+
+---
+
+## Shared Utilities Cleanup ✅
+
+**Commit:** `2cefa6e`
+
+**Changes:**
+- Removed dead Canvas 2D utility files that were replaced by Phaser:
+  - `src/shared/canvas.js` - Canvas creation and context utilities (now using Phaser.Game)
+  - `src/shared/particles.js` - Canvas 2D particle system (now using Phaser Tweens/ParticleEmitter)
+  - `src/shared/shapes.js` - Canvas 2D shape drawing functions (now using Phaser Graphics)
+  - `src/shared/screen-shake.js` - Screen shake for Canvas 2D translate (now using Phaser camera)
+- Removed corresponding test files
+- Updated `tests/unit/ux-polish.test.js` to remove tests for deleted modules
+
+**Tests:** All 5374 tests pass
 
 ---
 
