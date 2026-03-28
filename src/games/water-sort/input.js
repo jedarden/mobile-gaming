@@ -2,48 +2,50 @@
  * Water Sort - Input Handler
  *
  * Game-specific input mapping for Water Sort.
- * Translates pointer events into tube selection actions:
- * - Tap tube to select
- * - Tap another tube to pour
- * - Tap same tube to deselect
+ * With Phaser, input is handled by the scene, so this module
+ * provides a thin wrapper to wire up callbacks.
  *
- * Uses shared/input.js for normalized pointer events.
+ * The hit-testing logic (canvasToTubeIndex) is now in renderer.js
+ * and used by the Phaser scene directly.
  */
-
-import { onTap, disableTouchActions } from '../../shared/input.js';
 
 /**
  * Create input handler for Water Sort
  *
  * @param {Object} options - Configuration
- * @param {HTMLCanvasElement} options.canvas - Game canvas element
- * @param {Object} options.renderer - Renderer instance (must expose canvasToTubeIndex)
+ * @param {HTMLCanvasElement} options.canvas - Game canvas element (used by Phaser)
+ * @param {Object} options.renderer - Renderer instance (Phaser game wrapper)
  * @param {Function} options.onTubeTap - Callback when a tube is tapped: (tubeIndex)
  * @returns {Object} Input controller with init() and destroy() methods
  */
 export function createInput(options) {
-  const { canvas, renderer, onTubeTap } = options;
-  let cleanupTap = null;
+  const { renderer, onTubeTap } = options;
+  let initialized = false;
 
   /**
-   * Handle tap: convert to tube index and notify
+   * Initialize input handling
+   * Wire up callback to renderer's Phaser scene
    */
   function init() {
-    disableTouchActions(canvas);
+    if (initialized) return;
 
-    cleanupTap = onTap(canvas, ({ x, y }) => {
-      const tubeIdx = renderer.canvasToTubeIndex(x, y, null);
-      if (tubeIdx >= 0 && onTubeTap) {
-        onTubeTap(tubeIdx);
-      }
-    });
+    // The renderer handles input via Phaser scene
+    // We just need to set the callback
+    if (renderer && renderer.setOnTubeTap) {
+      renderer.setOnTubeTap(onTubeTap);
+    }
+
+    initialized = true;
   }
 
   /**
-   * Remove all input listeners
+   * Remove input listeners
    */
   function destroy() {
-    if (cleanupTap) cleanupTap();
+    if (renderer && renderer.setOnTubeTap) {
+      renderer.setOnTubeTap(null);
+    }
+    initialized = false;
   }
 
   return { init, destroy };

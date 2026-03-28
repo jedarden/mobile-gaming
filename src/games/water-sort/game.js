@@ -96,19 +96,6 @@ class WaterSortGame {
       // Load levels
       await this.loadLevels();
 
-      // Create renderer
-      this.renderer = createRenderer(this.canvas);
-      this.renderer.setReducedMotion(isReducedMotionEnabled());
-      this.renderer.setColorBlindMode(isColorBlindEnabled());
-
-      // Create input handler
-      this.input = createInput({
-        canvas: this.canvas,
-        renderer: this.renderer,
-        onTubeTap: (idx) => this.handleTubeTap(idx)
-      });
-      this.input.init();
-
       // Check for daily mode
       const urlParams = new URLSearchParams(window.location.search);
       this.isDailyMode = urlParams.get('daily') === 'true';
@@ -120,6 +107,23 @@ class WaterSortGame {
 
       // Load saved progress
       this.loadProgress();
+
+      // Create initial state first (needed for Phaser scene)
+      const level = this.levels[this.currentLevelIndex];
+      this.state = createInitialState(level);
+
+      // Create renderer (Phaser game initialized with initial state)
+      this.renderer = createRenderer(this.canvas);
+      this.renderer.setReducedMotion(isReducedMotionEnabled());
+      this.renderer.setColorBlindMode(isColorBlindEnabled());
+
+      // Create input handler
+      this.input = createInput({
+        canvas: this.canvas,
+        renderer: this.renderer,
+        onTubeTap: (idx) => this.handleTubeTap(idx)
+      });
+      this.input.init();
 
       // Setup event listeners
       this.setupEventListeners();

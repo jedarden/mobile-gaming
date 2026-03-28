@@ -1,7 +1,8 @@
 /**
- * Water Sort - Canvas Renderer (polished)
+ * Water Sort - Phaser Renderer
  *
- * Visual improvements:
+ * Migrated from Canvas 2D to Phaser 3 game framework.
+ * Visual improvements preserved:
  * - Glass refraction: vertical sheen stripe on tube body
  * - Pour stream: connecting liquid trail during pour
  * - Anticipation ease: slight pull-back before pour starts
@@ -10,6 +11,7 @@
  * - Scale-pop on tube completion (elastic out)
  */
 
+import Phaser from 'phaser';
 import { LIQUID_COLORS, isTubeComplete } from './state.js';
 import { getPatternLabel } from '../../shared/color-blind.js';
 
@@ -20,557 +22,623 @@ const SEGMENT_HEIGHT = 40;
 const TUBE_RADIUS = 10;
 const TUBE_GAP = 12;
 const TUBE_BORDER = 3;
-const POUR_DURATION = 480;  // slightly longer for more fluid feel
+const POUR_DURATION = 480;
 
 /**
- * Create a renderer instance
- *
- * @param {HTMLCanvasElement} canvas - Canvas element
- * @returns {Object} Renderer API
+ * Layout utilities - pure functions for tube positioning
  */
-// Easing with anticipation (slight pull-back before moving)
-function easeAnticipate(t) {
-  // Cubic with -s overshoot at start
-  const s = 0.18;
-  return (t * t * ((s + 1) * t - s));
+export function calculateLayout(tubeCount, containerWidth, containerHeight) {
+  const tubesPerRow = Math.min(tubeCount, 7);
+  const rows = Math.ceil(tubeCount / tubesPerRow);
+  const padding = 16;
+
+  const availWidth = containerWidth - padding * 2;
+  const availHeight = containerHeight - padding * 2;
+
+  const totalTubeWidth = tubesPerRow * TUBE_WIDTH + (tubesPerRow - 1) * TUBE_GAP;
+  const totalTubeHeight = rows * (TUBE_HEIGHT + TUBE_GAP);
+
+  const scaleX = availWidth / totalTubeWidth;
+  const scaleY = availHeight / totalTubeHeight;
+  const tubeScale = Math.min(scaleX, scaleY, 1.2);
+
+  const width = totalTubeWidth * tubeScale + padding * 2;
+  const height = totalTubeHeight * tubeScale + padding * 2;
+
+  return { tubeScale, width, height, tubesPerRow, rows, padding };
 }
 
-export function createRenderer(canvas) {
-  const ctx = canvas.getContext('2d');
-  let width = 0;
-  let height = 0;
-  let tubeScale = 1;
-  let reducedMotion = false;
-  let colorBlindMode = false;
-  let hintTubeIndex = null;
-  let hintRafId = null;
-  let lastStateRef = null;
-  let animating = false;
-  let animData = null;
+export function getTubePosition(index, tubeCount, tubeScale, totalWidth, tubesPerRow) {
+  const col = index % tubesPerRow;
+  const row = Math.floor(index / tubesPerRow);
+  const tubesInRow = Math.min(tubesPerRow, tubeCount - row * tubesPerRow);
 
-  // Tube completion pop state: tubeIdx → { startTime }
-  const tubePops = new Map();
-  // Bubble particles: { x, y, r, vy, alpha, tubeIdx }
-  const bubbles = [];
-  // Splash ripples: { x, y, startTime, color }
-  const splashes = [];
+  const totalRowWidth = tubesInRow * TUBE_WIDTH + (tubesInRow - 1) * TUBE_GAP;
+  const startX = (totalWidth - totalRowWidth * tubeScale) / 2;
 
-  /**
-   * Resize canvas to fit container with proper tube layout
-   */
-  function resize(state) {
-    const container = canvas.parentElement;
-    const containerRect = container.getBoundingClientRect();
-    const tubeCount = state.tubes.length;
+  return {
+    x: startX + col * (TUBE_WIDTH + TUBE_GAP) * tubeScale,
+    y: 16 + row * (TUBE_HEIGHT + TUBE_GAP) * tubeScale
+  };
+}
 
-    // Calculate tube layout
-    const tubesPerRow = Math.min(tubeCount, 7);
-    const rows = Math.ceil(tubeCount / tubesPerRow);
+/**
+ * Convert canvas coordinates to tube index - pure hit-testing
+ */
+export function canvasToTubeIndex(canvasX, canvasY, tubeCount, tubeScale, totalWidth, tubesPerRow) {
+  for (let i = 0; i < tubeCount; i++) {
+    const pos = getTubePosition(i, tubeCount, tubeScale, totalWidth, tubesPerRow);
+    const tw = TUBE_WIDTH * tubeScale;
+    const th = TUBE_HEIGHT * tubeScale;
 
-    const padding = 16;
-    const availWidth = containerRect.width - padding * 2;
-    const availHeight = containerRect.height - padding * 2;
-
-    // Scale tubes to fit
-    const totalTubeWidth = tubesPerRow * TUBE_WIDTH + (tubesPerRow - 1) * TUBE_GAP;
-    const totalTubeHeight = rows * (TUBE_HEIGHT + TUBE_GAP);
-
-    const scaleX = availWidth / totalTubeWidth;
-    const scaleY = availHeight / totalTubeHeight;
-    tubeScale = Math.min(scaleX, scaleY, 1.2);
-
-    width = totalTubeWidth * tubeScale + padding * 2;
-    height = totalTubeHeight * tubeScale + padding * 2;
-
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  /**
-   * Get tube position on canvas
-   */
-  function getTubePosition(index, state) {
-    const tubeCount = state.tubes.length;
-    const tubesPerRow = Math.min(tubeCount, 7);
-    const col = index % tubesPerRow;
-    const row = Math.floor(index / tubesPerRow);
-    const tubesInRow = Math.min(tubesPerRow, tubeCount - row * tubesPerRow);
-
-    const totalRowWidth = tubesInRow * TUBE_WIDTH + (tubesInRow - 1) * TUBE_GAP;
-    const startX = (width - totalRowWidth * tubeScale) / 2;
-
-    return {
-      x: startX + col * (TUBE_WIDTH + TUBE_GAP) * tubeScale,
-      y: 16 + row * (TUBE_HEIGHT + TUBE_GAP) * tubeScale
-    };
-  }
-
-  /**
-   * Convert canvas coordinates to tube index
-   */
-  function canvasToTubeIndex(canvasX, canvasY, state) {
-    for (let i = 0; i < state.tubes.length; i++) {
-      const pos = getTubePosition(i, state);
-      const tw = TUBE_WIDTH * tubeScale;
-      const th = TUBE_HEIGHT * tubeScale;
-
-      if (canvasX >= pos.x && canvasX <= pos.x + tw &&
-          canvasY >= pos.y && canvasY <= pos.y + th) {
-        return i;
-      }
+    if (canvasX >= pos.x && canvasX <= pos.x + tw &&
+        canvasY >= pos.y && canvasY <= pos.y + th) {
+      return i;
     }
-    return -1;
+  }
+  return -1;
+}
+
+/**
+ * Water Sort Phaser Scene
+ */
+class WaterSortScene extends Phaser.Scene {
+  constructor() {
+    super('WaterSortScene');
+    this.tubeGraphics = [];
+    this.liquidContainers = [];
+    this.bubbles = [];
+    this.splashes = [];
+    this.hintTubeIndex = null;
+    this.reducedMotion = false;
+    this.colorBlindMode = false;
+    this.animating = false;
+    this.animData = null;
+    this.tubePopTweens = new Map();
+    this.state = null;
+    this.layout = null;
+    this.pourGraphics = null;
+    this.hintTween = null;
   }
 
-  /**
-   * Clear the canvas
-   */
-  function clear() {
-    ctx.clearRect(0, 0, width, height);
+  init(data) {
+    this.state = data.state;
+    this.onTubeTap = data.onTubeTap;
+    this.reducedMotion = data.reducedMotion || false;
+    this.colorBlindMode = data.colorBlindMode || false;
   }
 
-  /**
-   * Draw a single tube with scale-pop on completion
-   */
-  function drawTube(x, y, tube, state, tubeIdx, isSelected) {
-    const s = tubeScale;
+  create() {
+    this.updateLayout();
+    this.createTubeObjects();
+    this.setupInput();
+
+    // Create graphics for pour animation
+    this.pourGraphics = this.add.graphics();
+  }
+
+  updateLayout() {
+    const { width, height } = this.scale;
+    this.layout = calculateLayout(this.state.tubes.length, width, height);
+  }
+
+  createTubeObjects() {
+    // Clear existing graphics
+    this.tubeGraphics.forEach(g => g.destroy());
+    this.liquidContainers.forEach(c => c.destroy());
+    this.tubeGraphics = [];
+    this.liquidContainers = [];
+
+    for (let i = 0; i < this.state.tubes.length; i++) {
+      const pos = getTubePosition(i, this.state.tubes.length, this.layout.tubeScale,
+                                   this.layout.width, this.layout.tubesPerRow);
+
+      // Create container for each tube
+      const container = this.add.container(pos.x, pos.y);
+
+      // Create tube graphics
+      const graphics = this.add.graphics();
+      container.add(graphics);
+      this.tubeGraphics.push(graphics);
+      this.liquidContainers.push(container);
+    }
+
+    this.renderTubes();
+  }
+
+  setupInput() {
+    this.input.on('pointerdown', (pointer) => {
+      if (this.animating) return;
+
+      const tubeIdx = canvasToTubeIndex(
+        pointer.x, pointer.y,
+        this.state.tubes.length,
+        this.layout.tubeScale,
+        this.layout.width,
+        this.layout.tubesPerRow
+      );
+
+      if (tubeIdx >= 0 && this.onTubeTap) {
+        this.onTubeTap(tubeIdx);
+      }
+    });
+  }
+
+  renderTubes() {
+    for (let i = 0; i < this.state.tubes.length; i++) {
+      this.drawTube(i);
+    }
+  }
+
+  drawTube(tubeIdx) {
+    const graphics = this.tubeGraphics[tubeIdx];
+    const container = this.liquidContainers[tubeIdx];
+    if (!graphics || !container) return;
+
+    graphics.clear();
+
+    const tube = this.state.tubes[tubeIdx];
+    const s = this.layout.tubeScale;
     const tw = TUBE_WIDTH * s;
     const th = TUBE_HEIGHT * s;
     const r = TUBE_RADIUS * s;
     const border = TUBE_BORDER * s;
     const segH = SEGMENT_HEIGHT * s;
-    const innerW = tw - border * 2;
-    const innerX = x + border;
 
-    const complete = isTubeComplete(state, tubeIdx);
+    const isSelected = this.state.selectedTube === tubeIdx;
+    const complete = isTubeComplete(this.state, tubeIdx);
 
-    // Scale pop when newly completed
-    const pop = tubePops.get(tubeIdx);
-    let popScale = 1;
-    if (pop) {
-      const elapsed = (performance.now() - pop.startTime) / 350;
-      if (elapsed < 1) {
-        popScale = 1 + 0.10 * Math.pow(2, -10 * elapsed) * Math.sin((elapsed - 0.05) * Math.PI / 0.2);
-      } else {
-        tubePops.delete(tubeIdx);
-      }
-    }
-
-    ctx.save();
-    if (popScale !== 1) {
-      const cx = x + tw / 2;
-      const cy = y + th / 2;
-      ctx.translate(cx, cy);
-      ctx.scale(popScale, popScale);
-      ctx.translate(-cx, -cy);
-    }
-
-    // Gold glow for completed tubes
-    if (complete) {
-      ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
-      ctx.shadowBlur = 16 * s;
-    }
-
-    // Selection highlight
-    if (isSelected) {
-      ctx.shadowColor = 'rgba(99, 102, 241, 0.7)';
-      ctx.shadowBlur = 14 * s;
-    }
-
-    // Hint highlight
-    if (tubeIdx === hintTubeIndex) {
-      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
-      ctx.shadowColor = `rgba(255, 215, 0, ${0.5 + 0.4 * pulse})`;
-      ctx.shadowBlur = (14 + 10 * pulse) * s;
-    }
+    // Reset container scale (for pop animation)
+    container.setScale(1);
 
     // Tube background (glass)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.beginPath();
-    ctx.roundRect(x, y, tw, th, [r, r, r * 1.5, r * 1.5]);
-    ctx.fill();
+    graphics.fillStyle(0xffffff, 0.08);
+    this.drawRoundedRect(graphics, 0, 0, tw, th, r, r, r * 1.5, r * 1.5);
+    graphics.fillPath();
 
     // Tube border (glass effect)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-    ctx.lineWidth = border;
-    ctx.beginPath();
-    ctx.roundRect(x, y, tw, th, [r, r, r * 1.5, r * 1.5]);
-    ctx.stroke();
+    graphics.lineStyle(border, 0xffffff, 0.25);
+    this.drawRoundedRect(graphics, 0, 0, tw, th, r, r, r * 1.5, r * 1.5);
+    graphics.strokePath();
 
-    // Glass refraction sheen — vertical gradient stripe
-    const sheen = ctx.createLinearGradient(x + border, y, x + border + innerW * 0.28, y);
-    sheen.addColorStop(0, 'rgba(255,255,255,0.22)');
-    sheen.addColorStop(0.6, 'rgba(255,255,255,0.06)');
-    sheen.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sheen;
-    ctx.beginPath();
-    ctx.roundRect(x + border, y + border, innerW * 0.28, th - border * 2, r * 0.5);
-    ctx.fill();
+    // Glass refraction sheen
+    const innerW = tw - border * 2;
+    graphics.fillStyle(0xffffff, 0.15);
+    graphics.fillRoundedRect(border, border, innerW * 0.28, th - border * 2, r * 0.5);
 
     // Right edge gloss
-    ctx.fillStyle = 'rgba(255,255,255,0.07)';
-    ctx.fillRect(x + tw - border * 2, y + r, border, th - r * 2);
+    graphics.fillStyle(0xffffff, 0.07);
+    graphics.fillRect(tw - border * 2, r, border, th - r * 2);
+
+    // Selection or hint glow
+    if (isSelected) {
+      container.setAlpha(1);
+      graphics.lineStyle(border + 2, 0x6366f1, 0.7);
+      this.drawRoundedRect(graphics, -border, -border, tw + border * 2, th + border * 2, r, r, r * 1.5, r * 1.5);
+      graphics.strokePath();
+    }
+
+    if (tubeIdx === this.hintTubeIndex) {
+      // Pulsing hint glow handled by tween
+    }
 
     // Draw liquid segments (bottom to top)
     const segments = tube.segments;
+    const innerX = border + 2 * s;
+    const liquidW = innerW - 4 * s;
+
     for (let i = 0; i < segments.length; i++) {
-      const segIdx = segments.length - 1 - i; // draw from top visually
+      const segIdx = segments.length - 1 - i;
       const color = segments[segIdx];
       const liquidColor = LIQUID_COLORS[color] || '#888888';
+      const phaserColor = Phaser.Display.Color.HexStringToColor(liquidColor).color;
 
-      const liquidX = innerX + 2 * s;
-      const liquidW = innerW - 4 * s;
-      const liquidY = y + th - border - (i + 1) * segH;
+      const liquidY = th - border - (i + 1) * segH;
       const liquidH = segH - 2 * s;
 
       // Liquid fill
-      ctx.fillStyle = liquidColor;
-      ctx.beginPath();
-      ctx.roundRect(liquidX, liquidY, liquidW, liquidH, 4 * s);
-      ctx.fill();
+      graphics.fillStyle(phaserColor, 1);
+      graphics.fillRoundedRect(innerX, liquidY, liquidW, liquidH, 4 * s);
 
       // Liquid shine
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.beginPath();
-      ctx.roundRect(liquidX + 2 * s, liquidY + 2 * s, liquidW * 0.3, liquidH - 4 * s, 3 * s);
-      ctx.fill();
+      graphics.fillStyle(0xffffff, 0.2);
+      graphics.fillRoundedRect(innerX + 2 * s, liquidY + 2 * s, liquidW * 0.3, liquidH - 4 * s, 3 * s);
 
       // Color-blind pattern label
-      if (colorBlindMode) {
+      if (this.colorBlindMode) {
         const label = getPatternLabel(color);
         if (label) {
-          ctx.save();
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.font = `bold ${Math.round(13 * s)}px monospace`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, liquidX + liquidW / 2, liquidY + liquidH / 2);
-          ctx.restore();
+          // Use text object instead of graphics text for better quality
+          const labelKey = `label-${tubeIdx}-${i}`;
+          const existingText = container.getByName(labelKey);
+          if (existingText) {
+            existingText.destroy();
+          }
+
+          const text = this.add.text(innerX + liquidW / 2, liquidY + liquidH / 2, label, {
+            fontFamily: 'monospace',
+            fontSize: `${Math.round(13 * s)}px`,
+            fontStyle: 'bold',
+            color: '#ffffff',
+            align: 'center'
+          });
+          text.setOrigin(0.5);
+          text.setName(labelKey);
+          text.setAlpha(0.9);
+          container.add(text);
         }
       }
 
       // Segment separator line
       if (i > 0) {
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
-        ctx.lineWidth = 1 * s;
-        ctx.beginPath();
-        ctx.moveTo(liquidX, liquidY + liquidH);
-        ctx.lineTo(liquidX + liquidW, liquidY + liquidH);
-        ctx.stroke();
+        graphics.lineStyle(1 * s, 0x000000, 0.15);
+        graphics.beginPath();
+        graphics.moveTo(innerX, liquidY + liquidH);
+        graphics.lineTo(innerX + liquidW, liquidY + liquidH);
+        graphics.strokePath();
       }
     }
 
-    // Gold ring on completed tube
+    // Gold glow for completed tubes
     if (complete) {
-      ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
-      ctx.shadowBlur = 16 * s;
-      ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
-      ctx.lineWidth = 2 * s;
-      ctx.beginPath();
-      ctx.roundRect(x - 1 * s, y - 1 * s, tw + 2 * s, th + 2 * s, [r + 1 * s, r + 1 * s, r * 1.5 + 1 * s, r * 1.5 + 1 * s]);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-
-    ctx.restore();
-  }
-
-  /**
-   * Update bubble particles
-   */
-  function updateBubbles() {
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-      const b = bubbles[i];
-      b.y -= b.vy;
-      b.vy *= 0.995;
-      b.alpha -= 0.018;
-      if (b.alpha <= 0) { bubbles.splice(i, 1); }
+      graphics.lineStyle(2 * s, 0xffd700, 0.5);
+      this.drawRoundedRect(graphics, -1 * s, -1 * s, tw + 2 * s, th + 2 * s,
+                           r + 1 * s, r + 1 * s, r * 1.5 + 1 * s, r * 1.5 + 1 * s);
+      graphics.strokePath();
     }
   }
 
-  /**
-   * Draw bubbles inside tube columns
-   */
-  function drawBubbles(state) {
-    const s = tubeScale;
-    for (const b of bubbles) {
-      const pos = getTubePosition(b.tubeIdx, state);
-      const tw = TUBE_WIDTH * s;
-      // clip to tube area roughly
-      ctx.save();
-      ctx.globalAlpha = Math.min(b.alpha, 0.6);
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.beginPath();
-      ctx.arc(pos.x + tw / 2 + b.x, pos.y + b.y, b.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+  drawRoundedRect(graphics, x, y, width, height, tl, tr, br, bl) {
+    if (typeof tr === 'undefined') {
+      // All corners same radius
+      const r = tl;
+      graphics.fillRoundedRect(x, y, width, height, r);
+      return;
     }
+    // Different corner radii - draw manually
+    graphics.beginPath();
+    graphics.moveTo(x + tl, y);
+    graphics.lineTo(x + width - tr, y);
+    graphics.arc(x + width - tr, y + tr, tr, -Math.PI / 2, 0, false);
+    graphics.lineTo(x + width, y + height - br);
+    graphics.arc(x + width - br, y + height - br, br, 0, Math.PI / 2, false);
+    graphics.lineTo(x + bl, y + height);
+    graphics.arc(x + bl, y + height - bl, bl, Math.PI / 2, Math.PI, false);
+    graphics.lineTo(x, y + tl);
+    graphics.arc(x + tl, y + tl, tl, Math.PI, -Math.PI / 2, false);
+    graphics.closePath();
   }
 
-  /**
-   * Draw splash ripples at landing
-   */
-  function drawSplashes() {
-    const t = performance.now();
-    for (let i = splashes.length - 1; i >= 0; i--) {
-      const sp = splashes[i];
-      const elapsed = (t - sp.startTime) / 400;
-      if (elapsed >= 1) { splashes.splice(i, 1); continue; }
-      const r = 4 + elapsed * 18;
-      const alpha = (1 - elapsed) * 0.55;
-      ctx.save();
-      ctx.strokeStyle = sp.color;
-      ctx.globalAlpha = alpha;
-      ctx.lineWidth = 2 * tubeScale;
-      ctx.beginPath();
-      ctx.arc(sp.x, sp.y, r * tubeScale, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
+  setState(newState) {
+    this.state = newState;
+    this.updateLayout();
+    this.renderTubes();
   }
 
-  /**
-   * Draw the full game state
-   */
-  function render(state) {
-    lastStateRef = state;
-    updateBubbles();
-    clear();
+  setReducedMotion(value) {
+    this.reducedMotion = value;
+  }
 
-    for (let i = 0; i < state.tubes.length; i++) {
-      const pos = getTubePosition(i, state);
-      const isSelected = state.selectedTube === i;
+  setColorBlindMode(value) {
+    this.colorBlindMode = value;
+    this.renderTubes();
+  }
 
-      // During animation, modify tube rendering
-      if (animating && animData) {
-        const { fromIdx, toIdx, count } = animData;
+  setHintTube(index) {
+    // Stop existing hint tween
+    if (this.hintTween) {
+      this.hintTween.stop();
+      this.hintTween = null;
+    }
 
-        if (i === fromIdx) {
-          // Draw source tube with fewer segments during animation
-          const modifiedTube = {
-            ...state.tubes[i],
-            segments: state.tubes[i].segments.slice(0, -count)
-          };
-          drawTube(pos.x, pos.y, modifiedTube, state, i, false);
-          continue;
-        }
+    this.hintTubeIndex = index;
 
-        if (i === toIdx) {
-          // Draw destination tube with extra segments appearing
-          const baseSegments = state.tubes[toIdx].segments;
-          const prePourSegments = baseSegments.slice(0, baseSegments.length - count);
-          const modifiedTube = {
-            ...state.tubes[i],
-            segments: prePourSegments
-          };
-          drawTube(pos.x, pos.y, modifiedTube, state, i, false);
-          continue;
-        }
+    if (index !== null && !this.reducedMotion) {
+      // Create pulsing glow effect
+      const container = this.liquidContainers[index];
+      if (container) {
+        this.hintTween = this.tweens.add({
+          targets: container,
+          alpha: { from: 1, to: 0.7 },
+          duration: 300,
+          yoyo: true,
+          repeat: -1
+        });
       }
-
-      drawTube(pos.x, pos.y, state.tubes[i], state, i, isSelected);
     }
-
-    // Draw animated liquid blob during pour
-    if (animating && animData) {
-      drawPourAnimation(state, animData);
-    }
-
-    drawBubbles(state);
-    drawSplashes();
   }
 
-  /**
-   * Draw the liquid blob + stream during a pour
-   */
-  function drawPourAnimation(state, anim) {
-    const { fromIdx, toIdx, count, progress, color } = anim;
-    const fromPos = getTubePosition(fromIdx, state);
-    const toPos = getTubePosition(toIdx, state);
-    const s = tubeScale;
-    const segH = SEGMENT_HEIGHT * s;
+  triggerTubePop(tubeIdx) {
+    if (this.reducedMotion) return;
 
-    // Anticipation easing
-    const t = progress;
-    const eased = easeAnticipate(t);
+    const container = this.liquidContainers[tubeIdx];
+    if (!container) return;
 
-    // Source tube top position
-    const fromX = fromPos.x + TUBE_WIDTH * s / 2;
-    const sourceTopY = fromPos.y + TUBE_HEIGHT * s - TUBE_BORDER * s -
-      (state.tubes[fromIdx].segments.length) * segH;
-
-    // Destination tube fill position
-    const destSegs = state.tubes[toIdx].segments.length - count;
-    const toX = toPos.x + TUBE_WIDTH * s / 2;
-    const destY = toPos.y + TUBE_HEIGHT * s - TUBE_BORDER * s - (destSegs + count) * segH;
-
-    // Arc — more pronounced (40 * sin gives a nice arc)
-    const arcHeight = 30 * s * Math.sin(Math.max(0, eased) * Math.PI);
-    const blobX = fromX + (toX - fromX) * Math.max(0, eased);
-    const blobY = sourceTopY + (destY - sourceTopY) * Math.max(0, eased) - arcHeight;
-
-    const liquidColor = LIQUID_COLORS[color] || '#888888';
-    const blobSize = (TUBE_WIDTH * 0.6) * s;
-
-    // Trailing stream (thin line from source to blob)
-    if (progress > 0.05 && progress < 0.85) {
-      ctx.save();
-      ctx.strokeStyle = liquidColor;
-      ctx.globalAlpha = 0.45;
-      ctx.lineWidth = blobSize * 0.35;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(fromX, sourceTopY);
-      // Quadratic curve arcing toward blob
-      ctx.quadraticCurveTo(
-        fromX + (blobX - fromX) * 0.3,
-        sourceTopY - arcHeight * 0.5,
-        blobX, blobY
-      );
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Main blob
-    ctx.globalAlpha = 0.92;
-    ctx.fillStyle = liquidColor;
-    ctx.beginPath();
-    // Slightly elongated in direction of travel
-    const angle = Math.atan2(destY - sourceTopY, toX - fromX);
-    ctx.ellipse(blobX, blobY, blobSize / 2, blobSize / 2.5, angle, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Blob shine
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
-    ctx.beginPath();
-    ctx.ellipse(blobX - blobSize * 0.12, blobY - blobSize * 0.1, blobSize * 0.22, blobSize * 0.13, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalAlpha = 1;
-  }
-
-  /**
-   * Animate a pour operation — includes bubbles and splash on landing
-   */
-  function animatePour(fromIdx, toIdx, count, color, state) {
-    if (reducedMotion) {
-      return Promise.resolve();
-    }
-
-    return new Promise(resolve => {
-      animating = true;
-      animData = { fromIdx, toIdx, count, color, progress: 0 };
-
-      let splashSpawned = false;
-      let bubblesSpawned = false;
-
-      const startTime = performance.now();
-      const s = tubeScale;
-
-      function frame(time) {
-        const elapsed = time - startTime;
-        const progress = Math.min(elapsed / POUR_DURATION, 1);
-        animData.progress = progress;
-
-        // Spawn splash at ~80% through animation
-        if (progress >= 0.78 && !splashSpawned) {
-          splashSpawned = true;
-          const toPos = getTubePosition(toIdx, state);
-          const segH = SEGMENT_HEIGHT * s;
-          const destSegs = state.tubes[toIdx].segments.length - count;
-          const sx = toPos.x + TUBE_WIDTH * s / 2;
-          const sy = toPos.y + TUBE_HEIGHT * s - TUBE_BORDER * s - (destSegs + count) * segH;
-          const liquidColor = LIQUID_COLORS[color] || '#888';
-          splashes.push({ x: sx, y: sy, startTime: time, color: liquidColor });
-          splashes.push({ x: sx, y: sy + 5 * s, startTime: time + 60, color: liquidColor });
-        }
-
-        // Spawn bubbles rising in destination tube after landing
-        if (progress >= 0.85 && !bubblesSpawned) {
-          bubblesSpawned = true;
-          const th = TUBE_HEIGHT * s;
-          const tw = TUBE_WIDTH * s;
-          for (let i = 0; i < 5; i++) {
-            bubbles.push({
-              tubeIdx: toIdx,
-              x: (Math.random() - 0.5) * (tw * 0.5),
-              y: th * 0.6 + Math.random() * th * 0.3,
-              r: (1 + Math.random() * 2) * s,
-              vy: (0.6 + Math.random() * 0.8) * s,
-              alpha: 0.6 + Math.random() * 0.3
-            });
-          }
-        }
-
-        render(state);
-
-        if (progress < 1) {
-          requestAnimationFrame(frame);
-        } else {
-          animating = false;
-          animData = null;
-          resolve();
-        }
-      }
-
-      requestAnimationFrame(frame);
+    // Elastic scale pop animation
+    this.tweens.add({
+      targets: container,
+      scaleX: 1.1,
+      scaleY: 1.1,
+      duration: 175,
+      ease: 'Back.easeOut',
+      yoyo: true,
+      repeat: 0
     });
   }
 
-  /**
-   * Trigger a tube completion pop (called from game.js after pour resolves)
-   */
-  function triggerTubePop(tubeIdx) {
-    tubePops.set(tubeIdx, { startTime: performance.now() });
+  animatePour(fromIdx, toIdx, count, color, prePourState) {
+    return new Promise(resolve => {
+      if (this.reducedMotion) {
+        resolve();
+        return;
+      }
+
+      this.animating = true;
+      this.animData = { fromIdx, toIdx, count, color, progress: 0 };
+
+      const s = this.layout.tubeScale;
+      const fromPos = getTubePosition(fromIdx, this.state.tubes.length, s,
+                                       this.layout.width, this.layout.tubesPerRow);
+      const toPos = getTubePosition(toIdx, this.state.tubes.length, s,
+                                     this.layout.width, this.layout.tubesPerRow);
+      const tw = TUBE_WIDTH * s;
+      const th = TUBE_HEIGHT * s;
+      const segH = SEGMENT_HEIGHT * s;
+      const border = TUBE_BORDER * s;
+
+      // Calculate start and end positions
+      const fromX = fromPos.x + tw / 2;
+      const sourceTopY = fromPos.y + th - border -
+        (this.state.tubes[fromIdx].segments.length) * segH;
+
+      const destSegs = this.state.tubes[toIdx].segments.length - count;
+      const toX = toPos.x + tw / 2;
+      const destY = toPos.y + th - border - (destSegs + count) * segH;
+
+      // Create liquid blob sprite
+      const liquidColor = LIQUID_COLORS[color] || '#888888';
+      const phaserColor = Phaser.Display.Color.HexStringToColor(liquidColor).color;
+      const blobSize = (TUBE_WIDTH * 0.6) * s;
+
+      const blob = this.add.graphics();
+      blob.fillStyle(phaserColor, 0.92);
+
+      // Draw blob as ellipse
+      blob.fillEllipse(0, 0, blobSize, blobSize * 0.8);
+      blob.fillStyle(0xffffff, 0.28);
+      blob.fillEllipse(-blobSize * 0.12, -blobSize * 0.1, blobSize * 0.22, blobSize * 0.13);
+
+      blob.setPosition(fromX, sourceTopY);
+
+      // Animate blob along arc path
+      const arcHeight = 30 * s;
+
+      this.tweens.add({
+        targets: blob,
+        x: toX,
+        y: destY,
+        duration: POUR_DURATION,
+        ease: 'Sine.easeOut',
+        onUpdate: (tween) => {
+          const progress = tween.progress;
+
+          // Add arc offset
+          const arcOffset = arcHeight * Math.sin(progress * Math.PI);
+          blob.y = sourceTopY + (destY - sourceTopY) * progress - arcOffset;
+
+          // Draw stream trail
+          this.pourGraphics.clear();
+          if (progress > 0.05 && progress < 0.85) {
+            this.pourGraphics.lineStyle(blobSize * 0.35, phaserColor, 0.45);
+            this.pourGraphics.beginPath();
+            this.pourGraphics.moveTo(fromX, sourceTopY);
+
+            const midX = fromX + (blob.x - fromX) * 0.3;
+            const midY = sourceTopY - arcHeight * 0.5;
+            this.pourGraphics.quadraticCurveTo(midX, midY, blob.x, blob.y);
+            this.pourGraphics.strokePath();
+          }
+
+          // Redraw tubes to show segment changes during animation
+          this.drawTube(fromIdx);
+          this.drawTube(toIdx);
+        },
+        onComplete: () => {
+          // Spawn splash
+          this.spawnSplash(toX, destY, phaserColor, s);
+
+          // Spawn bubbles in destination tube
+          this.spawnBubbles(toIdx, s);
+
+          blob.destroy();
+          this.pourGraphics.clear();
+          this.animating = false;
+          this.animData = null;
+
+          // Final render
+          this.renderTubes();
+          resolve();
+        }
+      });
+    });
   }
 
-  /**
-   * Set reduced motion preference
-   */
+  spawnSplash(x, y, color, s) {
+    // Create expanding ring splash
+    for (let i = 0; i < 2; i++) {
+      const splash = this.add.graphics();
+      splash.lineStyle(2 * s, color, 0.55);
+      splash.strokeCircle(0, 0, 4 * s);
+      splash.setPosition(x, y + i * 5 * s);
+
+      this.tweens.add({
+        targets: splash,
+        scaleX: 1 + 4.5,
+        scaleY: 1 + 4.5,
+        alpha: 0,
+        duration: 400,
+        delay: i * 60,
+        onComplete: () => splash.destroy()
+      });
+    }
+  }
+
+  spawnBubbles(tubeIdx, s) {
+    const pos = getTubePosition(tubeIdx, this.state.tubes.length, s,
+                                 this.layout.width, this.layout.tubesPerRow);
+    const tw = TUBE_WIDTH * s;
+    const th = TUBE_HEIGHT * s;
+
+    for (let i = 0; i < 5; i++) {
+      const bubble = this.add.graphics();
+      bubble.fillStyle(0xffffff, 0.6);
+      const r = (1 + Math.random() * 2) * s;
+      bubble.fillCircle(0, 0, r);
+      bubble.setPosition(
+        pos.x + tw / 2 + (Math.random() - 0.5) * tw * 0.5,
+        pos.y + th * 0.6 + Math.random() * th * 0.3
+      );
+
+      this.tweens.add({
+        targets: bubble,
+        y: bubble.y - 50 * s,
+        alpha: 0,
+        duration: 800 + Math.random() * 400,
+        ease: 'Sine.easeOut',
+        onComplete: () => bubble.destroy()
+      });
+    }
+  }
+
+  resize(state) {
+    this.state = state;
+    this.updateLayout();
+    this.createTubeObjects();
+  }
+}
+
+/**
+ * Create renderer instance - returns Phaser game and API
+ */
+export function createRenderer(canvas) {
+  let game = null;
+  let scene = null;
+  let lastState = null;
+  let reducedMotion = false;
+  let colorBlindMode = false;
+  let onTubeTapCallback = null;
+
+  const gameConfig = {
+    type: Phaser.AUTO,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 390,
+      height: 844,
+      parent: canvas.parentElement,
+      canvas: canvas
+    },
+    scene: WaterSortScene,
+    backgroundColor: '#0f0f23',
+    transparent: true
+  };
+
+  function init() {
+    game = new Phaser.Game(gameConfig);
+  }
+
+  function getScene() {
+    if (!scene) {
+      scene = game.scene.getScene('WaterSortScene');
+    }
+    return scene;
+  }
+
+  function resize(state) {
+    lastState = state;
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.resize(state);
+    }
+  }
+
+  function render(state) {
+    lastState = state;
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.setState(state);
+    }
+  }
+
+  function clear() {
+    // Phaser handles clearing
+  }
+
+  function canvasToTubeIndex(x, y, state) {
+    const s = getScene();
+    if (!s || !s.layout) return -1;
+    return canvasToTubeIndex(
+      x, y,
+      state.tubes.length,
+      s.layout.tubeScale,
+      s.layout.width,
+      s.layout.tubesPerRow
+    );
+  }
+
+  function animatePour(fromIdx, toIdx, count, color, prePourState) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      return s.animatePour(fromIdx, toIdx, count, color, prePourState);
+    }
+    return Promise.resolve();
+  }
+
+  function triggerTubePop(tubeIdx) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.triggerTubePop(tubeIdx);
+    }
+  }
+
   function setReducedMotion(value) {
     reducedMotion = value;
+    const s = getScene();
+    if (s) {
+      s.setReducedMotion(value);
+    }
   }
 
-  /**
-   * Set color-blind mode
-   */
   function setColorBlindMode(value) {
     colorBlindMode = value;
-  }
-
-  function startHintLoop() {
-    if (hintRafId || reducedMotion) return;
-    function loop() {
-      if (hintTubeIndex === null || !lastStateRef) { hintRafId = null; return; }
-      render(lastStateRef);
-      hintRafId = requestAnimationFrame(loop);
+    const s = getScene();
+    if (s) {
+      s.setColorBlindMode(value);
     }
-    hintRafId = requestAnimationFrame(loop);
   }
 
-  function stopHintLoop() {
-    if (hintRafId) { cancelAnimationFrame(hintRafId); hintRafId = null; }
-  }
-
-  /**
-   * Set hint tube index
-   */
   function setHintTube(index) {
-    hintTubeIndex = index;
-    if (index !== null) startHintLoop(); else stopHintLoop();
+    const s = getScene();
+    if (s) {
+      s.setHintTube(index);
+    }
   }
 
-  /**
-   * Check if currently animating
-   */
   function isAnimating() {
-    return animating;
+    const s = getScene();
+    return s ? s.animating : false;
   }
+
+  function setOnTubeTap(callback) {
+    onTubeTapCallback = callback;
+    const s = getScene();
+    if (s) {
+      s.onTubeTap = callback;
+    }
+  }
+
+  // Initialize the game
+  init();
 
   return {
     resize,
@@ -583,8 +651,12 @@ export function createRenderer(canvas) {
     setColorBlindMode,
     setHintTube,
     isAnimating,
-    get tubeScale() { return tubeScale; }
+    setOnTubeTap,
+    get tubeScale() {
+      const s = getScene();
+      return s && s.layout ? s.layout.tubeScale : 1;
+    }
   };
 }
 
-export default { createRenderer };
+export default { createRenderer, calculateLayout, getTubePosition, canvasToTubeIndex };
