@@ -1,6 +1,14 @@
-# Mobile Game Ad Mechanics — Research Index
+# Research Index
 
-Research into the hyper-casual and "fake ad" game mechanic landscape. Each file covers a specific game type commonly featured in mobile advertisements, including mechanics, psychology, and notable examples.
+Research into the hyper-casual and "fake ad" game mechanic landscape, plus technical evaluations of frameworks and tools for implementation.
+
+## Technology Evaluations
+
+| File | Topic | Summary |
+|---|---|---|
+| [phaser-evaluation.md](phaser-evaluation.md) | Phaser Framework | WebGL/Canvas 2D game framework; strong fit for 6 Canvas 2D games, not for 3D; ~310 KB gzipped; replaces ~15 shared utility modules |
+
+## Game Types
 
 ## Game Types
 

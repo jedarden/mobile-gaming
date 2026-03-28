@@ -11,9 +11,9 @@ Build playable web-based versions of the 12 hyper-casual game types documented i
 | Component | Choice | Rationale |
 |---|---|---|
 | Runtime | Browser (HTML5) | Zero-install; works on mobile and desktop; matches hyper-casual distribution model |
-| 2D rendering | Canvas 2D API | Sufficient for 8 of 12 games; no dependency overhead |
-| 3D rendering | Three.js | Required for Crowd Runner, Giant Runner, Bridge Race, Jelly Shift, and Makeover Run |
-| Physics (2D) | Custom per-game | Pull the Pin and Water Sort need deterministic gravity/flow; a generic engine adds unpredictability that breaks solvers |
+| 2D rendering | Canvas 2D API → Phaser 3 (v3.90.0) | Currently raw Canvas 2D; migrating to Phaser game framework for WebGL rendering with Canvas fallback, built-in scene management, tweens, particles, and input. See `docs/research/phaser-evaluation.md` for trade-off analysis |
+| 3D rendering | Three.js | Required for Crowd Runner, Giant Runner, Bridge Race, Jelly Shift, Makeover Run, Bus Jam, and Merge Games |
+| Physics (2D) | Custom per-game → Phaser Arcade Physics / Matter.js | Currently hand-rolled per game; Phaser bundles Arcade (AABB collisions) and Matter.js (rigid-body constraints for Pull the Pin). Determinism maintained via fixed timestep and seeded RNG |
 | Physics (3D) | Cannon-es (Cannon.js ES fork) | Lightweight rigid-body + soft-body for Jelly Shift's blob deformation |
 | Build | Vite | Fast HMR; native ES module support; trivial multi-page setup |
 | Hosting | Cloudflare Pages | Static hosting at `mobile-gaming.pages.dev`; each game is a subpath (`/water-sort/`, `/pull-the-pin/`, etc.) |
@@ -72,6 +72,7 @@ Games are auto-discovered by globbing `src/games/*/index.html`. Adding a new gam
     "lint": "eslint src/"
   },
   "dependencies": {
+    "phaser": "^3.90.0",
     "three": "^0.170.0",
     "cannon-es": "^0.20.0",
     "pako": "^2.1.0",
@@ -88,7 +89,9 @@ Games are auto-discovered by globbing `src/games/*/index.html`. Adding a new gam
 }
 ```
 
-Production dependencies are minimal: Three.js (3D games only, tree-shaken per entry point), cannon-es (Jelly Shift only), pako (state URL compression). `mp4-muxer` and `qrcode-generator` are production dependencies but both are dynamically imported — Vite code-splits them into separate chunks that are only loaded when the user records a video or shares a QR link. They add zero bytes to the initial page load. `sharp` is dev-only — it runs in `scripts/generate-icons.js` during CI builds, never in the browser.
+Production dependencies: Phaser (2D games — WebGL/Canvas renderer, scene management, physics, tweens, particles, input, audio), Three.js (3D games only, tree-shaken per entry point), cannon-es (Jelly Shift only), pako (state URL compression). `mp4-muxer` and `qrcode-generator` are production dependencies but both are dynamically imported — Vite code-splits them into separate chunks that are only loaded when the user records a video or shares a QR link. They add zero bytes to the initial page load. `sharp` is dev-only — it runs in `scripts/generate-icons.js` during CI builds, never in the browser.
+
+**Phaser build optimization:** Phaser 3 is monolithic (~310 KB gzipped) and does not tree-shake effectively. To control bundle size, use the Phaser Compressor to strip unused subsystems per game entry point. Games that don't need physics (Brain Teaser, Save the Character) can use a custom build excluding both Arcade and Matter.js (~125-185 KB gzipped). Phaser is only bundled into 2D game entry points — 3D games import Three.js only.
 
 **`.gitignore`:**
 ```
@@ -119,22 +122,45 @@ mobile-gaming/
 │   │   ├── hub.js          # game card rendering, filtering, link generation
 │   │   └── styles.css      # hub-specific styles
 │   ├── shared/             # cross-game utilities (tree-shaken into each game's bundle)
-│   │   ├── canvas.js       # Canvas 2D helper: setup, resize, DPR scaling
-│   │   ├── three-setup.js  # Three.js scene/camera/renderer bootstrap
-│   │   ├── input.js        # unified touch/mouse input (tap, drag, swipe)
-│   │   ├── audio.js        # Web Audio API: SFX triggering, gain control
-│   │   ├── colors.js       # shared 10-color accessible palette
-│   │   ├── shapes.js       # reusable Canvas drawing primitives
+│   │   ├── canvas.js       # Canvas 2D helper: setup, resize, DPR scaling (→ replaced by Phaser Scale Manager for 2D games)
+│   │   ├── three-setup.js  # Three.js scene/camera/renderer bootstrap (3D games only — unchanged)
+│   │   ├── input.js        # unified touch/mouse input (tap, drag, swipe) — reusable, wire to Phaser pointer events
+│   │   ├── audio.js        # Web Audio API: SFX triggering, gain control — reusable as-is
+│   │   ├── colors.js       # shared 10-color accessible palette — reusable as-is
+│   │   ├── color-blind.js  # color-blind accessibility patterns and labels — reusable as-is
+│   │   ├── shapes.js       # Canvas 2D drawing primitives (→ rewrite to Phaser Graphics API)
+│   │   ├── particles.js    # reusable particle system (→ replace rendering with Phaser ParticleEmitter)
+│   │   ├── screen-shake.js # shake offset calculation — pure math, apply to Phaser camera
 │   │   ├── score.js        # shared scoring + level-complete overlay
-│   │   ├── rng.js          # seeded PRNG (Mulberry32) for deterministic level gen
-│   │   ├── storage.js      # namespaced localStorage manager with migrations
+│   │   ├── rng.js          # seeded PRNG (Mulberry32) for deterministic level gen — reusable as-is
+│   │   ├── storage.js      # namespaced localStorage manager with migrations — reusable as-is
 │   │   ├── lifecycle.js    # game loading, pause/resume, error boundary
 │   │   ├── level-nav.js    # level select strip and progression
 │   │   ├── retry.js        # win/loss/stuck overlay and retry flow
 │   │   ├── settings.js     # settings drawer UI and persistence
-│   │   ├── viewport.js     # responsive canvas sizing (fixed logical → CSS scale)
+│   │   ├── viewport.js     # responsive canvas sizing (→ replaced by Phaser Scale Manager for 2D games)
 │   │   ├── capabilities.js # browser feature detection matrix
-│   │   └── migrations.js   # schema version migration pipeline
+│   │   ├── migrations.js   # schema version migration pipeline
+│   │   ├── accessibility.js# a11y announcements — reusable as-is
+│   │   ├── adaptive.js     # frustration-aware adaptive difficulty — reusable as-is
+│   │   ├── analytics.js    # client-side gameplay telemetry — reusable as-is
+│   │   ├── daily.js        # daily seeded challenge — reusable as-is
+│   │   ├── endless.js      # endless procedural mode — reusable as-is
+│   │   ├── fail-speedrun.js# fail speedrun mode — reusable as-is
+│   │   ├── haptics.js      # Vibration API feedback — reusable as-is
+│   │   ├── hints.js        # solver-powered hint system — reusable as-is
+│   │   ├── hint-worker.js  # Web Worker for non-blocking solver hints — reusable as-is
+│   │   ├── history.js      # undo/redo history — reusable as-is
+│   │   ├── meta.js         # OG meta tag generation — reusable as-is
+│   │   ├── quick-play.js   # zero-friction game selection — reusable as-is
+│   │   ├── recorder.js     # video recording via MediaRecorder — reusable as-is
+│   │   ├── replay.js       # deterministic replay sharing — reusable as-is
+│   │   ├── share.js        # social sharing integration — reusable as-is
+│   │   ├── state-url.js    # state compression for shareable URLs — reusable as-is
+│   │   ├── swipe-nav.js    # swipe navigation between games — reusable as-is
+│   │   ├── sync.js         # cross-device progress sync — reusable as-is
+│   │   ├── video-overlay.js# video share card overlay — reusable as-is
+│   │   └── ad-compositor.js# ad-style video template compositor — reusable as-is
 │   └── games/
 │       ├── pull-the-pin/
 │       ├── water-sort/
@@ -169,14 +195,20 @@ Each game under `src/games/<name>/` is a **self-contained static site**. After b
 ├── index.html          # game entry point — works standalone; includes meta tags, OG tags, favicon
 ├── game.js             # lifecycle: init, update loop, teardown
 ├── state.js            # pure-function game state (no rendering, no DOM)
-├── renderer.js         # Canvas 2D or Three.js scene rendering
+├── renderer.js         # Canvas 2D or Three.js rendering (2D games → rewrite to Phaser Scene)
 ├── input.js            # game-specific input mapping (calls shared/input.js)
 ├── levels.json         # hand-crafted levels (or generated via gen script)
 ├── generator.js        # procedural level generation (if applicable)
 └── styles.css          # game-specific CSS
 ```
 
-The critical architectural rule: **`state.js` must never import rendering or DOM code.** All game logic lives in pure functions that accept a state object and an action, and return a new state. This makes the game logic directly testable by solvers without a browser.
+**Current state (2D games):** `renderer.js` draws to a Canvas 2D context, reading from `state.js`. Each renderer contains both Canvas API draw calls (to be rewritten) and reusable layout math / hit-testing functions (to be extracted and kept).
+
+**Phaser migration target (2D games):** `renderer.js` becomes a Phaser Scene class whose `update()` reads from `state.js` and updates Phaser game objects (Graphics, Sprites, Tweens, Particles). The file name stays `renderer.js` — the contract is the same, only the rendering backend changes. Reusable layout/positioning functions (e.g., `getTubePosition()`, `hitTestVehicle()`) are preserved. `game.js` is refactored to use Phaser's game loop instead of manual `requestAnimationFrame`, keeping its state machine logic (level loading, move dispatch, undo, win check) intact.
+
+**3D games:** `renderer.js` uses Three.js for the 3D scene graph, camera, and materials. Three.js games are not affected by the Phaser migration — they import `shared/input.js` and `shared/audio.js` directly.
+
+The critical architectural rule: **`state.js` must never import rendering or DOM code.** All game logic lives in pure functions that accept a state object and an action, and return a new state. This makes the game logic directly testable by solvers without a browser. Renderers (whether Canvas 2D, Phaser, or Three.js) read state; they never write it.
 
 ---
 
@@ -190,14 +222,14 @@ Build the shared infrastructure before any individual game.
 - Vite config with auto-discovered multi-page entry points (see Vite Configuration above)
 - Hub page (`src/hub/`): landing page listing all implemented games as cards, Quick Play button, daily challenge banner. Ships with each new game — the hub dynamically lists whatever games exist at build time.
 - `.gitignore` for `node_modules/`, `dist/`, generated icons/OG images (see Dependencies section)
-- `shared/canvas.js`: Canvas element creation, DPR-aware resize, requestAnimationFrame loop wrapper
-- `shared/three-setup.js`: Scene + PerspectiveCamera + WebGLRenderer bootstrap, resize handler, RAF loop
-- `shared/input.js`: Unified pointer events — normalizes `touchstart`/`mousedown`, `touchmove`/`mousemove`, `touchend`/`mouseup` into `{ type, x, y, dx, dy }` streams; exposes `onTap`, `onDrag`, `onSwipe` with configurable thresholds
-- `shared/audio.js`: `playSound(name, volume)` using Web Audio API; sounds defined as short oscillator patterns (no audio file dependencies)
+- `shared/canvas.js`: Canvas element creation, DPR-aware resize, requestAnimationFrame loop wrapper. **Phaser migration:** replaced by Phaser's game loop and Scale Manager for 2D games; retained for 3D games via `shared/three-setup.js`.
+- `shared/three-setup.js`: Scene + PerspectiveCamera + WebGLRenderer bootstrap, resize handler, RAF loop. **Phaser migration:** unchanged — 3D games continue using Three.js directly.
+- `shared/input.js`: Unified pointer events — normalizes `touchstart`/`mousedown`, `touchmove`/`mousemove`, `touchend`/`mouseup` into `{ type, x, y, dx, dy }` streams; exposes `onTap`, `onDrag`, `onSwipe` with configurable thresholds. **Phaser migration:** reusable as-is; 2D games wire Phaser pointer events through this same API.
+- `shared/audio.js`: `playSound(name, volume)` using Web Audio API; sounds defined as short oscillator patterns (no audio file dependencies). **Phaser migration:** reusable as-is — Phaser can wrap Web Audio, but the existing synthesis code is renderer-agnostic.
 - `shared/colors.js`: 10-color palette designed for color-blind accessibility (derived from Okabe-Ito); each color has `hex`, `name`, `darkVariant`, `lightVariant`
 - `shared/rng.js`: Mulberry32 seeded PRNG — `createRng(seed)` returns `{ next(), nextInt(min, max), shuffle(arr), pick(arr) }`
 - `shared/storage.js`: Namespaced localStorage manager (see localStorage Schema below)
-- `shared/lifecycle.js`: Game lifecycle — loading, pause/resume, error boundary (see below)
+- `shared/lifecycle.js`: Game lifecycle — loading, pause/resume, error boundary (see below). **Phaser migration:** 2D games call `scene.scene.pause()`/`scene.scene.resume()` instead of freezing the RAF loop manually.
 - `shared/level-nav.js`: Level select strip and progression (see below)
 - `shared/settings.js`: Settings drawer UI and persistence (see below)
 - `shared/viewport.js`: Responsive canvas sizing (see below)
@@ -216,6 +248,18 @@ All games render at a fixed logical resolution and CSS-scale to fill the viewpor
 - **DPR handling:** `window.devicePixelRatio` multiplied into canvas dimensions for crisp rendering; all game coordinates use logical pixels (390×844), never physical
 - **Resize handler:** `ResizeObserver` on the container recalculates scale on orientation change or window resize. No game logic changes — only the CSS transform updates.
 
+**Phaser migration:** For 2D games, `shared/viewport.js` is replaced by Phaser's built-in Scale Manager:
+```js
+scale: {
+  mode: Phaser.Scale.FIT,         // uniform scale with letterboxing
+  autoCenter: Phaser.Scale.CENTER_BOTH,
+  width: 390,                      // logical width (portrait)
+  height: 844,                     // logical height (matches iPhone 14)
+  parent: 'game-container'
+}
+```
+Phaser handles DPR-aware rendering, resize, and orientation change automatically. 3D games continue using `shared/viewport.js` and manual `ResizeObserver`.
+
 #### Game Lifecycle (`shared/lifecycle.js`)
 
 Every game follows the same lifecycle. The lifecycle manager handles loading states, pause/resume, and error recovery.
@@ -233,7 +277,7 @@ document.addEventListener('visibilitychange', () => {
   else lifecycle.showResumeOverlay();
 });
 ```
-- `lifecycle.pause()`: saves current state to localStorage via `storage.save(gameId, state)`, freezes the RAF loop, suspends Web Audio context
+- `lifecycle.pause()`: saves current state to localStorage via `storage.save(gameId, state)`, freezes the RAF loop, suspends Web Audio context. **Phaser migration:** 2D games call `scene.scene.pause()` instead of manual RAF freeze.
 - Resume: shows a semi-transparent "Tap to continue" overlay; tap calls `lifecycle.resume()` which restarts RAF and resumes audio
 - For untimed puzzle games (Water Sort, Parking Escape, Brain Teaser, Merge): no overlay on resume — state is persistent, player picks up where they left off
 - For timed/real-time games (runners, Jelly Shift): overlay is mandatory — resuming mid-run without the overlay would cause disorientation
@@ -347,12 +391,12 @@ const caps = {
 
 | Game Category | Required | Optional (graceful degrade) |
 |---|---|---|
-| 2D puzzle games | `canvas2d`, `localStorage` | `webAudio` (silent if missing), `vibration` |
+| 2D puzzle games | `canvas2d`, `localStorage` | `webAudio` (silent if missing), `vibration`. **Phaser migration:** `webgl` preferred (Phaser `AUTO` mode falls back to Canvas 2D) |
 | 3D runner games | `canvas2d`, `webgl`, `localStorage` | `webAudio`, `vibration` |
 | Video recording | `mediaRecorder` | `videoEncoder` (WebM fallback if missing) |
 | Hints | `webWorker` | runs on main thread if missing (may stutter on complex solves) |
 
-If a required capability is missing, the game shows a static message: "This game requires [WebGL / a modern browser]. Try Chrome, Firefox, or Safari." instead of crashing.
+If a required capability is missing, the game shows a static message: "This game requires [WebGL / a modern browser]. Try Chrome, Firefox, or Safari." instead of crashing. **Phaser migration:** Phaser auto-detects rendering capability when configured with `Phaser.AUTO` — it uses WebGL if available, falls back to Canvas 2D otherwise.
 
 **Automated test coverage for Phase 0:**
 - Unit test: RNG produces identical sequences for identical seeds
@@ -360,15 +404,15 @@ If a required capability is missing, the game shows a static message: "This game
 - Unit test: color palette has 10 distinct colors, all pass WCAG AA contrast against white and black
 - Unit test: `StorageManager` namespaces keys correctly, respects quota, runs migrations
 - Unit test: capability detection returns correct booleans in test environment
-- E2E test: hub loads, lists all 12 game links, each link navigates to the correct game
+- E2E test: hub loads, lists all game links, each link navigates to the correct game
 - E2E test: game loading shell renders spinner → transitions to game canvas
 - E2E test: visibility change pauses game, tap resumes
 
 ---
 
-### Phase 1: 2D Puzzle Games (Canvas)
+### Phase 1: 2D Puzzle Games
 
-The four pure-puzzle games that use Canvas 2D rendering. These have the simplest rendering requirements and the richest solver opportunities.
+The four pure-puzzle games. Currently rendered with raw Canvas 2D; migrating to Phaser 3 game framework for WebGL rendering, built-in tweens, particles, and input handling. Each game's `renderer.js` will be rewritten to use Phaser game objects while `state.js`, `generator.js`, and solver tests remain unchanged.
 
 ---
 
@@ -421,10 +465,12 @@ The four pure-puzzle games that use Canvas 2D rendering. These have the simplest
 - Balls: filled circles with specular highlight; color from palette
 - Cups: trapezoidal shapes at bottom; color border matches `acceptColor`; fill animation when ball settles
 - Channels: dark gray walls with slight bevel shadow
+- **Phaser migration:** Rewrite Canvas 2D draw calls to Phaser Graphics objects and Tweens. Replace custom gravity simulation with Phaser Matter.js (fixed 60Hz timestep for determinism — pins as constraints, balls as bodies). Replace manual particle arrays with Phaser ParticleEmitter. Layout positioning functions are pure math and carry over unchanged.
 
 **Input:**
 - Tap on a pin → calls `removePin`; plays pull SFX
 - After removal, physics simulation runs visually at 60fps until all balls settle
+- **Phaser migration:** Replace raw pointer events with Phaser interactive zones on pin game objects.
 
 **Level generation (`generator.js`):**
 1. Place cups at bottom with assigned colors
@@ -514,11 +560,13 @@ The four pure-puzzle games that use Canvas 2D rendering. These have the simplest
 - Liquid: colored rectangles inside tubes; pour animation slides segments up out of source, arcs through air, slides down into destination
 - Pour animation: 400ms cubic-bezier ease; source segments visually "lift" then "flow" into target
 - Completion flash: tube border glows gold when a tube is pure-color and full
+- **Phaser migration:** Rewrite Canvas 2D draw calls to Phaser Graphics. Replace manual pour animation with Phaser `tweens.chain()` (lift → bezier arc → settle). Replace manual bubble/splash particle arrays with Phaser ParticleEmitter. Add Phaser Shine FX for glass refraction and Glow FX for completion flash. `getTubePosition()` layout math is pure and carries over unchanged.
 
 **Input:**
 - Tap tube 1 → selected (highlighted); tap tube 2 → attempt pour
 - Tap selected tube again → deselect
 - Undo button in UI → calls `undo`
+- **Phaser migration:** Replace raw pointer events with Phaser interactive zones on tube game objects.
 
 **Level generation (`generator.js`):**
 1. Choose color count C (3–8) and buffer tube count B (1–2)
@@ -616,11 +664,13 @@ The four pure-puzzle games that use Canvas 2D rendering. These have the simplest
 - "Only 1% can solve this!" banner (optional, toggled per level)
 - Decoy failure response: element shakes, red flash, "wrong" SFX
 - Solution response: element reveals, sparkle particles, "correct" SFX, celebration overlay
+- **Phaser migration:** Replace Canvas sprite renderers (15 `renderCircle()`, `renderStar()`, etc.) with Phaser Graphics/Image game objects. Replace manual shake/confetti animation with Phaser Tweens and ParticleEmitter. `hitTest()` and `getElementAt()` are pure coordinate math and carry over unchanged. `wobble(seed)` deterministic function is pure math — reusable as-is.
 
 **Input:**
 - Tap element → `{ action: "tap", targetId }`
 - Drag element onto another → `{ action: "drag", sourceId, targetId }`
 - Sequence: track ordered taps → `{ action: "sequence", steps: [targetId, ...] }`
+- **Phaser migration:** Replace raw pointer events with Phaser interactive game objects and `setDraggable()` for drag-and-drop.
 
 **Level generation:**
 Brain Teaser levels are hand-crafted — each puzzle is a unique lateral-thinking scenario that cannot be procedurally generated meaningfully. The level set will contain 20–30 hand-authored puzzles.
@@ -698,14 +748,16 @@ Brain Teaser levels are hand-crafted — each puzzle is a unique lateral-thinkin
 
 **Rendering (`renderer.js`):**
 - Grid: 6×6 square grid with subtle gridlines
-- Vehicles: rounded rectangles; target vehicle is red, others are random palette colors
+- Vehicles: rounded rectangles with 3D toy-car shading (depth faces via `lighten()`/`darken()`); target vehicle is red, others are random palette colors
 - Exit: gap in grid border with directional arrow
 - Drag: vehicle slides along its axis following finger/mouse; snaps to grid on release
 - Win: target car slides out through exit with acceleration animation; confetti particles
+- **Phaser migration:** Replace Canvas 2D vehicle shading with Phaser Graphics + tint. Replace manual slide animation with Phaser Tweens (`ease: 'Back.easeOut'` for snap bounce). Replace confetti with Phaser ParticleEmitter. `hitTestVehicle()`, `canvasToGrid()`, `computeSnapMove()`, `lighten()`/`darken()` are pure math/utility — all carry over unchanged.
 
 **Input:**
 - Drag vehicle along its axis → calls `moveVehicle` on release (snap to nearest valid grid position)
 - Tap undo button → calls `undo`
+- **Phaser migration:** Replace raw drag handler with Phaser draggable game objects constrained to vehicle axis.
 
 **Level generation (`generator.js`):**
 1. Place target vehicle at a random position on the exit row, oriented toward the exit
@@ -749,9 +801,9 @@ Brain Teaser levels are hand-crafted — each puzzle is a unique lateral-thinkin
 
 ---
 
-### Phase 2: 2D Interactive Games (Canvas)
+### Phase 2: 2D Interactive Games
 
-Games with Canvas 2D rendering that are not pure puzzles — they involve choice, narrative, or feedback loops rather than spatial solving.
+Games that are not pure puzzles — they involve choice, narrative, or feedback loops rather than spatial solving. Currently Canvas 2D; migrating to Phaser 3 framework alongside Phase 1 games.
 
 ---
 
@@ -796,11 +848,12 @@ Games with Canvas 2D rendering that are not pure puzzles — they involve choice
 2. `resolveChoice(state)` → checks if selected choice is correct → status becomes `"won"` or `"lost"`
 3. `nextScenario(state, scenarioData)` → resets for next level
 
-**Rendering:**
+**Rendering (`renderer.js`):**
 - Background: simple vector scenes (cliff, room, bridge, etc.) drawn with Canvas path operations
 - Character: sprite-sheet-style frame animation; drawn from simple geometric shapes (circles, rectangles) not bitmap assets
 - Choices: three large tap targets at bottom of screen with icons and labels
 - Outcome animations: correct choice → character celebrates (bouncing, confetti); wrong choice → exaggerated slapstick failure (stretching, spinning, flying offscreen)
+- **Phaser migration:** Replace Canvas path drawing with Phaser Graphics. Replace manual frame animation with Phaser AnimationManager. Replace manual slapstick tweens with Phaser Tween chains. Use Phaser Scene transitions for scenario changes.
 
 **Level generation:**
 Hand-crafted scenarios. Target: 20 scenarios covering diverse threat/choice combinations. The humor and narrative design of each scenario are the core creative output — these cannot be procedurally generated.
@@ -882,16 +935,18 @@ Hand-crafted scenarios. Target: 20 scenarios covering diverse threat/choice comb
 5. `checkTaskCompletion(state)` → scan grid for items matching task requirements; mark task complete; remove item from grid
 6. `checkWin(state)` → all tasks completed
 
-**Rendering:**
+**Rendering (`renderer.js`):**
 - Grid: soft pastel tiles with rounded corners
 - Items: simple geometric icons that scale with tier (tier 0 = tiny dot, tier 5 = large complex shape); color-coded by chain
 - Merge animation: both items shrink → center → burst into new higher-tier item with sparkle
 - Bonus merge: gold sparkle instead of white; "+1" text floats up
 - Task panel: sidebar showing task list with progress icons
+- **Phaser migration:** Replace Canvas grid/item drawing with Phaser Graphics. Replace manual merge animation with Phaser tween chains (shrink → spawn with overshoot ease). Replace sparkle particles with Phaser ParticleEmitter.
 
 **Input:**
 - Drag item from cell to cell → if same item at destination, merge; if empty, move
 - Cannot drag to occupied cell with different item (cell highlights red as feedback)
+- **Phaser migration:** Replace raw drag handler with Phaser `setDraggable()` on item game objects.
 
 **Level generation (`generator.js`):**
 1. Define tasks requiring specific tier items
@@ -977,15 +1032,17 @@ Hand-crafted scenarios. Target: 20 scenarios covering diverse threat/choice comb
 - **Bubble Pop:** grid of bubbles; tap to pop; all popped → complete
 - **Soap Cutting:** drag blade across soap block; each slice reveals clean cross-section; full slice count → complete
 
-**Rendering:**
+**Rendering (`renderer.js`):**
 - Two-layer Canvas: bottom layer = clean surface color; top layer = dirt overlay (drawn as opaque pixels)
 - Spraying erases dirt layer pixels → clean surface is "revealed" underneath
 - Particle effects: water droplets spray outward from nozzle position
 - Sound: synthesized water-spray sound (white noise through bandpass filter) plays while spraying
+- **Phaser migration:** Replace two-layer Canvas with Phaser RenderTexture (use `renderTexture.erase()` for spray). Replace manual particle arrays with Phaser ParticleEmitter. Add Phaser Bloom FX for completion glow.
 
 **Input:**
 - Touch/mouse down → nozzle active; continuous drag → continuous spray
 - Touch/mouse up → nozzle inactive
+- **Phaser migration:** Replace raw pointer events with Phaser `input.on('pointermove')` tracking.
 
 **Level generation:**
 Dirt patterns are procedural (random splatter, gradient, full coverage). No solver needed since there is no failure state.
@@ -1013,7 +1070,7 @@ Dirt patterns are procedural (random splatter, gradient, full coverage). No solv
 
 ### Phase 3: 3D Runner Games (Three.js)
 
-Games that require 3D perspective, forward motion, and lane-based or arena-based interaction.
+Games that require 3D perspective, forward motion, and lane-based or arena-based interaction. These games use Three.js for rendering and are **not affected by the Phaser migration** — Phaser is a 2D game framework and cannot replace Three.js's 3D scene graph, materials, lighting, and InstancedMesh. 3D games continue using `shared/input.js` and `shared/audio.js` directly.
 
 ---
 
@@ -1630,14 +1687,14 @@ The phases above define logical groupings, but within each phase, games are impl
 
 | Priority | Game | Rationale |
 |---|---|---|
-| 1 | Water Sort | Simplest state model; BFS solver is well-understood; highest ad authenticity |
-| 2 | Parking Escape | Rush Hour solver is a known algorithm; pure-logic game with no physics |
-| 3 | Pull the Pin | Introduces 2D physics; solver is more complex; the genre's most iconic mechanic |
+| 1 | Water Sort | Simplest state model; BFS solver is well-understood; highest ad authenticity. First Phaser migration target — validates tween/particle pipeline with simple rendering. |
+| 2 | Parking Escape | Rush Hour solver is a known algorithm; pure-logic game with no physics. Tests Phaser drag input and snap-to-grid. |
+| 3 | Pull the Pin | Introduces 2D physics; solver is more complex; the genre's most iconic mechanic. Tests Phaser Matter.js integration. |
 | 4 | Brain Teaser | Data-driven levels; trivial solver; tests the element/interaction system |
 | 5 | Save the Character | Trivial mechanic; tests animation and narrative pipeline |
 | 6 | Merge Games | More complex state model; introduces spawn timers and variable reward |
-| 7 | Satisfying / ASMR | Pixel-level dirt map; introduces Web Audio synthesis; no fail state simplifies testing |
-| 8 | Crowd Runner | First Three.js game; simplest 3D — instanced meshes, linear course |
+| 7 | Satisfying / ASMR | Pixel-level dirt map; introduces Web Audio synthesis; no fail state simplifies testing. Tests Phaser RenderTexture. |
+| 8 | Crowd Runner | First Three.js game; simplest 3D — instanced meshes, linear course (not affected by Phaser migration) |
 | 9 | Giant Runner | Similar to Crowd Runner but with scale manipulation |
 | 10 | Makeover Run | Similar runner structure but with swappable character meshes |
 | 11 | Bridge Race | Most complex 3D — arena movement, AI, sabotage mechanic |
@@ -1688,11 +1745,12 @@ Two-tier level system. Tier 1 ships in the repo; Tier 2 is generated at test tim
 
 All visual assets are procedural — zero bitmap files in the repo.
 
-**2D games (Canvas):**
+**2D games (Canvas 2D):**
 - All graphics drawn with Canvas path operations: `beginPath()`, `arc()`, `moveTo()`, `lineTo()`, `fill()`, `stroke()`
 - A `shared/shapes.js` module exports reusable drawing functions: `drawRoundedRect(ctx, x, y, w, h, r)`, `drawCircleWithHighlight(ctx, x, y, r, color)`, `drawArrow(ctx, from, to)`, `drawTube(ctx, x, y, w, h, segments)`, etc.
 - Each game's `renderer.js` composes these primitives into game-specific visuals
 - Colors always reference `shared/colors.js` palette entries — never hardcoded hex values
+- **Phaser migration:** `shared/shapes.js` is rewritten to use Phaser Graphics API (`graphics.fillRoundedRect()`, `graphics.fillCircle()`, etc.) which maps closely to Canvas path operations but benefits from WebGL batching. Phaser post-processing FX (Glow, Bloom, Shine, Shadow) add visual polish with zero custom shader code. `shared/colors.js` palette is reusable as-is.
 
 **3D games (Three.js):**
 - All meshes use Three.js built-in geometries: `CapsuleGeometry`, `BoxGeometry`, `SphereGeometry`, `PlaneGeometry`, `CylinderGeometry`
@@ -1705,6 +1763,7 @@ All visual assets are procedural — zero bitmap files in the repo.
 - `shared/audio.js` defines sound presets as parameter objects: `{ type: 'sine', frequency: 440, duration: 0.1, envelope: 'pluck' }`
 - Per-game sounds: `pop` (bubble pop, ball settle), `whoosh` (pour, swipe), `crunch` (collision, fail), `sparkle` (win, merge), `thud` (wall hit)
 - No audio file dependencies — entire sound design is < 2KB of JS
+- **Phaser migration:** `shared/audio.js` is renderer-agnostic and reusable as-is. 2D games can optionally trigger sounds via Phaser's `this.sound.play()` which wraps Web Audio, but the existing synthesis code works unchanged.
 
 **Icons and favicons:**
 - Single SVG favicon (`public/favicon.svg`) — a simple game controller silhouette
@@ -1745,9 +1804,51 @@ Phase 7 (Platform Features):
   7.3 Endless Mode ← requires generators + solvers + 6.9 (adaptive difficulty)
 ```
 
-**Critical path:** Phase 0 → Phase 1 (Water Sort) → Phase 2 → Phase 3 → Phase 4 → Phase 6.1 + 6.2
+**Critical path:** Phase 0 → Phase 1 (Water Sort first — also serves as Phaser proof-of-concept) → Phase 2 → Phase 3 → Phase 4 → Phase 6.1 + 6.2
 
 Features on the critical path should be implemented first. Features not on the critical path (6.5 video recording, 7.2 ad compositor, 5.x polish) can be developed in parallel once Phase 0 is complete.
+
+---
+
+## Phaser Migration Strategy
+
+The 2D games (Phases 1-2) are migrating from raw Canvas 2D to Phaser 3, a browser game framework providing WebGL rendering, built-in tweens, particles, physics, and input handling. See `docs/research/phaser-evaluation.md` for the full evaluation. 3D games (Phase 3) are not affected — they continue using Three.js.
+
+### What to keep (no changes)
+
+| Layer | Files | Why |
+|-------|-------|-----|
+| Game logic | `state.js` (all games) | Truly pure — no DOM, no Canvas, no rendering imports |
+| Levels | `levels.json`, `levels/*.json` | Pure data, renderer-agnostic |
+| Generators | `generator.js` (all games) | Pure algorithms calling state.js and RNG |
+| Solvers + tests | `tests/solvers/`, `tests/unit/`, `tests/integration/` | Test pure state logic, no rendering deps |
+| Shared logic | `colors.js`, `rng.js`, `storage.js`, `daily.js`, `score.js`, `adaptive.js`, `history.js`, `hints.js`, `hint-worker.js`, `analytics.js`, `accessibility.js`, `haptics.js`, `endless.js`, `fail-speedrun.js`, `quick-play.js`, `recorder.js`, `replay.js`, `share.js`, `state-url.js`, `swipe-nav.js`, `sync.js`, `meta.js`, `video-overlay.js`, `ad-compositor.js` | Renderer-agnostic utilities |
+| Audio | `audio.js` | Web Audio oscillator synthesis — no rendering coupling |
+| Input normalization | `input.js` (shared) | Coordinate normalization is renderer-agnostic |
+| Screen shake math | `screen-shake.js` | Pure offset calculation — apply to Phaser camera instead of Canvas translate |
+
+### What to rewrite (Canvas 2D → Phaser)
+
+| Layer | Files | Change |
+|-------|-------|--------|
+| Renderers | `renderer.js` (6 2D games, ~500-900 lines each) | Replace Canvas 2D draw calls (`ctx.fillStyle`, `ctx.arc()`, `ctx.createLinearGradient()`) with Phaser game objects (Graphics, Tweens, ParticleEmitter). **Extract reusable layout math and hit-testing functions first** (e.g., `getTubePosition()`, `hitTestVehicle()`, `canvasToGrid()`, `wobble()`) — these are pure math and carry over unchanged. |
+| Game lifecycle | `game.js` (6 2D games) | Replace manual `requestAnimationFrame` loop with Phaser Scene lifecycle. Replace Promise-based animation callbacks (`renderer.animatePour()`) with Phaser Tween events. Keep state machine logic (level loading, move dispatch, undo, win check). |
+| Drawing primitives | `shared/shapes.js` | Replace Canvas path functions with Phaser Graphics API equivalents |
+| Canvas setup | `shared/canvas.js` | Replaced by Phaser's game loop and Scale Manager for 2D games; retained for 3D games |
+| Viewport scaling | `shared/viewport.js` | Replaced by Phaser Scale Manager (`Phaser.Scale.FIT`) for 2D games; retained for 3D games |
+| Particles | `shared/particles.js` | Replace Canvas rendering with Phaser ParticleEmitter; particle physics config (velocity, gravity, fade) is reusable |
+
+### What to adapt (~30% of each file changes)
+
+| Layer | Files | Change |
+|-------|-------|--------|
+| Per-game input | `input.js` (6 2D games) | Wire hit-testing functions to Phaser pointer events instead of raw DOM events. Hit-test logic itself is unchanged. |
+| Lifecycle | `shared/lifecycle.js` | Add Phaser Scene pause/resume path alongside existing RAF freeze path |
+| Settings / level-nav / retry | `shared/settings.js`, `shared/level-nav.js`, `shared/retry.js` | These manage DOM overlays — mostly unchanged, but any Canvas-specific positioning needs updating |
+
+### Migration order
+
+Water Sort is the first migration target because it has the simplest rendering (tubes, colored rectangles, pour tween) while exercising Phaser's core APIs (Graphics, Tweens, ParticleEmitter, input zones). If the Water Sort migration produces acceptable bundle size and mobile performance, proceed with the remaining 2D games in implementation order.
 
 ---
 
@@ -1801,6 +1902,7 @@ UX polish is a continuous phase that begins after each game's base mechanics are
 - Object pooling for particle systems and instanced meshes (Crowd Runner, Giant Runner) to avoid GC pauses
 - `requestAnimationFrame` with delta-time clamping: skip frames gracefully on slow devices rather than running game logic at half speed
 - Bundle size budget: each game's JS bundle ≤ 150KB gzipped (2D games), ≤ 400KB gzipped (3D games)
+- **Phaser migration:** 2D bundle size budget increases to ≤ 200KB gzipped (accounting for Phaser framework after Compressor stripping). Phaser handles WebGL draw call batching automatically, replacing manual texture atlas management. Phaser's game loop handles delta-time clamping internally. Only loaded for 2D games — no cross-contamination with Three.js entry points.
 
 ### 5.5 Progressive Enhancement
 
@@ -1998,7 +2100,7 @@ src/shared/recorder.js
 **Approach: Canvas capture → WebM → MP4 conversion**
 
 1. **Frame capture:** Use `canvas.captureStream(30)` (30fps) to create a `MediaStream` from the game's Canvas/WebGL element
-   - For Canvas 2D games: direct `captureStream()` on the game canvas
+   - For Canvas 2D games: direct `captureStream()` on the game canvas. **Phaser migration:** `captureStream()` on Phaser's canvas (`game.canvas`)
    - For Three.js games: `captureStream()` on the WebGL renderer's canvas (`renderer.domElement`)
    - Composite a UI overlay canvas (score, move counter, game name watermark) on top using a secondary `<canvas>` drawn into the stream via `MediaStream` mixing
 
