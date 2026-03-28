@@ -10,8 +10,8 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 1. ✅ **Water Sort** — Complete
 2. ✅ **Brain Teaser** — Complete
 3. ✅ **Save the Character** — Complete
-4. ⏳ **Parking Escape** — Next
-5. ⏳ **Satisfying ASMR**
+4. ✅ **Parking Escape** — Complete
+5. ⏳ **Satisfying ASMR** — Next
 6. ⏳ **Pull the Pin**
 7. ⏳ **Shared utilities cleanup**
 
@@ -109,9 +109,43 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ---
 
+### Parking Escape ✅
+
+**Commit:** `9c41630`
+
+**Changes:**
+- `renderer.js`: Replaced Canvas 2D with Phaser.Game and Phaser.Scene
+  - Created `ParkingEscapeScene` class extending Phaser.Scene
+  - Converted Canvas 2D draw calls to Phaser Graphics objects
+  - Preserved asphalt texture with parking-space markings
+  - Preserved 3D toy-car shading (top face highlight + right/bottom shadow)
+  - Preserved selection lift with expanded drop-shadow
+  - Replaced manual animation loop with Phaser Tweens
+  - Preserved slide animation with ease-out-back bounce
+  - Preserved exit particle burst when hero exits using Phaser Tweens
+  - Preserved screen shake on blocked drag using camera shake
+  - Extracted hit-testing utility (`hitTestVehicleAt`) as pure function
+  - Extracted layout utility (`calculateLayout`) as pure function
+  - Extracted snap computation (`computeSnapMoveFromDelta`) as pure function
+
+- `input.js`: Simplified for Phaser pointer events
+  - Input handling now done by Phaser scene's pointer events
+  - Added setCallbacks integration for Phaser scene
+  - Kept fallback canvas listeners for testing compatibility
+  - Kept `getChoiceAt` helper for testing and compatibility
+
+- `game.js`: Refactored for Phaser Scene lifecycle
+  - Removed manual requestAnimationFrame loop
+  - Initialize state before renderer for Phaser scene init
+  - Call `input.init()` after renderer is ready
+
+**Tests:** All 5573 tests pass
+
+---
+
 ## In Progress
 
-*None yet - next iteration will migrate Parking Escape*
+*None yet - next iteration will migrate Satisfying ASMR*
 
 ---
 
