@@ -723,6 +723,9 @@ export function createRenderer(canvas) {
   let lastState = null;
   let reducedMotion = false;
   let hintVehicleId = null;
+  let pendingCallbacks = {};
+  let gameReady = false;
+  let sceneStarted = false;
 
   const gameConfig = {
     type: Phaser.AUTO,
@@ -734,13 +737,26 @@ export function createRenderer(canvas) {
       parent: canvas.parentElement,
       canvas: canvas
     },
-    scene: ParkingEscapeScene,
     backgroundColor: '#1a1a2e',
     transparent: true
   };
 
+  function maybeStartScene() {
+    if (!gameReady || !lastState || sceneStarted) return;
+    sceneStarted = true;
+    game.scene.add('ParkingEscapeScene', ParkingEscapeScene, true, {
+      state: lastState,
+      reducedMotion,
+      ...pendingCallbacks
+    });
+  }
+
   function init() {
     game = new Phaser.Game(gameConfig);
+    game.events.once('ready', () => {
+      gameReady = true;
+      maybeStartScene();
+    });
   }
 
   function getScene() {
@@ -752,6 +768,7 @@ export function createRenderer(canvas) {
 
   function resize(state) {
     lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.resize(state);
@@ -760,6 +777,7 @@ export function createRenderer(canvas) {
 
   function render(state, drag, selectedId) {
     lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.render(state, drag, selectedId);
@@ -816,6 +834,7 @@ export function createRenderer(canvas) {
   }
 
   function setCallbacks({ onDragStart, onDragMove, onDragEnd }) {
+    pendingCallbacks = { ...pendingCallbacks, onDragStart, onDragMove, onDragEnd };
     const s = getScene();
     if (s) {
       s.onDragStart = onDragStart;

@@ -948,6 +948,9 @@ export function createRenderer(canvas) {
   let scene = null;
   let lastState = null;
   let reducedMotion = false;
+  let pendingCallbacks = {};
+  let gameReady = false;
+  let sceneStarted = false;
 
   const gameConfig = {
     type: Phaser.AUTO,
@@ -959,13 +962,26 @@ export function createRenderer(canvas) {
       parent: canvas.parentElement,
       canvas: canvas
     },
-    scene: BrainTeaserScene,
     backgroundColor: COLORS.background,
     transparent: false
   };
 
+  function maybeStartScene() {
+    if (!gameReady || !lastState || sceneStarted) return;
+    sceneStarted = true;
+    game.scene.add('BrainTeaserScene', BrainTeaserScene, true, {
+      state: lastState,
+      reducedMotion,
+      ...pendingCallbacks
+    });
+  }
+
   function init() {
     game = new Phaser.Game(gameConfig);
+    game.events.once('ready', () => {
+      gameReady = true;
+      maybeStartScene();
+    });
   }
 
   function getScene() {
@@ -977,6 +993,7 @@ export function createRenderer(canvas) {
 
   function resize(state) {
     lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.resize(state);
@@ -985,6 +1002,7 @@ export function createRenderer(canvas) {
 
   function render(state) {
     lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.setState(state);
@@ -1039,12 +1057,13 @@ export function createRenderer(canvas) {
   }
 
   function setCallbacks(callbacks) {
+    pendingCallbacks = { ...pendingCallbacks, ...callbacks };
     const s = getScene();
     if (s) {
-      s.onElementTap = callbacks.onElementTap;
-      s.onDragStart = callbacks.onDragStart;
-      s.onDragMove = callbacks.onDragMove;
-      s.onDragEnd = callbacks.onDragEnd;
+      if (callbacks.onElementTap !== undefined) s.onElementTap = callbacks.onElementTap;
+      if (callbacks.onDragStart !== undefined) s.onDragStart = callbacks.onDragStart;
+      if (callbacks.onDragMove !== undefined) s.onDragMove = callbacks.onDragMove;
+      if (callbacks.onDragEnd !== undefined) s.onDragEnd = callbacks.onDragEnd;
     }
   }
 

@@ -740,18 +740,19 @@ export function createRenderer(canvas) {
             height: CANVAS_HEIGHT,
             parent: container
           },
-          scene: SaveTheCharacterScene,
           backgroundColor: COLORS.parchment,
           transparent: true
         });
       }
 
-      // Get reference to scene after it's created
-      currentScene = phaserGame.scene.getScene('SaveTheCharacterScene');
-      if (currentScene) {
-        currentScene.setState(state);
-        currentScene.setCallbacks(callbacks);
-      }
+      // Start the scene with data once Phaser is ready
+      phaserGame.events.once('ready', () => {
+        phaserGame.scene.add('SaveTheCharacterScene', SaveTheCharacterScene, true, {
+          state,
+          callbacks
+        });
+        currentScene = phaserGame.scene.getScene('SaveTheCharacterScene');
+      });
     },
 
     startAnimation() {

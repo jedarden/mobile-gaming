@@ -656,9 +656,12 @@ class PullThePinScene extends Phaser.Scene {
 export function createRenderer(canvas) {
   let game = null;
   let scene = null;
+  let lastState = null;
   let reducedMotion = false;
   let colorBlindMode = false;
   let onPinTapCallback = null;
+  let gameReady = false;
+  let sceneStarted = false;
 
   const gameConfig = {
     type: Phaser.AUTO,
@@ -670,13 +673,27 @@ export function createRenderer(canvas) {
       parent: canvas.parentElement,
       canvas: canvas
     },
-    scene: PullThePinScene,
     backgroundColor: '#E8F4F8',
     transparent: true
   };
 
+  function maybeStartScene() {
+    if (!gameReady || !lastState || sceneStarted) return;
+    sceneStarted = true;
+    game.scene.add('PullThePinScene', PullThePinScene, true, {
+      state: lastState,
+      onPinTap: onPinTapCallback,
+      reducedMotion,
+      colorBlindMode
+    });
+  }
+
   function init() {
     game = new Phaser.Game(gameConfig);
+    game.events.once('ready', () => {
+      gameReady = true;
+      maybeStartScene();
+    });
   }
 
   function getScene() {
@@ -687,6 +704,8 @@ export function createRenderer(canvas) {
   }
 
   function render(state) {
+    lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.setState(state);

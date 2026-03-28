@@ -442,6 +442,9 @@ export function createRenderer(canvas) {
   let scene = null;
   let lastState = null;
   let reducedMotion = false;
+  let onSprayCallback = null;
+  let gameReady = false;
+  let sceneStarted = false;
 
   const gameConfig = {
     type: Phaser.AUTO,
@@ -453,13 +456,26 @@ export function createRenderer(canvas) {
       parent: canvas.parentElement,
       canvas: canvas
     },
-    scene: SatisfyingAsmrScene,
     backgroundColor: '#f0e6d2',
     transparent: true
   };
 
+  function maybeStartScene() {
+    if (!gameReady || !lastState || sceneStarted) return;
+    sceneStarted = true;
+    game.scene.add('SatisfyingAsmrScene', SatisfyingAsmrScene, true, {
+      state: lastState,
+      reducedMotion,
+      onSpray: onSprayCallback
+    });
+  }
+
   function init() {
     game = new Phaser.Game(gameConfig);
+    game.events.once('ready', () => {
+      gameReady = true;
+      maybeStartScene();
+    });
   }
 
   function getScene() {
@@ -471,6 +487,7 @@ export function createRenderer(canvas) {
 
   function resize(state) {
     lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.resize(state);
@@ -479,6 +496,7 @@ export function createRenderer(canvas) {
 
   function render(state) {
     lastState = state;
+    maybeStartScene();
     const s = getScene();
     if (s && s.scene.isActive()) {
       s.render(state);
@@ -533,6 +551,7 @@ export function createRenderer(canvas) {
   }
 
   function setCallbacks({ onSpray }) {
+    onSprayCallback = onSpray;
     const s = getScene();
     if (s) {
       s.onSpray = onSpray;
