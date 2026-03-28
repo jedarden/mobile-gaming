@@ -7,7 +7,7 @@
 
 import * as state from './state.js';
 import { createRenderer } from './renderer.js';
-import { createInputHandler } from './input.js';
+import { createInput } from './input.js';
 import levelsData from './levels.json';
 import { initStorage, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
@@ -31,27 +31,45 @@ export function createGame(canvas, options = {}) {
 
   // Load initial level
   let gameState = null;
-  let renderer = createRenderer(canvas);
+  let renderer = null;
   let inputHandler = null;
   let physicsInterval = null;
   let hintSession = null;
+
+  /**
+   * Initialize renderer with state
+   * Called once when game is first created
+   */
+  function initRenderer(initialState) {
+    renderer = createRenderer(canvas);
+    renderer.setReducedMotion(isReducedMotionEnabled());
+    renderer.setColorBlindMode(isColorBlindEnabled());
+
+    // Set up input callback
+    if (inputHandler) {
+      inputHandler.destroy();
+    }
+
+    inputHandler = createInput({
+      canvas,
+      renderer,
+      onPinTap: handlePinTap
+    });
+    inputHandler.init();
+  }
 
   /**
    * Load a level
    */
   function loadLevel(level) {
     gameState = state.createInitialState(level);
-    renderer.resetAnimations();
 
-    // Setup input handling
-    if (inputHandler) {
-      inputHandler.destroy();
+    // Initialize renderer if not already done
+    if (!renderer) {
+      initRenderer(gameState);
     }
 
-    inputHandler = createInputHandler(canvas, {
-      onPinTap: handlePinTap,
-      onTapMiss: () => {}
-    });
+    renderer.resetAnimations();
 
     // Reset hint session for new level
     if (hintSession) { hintSession.destroy(); }
@@ -92,15 +110,11 @@ export function createGame(canvas, options = {}) {
   }
 
   /**
-   * Handle tap on canvas
+   * Handle tap on canvas (called from Phaser scene)
    */
-  function handlePinTap(x, y) {
+  function handlePinTap(pinId) {
     if (!gameState || gameState.status !== 'playing') return;
-
-    const pin = inputHandler.findPinAt(x, y, gameState.pins);
-    if (pin) {
-      removePin(pin.id);
-    }
+    removePin(pinId);
   }
 
   /**
@@ -155,7 +169,7 @@ export function createGame(canvas, options = {}) {
       }
 
       render();
-      // After physics stops on win, drive confetti animation via RAF loop
+      // After physics stops on win, drive confetti animation via loop
       if (allDone && gameState.status === 'won') renderer.startLoop();
     }, PHYSICS_TICK_MS);
   }
@@ -174,7 +188,7 @@ export function createGame(canvas, options = {}) {
    * Render current state
    */
   function render() {
-    if (gameState) {
+    if (gameState && renderer) {
       renderer.render(gameState);
     }
   }
@@ -217,8 +231,8 @@ export function createGame(canvas, options = {}) {
     destroy,
     showHint() { if (hintSession) hintSession.showHint(); },
     getHintLevel() { return hintSession?.level ?? 0; },
-    setReducedMotion(v) { renderer.setReducedMotion(v); },
-    setColorBlindMode(v) { renderer.setColorBlindMode(v); }
+    setReducedMotion(v) { if (renderer) renderer.setReducedMotion(v); },
+    setColorBlindMode(v) { if (renderer) renderer.setColorBlindMode(v); }
   };
 }
 

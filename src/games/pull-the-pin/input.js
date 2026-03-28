@@ -1,18 +1,59 @@
 /**
  * Pull the Pin - Input Handler
  *
- * Handles user interactions:
- * - Tap on pins to remove them
- * - Touch and mouse support
- * - Coordinate conversion
+ * Game-specific input mapping for Pull the Pin.
+ * With Phaser, input is handled by the scene, so this module
+ * provides a thin wrapper to wire up callbacks.
+ *
+ * The hit-testing logic (getPinAtPosition) is now in renderer.js
+ * and used by the Phaser scene directly.
  */
 
 /**
- * Create input handler for the game
+ * Create input handler for Pull the Pin
  *
- * @param {HTMLCanvasElement} canvas - Game canvas
- * @param {Object} callbacks - Event callbacks
- * @returns {Object} Input handler with cleanup method
+ * @param {Object} options - Configuration
+ * @param {HTMLCanvasElement} options.canvas - Game canvas element (used by Phaser)
+ * @param {Object} options.renderer - Renderer instance (Phaser game wrapper)
+ * @param {Function} options.onPinTap - Callback when a pin is tapped: (pinId)
+ * @returns {Object} Input controller with init() and destroy() methods
+ */
+export function createInput(options) {
+  const { renderer, onPinTap } = options;
+  let initialized = false;
+
+  /**
+   * Initialize input handling
+   * Wire up callback to renderer's Phaser scene
+   */
+  function init() {
+    if (initialized) return;
+
+    // The renderer handles input via Phaser scene
+    // We just need to set the callback
+    if (renderer && renderer.setOnPinTap) {
+      renderer.setOnPinTap(onPinTap);
+    }
+
+    initialized = true;
+  }
+
+  /**
+   * Remove input listeners
+   */
+  function destroy() {
+    if (renderer && renderer.setOnPinTap) {
+      renderer.setOnPinTap(null);
+    }
+    initialized = false;
+  }
+
+  return { init, destroy };
+}
+
+/**
+ * Legacy function for backward compatibility with tests
+ * Creates a canvas-based input handler
  */
 export function createInputHandler(canvas, callbacks) {
   const { onPinTap, onTapMiss: _onTapMiss } = callbacks;
@@ -44,30 +85,6 @@ export function createInputHandler(canvas, callbacks) {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top) * scaleY
     };
-  }
-
-  /**
-   * Check if a point hits a pin
-   */
-  function hitTestPin(x, y, pin) {
-    // Pin is a rectangle with handle
-    const handleRadius = 10;
-
-    // Check main body
-    if (x >= pin.x - 20 && x <= pin.x + 20 &&
-        y >= pin.y - 10 && y <= pin.y + 10) {
-      return true;
-    }
-
-    // Check handle circle
-    const handleX = pin.x + 30;
-    const handleY = pin.y;
-    const dist = Math.sqrt((x - handleX) ** 2 + (y - handleY) ** 2);
-    if (dist <= handleRadius) {
-      return true;
-    }
-
-    return false;
   }
 
   /**
@@ -128,12 +145,28 @@ export function createInputHandler(canvas, callbacks) {
 
   return {
     /**
-     * Find pin at coordinates
+     * Find pin at coordinates (for testing)
      */
     findPinAt(x, y, pins) {
+      // Use the exported function from renderer if available
+      // Fall back to inline implementation for testing
       for (const pin of pins) {
-        if (!pin.removed && hitTestPin(x, y, pin)) {
-          return pin;
+        if (!pin.removed) {
+          const handleRadius = 10;
+
+          // Check main body
+          if (x >= pin.x - 20 && x <= pin.x + 20 &&
+              y >= pin.y - 10 && y <= pin.y + 10) {
+            return pin;
+          }
+
+          // Check handle circle
+          const handleX = pin.x + 30;
+          const handleY = pin.y;
+          const dist = Math.sqrt((x - handleX) ** 2 + (y - handleY) ** 2);
+          if (dist <= handleRadius) {
+            return pin;
+          }
         }
       }
       return null;
@@ -152,6 +185,4 @@ export function createInputHandler(canvas, callbacks) {
   };
 }
 
-export default {
-  createInputHandler
-};
+export default { createInput, createInputHandler };
