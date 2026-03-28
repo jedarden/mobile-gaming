@@ -1,18 +1,24 @@
 /**
  * Satisfying ASMR - Input Handler
  *
- * Continuous drag → spray clean area at pointer position.
+ * Input is now handled by Phaser Scene pointer events.
+ * This module provides fallback canvas listeners for testing environments.
  */
 
 import { disableTouchActions } from '../../shared/input.js';
 
+/**
+ * Create input handler - provides fallback canvas listeners for testing.
+ * Phaser scene handles pointer events directly via setCallbacks.
+ */
 export function createInput({ canvas, onSpray }) {
   let active = false;
   let listeners = [];
 
+  // Fallback canvas listeners for testing environments without Phaser
   function add(el, ev, fn, opts) {
     el.addEventListener(ev, fn, opts);
-    listeners.push(() => el.removeEventListener(ev, fn, opts));
+    listeners.push(() => el.removeEventListener(ev, opts));
   }
 
   function getPoint(e) {
@@ -38,9 +44,13 @@ export function createInput({ canvas, onSpray }) {
     onSpray(x, y);
   }
 
-  function onUp(_e) { active = false; }
+  function onUp(_e) {
+    active = false;
+  }
 
   function init() {
+    // These are fallback listeners for testing environments
+    // In production, Phaser scene handles input via pointer events
     disableTouchActions(canvas);
     add(canvas, 'mousedown', onDown);
     add(canvas, 'mousemove', onMove);

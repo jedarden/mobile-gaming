@@ -1,14 +1,16 @@
 /**
- * Satisfying ASMR - Canvas Renderer (polished)
+ * Satisfying ASMR - Phaser Renderer
  *
- * Visual improvements:
+ * Migrated from Canvas 2D to Phaser 3 game framework.
+ * Visual improvements preserved:
  * - Textured surface with subtle grain noise
  * - Hidden color-reveal layer exposed as dirt is cleaned
  * - Dirt has earthy texture variation
  * - Debris particles fly off on each erase stroke
  * - Completion sparkle burst when fully cleaned
- * - Smooth internal RAF loop for particle animations
  */
+
+import Phaser from 'phaser';
 
 const SURFACE_COLOR = '#f0e6d2';
 
@@ -20,175 +22,187 @@ const REVEAL_PALETTES = {
   checkerboard: ['#F8A5C2', '#6FC5D3', '#FCEA7C', '#B8E6B8', '#FFBFA0']
 };
 
-export function createRenderer(canvas) {
-  const ctx = canvas.getContext('2d');
-  let cellSize = 20;
-  let canvasW = 300;
-  let canvasH = 300;
-  let gridW = 16;
-  let gridH = 16;
-  let currentPatternType = 'full';
-  let reducedMotion = false;
+/**
+ * Layout utilities - pure functions for grid positioning
+ */
+export function calculateLayout(gridWidth, gridHeight, containerWidth, containerHeight) {
+  const availW = containerWidth - 8;
+  const availH = containerHeight - 8;
+  const csW = Math.floor(availW / gridWidth);
+  const csH = Math.floor(availH / gridHeight);
+  const cellSize = Math.max(4, Math.min(csW, csH));
 
-  // Offscreen canvases
-  let dirtCanvas = null;
-  let dirtCtx = null;
-  let revealCanvas = null;   // color reveal layer (static)
-  let grainCanvas = null;    // grain texture (static)
+  const canvasW = cellSize * gridWidth;
+  const canvasH = cellSize * gridHeight;
 
-  // Particles: { x, y, vx, vy, life, r, color }
-  const particles = [];
+  return {
+    cellSize,
+    canvasW,
+    canvasH,
+    offsetX: (containerWidth - canvasW) / 2,
+    offsetY: (containerHeight - canvasH) / 2,
+    gridWidth,
+    gridHeight
+  };
+}
 
-  // Sparkle: { x, y, angle, speed, life, r, color }
-  const sparkles = [];
+/**
+ * Convert canvas pixel coordinates to grid cell coords - pure function
+ */
+export function pixelToGrid(px, py, layout) {
+  return {
+    gc: Math.floor((px - layout.offsetX) / layout.cellSize),
+    gr: Math.floor((py - layout.offsetY) / layout.cellSize)
+  };
+}
 
-  let rafId = null;
-  let lastState = null;
+/**
+ * Satisfying ASMR Phaser Scene
+ */
+class SatisfyingAsmrScene extends Phaser.Scene {
+  constructor() {
+    super('SatisfyingAsmrScene');
+    this.layout = null;
+    this.state = null;
+    this.reducedMotion = false;
+    this.onSpray = null;
 
-  // ── Internal animation loop (runs while particles/sparkles are alive) ─────
-  function startLoop() {
-    if (rafId) return;
-    function tick() {
-      updateParticles();
-      if (lastState) renderFrame(lastState);
-      if (particles.length > 0 || sparkles.length > 0) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        rafId = null;
-      }
-    }
-    rafId = requestAnimationFrame(tick);
+    // Graphics objects
+    this.revealGraphics = null;
+    this.grainGraphics = null;
+    this.dirtRenderTexture = null;
+    this.dirtGraphics = null;
+    this.winOverlay = null;
+
+    // Particle arrays for manual tweening
+    this.debrisParticles = [];
+    this.sparkleParticles = [];
   }
 
-  function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.15;
-      p.vx *= 0.92;
-      p.life -= 0.04;
-      if (p.life <= 0) particles.splice(i, 1);
-    }
-    for (let i = sparkles.length - 1; i >= 0; i--) {
-      const s = sparkles[i];
-      s.x += Math.cos(s.angle) * s.speed;
-      s.y += Math.sin(s.angle) * s.speed;
-      s.speed *= 0.96;
-      s.life -= 0.022;
-      if (s.life <= 0) sparkles.splice(i, 1);
-    }
+  init(data) {
+    this.state = data.state;
+    this.reducedMotion = data.reducedMotion || false;
+    this.onSpray = data.onSpray;
   }
 
-  // ── Grain texture canvas (pre-rendered noise) ──────────────────────────────
-  function buildGrainCanvas(w, h) {
-    grainCanvas = document.createElement('canvas');
-    grainCanvas.width = w;
-    grainCanvas.height = h;
-    const gCtx = grainCanvas.getContext('2d');
-    const id = gCtx.createImageData(w, h);
-    for (let i = 0; i < id.data.length; i += 4) {
-      const v = (Math.random() * 40) | 0;
-      id.data[i] = v;
-      id.data[i + 1] = v;
-      id.data[i + 2] = v;
-      id.data[i + 3] = Math.random() < 0.35 ? 18 : 0;
-    }
-    gCtx.putImageData(id, 0, 0);
+  create() {
+    this.updateLayout();
+    this.drawRevealLayer();
+    this.drawGrainOverlay();
+    this.buildDirtLayer();
+    this.setupInput();
   }
 
-  // ── Color reveal canvas (hidden colors under the dirt) ────────────────────
-  function buildRevealCanvas(w, h, patternType) {
-    revealCanvas = document.createElement('canvas');
-    revealCanvas.width = w * cellSize;
-    revealCanvas.height = h * cellSize;
-    const rCtx = revealCanvas.getContext('2d');
+  updateLayout() {
+    const { width, height } = this.scale;
+    this.layout = calculateLayout(
+      this.state.width,
+      this.state.height,
+      width,
+      height
+    );
+  }
 
+  drawRevealLayer() {
+    if (this.revealGraphics) {
+      this.revealGraphics.destroy();
+    }
+
+    const { cellSize, canvasW, canvasH, offsetX, offsetY, gridWidth, gridHeight } = this.layout;
+    const patternType = this.state.patternType || 'full';
     const palette = REVEAL_PALETTES[patternType] || REVEAL_PALETTES.full;
 
+    this.revealGraphics = this.add.graphics();
+    this.revealGraphics.setPosition(offsetX, offsetY);
+
     if (patternType === 'stripes') {
-      const stripeW = Math.ceil((w * cellSize) / palette.length);
+      const stripeW = Math.ceil(canvasW / palette.length);
       palette.forEach((col, i) => {
-        rCtx.fillStyle = col;
-        rCtx.fillRect(i * stripeW, 0, stripeW, h * cellSize);
+        this.revealGraphics.fillStyle(Phaser.Display.Color.HexStringToColor(col).color, 1);
+        this.revealGraphics.fillRect(i * stripeW, 0, stripeW, canvasH);
       });
     } else if (patternType === 'checkerboard') {
-      for (let r = 0; r < h; r++) {
-        for (let c = 0; c < w; c++) {
-          rCtx.fillStyle = palette[(r + c) % palette.length];
-          rCtx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+      for (let r = 0; r < gridHeight; r++) {
+        for (let c = 0; c < gridWidth; c++) {
+          this.revealGraphics.fillStyle(
+            Phaser.Display.Color.HexStringToColor(palette[(r + c) % palette.length]).color,
+            1
+          );
+          this.revealGraphics.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
         }
       }
     } else {
-      // Radial blob pattern (splatter / full)
-      rCtx.fillStyle = SURFACE_COLOR;
-      rCtx.fillRect(0, 0, w * cellSize, h * cellSize);
-      const cx = (w * cellSize) / 2;
-      const cy = (h * cellSize) / 2;
+      // Radial blob pattern (splatter / full) - draw base first
+      this.revealGraphics.fillStyle(Phaser.Display.Color.HexStringToColor(SURFACE_COLOR).color, 1);
+      this.revealGraphics.fillRect(0, 0, canvasW, canvasH);
+
+      // Draw radial gradients using filled circles with alpha
+      const cx = canvasW / 2;
+      const cy = canvasH / 2;
       const blobCount = patternType === 'full' ? 3 : 7;
+
       for (let b = 0; b < blobCount; b++) {
-        const bx = cx + (Math.sin(b * 1.3) * 0.4) * w * cellSize;
-        const by = cy + (Math.cos(b * 0.9) * 0.4) * h * cellSize;
-        const br = (Math.min(w, h) * cellSize) / (patternType === 'full' ? 1.5 : 2.5);
-        const grad = rCtx.createRadialGradient(bx, by, 0, bx, by, br);
-        grad.addColorStop(0, palette[b % palette.length] + 'ee');
-        grad.addColorStop(1, palette[b % palette.length] + '00');
-        rCtx.fillStyle = grad;
-        rCtx.fillRect(0, 0, w * cellSize, h * cellSize);
+        const bx = cx + (Math.sin(b * 1.3) * 0.4) * canvasW;
+        const by = cy + (Math.cos(b * 0.9) * 0.4) * canvasH;
+        const br = Math.min(canvasW, canvasH) / (patternType === 'full' ? 1.5 : 2.5);
+        const color = Phaser.Display.Color.HexStringToColor(palette[b % palette.length]);
+
+        // Draw multiple concentric circles to simulate gradient
+        for (let ring = br; ring > 0; ring -= 2) {
+          const alpha = Phaser.Math.Linear(0, 0.93, 1 - ring / br);
+          this.revealGraphics.fillStyle(color.color, alpha);
+          this.revealGraphics.fillCircle(bx, by, ring);
+        }
       }
     }
 
     // Subtle sheen overlay
-    const sheen = rCtx.createLinearGradient(0, 0, 0, h * cellSize);
-    sheen.addColorStop(0, 'rgba(255,255,255,0.12)');
-    sheen.addColorStop(0.5, 'rgba(255,255,255,0)');
-    sheen.addColorStop(1, 'rgba(0,0,0,0.06)');
-    rCtx.fillStyle = sheen;
-    rCtx.fillRect(0, 0, w * cellSize, h * cellSize);
+    this.revealGraphics.fillStyle(0xffffff, 0.12);
+    this.revealGraphics.fillRect(0, 0, canvasW, canvasH * 0.3);
   }
 
-  function resize(state) {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    gridW = state.width;
-    gridH = state.height;
-    currentPatternType = state.patternType || 'full';
+  drawGrainOverlay() {
+    if (this.grainGraphics) {
+      this.grainGraphics.destroy();
+    }
 
-    const availW = rect.width - 8;
-    const availH = rect.height - 8;
-    const csW = Math.floor(availW / gridW);
-    const csH = Math.floor(availH / gridH);
-    cellSize = Math.max(4, Math.min(csW, csH));
+    const { canvasW, canvasH, offsetX, offsetY } = this.layout;
 
-    canvasW = cellSize * gridW;
-    canvasH = cellSize * gridH;
+    this.grainGraphics = this.add.graphics();
+    this.grainGraphics.setPosition(offsetX, offsetY);
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = canvasW * dpr;
-    canvas.height = canvasH * dpr;
-    canvas.style.width = `${canvasW}px`;
-    canvas.style.height = `${canvasH}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Rebuild dirt canvas
-    dirtCanvas = document.createElement('canvas');
-    dirtCanvas.width = canvasW * dpr;
-    dirtCanvas.height = canvasH * dpr;
-    dirtCtx = dirtCanvas.getContext('2d');
-    dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    buildRevealCanvas(gridW, gridH, currentPatternType);
-    buildGrainCanvas(canvasW, canvasH);
+    // Sparse grain dots
+    for (let i = 0; i < canvasW * canvasH * 0.002; i++) {
+      const x = Math.random() * canvasW;
+      const y = Math.random() * canvasH;
+      const alpha = Math.random() < 0.35 ? 0.07 : 0;
+      if (alpha > 0) {
+        const v = (Math.random() * 40) | 0;
+        this.grainGraphics.fillStyle(Phaser.Display.Color.GetColor(v, v, v), alpha);
+        this.grainGraphics.fillRect(x, y, 1, 1);
+      }
+    }
   }
 
-  function buildDirtLayer(cells, w, _h) {
-    if (!dirtCtx) return;
-    dirtCtx.clearRect(0, 0, canvasW, canvasH);
+  buildDirtLayer() {
+    if (this.dirtGraphics) {
+      this.dirtGraphics.destroy();
+    }
+    if (this.dirtRenderTexture) {
+      this.dirtRenderTexture.destroy();
+    }
 
-    for (let i = 0; i < cells.length; i++) {
-      if (!cells[i]) continue;
-      const c = i % w;
-      const r = Math.floor(i / w);
+    const { cellSize, canvasW, canvasH, offsetX, offsetY, gridWidth, gridHeight } = this.layout;
+
+    // Create graphics for dirt
+    this.dirtGraphics = this.add.graphics();
+    this.dirtGraphics.setPosition(offsetX, offsetY);
+
+    // Draw dirt cells
+    for (let i = 0; i < this.state.cells.length; i++) {
+      if (!this.state.cells[i]) continue;
+      const c = i % this.state.width;
+      const r = Math.floor(i / this.state.width);
       const x = c * cellSize;
       const y = r * cellSize;
 
@@ -196,167 +210,354 @@ export function createRenderer(canvas) {
       const seed = (c * 17 + r * 31) & 0xFF;
       const v = 40 + seed % 30;
       const br = 30 + seed % 15;
-      dirtCtx.fillStyle = `rgb(${v + 50},${v},${br})`;
-      dirtCtx.fillRect(x, y, cellSize, cellSize);
+      const color = Phaser.Display.Color.GetColor(v + 50, v, br);
+      this.dirtGraphics.fillStyle(color, 1);
+      this.dirtGraphics.fillRect(x, y, cellSize, cellSize);
     }
 
     // Grain overlay on dirt
-    if (grainCanvas) {
-      dirtCtx.globalAlpha = 0.5;
-      dirtCtx.drawImage(grainCanvas, 0, 0);
-      dirtCtx.globalAlpha = 1;
+    this.addGrainToDirt();
+
+    // Create render texture for erasing
+    this.dirtRenderTexture = this.add.renderTexture(offsetX, offsetY, canvasW, canvasH);
+    this.dirtRenderTexture.draw(this.dirtGraphics);
+  }
+
+  addGrainToDirt() {
+    if (!this.dirtGraphics) return;
+
+    const { canvasW, canvasH } = this.layout;
+
+    // Add grain dots to dirt
+    this.dirtGraphics.fillStyle(0x000000, 0.08);
+    for (let i = 0; i < canvasW * canvasH * 0.01; i++) {
+      const x = Math.random() * canvasW;
+      const y = Math.random() * canvasH;
+      this.dirtGraphics.fillRect(x, y, 1, 1);
     }
   }
 
-  function renderFrame(state) {
-    if (!dirtCanvas) return;
-    ctx.clearRect(0, 0, canvasW, canvasH);
+  setupInput() {
+    this.input.on('pointerdown', (pointer) => {
+      if (this.state.status !== 'playing') return;
 
-    // 1. Color reveal layer (clean surface with hidden colors)
-    if (revealCanvas) {
-      ctx.drawImage(revealCanvas, 0, 0, canvasW, canvasH);
-    } else {
-      ctx.fillStyle = SURFACE_COLOR;
-      ctx.fillRect(0, 0, canvasW, canvasH);
-    }
+      const px = pointer.x;
+      const py = pointer.y;
 
-    // 2. Grain on clean surface
-    if (grainCanvas) {
-      ctx.globalAlpha = 0.18;
-      ctx.drawImage(grainCanvas, 0, 0);
-      ctx.globalAlpha = 1;
-    }
+      if (this.onSpray) {
+        this.onSpray(px, py);
+      }
+    });
 
-    // 3. Dirt overlay
-    ctx.drawImage(dirtCanvas, 0, 0, canvasW, canvasH, 0, 0, canvasW, canvasH);
+    this.input.on('pointermove', (pointer) => {
+      if (!pointer.isDown) return;
+      if (this.state.status !== 'playing') return;
 
-    // 4. Particles (debris)
-    for (const p of particles) {
-      ctx.save();
-      ctx.globalAlpha = p.life * 0.85;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+      const px = pointer.x;
+      const py = pointer.y;
 
-    // 5. Sparkles (completion)
-    for (const s of sparkles) {
-      ctx.save();
-      ctx.globalAlpha = s.life;
-      ctx.fillStyle = s.color;
-      ctx.translate(s.x, s.y);
-      ctx.rotate(s.life * Math.PI * 2);
-      const sr = s.r * s.life;
-      ctx.fillRect(-sr, -sr * 0.25, sr * 2, sr * 0.5);
-      ctx.fillRect(-sr * 0.25, -sr, sr * 0.5, sr * 2);
-      ctx.restore();
-    }
+      if (this.onSpray) {
+        this.onSpray(px, py);
+      }
+    });
+  }
 
-    // 6. Win tint
+  setState(newState) {
+    this.state = newState;
+  }
+
+  setReducedMotion(value) {
+    this.reducedMotion = value;
+  }
+
+  render(state) {
+    this.state = state;
+
+    // Win overlay
     if (state.status === 'won') {
-      ctx.fillStyle = 'rgba(180,255,200,0.18)';
-      ctx.fillRect(0, 0, canvasW, canvasH);
+      if (!this.winOverlay) {
+        this.winOverlay = this.add.graphics();
+        this.winOverlay.setDepth(1000);
+      }
+      this.winOverlay.clear();
+      this.winOverlay.fillStyle(0xb4ffc8, 0.18);
+      const { width, height } = this.scale;
+      this.winOverlay.fillRect(0, 0, width, height);
+    } else if (this.winOverlay) {
+      this.winOverlay.clear();
+    }
+  }
+
+  /**
+   * Erase dirt cells — updates dirtRenderTexture in-place.
+   */
+  eraseArea(cells, cx, cy, radius, w) {
+    if (!this.dirtRenderTexture || !this.dirtGraphics) return;
+
+    const { cellSize, offsetX, offsetY, gridHeight } = this.layout;
+    const r = Math.ceil(radius);
+
+    // Redraw the dirt graphics without the erased cells
+    this.dirtGraphics.clear();
+
+    for (let i = 0; i < cells.length; i++) {
+      if (!cells[i]) continue;
+      const c = i % w;
+      const row = Math.floor(i / w);
+      const x = c * cellSize;
+      const y = row * cellSize;
+
+      // Base dirt with subtle value variation
+      const seed = (c * 17 + row * 31) & 0xFF;
+      const v = 40 + seed % 30;
+      const br = 30 + seed % 15;
+      const color = Phaser.Display.Color.GetColor(v + 50, v, br);
+      this.dirtGraphics.fillStyle(color, 1);
+      this.dirtGraphics.fillRect(x, y, cellSize, cellSize);
+    }
+
+    // Add grain overlay
+    this.addGrainToDirt();
+
+    // Clear and redraw render texture
+    this.dirtRenderTexture.clear();
+    this.dirtRenderTexture.draw(this.dirtGraphics);
+  }
+
+  /**
+   * Spawn debris crumbs at the given pixel position
+   */
+  spawnDebris(px, py) {
+    if (this.reducedMotion) return;
+
+    const dirtColors = [0x6e4c32, 0x8b6045, 0x5a3e2b, 0x7a5235, 0x4a3020];
+    const count = 4 + Math.floor(Math.random() * 5);
+
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.8 + Math.random() * 2.5;
+      const color = dirtColors[Math.floor(Math.random() * dirtColors.length)];
+      const size = 3 + Math.random() * 4;
+
+      const particle = this.add.graphics();
+      particle.fillStyle(color, 1);
+      particle.fillCircle(0, 0, size / 2);
+      particle.setPosition(
+        px + (Math.random() - 0.5) * this.layout.cellSize,
+        py + (Math.random() - 0.5) * this.layout.cellSize
+      );
+      particle.setDepth(500);
+
+      const targetX = particle.x + Math.cos(angle) * speed * 60;
+      const targetY = particle.y + Math.sin(angle) * speed * 60 - 60;
+
+      this.tweens.add({
+        targets: particle,
+        x: targetX,
+        y: targetY,
+        alpha: 0,
+        duration: 700 + Math.random() * 400,
+        ease: 'Quad.easeOut',
+        onComplete: () => particle.destroy()
+      });
+
+      this.debrisParticles.push(particle);
+    }
+  }
+
+  /**
+   * Trigger completion sparkle burst
+   */
+  triggerCompletionSparkle() {
+    if (this.reducedMotion) return;
+
+    const colors = [0xffd700, 0xff69b4, 0x00ffff, 0xadff2f, 0xff6347, 0xdda0dd, 0xffe66d];
+    const { canvasW, canvasH, offsetX, offsetY } = this.layout;
+    const cx = offsetX + canvasW / 2;
+    const cy = offsetY + canvasH / 2;
+
+    // Central burst
+    for (let i = 0; i < 60; i++) {
+      const angle = (i / 60) * Math.PI * 2 + Math.random() * 0.2;
+      const speed = 1 + Math.random() * 4;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const size = 6 + Math.random() * 8;
+
+      const particle = this.add.graphics();
+      particle.fillStyle(color, 1);
+      // Draw plus-sign sparkle
+      particle.fillRect(-size, -size * 0.25, size * 2, size * 0.5);
+      particle.fillRect(-size * 0.25, -size, size * 0.5, size * 2);
+
+      particle.setPosition(
+        cx + (Math.random() - 0.5) * canvasW * 0.6,
+        cy + (Math.random() - 0.5) * canvasH * 0.6
+      );
+      particle.setDepth(600);
+
+      const targetX = particle.x + Math.cos(angle) * speed * 80;
+      const targetY = particle.y + Math.sin(angle) * speed * 80;
+
+      this.tweens.add({
+        targets: particle,
+        x: targetX,
+        y: targetY,
+        alpha: 0,
+        rotation: Math.PI * 4,
+        scaleX: 0,
+        scaleY: 0,
+        duration: 800 + Math.random() * 500,
+        ease: 'Quad.easeOut',
+        onComplete: () => particle.destroy()
+      });
+
+      this.sparkleParticles.push(particle);
+    }
+  }
+
+  resize(state) {
+    this.state = state;
+    this.updateLayout();
+    this.drawRevealLayer();
+    this.drawGrainOverlay();
+    this.buildDirtLayer();
+  }
+
+  getCellSize() {
+    return this.layout ? this.layout.cellSize : 20;
+  }
+
+  // API method for external hit testing
+  hitTestPixel(px, py) {
+    if (!this.layout) return { gc: -1, gr: -1 };
+    return pixelToGrid(px, py, this.layout);
+  }
+}
+
+/**
+ * Create renderer instance - returns Phaser game and API
+ */
+export function createRenderer(canvas) {
+  let game = null;
+  let scene = null;
+  let lastState = null;
+  let reducedMotion = false;
+
+  const gameConfig = {
+    type: Phaser.AUTO,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 390,
+      height: 844,
+      parent: canvas.parentElement,
+      canvas: canvas
+    },
+    scene: SatisfyingAsmrScene,
+    backgroundColor: '#f0e6d2',
+    transparent: true
+  };
+
+  function init() {
+    game = new Phaser.Game(gameConfig);
+  }
+
+  function getScene() {
+    if (!scene) {
+      scene = game.scene.getScene('SatisfyingAsmrScene');
+    }
+    return scene;
+  }
+
+  function resize(state) {
+    lastState = state;
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.resize(state);
     }
   }
 
   function render(state) {
     lastState = state;
-    renderFrame(state);
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.render(state);
+    }
   }
 
-  /**
-   * Erase dirt cells — updates dirtCanvas in-place.
-   */
+  function buildDirtLayer(cells, w, h) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.buildDirtLayer();
+    }
+  }
+
   function eraseArea(cells, cx, cy, radius, w) {
-    if (!dirtCtx) return;
-    const r = Math.ceil(radius);
-    for (let dy = -r; dy <= r; dy++) {
-      for (let dx = -r; dx <= r; dx++) {
-        if (dx * dx + dy * dy > radius * radius) continue;
-        const gc = cx + dx;
-        const gr = cy + dy;
-        if (gc < 0 || gc >= w || gr < 0 || gr >= gridH) continue;
-        const idx = gr * w + gc;
-        if (cells[idx] === 0) {
-          dirtCtx.clearRect(gc * cellSize, gr * cellSize, cellSize, cellSize);
-        }
-      }
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.eraseArea(cells, cx, cy, radius, w);
     }
   }
 
-  /**
-   * Spawn debris crumbs at the given pixel position (called from game.js on each spray).
-   */
+  function pixelToGridFn(px, py) {
+    const s = getScene();
+    if (!s || !s.layout) return { gc: -1, gr: -1 };
+    return pixelToGrid(px, py, s.layout);
+  }
+
+  function getCellSize() {
+    const s = getScene();
+    return s && s.layout ? s.layout.cellSize : 20;
+  }
+
   function spawnDebris(px, py) {
-    if (reducedMotion) return;
-    const dirtColors = ['#6e4c32', '#8b6045', '#5a3e2b', '#7a5235', '#4a3020'];
-    const count = 4 + Math.floor(Math.random() * 5);
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 0.8 + Math.random() * 2.5;
-      particles.push({
-        x: px + (Math.random() - 0.5) * cellSize,
-        y: py + (Math.random() - 0.5) * cellSize,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 1,
-        life: 0.7 + Math.random() * 0.4,
-        r: 1.5 + Math.random() * 2,
-        color: dirtColors[Math.floor(Math.random() * dirtColors.length)]
-      });
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.spawnDebris(px, py);
     }
-    startLoop();
   }
 
-  /**
-   * Trigger completion sparkle burst (called from game.js on win).
-   */
   function triggerCompletionSparkle() {
-    if (reducedMotion) return;
-    const colors = ['#FFD700', '#FF69B4', '#00FFFF', '#ADFF2F', '#FF6347', '#DDA0DD', '#FFE66D'];
-    const cx = canvasW / 2;
-    const cy = canvasH / 2;
-    // Central burst
-    for (let i = 0; i < 60; i++) {
-      const angle = (i / 60) * Math.PI * 2 + Math.random() * 0.2;
-      const speed = 1 + Math.random() * 4;
-      sparkles.push({
-        x: cx + (Math.random() - 0.5) * canvasW * 0.6,
-        y: cy + (Math.random() - 0.5) * canvasH * 0.6,
-        angle,
-        speed,
-        life: 0.6 + Math.random() * 0.5,
-        r: 3 + Math.random() * 4,
-        color: colors[Math.floor(Math.random() * colors.length)]
-      });
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.triggerCompletionSparkle();
     }
-    startLoop();
   }
 
-  /**
-   * Convert canvas pixel coordinates to grid cell coords.
-   */
-  function pixelToGrid(px, py) {
-    return {
-      gc: Math.floor(px / cellSize),
-      gr: Math.floor(py / cellSize)
-    };
+  function setReducedMotion(value) {
+    reducedMotion = value;
+    const s = getScene();
+    if (s) {
+      s.setReducedMotion(value);
+    }
   }
 
-  function setReducedMotion(v) { reducedMotion = v; }
+  function setCallbacks({ onSpray }) {
+    const s = getScene();
+    if (s) {
+      s.onSpray = onSpray;
+    }
+  }
+
+  // Initialize the game
+  init();
 
   return {
     resize,
     render,
     buildDirtLayer,
     eraseArea,
-    pixelToGrid,
-    getCellSize: () => cellSize,
+    pixelToGrid: pixelToGridFn,
+    getCellSize,
     spawnDebris,
     triggerCompletionSparkle,
-    setReducedMotion
+    setReducedMotion,
+    setCallbacks
   };
 }
 
-export default { createRenderer };
+export default {
+  createRenderer,
+  calculateLayout,
+  pixelToGrid
+};

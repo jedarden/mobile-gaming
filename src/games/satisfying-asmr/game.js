@@ -9,7 +9,6 @@ import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
-import { createInput } from './input.js';
 
 const GAME_ID = 'satisfying-asmr';
 const LEVELS_URL = './levels.json';
@@ -34,9 +33,6 @@ class SatisfyingGame {
     this.currentLevelIndex = 0;
     this.state = null;
     this.renderer = null;
-    this.input = null;
-    this.rafId = null;
-    this.dirty = false; // needs re-render
 
     this.handleResize = this.handleResize.bind(this);
   }
@@ -47,17 +43,17 @@ class SatisfyingGame {
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
 
+    const stats = getGameStats(GAME_ID);
+    this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
+
+    // Create renderer (Phaser game initializes here)
     this.renderer = createRenderer(this.canvas);
     this.renderer.setReducedMotion(isReducedMotionEnabled());
 
-    this.input = createInput({
-      canvas: this.canvas,
+    // Set up spray callback for Phaser scene
+    this.renderer.setCallbacks({
       onSpray: (px, py) => this.handleSpray(px, py)
     });
-    this.input.init();
-
-    const stats = getGameStats(GAME_ID);
-    this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
 
     window.addEventListener('resize', this.handleResize);
     this.setupButtons();
@@ -97,10 +93,13 @@ class SatisfyingGame {
     if (index !== this.currentLevelIndex) this.levelRetries = 0;
     this.currentLevelIndex = index;
     const level = this.levels[index];
+
+    // Create state BEFORE renderer init (Phaser scene needs state)
     this.state = createInitialState(level);
-    this.handleResize();
-    // Build initial dirt layer
-    this.renderer.buildDirtLayer(this.state.cells, this.state.width, this.state.height);
+
+    // Resize renderer (builds reveal layer, grain, and dirt)
+    this.renderer.resize(this.state);
+
     this.updateUI();
     this.renderer.render(this.state);
     announce(`Level ${index + 1}. Clean the surface by spraying dirty areas.`);
@@ -122,12 +121,12 @@ class SatisfyingGame {
     this.renderer.eraseArea(this.state.cells, gc, gr, SPRAY_RADIUS, this.state.width);
     this.renderer.render(this.state);
     haptic('tap');
-    if (this.renderer.spawnDebris) this.renderer.spawnDebris(px, py);
+    this.renderer.spawnDebris(px, py);
     this.updateUI();
 
     if (isComplete(this.state)) {
       haptic('win');
-      if (this.renderer.triggerCompletionSparkle) this.renderer.triggerCompletionSparkle();
+      this.renderer.triggerCompletionSparkle();
       setTimeout(() => this.handleWin(), 800);
     }
   }
@@ -146,7 +145,6 @@ class SatisfyingGame {
   handleResize() {
     if (this.state && this.renderer) {
       this.renderer.resize(this.state);
-      this.renderer.buildDirtLayer(this.state.cells, this.state.width, this.state.height);
       this.renderer.render(this.state);
     }
   }
