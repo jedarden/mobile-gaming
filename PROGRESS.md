@@ -12,8 +12,8 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 3. ✅ **Save the Character** — Complete
 4. ✅ **Parking Escape** — Complete
 5. ✅ **Satisfying ASMR** — Complete
-6. ⏳ **Pull the Pin** — Next
-7. ⏳ **Shared utilities cleanup**
+6. ✅ **Pull the Pin** — Complete
+7. ⏳ **Shared utilities cleanup** — Next
 
 ---
 
@@ -172,9 +172,42 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ---
 
+### Pull the Pin ✅
+
+**Commit:** `4d49993`
+
+**Changes:**
+- `renderer.js`: Replaced Canvas 2D with Phaser.Game and Phaser.Scene
+  - Created `PullThePinScene` class extending Phaser.Scene
+  - Converted Canvas 2D draw calls to Phaser Graphics objects
+  - Preserved background gradient with dot grid for spatial reference
+  - Preserved channel walls with shadow and highlight depth
+  - Preserved cup scale-pop animation on ball capture using elastic easing
+  - Preserved ball rendering with 3D shading (gradient, specular, edge gloss)
+  - Preserved pin rendering with metallic gradient and pull handle
+  - Preserved pin removal ripple animation using Phaser Tweens
+  - Preserved confetti particle burst on level complete using Phaser Tweens
+  - Preserved hint pin pulsing glow animation
+  - Extracted hit-testing utility (`hitTestPin`, `getPinAtPosition`) as pure functions
+
+- `input.js`: Simplified for Phaser pointer events
+  - Input handling now done by Phaser scene's pointer events
+  - Added `createInput` function for Phaser callback wiring
+  - Kept `createInputHandler` for backward compatibility with tests
+
+- `game.js`: Refactored for Phaser Scene lifecycle
+  - Initialize renderer with state for Phaser scene init
+  - Use `createInput` for Phaser callback wiring
+  - Physics simulation remains in state.js (not using Matter.js - custom physics)
+  - Call `input.init()` after renderer is ready
+
+**Tests:** All 5573 tests pass
+
+---
+
 ## In Progress
 
-*None yet - next iteration will migrate Pull the Pin*
+*None yet - next iteration will do shared utilities cleanup*
 
 ---
 
