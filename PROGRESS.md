@@ -9,8 +9,8 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 1. ✅ **Water Sort** — Complete
 2. ✅ **Brain Teaser** — Complete
-3. ⏳ **Save the Character** — Next
-4. ⏳ **Parking Escape**
+3. ✅ **Save the Character** — Complete
+4. ⏳ **Parking Escape** — Next
 5. ⏳ **Satisfying ASMR**
 6. ⏳ **Pull the Pin**
 7. ⏳ **Shared utilities cleanup**
@@ -75,9 +75,43 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ---
 
+### Save the Character ✅
+
+**Commit:** `234fee1`
+
+**Changes:**
+- `renderer.js`: Replaced Canvas 2D with Phaser.Game and Phaser.Scene
+  - Created `SaveTheCharacterScene` class extending Phaser.Scene
+  - Converted Canvas 2D draw calls to Phaser Graphics objects
+  - Preserved sketch-style character with expressions (happy, shocked, scared, worried)
+  - Preserved sketchy wobble strokes for hand-drawn feel
+  - Preserved parchment/sketch background with dynamic sky colors based on outcome
+  - Preserved tactile buttons with press-down scale, bounce, color flash
+  - Preserved win sparkle / lose shake particle burst using Phaser ParticleEmitter
+  - Extracted hit-testing utility (`getChoiceAtPosition`) as pure function
+  - Extracted layout utility (`calculateLayout`) as pure function
+
+- `input.js`: Simplified for Phaser pointer events
+  - Input handling now done by Phaser scene's pointer events
+  - Kept `getChoiceAt` helper for testing and compatibility
+
+- `game.js`: Refactored for Phaser Scene lifecycle
+  - Removed manual requestAnimationFrame loop
+  - Use Phaser scene callbacks for animation completion
+  - Keep state machine logic (level loading, choice selection, win/lose)
+  - Initialize state before renderer for Phaser scene init
+
+- `tests/unit/save-the-character-input.test.js`: Updated for new architecture
+  - Mock renderer.js module to avoid Phaser import in Node.js
+  - Test API compatibility and getChoiceAt helper
+
+**Tests:** All 5573 tests pass
+
+---
+
 ## In Progress
 
-*None yet - next iteration will migrate Save the Character*
+*None yet - next iteration will migrate Parking Escape*
 
 ---
 
