@@ -1,8 +1,7 @@
 /**
- * Save the Character - Canvas Renderer (polished)
+ * Save the Character - Phaser Renderer
  *
- * Visual improvements:
- * - Parchment/sketch background with hand-drawn feel
+ * Migrated from Canvas 2D to Phaser 3:
  * - Character with animated expressions (fear, relief, distress)
  * - Sketchy wobble strokes for character and scene elements
  * - Tactile buttons with press-down scale, bounce, color flash
@@ -10,10 +9,11 @@
  * - Warm color palette for saved state, muted for danger state
  */
 
+import Phaser from 'phaser';
 import { isChoosing, isAnimating, isWon, isLost, getScenarioTitle, getThreat, getChoices } from './state.js';
 
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 600;
+const CANVAS_WIDTH = 390;
+const CANVAS_HEIGHT = 844;
 const CHOICE_BUTTON_HEIGHT = 60;
 const CHOICE_MARGIN = 12;
 
@@ -35,584 +35,745 @@ const COLORS = {
   ground:       '#8fba6e'
 };
 
+// Pure layout functions (exported for input.js hit-testing)
+export function calculateLayout(width, height, scale) {
+  return {
+    buttonWidth: width - 40 * scale,
+    buttonHeight: CHOICE_BUTTON_HEIGHT * scale,
+    buttonSpacing: CHOICE_BUTTON_HEIGHT * scale + CHOICE_MARGIN * scale,
+    choiceStartY: height - 260 * scale,
+    groundY: height * 0.60,
+    characterX: width * 0.38,
+    threatX: width * 0.70
+  };
+}
+
+export function getChoiceAtPosition(canvasX, canvasY, state, width, height, scale) {
+  if (!isChoosing(state)) return null;
+
+  const choices = getChoices(state);
+  const layout = calculateLayout(width, height, scale);
+  const buttonX = (width - layout.buttonWidth) / 2;
+
+  for (let i = 0; i < choices.length; i++) {
+    const buttonY = layout.choiceStartY + i * layout.buttonSpacing;
+
+    if (
+      canvasX >= buttonX &&
+      canvasX <= buttonX + layout.buttonWidth &&
+      canvasY >= buttonY &&
+      canvasY <= buttonY + layout.buttonHeight
+    ) {
+      return i;
+    }
+  }
+  return null;
+}
+
 function wobble(seed, amp = 1.5) {
   return (Math.sin(seed * 127.1 + 311.7) * amp);
 }
 
-export function createRenderer(canvas) {
-  const ctx = canvas.getContext('2d');
-  let width = 0;
-  let height = 0;
-  let scale = 1;
-  let reducedMotion = false;
-  let animationProgress = 0;
-  let hoveredChoice = null;
+/**
+ * Save the Character Phaser Scene
+ */
+class SaveTheCharacterScene extends Phaser.Scene {
+  constructor() {
+    super('SaveTheCharacterScene');
+  }
 
-  // Button press state: { index, startTime }
-  let pressedChoice = null;
+  init(data) {
+    this.state = data.state;
+    this.callbacks = data.callbacks || {};
+    this.animationProgress = 0;
+    this.hoveredChoice = null;
+    this.pressedChoice = null;
+    this.reducedMotion = data.reducedMotion || false;
+  }
 
-  // Particles for win/lose
-  const particles = [];
-  let rafId = null;
-  let lastState = null;
+  create() {
+    // Scale dimensions
+    this.scaleWidth = this.scale.width;
+    this.scaleHeight = this.scale.height;
+    this.gameScale = Math.min(this.scaleWidth / CANVAS_WIDTH, this.scaleHeight / CANVAS_HEIGHT, 1);
 
-  function now() { return performance.now(); }
+    // Graphics layers
+    this.backgroundGraphics = this.add.graphics();
+    this.characterGraphics = this.add.graphics();
+    this.uiGraphics = this.add.graphics();
 
-  // ── Animation loop ──────────────────────────────────────────────────────────
-  function startLoop() {
-    if (rafId) return;
-    function tick() {
-      updateParticles();
-      if (lastState) renderFrame(lastState);
-      if (particles.length > 0) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        rafId = null;
+    // Container for choice buttons (for easy interaction)
+    this.choiceContainer = this.add.container(0, 0);
+
+    // Text objects
+    this.titleText = this.add.text(this.scaleWidth / 2, 30 * this.gameScale, '', {
+      fontFamily: SKETCH_FONT,
+      fontSize: `${22 * this.gameScale}px`,
+      fontStyle: 'bold',
+      color: COLORS.pencil
+    }).setOrigin(0.5, 0);
+
+    this.threatText = this.add.text(this.scaleWidth / 2, 55 * this.gameScale + 30 * this.gameScale, '', {
+      fontFamily: SKETCH_FONT,
+      fontSize: `${13 * this.gameScale}px`,
+      color: COLORS.threat,
+      wordWrap: { width: this.scaleWidth - 40 * this.gameScale },
+      align: 'center'
+    }).setOrigin(0.5, 0);
+
+    this.resultText = this.add.text(this.scaleWidth / 2, this.scaleHeight - 260 * this.gameScale + 30 * this.gameScale, '', {
+      fontFamily: SKETCH_FONT,
+      fontSize: `${28 * this.gameScale}px`,
+      fontStyle: 'bold',
+      color: COLORS.correct
+    }).setOrigin(0.5, 0.5);
+
+    // Particle emitter for effects
+    this.createParticleEmitter();
+
+    // Input handling
+    this.input.on('pointerdown', this.handlePointerDown, this);
+    this.input.on('pointermove', this.handlePointerMove, this);
+
+    // Animation state
+    this.threatPulseTime = 0;
+
+    // Initial render
+    this.renderState();
+  }
+
+  createParticleEmitter() {
+    // Create particle texture dynamically
+    const particleKey = 'particle';
+    if (!this.textures.exists(particleKey)) {
+      const graphics = this.make.graphics({ add: false });
+      graphics.fillStyle(0xffffff);
+      graphics.fillCircle(4, 4, 4);
+      graphics.generateTexture(particleKey, 8, 8);
+      graphics.destroy();
+    }
+
+    // Win particles (confetti)
+    this.winEmitter = this.add.particles(0, 0, particleKey, {
+      speed: { min: 100, max: 300 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.8, end: 0.1 },
+      lifespan: 1500,
+      gravityY: 150,
+      quantity: 0,
+      emitting: false,
+      tint: [0xFFD700, 0xFF69B4, 0x00FFFF, 0xADFF2F, 0xFFE66D, 0xFF8C69]
+    });
+
+    // Lose particles (red burst)
+    this.loseEmitter = this.add.particles(0, 0, particleKey, {
+      speed: { min: 80, max: 180 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.6, end: 0.1 },
+      lifespan: 1000,
+      gravityY: 50,
+      quantity: 0,
+      emitting: false,
+      tint: 0xef4444
+    });
+  }
+
+  update(time, delta) {
+    this.threatPulseTime = time;
+
+    // Handle animation progress
+    if (isAnimating(this.state) && this.animationStartTime) {
+      const elapsed = time - this.animationStartTime;
+      this.animationProgress = Math.min(elapsed / 800, 1);
+      this.renderState();
+
+      if (this.animationProgress >= 1 && this.callbacks.onAnimationComplete) {
+        this.callbacks.onAnimationComplete();
       }
     }
-    rafId = requestAnimationFrame(tick);
-  }
 
-  function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.2;
-      p.vx *= 0.94;
-      p.life -= p.decay;
-      if (p.life <= 0) particles.splice(i, 1);
+    // Always update visuals during choosing (threat pulse)
+    if (isChoosing(this.state)) {
+      this.renderState();
     }
   }
 
-  function spawnWinBurst() {
-    if (reducedMotion) return;
-    const cx = width / 2;
-    const cy = height * 0.4;
-    const colors = ['#FFD700', '#FF69B4', '#00FFFF', '#ADFF2F', '#FFE66D', '#FF8C69'];
-    for (let i = 0; i < 50; i++) {
-      const angle = (i / 50) * Math.PI * 2 + Math.random() * 0.3;
-      const speed = 2 + Math.random() * 4;
-      particles.push({
-        x: cx + (Math.random() - 0.5) * 60 * scale,
-        y: cy + (Math.random() - 0.5) * 40 * scale,
-        vx: Math.cos(angle) * speed * scale,
-        vy: Math.sin(angle) * speed * scale - 2 * scale,
-        life: 0.8 + Math.random() * 0.4,
-        decay: 0.022 + Math.random() * 0.01,
-        r: (2 + Math.random() * 3) * scale,
-        color: colors[Math.floor(Math.random() * colors.length)]
+  setState(state) {
+    this.state = state;
+    this.animationProgress = 0;
+    this.animationStartTime = null;
+    this.hoveredChoice = null;
+    this.pressedChoice = null;
+    this.renderState();
+  }
+
+  setAnimationProgress(progress) {
+    this.animationProgress = progress;
+    this.renderState();
+  }
+
+  setHoveredChoice(index) {
+    this.hoveredChoice = index;
+    this.renderState();
+  }
+
+  setPressedChoice(index) {
+    this.pressedChoice = index;
+    if (index !== null) {
+      // Animate press
+      this.time.delayedCall(200, () => {
+        this.pressedChoice = null;
+        this.renderState();
       });
     }
-    startLoop();
+    this.renderState();
   }
 
-  function spawnLoseBurst() {
-    if (reducedMotion) return;
-    const cx = width / 2;
-    const cy = height * 0.4;
-    for (let i = 0; i < 25; i++) {
-      const angle = (i / 25) * Math.PI * 2;
-      const speed = 1 + Math.random() * 2.5;
-      particles.push({
-        x: cx,
-        y: cy,
-        vx: Math.cos(angle) * speed * scale,
-        vy: Math.sin(angle) * speed * scale,
-        life: 0.6 + Math.random() * 0.3,
-        decay: 0.03,
-        r: (2 + Math.random() * 2) * scale,
-        color: '#ef4444'
-      });
-    }
-    startLoop();
+  triggerWinEffect() {
+    if (this.reducedMotion) return;
+    this.winEmitter.setPosition(this.scaleWidth / 2, this.scaleHeight * 0.4);
+    this.winEmitter.explode(50);
   }
 
-  // ── Resize ─────────────────────────────────────────────────────────────────
-  function resize() {
-    const container = canvas.parentElement;
-    const containerRect = container.getBoundingClientRect();
+  triggerLoseEffect() {
+    if (this.reducedMotion) return;
+    this.loseEmitter.setPosition(this.scaleWidth / 2, this.scaleHeight * 0.4);
+    this.loseEmitter.explode(25);
 
-    scale = Math.min(
-      containerRect.width / CANVAS_WIDTH,
-      containerRect.height / CANVAS_HEIGHT,
-      1
+    // Shake effect
+    this.cameras.main.shake(200, 0.01);
+  }
+
+  startAnimation() {
+    this.animationStartTime = this.time.now;
+  }
+
+  handlePointerDown(pointer) {
+    if (!this.state || !isChoosing(this.state)) return;
+
+    const choiceIndex = getChoiceAtPosition(
+      pointer.x, pointer.y, this.state,
+      this.scaleWidth, this.scaleHeight, this.gameScale
     );
 
-    width = CANVAS_WIDTH * scale;
-    height = CANVAS_HEIGHT * scale;
-
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-
-    ctx.scale(dpr, dpr);
+    if (choiceIndex !== null && this.callbacks.onChoiceSelect) {
+      this.setPressedChoice(choiceIndex);
+      this.callbacks.onChoiceSelect(choiceIndex);
+    }
   }
 
-  // ── Background ─────────────────────────────────────────────────────────────
-  function drawBackground(state) {
-    const isGood = isWon(state);
-    const isBad = isLost(state);
+  handlePointerMove(pointer) {
+    if (!this.state || !isChoosing(this.state)) return;
 
-    // Sky: warm/cool based on outcome
-    const skyTop = isGood ? '#ffe4b5' : isBad ? '#4a2020' : '#c8dff0';
-    const skyBot = isGood ? '#fff9e6' : isBad ? '#2a1010' : '#e8f0fa';
-    const bg = ctx.createLinearGradient(0, 0, 0, height * 0.65);
-    bg.addColorStop(0, skyTop);
-    bg.addColorStop(1, skyBot);
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, width, height);
+    const choiceIndex = getChoiceAtPosition(
+      pointer.x, pointer.y, this.state,
+      this.scaleWidth, this.scaleHeight, this.gameScale
+    );
 
-    // Ground strip
-    ctx.fillStyle = isGood ? '#7ac46a' : isBad ? '#4a3020' : COLORS.ground;
-    ctx.fillRect(0, height * 0.62, width, height * 0.38);
+    if (choiceIndex !== this.hoveredChoice) {
+      this.hoveredChoice = choiceIndex;
+      if (this.callbacks.onChoiceHover) {
+        this.callbacks.onChoiceHover(choiceIndex);
+      }
+      this.renderState();
+    }
+  }
+
+  setCallbacks(callbacks) {
+    this.callbacks = callbacks;
+  }
+
+  renderState() {
+    if (!this.state) return;
+
+    this.drawBackground();
+    this.drawCharacter();
+    this.drawThreatVisual();
+    this.drawTexts();
+    this.drawChoices();
+  }
+
+  drawBackground() {
+    const g = this.backgroundGraphics;
+    g.clear();
+
+    const isGood = isWon(this.state);
+    const isBad = isLost(this.state);
+
+    // Sky gradient (Phaser doesn't have built-in gradient, so we draw rectangles)
+    const skyTop = Phaser.Display.Color.HexStringToColor(isGood ? '#ffe4b5' : isBad ? '#4a2020' : '#c8dff0');
+    const skyBot = Phaser.Display.Color.HexStringToColor(isGood ? '#fff9e6' : isBad ? '#2a1010' : '#e8f0fa');
+
+    const skyHeight = this.scaleHeight * 0.65;
+    const steps = 10;
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps;
+      const color = Phaser.Display.Color.Interpolate.ColorWithColor(skyTop, skyBot, steps, i);
+      g.fillStyle(Phaser.Display.Color.GetColor(color.r, color.g, color.b));
+      g.fillRect(0, (skyHeight / steps) * i, this.scaleWidth, skyHeight / steps + 1);
+    }
+
+    // Ground
+    const groundColor = isGood ? 0x7ac46a : isBad ? 0x4a3020 : Phaser.Display.Color.HexStringToColor(COLORS.ground).color;
+    g.fillStyle(groundColor);
+    g.fillRect(0, this.scaleHeight * 0.62, this.scaleWidth, this.scaleHeight * 0.38);
 
     // Ground line (sketchy)
-    sketchLine(0, height * 0.62, width, height * 0.62, 1.5 * scale, COLORS.pencilLight);
+    this.drawSketchLine(0, this.scaleHeight * 0.62, this.scaleWidth, this.scaleHeight * 0.62, 1.5 * this.gameScale, COLORS.pencilLight);
 
-    // Parchment overlay at bottom for UI area
-    const paperGrad = ctx.createLinearGradient(0, height * 0.55, 0, height);
-    paperGrad.addColorStop(0, 'rgba(253,246,227,0)');
-    paperGrad.addColorStop(0.3, 'rgba(253,246,227,0.92)');
-    paperGrad.addColorStop(1, COLORS.parchment);
-    ctx.fillStyle = paperGrad;
-    ctx.fillRect(0, height * 0.55, width, height * 0.45);
+    // Parchment overlay at bottom
+    for (let i = 0; i < steps; i++) {
+      const y = this.scaleHeight * 0.55 + (this.scaleHeight * 0.45 / steps) * i;
+      const alpha = i / steps;
+      const alphaHex = Math.floor(alpha * 0.92 * 255).toString(16).padStart(2, '0');
+      const color = Phaser.Display.Color.HexStringToColor(COLORS.parchment + alphaHex);
+      g.fillStyle(color.color, alpha * 0.92);
+      g.fillRect(0, y, this.scaleWidth, this.scaleHeight * 0.45 / steps + 1);
+    }
   }
 
-  // ── Sketchy line helper ────────────────────────────────────────────────────
-  function sketchLine(x1, y1, x2, y2, lineWidth, color) {
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    // Slightly wobbly midpoint
-    const mx = (x1 + x2) / 2 + wobble((x1 + y1) * 0.01) * scale;
-    const my = (y1 + y2) / 2 + wobble((x2 + y2) * 0.01) * scale;
-    ctx.moveTo(x1 + wobble(x1 * 0.1) * 0.5, y1 + wobble(y1 * 0.1) * 0.5);
-    ctx.quadraticCurveTo(mx, my, x2 + wobble(x2 * 0.07) * 0.5, y2 + wobble(y2 * 0.07) * 0.5);
-    ctx.stroke();
-    ctx.restore();
+  drawSketchLine(x1, y1, x2, y2, lineWidth, color) {
+    const g = this.backgroundGraphics;
+    g.lineStyle(lineWidth, Phaser.Display.Color.HexStringToColor(color).color);
+
+    const mx = (x1 + x2) / 2 + wobble((x1 + y1) * 0.01) * this.gameScale;
+    const my = (y1 + y2) / 2 + wobble((x2 + y2) * 0.01) * this.gameScale;
+
+    g.beginPath();
+    g.moveTo(x1 + wobble(x1 * 0.1) * 0.5, y1 + wobble(y1 * 0.1) * 0.5);
+    g.lineTo(mx, my);
+    g.lineTo(x2 + wobble(x2 * 0.07) * 0.5, y2 + wobble(y2 * 0.07) * 0.5);
+    g.strokePath();
   }
 
-  // ── Character ──────────────────────────────────────────────────────────────
-  function drawCharacter(state) {
-    const cx = width * 0.38;
-    const groundY = height * 0.60;
-    const s = scale;
+  drawCharacter() {
+    const g = this.characterGraphics;
+    g.clear();
 
-    const expression = isWon(state) ? 'happy'
-      : isLost(state) ? 'shocked'
-      : (isAnimating(state) && state.selectedChoice && !state.selectedChoice.correct) ? 'scared'
+    const s = this.gameScale;
+    const layout = calculateLayout(this.scaleWidth, this.scaleHeight, s);
+    const cx = layout.characterX;
+    const groundY = layout.groundY;
+
+    const expression = isWon(this.state) ? 'happy'
+      : isLost(this.state) ? 'shocked'
+      : (isAnimating(this.state) && this.state.selectedChoice && !this.state.selectedChoice.correct) ? 'scared'
       : 'worried';
 
-    ctx.save();
-    ctx.strokeStyle = COLORS.character;
-    ctx.lineWidth = 3 * s;
-    ctx.lineCap = 'round';
+    const color = Phaser.Display.Color.HexStringToColor(COLORS.character).color;
+    g.lineStyle(3 * s, color);
+    g.fillStyle(0xf9d094);
 
     // Legs
-    sketchLine(cx, groundY - 5 * s, cx - 14 * s, groundY + 5 * s, 2.5 * s, COLORS.character);
-    sketchLine(cx, groundY - 5 * s, cx + 14 * s, groundY + 5 * s, 2.5 * s, COLORS.character);
+    this.drawCharacterLine(g, cx, groundY - 5 * s, cx - 14 * s, groundY + 5 * s, 2.5 * s, color);
+    this.drawCharacterLine(g, cx, groundY - 5 * s, cx + 14 * s, groundY + 5 * s, 2.5 * s, color);
 
     // Body
-    sketchLine(cx, groundY - 35 * s, cx, groundY - 5 * s, 3 * s, COLORS.character);
+    this.drawCharacterLine(g, cx, groundY - 35 * s, cx, groundY - 5 * s, 3 * s, color);
 
     // Arms based on expression
     if (expression === 'happy') {
-      // Arms up in celebration
-      sketchLine(cx, groundY - 28 * s, cx - 22 * s, groundY - 48 * s, 2.5 * s, COLORS.character);
-      sketchLine(cx, groundY - 28 * s, cx + 22 * s, groundY - 48 * s, 2.5 * s, COLORS.character);
+      this.drawCharacterLine(g, cx, groundY - 28 * s, cx - 22 * s, groundY - 48 * s, 2.5 * s, color);
+      this.drawCharacterLine(g, cx, groundY - 28 * s, cx + 22 * s, groundY - 48 * s, 2.5 * s, color);
     } else if (expression === 'shocked') {
-      // Arms straight out in shock
-      sketchLine(cx, groundY - 28 * s, cx - 26 * s, groundY - 20 * s, 2.5 * s, COLORS.character);
-      sketchLine(cx, groundY - 28 * s, cx + 26 * s, groundY - 20 * s, 2.5 * s, COLORS.character);
+      this.drawCharacterLine(g, cx, groundY - 28 * s, cx - 26 * s, groundY - 20 * s, 2.5 * s, color);
+      this.drawCharacterLine(g, cx, groundY - 28 * s, cx + 26 * s, groundY - 20 * s, 2.5 * s, color);
     } else {
-      // Arms raised in worry/fear
-      sketchLine(cx, groundY - 28 * s, cx - 20 * s, groundY - 42 * s, 2.5 * s, COLORS.character);
-      sketchLine(cx, groundY - 28 * s, cx + 18 * s, groundY - 46 * s, 2.5 * s, COLORS.character);
+      this.drawCharacterLine(g, cx, groundY - 28 * s, cx - 20 * s, groundY - 42 * s, 2.5 * s, color);
+      this.drawCharacterLine(g, cx, groundY - 28 * s, cx + 18 * s, groundY - 46 * s, 2.5 * s, color);
     }
 
     // Head
-    ctx.beginPath();
-    ctx.arc(cx, groundY - 50 * s, 15 * s, 0, Math.PI * 2);
-    ctx.strokeStyle = COLORS.character;
-    ctx.lineWidth = 2.5 * s;
-    ctx.stroke();
+    g.lineStyle(2.5 * s, color);
+    g.fillStyle(0xf9d094);
+    g.fillCircle(cx, groundY - 50 * s, 15 * s);
+    g.strokeCircle(cx, groundY - 50 * s, 15 * s);
 
-    // Face fill
-    ctx.fillStyle = '#f9d094';
-    ctx.fill();
-
-    // Expression elements
-    drawFace(ctx, cx, groundY - 50 * s, s, expression);
-
-    ctx.restore();
+    // Face
+    this.drawFace(g, cx, groundY - 50 * s, s, expression);
   }
 
-  function drawFace(ctx, cx, cy, s, expression) {
-    ctx.save();
-    ctx.fillStyle = COLORS.pencil;
+  drawCharacterLine(g, x1, y1, x2, y2, lineWidth, color) {
+    g.lineStyle(lineWidth, color);
+    g.beginPath();
+    g.moveTo(x1 + wobble(x1 * 0.05) * this.gameScale * 0.3, y1 + wobble(y1 * 0.05) * this.gameScale * 0.3);
+    g.lineTo(x2 + wobble(x2 * 0.05) * this.gameScale * 0.3, y2 + wobble(y2 * 0.05) * this.gameScale * 0.3);
+    g.strokePath();
+  }
+
+  drawFace(g, cx, cy, s, expression) {
+    const pencilColor = Phaser.Display.Color.HexStringToColor(COLORS.pencil).color;
+    g.fillStyle(pencilColor);
+    g.lineStyle(1.5 * s, pencilColor);
 
     // Eyes
     if (expression === 'happy') {
       // Happy arcs
-      ctx.strokeStyle = COLORS.pencil;
-      ctx.lineWidth = 1.5 * s;
-      ctx.beginPath();
-      ctx.arc(cx - 5 * s, cy - 2 * s, 3.5 * s, Math.PI, 0);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx + 5 * s, cy - 2 * s, 3.5 * s, Math.PI, 0);
-      ctx.stroke();
+      g.beginPath();
+      g.arc(cx - 5 * s, cy - 2 * s, 3.5 * s, Math.PI, 0);
+      g.strokePath();
+      g.beginPath();
+      g.arc(cx + 5 * s, cy - 2 * s, 3.5 * s, Math.PI, 0);
+      g.strokePath();
     } else if (expression === 'shocked') {
       // Wide O eyes
-      ctx.beginPath();
-      ctx.arc(cx - 5 * s, cy - 1 * s, 3.5 * s, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(cx + 5 * s, cy - 1 * s, 3.5 * s, 0, Math.PI * 2);
-      ctx.fill();
+      g.fillCircle(cx - 5 * s, cy - 1 * s, 3.5 * s);
+      g.fillCircle(cx + 5 * s, cy - 1 * s, 3.5 * s);
     } else {
       // Small worried dots
-      ctx.beginPath();
-      ctx.arc(cx - 5 * s, cy - 1 * s, 2.5 * s, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(cx + 5 * s, cy - 1 * s, 2.5 * s, 0, Math.PI * 2);
-      ctx.fill();
+      g.fillCircle(cx - 5 * s, cy - 1 * s, 2.5 * s);
+      g.fillCircle(cx + 5 * s, cy - 1 * s, 2.5 * s);
     }
 
     // Mouth
-    ctx.strokeStyle = COLORS.pencil;
-    ctx.lineWidth = 1.5 * s;
-    ctx.lineCap = 'round';
     if (expression === 'happy') {
-      ctx.beginPath();
-      ctx.arc(cx, cy + 4 * s, 5 * s, 0.1, Math.PI - 0.1);
-      ctx.stroke();
+      g.beginPath();
+      g.arc(cx, cy + 4 * s, 5 * s, 0.1, Math.PI - 0.1);
+      g.strokePath();
     } else if (expression === 'shocked') {
-      ctx.beginPath();
-      ctx.arc(cx, cy + 5 * s, 4 * s, 0, Math.PI * 2);
-      ctx.stroke();
+      g.beginPath();
+      g.arc(cx, cy + 5 * s, 4 * s, 0, Math.PI * 2);
+      g.strokePath();
     } else {
       // Worried frown
-      ctx.beginPath();
-      ctx.arc(cx, cy + 9 * s, 5 * s, Math.PI + 0.2, -0.2);
-      ctx.stroke();
+      g.beginPath();
+      g.arc(cx, cy + 9 * s, 5 * s, Math.PI + 0.2, -0.2);
+      g.strokePath();
     }
-
-    ctx.restore();
   }
 
-  // ── Threat visualization ───────────────────────────────────────────────────
-  function drawThreatVisual(state) {
-    if (isWon(state)) return;
+  drawThreatVisual() {
+    if (isWon(this.state)) return;
 
-    const threatX = width * 0.70;
-    const groundY = height * 0.60;
-    const s = scale;
+    const g = this.backgroundGraphics;
+    const s = this.gameScale;
+    const layout = calculateLayout(this.scaleWidth, this.scaleHeight, s);
+    const threatX = layout.threatX;
+    const groundY = layout.groundY;
 
-    // Pulsing danger triangle (sketch style)
-    const pulse = isLost(state) ? 0 : 0.5 + Math.sin(now() * 0.005) * 0.5;
+    const pulse = isLost(this.state) ? 0 : 0.5 + Math.sin(this.threatPulseTime * 0.005) * 0.5;
     const triSize = (30 + pulse * 6) * s;
 
-    ctx.save();
-    ctx.strokeStyle = COLORS.threat;
-    ctx.fillStyle = `rgba(217,79,59,${0.15 + pulse * 0.1})`;
-    ctx.lineWidth = 2.5 * s;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    const threatColor = Phaser.Display.Color.HexStringToColor(COLORS.threat).color;
+    g.lineStyle(2.5 * s, threatColor);
+    g.fillStyle(threatColor, 0.15 + pulse * 0.1);
+
+    const tx = threatX;
+    const ty = groundY - 55 * s;
 
     // Sketchy triangle
-    const tx = threatX, ty = groundY - 55 * s;
-    ctx.beginPath();
-    ctx.moveTo(tx + wobble(1) * s, ty - triSize * 0.6);
-    ctx.lineTo(tx + triSize * 0.65 + wobble(2) * s, ty + triSize * 0.4);
-    ctx.lineTo(tx - triSize * 0.65 + wobble(3) * s, ty + triSize * 0.4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    g.beginPath();
+    g.moveTo(tx + wobble(1) * s, ty - triSize * 0.6);
+    g.lineTo(tx + triSize * 0.65 + wobble(2) * s, ty + triSize * 0.4);
+    g.lineTo(tx - triSize * 0.65 + wobble(3) * s, ty + triSize * 0.4);
+    g.closePath();
+    g.fillPath();
+    g.strokePath();
 
     // Exclamation mark
-    ctx.fillStyle = COLORS.threat;
-    ctx.font = `bold ${18 * s}px ${SKETCH_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('!', tx, ty + 2 * s);
-
-    ctx.restore();
+    if (!this.threatTextObj) {
+      this.threatTextObj = this.add.text(tx, ty + 2 * s, '!', {
+        fontFamily: SKETCH_FONT,
+        fontSize: `${18 * s}px`,
+        fontStyle: 'bold',
+        color: COLORS.threat
+      }).setOrigin(0.5, 0.5);
+    } else {
+      this.threatTextObj.setPosition(tx, ty + 2 * s);
+    }
   }
 
-  // ── Title and text ─────────────────────────────────────────────────────────
-  function drawTitle(title, y) {
-    ctx.save();
-    ctx.fillStyle = COLORS.pencil;
-    ctx.font = `bold ${22 * scale}px ${SKETCH_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText(title, width / 2, y);
-    ctx.restore();
-  }
+  drawTexts() {
+    // Title
+    this.titleText.setText(getScenarioTitle(this.state));
 
-  function drawThreatText(threat, y) {
-    ctx.save();
-    ctx.fillStyle = COLORS.threat;
-    ctx.font = `${13 * scale}px ${SKETCH_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    // Threat text
+    this.threatText.setText(getThreat(this.state));
 
-    const maxWidth = width - 40 * scale;
-    const words = threat.split(' ');
-    let line = '';
-    let lineY = y;
+    // Result text
+    const layout = calculateLayout(this.scaleWidth, this.scaleHeight, this.gameScale);
+    if (isWon(this.state)) {
+      this.resultText
+        .setText('✓ SAVED!')
+        .setColor(COLORS.correct)
+        .setPosition(this.scaleWidth / 2, layout.choiceStartY + 30 * this.gameScale)
+        .setVisible(true);
 
-    words.forEach(word => {
-      const testLine = line + word + ' ';
-      if (ctx.measureText(testLine).width > maxWidth && line !== '') {
-        ctx.fillText(line.trim(), width / 2, lineY);
-        line = word + ' ';
-        lineY += 18 * scale;
-      } else {
-        line = testLine;
+      if (!this.resultSubtext) {
+        this.resultSubtext = this.add.text(this.scaleWidth / 2, layout.choiceStartY + 66 * this.gameScale, '', {
+          fontFamily: SKETCH_FONT,
+          fontSize: `${15 * this.gameScale}px`,
+          color: COLORS.pencilLight
+        }).setOrigin(0.5, 0);
       }
-    });
-    ctx.fillText(line.trim(), width / 2, lineY);
-    ctx.restore();
+      this.resultSubtext.setText('The character survived!').setPosition(this.scaleWidth / 2, layout.choiceStartY + 66 * this.gameScale).setVisible(true);
+    } else if (isLost(this.state)) {
+      this.resultText
+        .setText('✗ GAME OVER')
+        .setColor(COLORS.incorrect)
+        .setPosition(this.scaleWidth / 2, layout.choiceStartY + 30 * this.gameScale)
+        .setVisible(true);
+
+      if (!this.resultSubtext) {
+        this.resultSubtext = this.add.text(this.scaleWidth / 2, layout.choiceStartY + 66 * this.gameScale, '', {
+          fontFamily: SKETCH_FONT,
+          fontSize: `${14 * this.gameScale}px`,
+          color: COLORS.pencilLight
+        }).setOrigin(0.5, 0);
+      }
+      this.resultSubtext.setText('Wrong choice! Try again.').setPosition(this.scaleWidth / 2, layout.choiceStartY + 66 * this.gameScale).setVisible(true);
+    } else {
+      this.resultText.setVisible(false);
+      if (this.resultSubtext) this.resultSubtext.setVisible(false);
+    }
   }
 
-  // ── Buttons ────────────────────────────────────────────────────────────────
-  function getButtonPressScale(index) {
-    if (!pressedChoice || pressedChoice.index !== index) return 1;
-    const elapsed = (now() - pressedChoice.startTime) / 200;
-    if (elapsed >= 1) return 1;
-    // Quick dip to 0.92 then bounce back
-    const t = elapsed < 0.5 ? elapsed * 2 : 2 - elapsed * 2;
-    return 1 - 0.08 * Math.sin(t * Math.PI);
-  }
+  drawChoices() {
+    const g = this.uiGraphics;
+    g.clear();
 
-  function drawChoices(state, startY) {
-    const choices = getChoices(state);
-    const buttonWidth = width - 40 * scale;
-    const buttonSpacing = CHOICE_BUTTON_HEIGHT * scale + CHOICE_MARGIN * scale;
+    const choices = getChoices(this.state);
+    const layout = calculateLayout(this.scaleWidth, this.scaleHeight, this.gameScale);
+    const s = this.gameScale;
 
     choices.forEach((choice, i) => {
-      const buttonY = startY + i * buttonSpacing;
-      const isHovered = hoveredChoice === i;
-      const pressScale = getButtonPressScale(i);
-      drawChoiceButton(choice.label, buttonWidth, buttonY, isHovered, false, null, pressScale);
-    });
-  }
+      const buttonY = layout.choiceStartY + i * layout.buttonSpacing;
+      const buttonX = (this.scaleWidth - layout.buttonWidth) / 2;
 
-  function drawChoiceButton(label, buttonWidth, y, isHovered, isSelected, correct, pressScale = 1) {
-    const buttonHeight = CHOICE_BUTTON_HEIGHT * scale;
-    const buttonX = (width - buttonWidth) / 2;
-    const radius = 10 * scale;
-    const cx = buttonX + buttonWidth / 2;
-    const cy = y + buttonHeight / 2;
+      const isHovered = this.hoveredChoice === i;
+      const isPressed = this.pressedChoice === i;
 
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.scale(pressScale, pressScale);
-    ctx.translate(-cx, -cy);
+      let isSelected = false;
+      let isCorrect = null;
 
-    // Shadow
-    ctx.shadowColor = 'rgba(0,0,0,0.12)';
-    ctx.shadowBlur = isHovered ? 8 : 4;
-    ctx.shadowOffsetY = isHovered ? 3 : 1;
+      if (isAnimating(this.state) && this.state.selectedChoice) {
+        isSelected = this.state.selectedChoice.id === choice.id;
+        if (this.animationProgress > 0.3 && isSelected) {
+          isCorrect = choice.correct;
+        }
+      }
 
-    // Fill
-    let fillColor = COLORS.buttonBase;
-    if (isSelected && correct === true) fillColor = '#d4f7d4';
-    else if (isSelected && correct === false) fillColor = '#fdd4d4';
-    else if (isHovered) fillColor = '#fff3d0';
-
-    ctx.fillStyle = fillColor;
-    ctx.beginPath();
-    ctx.roundRect(buttonX, y, buttonWidth, buttonHeight, radius);
-    ctx.fill();
-
-    // Border (sketchy style — slightly thick)
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.strokeStyle = isSelected
-      ? (correct ? COLORS.correct : COLORS.incorrect)
-      : isHovered ? '#b8a060' : COLORS.buttonBorder;
-    ctx.lineWidth = (isSelected || isHovered) ? 2.5 * scale : 1.5 * scale;
-    ctx.stroke();
-
-    // Label
-    ctx.fillStyle = COLORS.pencil;
-    ctx.font = `${15 * scale}px ${SKETCH_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, cx, cy);
-
-    ctx.restore();
-  }
-
-  function drawAnimatingChoice(state, startY) {
-    const choices = getChoices(state);
-    const buttonWidth = width - 40 * scale;
-    const buttonSpacing = CHOICE_BUTTON_HEIGHT * scale + CHOICE_MARGIN * scale;
-
-    choices.forEach((choice, i) => {
-      const buttonY = startY + i * buttonSpacing;
-      const isSelected = state.selectedChoice && state.selectedChoice.id === choice.id;
-      const revealed = animationProgress > 0.3;
-      drawChoiceButton(
-        choice.label, buttonWidth, buttonY, false,
-        isSelected && revealed, isSelected ? choice.correct : null
+      this.drawChoiceButton(
+        g, choice.label,
+        buttonX, buttonY, layout.buttonWidth, layout.buttonHeight,
+        isHovered, isPressed, isSelected, isCorrect
       );
     });
   }
 
-  // ── Win/Lose results ────────────────────────────────────────────────────────
-  function drawWinResult(state, startY) {
-    ctx.save();
-    ctx.fillStyle = '#22a84a';
-    ctx.font = `bold ${28 * scale}px ${SKETCH_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,200,80,0.3)';
-    ctx.shadowBlur = 12;
-    ctx.fillText('✓ SAVED!', width / 2, startY + 30 * scale);
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = COLORS.pencilLight;
-    ctx.font = `${15 * scale}px ${SKETCH_FONT}`;
-    ctx.fillText('The character survived!', width / 2, startY + 66 * scale);
-    ctx.restore();
-  }
+  drawChoiceButton(g, label, x, y, width, height, isHovered, isPressed, isSelected, isCorrect) {
+    const s = this.gameScale;
+    const radius = 10 * s;
 
-  function drawLoseResult(state, startY) {
-    ctx.save();
-    ctx.fillStyle = COLORS.incorrect;
-    ctx.font = `bold ${26 * scale}px ${SKETCH_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('✗ GAME OVER', width / 2, startY + 30 * scale);
-    ctx.fillStyle = COLORS.pencilLight;
-    ctx.font = `${14 * scale}px ${SKETCH_FONT}`;
-    ctx.fillText('Wrong choice! Try again.', width / 2, startY + 66 * scale);
-    ctx.restore();
-  }
+    // Press scale effect
+    let scaleX = 1, scaleY = 1;
+    if (isPressed) {
+      scaleX = scaleY = 0.92;
+    }
 
-  // ── Particles ──────────────────────────────────────────────────────────────
-  function drawParticles() {
-    for (const p of particles) {
-      ctx.save();
-      ctx.globalAlpha = p.life;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+    g.save();
+
+    if (scaleX !== 1 || scaleY !== 1) {
+      g.translateCanvas(x + width / 2, y + height / 2);
+      g.scaleCanvas(scaleX, scaleY);
+      g.translateCanvas(-(x + width / 2), -(y + height / 2));
+    }
+
+    // Shadow (simulated with offset fill)
+    g.fillStyle(0x000000, 0.12);
+    this.fillRoundedRect(g, x + (isHovered ? 2 : 1), y + (isHovered ? 3 : 1), width, height, radius);
+
+    // Fill color
+    let fillColor = Phaser.Display.Color.HexStringToColor(COLORS.buttonBase).color;
+    if (isSelected && isCorrect === true) fillColor = 0xd4f7d4;
+    else if (isSelected && isCorrect === false) fillColor = 0xfdd4d4;
+    else if (isHovered) fillColor = 0xfff3d0;
+
+    g.fillStyle(fillColor);
+    this.fillRoundedRect(g, x, y, width, height, radius);
+
+    // Border
+    let borderColor = Phaser.Display.Color.HexStringToColor(COLORS.buttonBorder).color;
+    let borderWidth = 1.5 * s;
+
+    if (isSelected) {
+      borderColor = isCorrect ? Phaser.Display.Color.HexStringToColor(COLORS.correct).color : Phaser.Display.Color.HexStringToColor(COLORS.incorrect).color;
+      borderWidth = 2.5 * s;
+    } else if (isHovered) {
+      borderColor = 0xb8a060;
+      borderWidth = 2.5 * s;
+    }
+
+    g.lineStyle(borderWidth, borderColor);
+    this.strokeRoundedRect(g, x, y, width, height, radius);
+
+    g.restore();
+
+    // Label text (use Phaser text objects for better rendering)
+    const labelKey = `choice_${label}_${x}_${y}`;
+    let labelObj = this.choiceContainer.getByName(labelKey);
+
+    if (!labelObj) {
+      labelObj = this.add.text(x + width / 2, y + height / 2, label, {
+        fontFamily: SKETCH_FONT,
+        fontSize: `${15 * s}px`,
+        color: COLORS.pencil
+      }).setOrigin(0.5, 0.5).setName(labelKey);
+      this.choiceContainer.add(labelObj);
+    } else {
+      labelObj.setText(label).setPosition(x + width / 2, y + height / 2);
     }
   }
 
-  // ── Main render ────────────────────────────────────────────────────────────
-  function renderFrame(state) {
-    drawBackground(state);
-
-    const baseY = 30 * scale;
-    drawTitle(getScenarioTitle(state), baseY);
-    drawThreatText(getThreat(state), baseY + 55 * scale);
-
-    drawCharacter(state);
-    drawThreatVisual(state);
-
-    const choiceStartY = height - 260 * scale;
-
-    if (isChoosing(state)) {
-      drawChoices(state, choiceStartY);
-    } else if (isAnimating(state)) {
-      drawAnimatingChoice(state, choiceStartY);
-    } else if (isWon(state)) {
-      drawWinResult(state, choiceStartY);
-    } else if (isLost(state)) {
-      drawLoseResult(state, choiceStartY);
-    }
-
-    drawParticles();
+  fillRoundedRect(g, x, y, width, height, radius) {
+    g.beginPath();
+    g.moveTo(x + radius, y);
+    g.lineTo(x + width - radius, y);
+    g.arc(x + width - radius, y + radius, radius, -Math.PI / 2, 0);
+    g.lineTo(x + width, y + height - radius);
+    g.arc(x + width - radius, y + height - radius, radius, 0, Math.PI / 2);
+    g.lineTo(x + radius, y + height);
+    g.arc(x + radius, y + height - radius, radius, Math.PI / 2, Math.PI);
+    g.lineTo(x, y + radius);
+    g.arc(x + radius, y + radius, radius, Math.PI, -Math.PI / 2);
+    g.closePath();
+    g.fillPath();
   }
 
-  function render(state) {
-    lastState = state;
-    renderFrame(state);
+  strokeRoundedRect(g, x, y, width, height, radius) {
+    g.beginPath();
+    g.moveTo(x + radius, y);
+    g.lineTo(x + width - radius, y);
+    g.arc(x + width - radius, y + radius, radius, -Math.PI / 2, 0);
+    g.lineTo(x + width, y + height - radius);
+    g.arc(x + width - radius, y + height - radius, radius, 0, Math.PI / 2);
+    g.lineTo(x + radius, y + height);
+    g.arc(x + radius, y + height - radius, radius, Math.PI / 2, Math.PI);
+    g.lineTo(x, y + radius);
+    g.arc(x + radius, y + radius, radius, Math.PI, -Math.PI / 2);
+    g.closePath();
+    g.strokePath();
   }
+}
 
-  function clear() {
-    ctx.fillStyle = COLORS.parchment;
-    ctx.fillRect(0, 0, width, height);
-  }
+// Store game instance for lifecycle management
+let phaserGame = null;
+let currentScene = null;
 
-  // ── Public API ─────────────────────────────────────────────────────────────
-  function setAnimationProgress(progress) {
-    animationProgress = progress;
-  }
+/**
+ * Create renderer instance
+ */
+export function createRenderer(canvas) {
+  let container = canvas.parentElement;
 
-  function setHoveredChoice(index) {
-    hoveredChoice = index;
-  }
+  // The canvas element is not used directly by Phaser - we use the container
+  return {
+    resize() {
+      // Phaser handles resize automatically via Scale Manager
+    },
 
-  function setPressedChoice(index) {
-    pressedChoice = index !== null ? { index, startTime: now() } : null;
-  }
+    render(state) {
+      if (currentScene) {
+        currentScene.setState(state);
+      }
+    },
 
-  function triggerWinEffect() {
-    spawnWinBurst();
-  }
+    clear() {
+      if (currentScene) {
+        currentScene.backgroundGraphics.clear();
+        currentScene.characterGraphics.clear();
+        currentScene.uiGraphics.clear();
+      }
+    },
 
-  function triggerLoseEffect() {
-    spawnLoseBurst();
-  }
+    setAnimationProgress(progress) {
+      if (currentScene) {
+        currentScene.setAnimationProgress(progress);
+      }
+    },
 
-  function getChoiceAtPosition(canvasX, canvasY, state) {
-    if (!isChoosing(state)) return null;
+    setHoveredChoice(index) {
+      if (currentScene) {
+        currentScene.setHoveredChoice(index);
+      }
+    },
 
-    const choices = getChoices(state);
-    const buttonWidth = width - 40 * scale;
-    const buttonSpacing = CHOICE_BUTTON_HEIGHT * scale + CHOICE_MARGIN * scale;
-    const startY = height - 260 * scale;
+    setPressedChoice(index) {
+      if (currentScene) {
+        currentScene.setPressedChoice(index);
+      }
+    },
 
-    for (let i = 0; i < choices.length; i++) {
-      const buttonY = startY + i * buttonSpacing;
-      const buttonX = (width - buttonWidth) / 2;
-      const buttonHeight = CHOICE_BUTTON_HEIGHT * scale;
+    getChoiceAtPosition,
 
-      if (
-        canvasX >= buttonX &&
-        canvasX <= buttonX + buttonWidth &&
-        canvasY >= buttonY &&
-        canvasY <= buttonY + buttonHeight
-      ) {
-        return i;
+    setReducedMotion(value) {
+      if (currentScene) {
+        currentScene.reducedMotion = value;
+      }
+    },
+
+    triggerWinEffect() {
+      if (currentScene) {
+        currentScene.triggerWinEffect();
+      }
+    },
+
+    triggerLoseEffect() {
+      if (currentScene) {
+        currentScene.triggerLoseEffect();
+      }
+    },
+
+    get width() { return phaserGame ? phaserGame.scale.width : CANVAS_WIDTH; },
+    get height() { return phaserGame ? phaserGame.scale.height : CANVAS_HEIGHT; },
+    get scale() { return currentScene ? currentScene.gameScale : 1; },
+
+    // Initialize Phaser game
+    init(state, callbacks) {
+      if (!phaserGame) {
+        phaserGame = new Phaser.Game({
+          type: Phaser.AUTO,
+          scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            parent: container
+          },
+          scene: SaveTheCharacterScene,
+          backgroundColor: COLORS.parchment,
+          transparent: true
+        });
+      }
+
+      // Get reference to scene after it's created
+      currentScene = phaserGame.scene.getScene('SaveTheCharacterScene');
+      if (currentScene) {
+        currentScene.setState(state);
+        currentScene.setCallbacks(callbacks);
+      }
+    },
+
+    startAnimation() {
+      if (currentScene) {
+        currentScene.startAnimation();
+      }
+    },
+
+    setCallbacks(callbacks) {
+      if (currentScene) {
+        currentScene.setCallbacks(callbacks);
+      }
+    },
+
+    destroy() {
+      if (phaserGame) {
+        phaserGame.destroy(true);
+        phaserGame = null;
+        currentScene = null;
       }
     }
-    return null;
-  }
-
-  function setReducedMotion(value) {
-    reducedMotion = value;
-  }
-
-  return {
-    resize,
-    render,
-    clear,
-    setAnimationProgress,
-    setHoveredChoice,
-    setPressedChoice,
-    getChoiceAtPosition,
-    setReducedMotion,
-    triggerWinEffect,
-    triggerLoseEffect,
-    get width() { return width; },
-    get height() { return height; },
-    get scale() { return scale; }
   };
 }
 
-export default { createRenderer };
+export default { createRenderer, getChoiceAtPosition, calculateLayout };

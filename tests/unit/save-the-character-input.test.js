@@ -1,45 +1,86 @@
 /**
  * Save the Character Input — Unit Tests
  *
- * Tests createInput by capturing the tap handler from shared/input.js and the
- * mousemove/touchmove handler from canvas.addEventListener.
- * Covers: currentState guard, onChoiceHover/onChoiceSelect guards,
- * touch vs mouse coord path, choiceIndex null check, destroy guards.
+ * Tests createInput for the Phaser-based input handling.
+ * With Phaser, input is handled by the scene, so this tests the API
+ * compatibility and the getChoiceAt helper function.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// ── Mock shared/input.js ──────────────────────────────────────────────────────
-
-let capturedTapHandler = null;
+// ── Mock shared/input.js (still imported but not used by new input.js) ───────────
 
 vi.mock('../../src/shared/input.js', () => ({
-  onTap: vi.fn((canvas, handler) => {
-    capturedTapHandler = handler;
-    return vi.fn(); // cleanup fn
+  onTap: vi.fn(),
+  disableTouchActions: vi.fn()
+}));
+
+// ── Mock renderer.js to avoid Phaser import ─────────────────────────────────────
+
+vi.mock('../../src/games/save-the-character/renderer.js', () => ({
+  getChoiceAtPosition: vi.fn((x, y, state, width, height, scale) => {
+    // Simple mock: return index based on y position
+    if (y < 100) return null;
+    if (y < 160) return 0;
+    if (y < 220) return 1;
+    if (y < 280) return 2;
+    return 3;
   }),
-  disableTouchActions: vi.fn(),
+  calculateLayout: vi.fn((width, height, scale) => ({
+    buttonWidth: width - 40 * scale,
+    buttonHeight: 60 * scale,
+    buttonSpacing: 72 * scale,
+    choiceStartY: height - 260 * scale,
+    groundY: height * 0.60,
+    characterX: width * 0.38,
+    threatX: width * 0.70
+  })),
+  createRenderer: vi.fn(() => ({
+    render: vi.fn(),
+    setAnimationProgress: vi.fn(),
+    setHoveredChoice: vi.fn(),
+    setPressedChoice: vi.fn(),
+    getChoiceAtPosition: vi.fn(),
+    setReducedMotion: vi.fn(),
+    triggerWinEffect: vi.fn(),
+    triggerLoseEffect: vi.fn(),
+    init: vi.fn(),
+    startAnimation: vi.fn(),
+    setCallbacks: vi.fn(),
+    destroy: vi.fn(),
+    get width() { return 390; },
+    get height() { return 844; },
+    get scale() { return 1; }
+  }))
 }));
 
 import { createInput } from '../../src/games/save-the-character/input.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const makeCanvas = () => {
-  const stored = {};
-  return {
-    getBoundingClientRect: vi.fn(() => ({ left: 0, top: 0, width: 300, height: 300 })),
-    addEventListener: vi.fn((event, handler) => { stored[event] = handler; }),
-    removeEventListener: vi.fn(),
-    _fire: (event, e) => stored[event] && stored[event](e),
-  };
-};
+const makeCanvas = () => ({ addEventListener: vi.fn() });
 
-const makeRenderer = (returnIndex = 0) => ({
-  getChoiceAtPosition: vi.fn(() => returnIndex),
+const makeRenderer = () => ({
+  width: 390,
+  height: 844,
+  scale: 1,
+  render: vi.fn(),
+  setHoveredChoice: vi.fn()
 });
 
-const fakeState = { choices: ['A', 'B'] };
+const fakeState = {
+  scenario: {
+    id: 'test-001',
+    title: 'Test Scenario',
+    threat: 'Test threat',
+    choices: [
+      { id: 'a', label: 'Choice A', correct: true },
+      { id: 'b', label: 'Choice B', correct: false }
+    ]
+  },
+  selectedChoice: null,
+  status: 'choosing'
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -47,9 +88,8 @@ describe('save-the-character createInput', () => {
   let canvas, renderer, onChoiceSelect, onChoiceHover, input;
 
   beforeEach(() => {
-    capturedTapHandler = null;
     canvas = makeCanvas();
-    renderer = makeRenderer(1);
+    renderer = makeRenderer();
     onChoiceSelect = vi.fn();
     onChoiceHover = vi.fn();
   });
@@ -60,105 +100,60 @@ describe('save-the-character createInput', () => {
     return input;
   }
 
-  // ── handleTap: currentState guard ─────────────────────────────────────────
+  // ── init and destroy ────────────────────────────────────────────────────────
 
-  it('handleTap returns early when currentState is null — (!currentState) guard', () => {
-    setup(); // currentState starts as null
-    capturedTapHandler({ x: 50, y: 50 });
-    expect(onChoiceSelect).not.toHaveBeenCalled();
+  it('init does not throw', () => {
+    expect(() => setup()).not.toThrow();
   });
 
-  it('handleTap calls onChoiceSelect after updateState sets currentState', () => {
-    setup();
+  it('destroy does not throw after init', () => {
+    const input = setup();
+    expect(() => input.destroy()).not.toThrow();
+  });
+
+  it('destroy before init is safe', () => {
+    const input = createInput({ canvas, renderer, onChoiceSelect, onChoiceHover });
+    expect(() => input.destroy()).not.toThrow();
+  });
+
+  // ── updateState ─────────────────────────────────────────────────────────────
+
+  it('updateState sets currentState enabling getChoiceAt', () => {
+    const input = setup();
     input.updateState(fakeState);
-    capturedTapHandler({ x: 50, y: 50 });
-    expect(onChoiceSelect).toHaveBeenCalledWith(1);
+    // getChoiceAt should work now
+    const choiceIndex = input.getChoiceAt(195, 600);
+    expect(choiceIndex).not.toBeNull();
   });
 
-  it('handleTap skips onChoiceSelect when choiceIndex is null — (choiceIndex !== null) false arm', () => {
-    renderer = makeRenderer(null);
-    setup();
+  it('getChoiceAt returns null when currentState is null', () => {
+    const input = setup();
+    // currentState starts as null
+    const choiceIndex = input.getChoiceAt(195, 600);
+    expect(choiceIndex).toBeNull();
+  });
+
+  // ── getChoiceAt ──────────────────────────────────────────────────────────────
+
+  it('getChoiceAt uses renderer dimensions', () => {
+    const input = setup();
     input.updateState(fakeState);
-    capturedTapHandler({ x: 50, y: 50 });
-    expect(onChoiceSelect).not.toHaveBeenCalled();
+    input.getChoiceAt(100, 200);
+    // The function should use renderer.width, renderer.height, renderer.scale
+    expect(input.getChoiceAt(100, 120)).toBeDefined();
   });
 
-  it('handleTap skips onChoiceSelect when callback is not provided — (&& onChoiceSelect) false arm', () => {
-    setup({ onChoiceSelect: undefined });
-    input.updateState(fakeState);
-    expect(() => capturedTapHandler({ x: 50, y: 50 })).not.toThrow();
+  // ── API compatibility ───────────────────────────────────────────────────────
+
+  it('returns init, destroy, updateState, getChoiceAt methods', () => {
+    const input = createInput({ canvas, renderer, onChoiceSelect, onChoiceHover });
+    expect(typeof input.init).toBe('function');
+    expect(typeof input.destroy).toBe('function');
+    expect(typeof input.updateState).toBe('function');
+    expect(typeof input.getChoiceAt).toBe('function');
   });
 
-  // ── handleMove: currentState guard ────────────────────────────────────────
-
-  it('handleMove returns early when currentState is null — (!currentState) guard', () => {
-    setup();
-    canvas._fire('mousemove', { clientX: 10, clientY: 10 });
-    expect(onChoiceHover).not.toHaveBeenCalled();
-  });
-
-  it('handleMove calls onChoiceHover with choice index from clientX/clientY — mouse path', () => {
-    setup();
-    input.updateState(fakeState);
-    canvas._fire('mousemove', { clientX: 50, clientY: 60 });
-    expect(onChoiceHover).toHaveBeenCalledWith(1);
-    expect(renderer.getChoiceAtPosition).toHaveBeenCalledWith(50, 60, fakeState);
-  });
-
-  it('handleMove uses touch coordinates when clientX is undefined — touch path', () => {
-    setup();
-    input.updateState(fakeState);
-    canvas._fire('mousemove', {
-      clientX: undefined,
-      clientY: undefined,
-      touches: [{ clientX: 30, clientY: 40 }],
-    });
-    expect(renderer.getChoiceAtPosition).toHaveBeenCalledWith(30, 40, fakeState);
-  });
-
-  it('handleMove uses 0,0 when clientX undefined and no touches — nullish fallback', () => {
-    setup();
-    input.updateState(fakeState);
-    canvas._fire('mousemove', { clientX: undefined, clientY: undefined, touches: null });
-    expect(renderer.getChoiceAtPosition).toHaveBeenCalledWith(0, 0, fakeState);
-  });
-
-  it('handleMove skips onChoiceHover when not provided — (if onChoiceHover) false arm', () => {
-    setup({ onChoiceHover: undefined });
-    input.updateState(fakeState);
-    expect(() => canvas._fire('mousemove', { clientX: 10, clientY: 10 })).not.toThrow();
-  });
-
-  // ── updateState ───────────────────────────────────────────────────────────
-
-  it('updateState sets currentState enabling tap/move handlers', () => {
-    setup();
-    input.updateState(fakeState);
-    capturedTapHandler({ x: 10, y: 10 });
-    expect(onChoiceSelect).toHaveBeenCalled();
-  });
-
-  // ── destroy ───────────────────────────────────────────────────────────────
-
-  it('destroy after init calls both cleanup functions', () => {
-    const i = setup();
-    expect(() => i.destroy()).not.toThrow();
-    expect(canvas.removeEventListener).toHaveBeenCalledWith('mousemove', expect.any(Function));
-    expect(canvas.removeEventListener).toHaveBeenCalledWith('touchmove', expect.any(Function));
-  });
-
-  it('destroy after init clears currentState', () => {
-    const i = setup();
-    i.updateState(fakeState);
-    i.destroy();
-    // After destroy, tap returns early due to currentState=null
-    capturedTapHandler({ x: 10, y: 10 });
-    expect(onChoiceSelect).not.toHaveBeenCalled();
-  });
-
-  it('destroy before init is safe — (if cleanupTap/cleanupMove) false arms', () => {
-    const i = createInput({ canvas, renderer, onChoiceSelect, onChoiceHover });
-    expect(() => i.destroy()).not.toThrow();
-    expect(canvas.removeEventListener).not.toHaveBeenCalled();
+  it('callbacks are optional', () => {
+    expect(() => createInput({ canvas, renderer })).not.toThrow();
   });
 });

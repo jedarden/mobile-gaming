@@ -1,21 +1,23 @@
 /**
  * Save the Character - Input Handler
  *
- * Game-specific input handling for choice-based gameplay:
+ * Input handling for choice-based gameplay:
  * - Tap/click on choices to select
  * - Hover effects for choices
- * - Keyboard navigation (optional)
  *
- * Uses shared/input.js for normalized pointer events.
+ * Note: With Phaser, input handling is primarily done by the Phaser scene's
+ * pointer events. This module provides a thin compatibility layer for
+ * wiring callbacks and state updates.
  */
 
-import { onTap, disableTouchActions } from '../../shared/input.js';
+import { getChoiceAtPosition } from './renderer.js';
+import { isChoosing } from './state.js';
 
 /**
  * Create input handler for Save the Character
  *
  * @param {Object} options - Configuration
- * @param {HTMLCanvasElement} options.canvas - Game canvas element
+ * @param {HTMLCanvasElement} options.canvas - Game canvas element (for container reference)
  * @param {Object} options.renderer - Renderer instance (must expose getChoiceAtPosition)
  * @param {Function} options.onChoiceSelect - Callback when a choice is selected: (choiceIndex)
  * @param {Function} options.onChoiceHover - Callback when pointer hovers a choice: (choiceIndex | null)
@@ -24,41 +26,7 @@ import { onTap, disableTouchActions } from '../../shared/input.js';
 export function createInput(options) {
   const { canvas, renderer, onChoiceSelect, onChoiceHover } = options;
 
-  let cleanupTap = null;
-  let cleanupMove = null;
   let currentState = null;
-
-  /**
-   * Handle pointer move for hover effects
-   */
-  function handleMove(e) {
-    if (!currentState) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.clientX ?? (e.touches?.[0]?.clientX ?? 0);
-    const clientY = e.clientY ?? (e.touches?.[0]?.clientY ?? 0);
-    const canvasX = clientX - rect.left;
-    const canvasY = clientY - rect.top;
-
-    const choiceIndex = renderer.getChoiceAtPosition(canvasX, canvasY, currentState);
-
-    if (onChoiceHover) {
-      onChoiceHover(choiceIndex);
-    }
-  }
-
-  /**
-   * Handle pointer tap/click
-   */
-  function handleTap({ x, y }) {
-    if (!currentState) return;
-
-    const choiceIndex = renderer.getChoiceAtPosition(x, y, currentState);
-
-    if (choiceIndex !== null && onChoiceSelect) {
-      onChoiceSelect(choiceIndex);
-    }
-  }
 
   /**
    * Update the current game state (needed for choice detection)
@@ -69,30 +37,37 @@ export function createInput(options) {
 
   /**
    * Initialize input listeners
+   *
+   * Note: With Phaser, actual input handling is done by the scene.
+   * This provides a fallback for testing and legacy compatibility.
    */
   function init() {
-    disableTouchActions(canvas);
-
-    cleanupTap = onTap(canvas, handleTap);
-
-    canvas.addEventListener('mousemove', handleMove, { passive: true });
-    canvas.addEventListener('touchmove', handleMove, { passive: true });
-    cleanupMove = () => {
-      canvas.removeEventListener('mousemove', handleMove);
-      canvas.removeEventListener('touchmove', handleMove);
-    };
+    // Phaser handles input via scene pointer events
+    // This is a no-op but kept for API consistency
   }
 
   /**
    * Remove all input listeners
    */
   function destroy() {
-    if (cleanupTap) cleanupTap();
-    if (cleanupMove) cleanupMove();
     currentState = null;
   }
 
-  return { init, destroy, updateState };
+  /**
+   * Hit-test for a choice at a given position
+   * Used by tests and for manual hit-testing
+   */
+  function getChoiceAt(x, y) {
+    if (!currentState || !isChoosing(currentState)) return null;
+
+    const width = renderer.width;
+    const height = renderer.height;
+    const scale = renderer.scale;
+
+    return getChoiceAtPosition(x, y, currentState, width, height, scale);
+  }
+
+  return { init, destroy, updateState, getChoiceAt };
 }
 
 export default { createInput };
