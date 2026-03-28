@@ -2,24 +2,18 @@
  * Brain Teaser - Input Handler
  *
  * Game-specific input mapping for Brain Teaser puzzles.
- * Handles:
- * - Tap detection for click targets
- * - Drag detection for drag-and-drop
- * - Sequence tracking for multi-step puzzles
- *
- * Uses shared/input.js for normalized pointer events.
+ * With Phaser migration, input handling is done by the Phaser scene.
+ * This module provides callback setup utilities.
  */
-
-import { onTap, onDrag, disableTouchActions } from '../../shared/input.js';
 
 /**
  * Create input handler for Brain Teaser
  *
  * @param {Object} options - Configuration
- * @param {HTMLCanvasElement} options.canvas - Game canvas element
- * @param {Object} options.renderer - Renderer instance (must expose getElementAt)
- * @param {Object} options.state - Game state (must expose puzzle.elements)
- * @param {Function} options.onTap - Callback when element is tapped: (element, action)
+ * @param {HTMLCanvasElement} options.canvas - Game canvas element (unused with Phaser, kept for API compat)
+ * @param {Object} options.renderer - Renderer instance (must expose setCallbacks)
+ * @param {Object} options.getState - Function to get current state
+ * @param {Function} options.onTapAction - Callback when element is tapped: (element, action)
  * @param {Function} options.onDragStart - Callback when drag starts: (element)
  * @param {Function} options.onDragMove - Callback during drag: (element, dx, dy)
  * @param {Function} options.onDragEnd - Callback when drag ends: (sourceElement, targetElement)
@@ -27,126 +21,60 @@ import { onTap, onDrag, disableTouchActions } from '../../shared/input.js';
  */
 export function createInput(options) {
   const {
-    canvas,
     renderer,
-    getState,
     onTapAction,
     onDragStart,
     onDragMove,
     onDragEnd
   } = options;
 
-  let cleanupTap = null;
-  let cleanupDrag = null;
-  let draggedElement = null;
-  let dragStartPos = null;
+  let initialized = false;
 
   /**
-   * Get element at canvas position
-   */
-  function getElementAtPosition(canvasX, canvasY) {
-    const state = getState();
-    if (!state || !state.puzzle) return null;
-
-    return renderer.getElementAt(canvasX, canvasY, state.puzzle.elements, renderer.scale);
-  }
-
-  /**
-   * Handle tap gesture
-   */
-  function handleTap({ x, y }) {
-    const element = getElementAtPosition(x, y);
-    if (!element) return;
-
-    // Check if element is interactive
-    if (element.clickable === false && !element.draggable) return;
-
-    // Build action
-    const action = {
-      action: 'tap',
-      targetId: element.id
-    };
-
-    if (onTapAction) {
-      onTapAction(element, action);
-    }
-  }
-
-  /**
-   * Handle drag start
-   */
-  function handleDragStart({ x, y }) {
-    const element = getElementAtPosition(x, y);
-    if (!element || !element.draggable) return;
-
-    draggedElement = element;
-    dragStartPos = { x, y };
-
-    if (onDragStart) {
-      onDragStart(element);
-    }
-  }
-
-  /**
-   * Handle drag move
-   */
-  function handleDragMove({ _x, _y, dx, dy, isDragging }) {
-    if (!isDragging || !draggedElement) return;
-
-    if (onDragMove) {
-      onDragMove(draggedElement, dx, dy);
-    }
-  }
-
-  /**
-   * Handle drag end
-   */
-  function handleDragEnd({ x, y }) {
-    if (!draggedElement) return;
-
-    const targetElement = getElementAtPosition(x, y);
-    const sourceElement = draggedElement;
-
-    draggedElement = null;
-    dragStartPos = null;
-
-    if (onDragEnd && targetElement && targetElement.id !== sourceElement.id) {
-      onDragEnd(sourceElement, targetElement);
-    }
-  }
-
-  /**
-   * Initialize input listeners
+   * Initialize input - wire callbacks to renderer
    */
   function init() {
-    disableTouchActions(canvas);
+    if (initialized) return;
 
-    // Tap handler
-    cleanupTap = onTap(canvas, handleTap);
-
-    // Drag handler (for drag-type puzzles)
-    cleanupDrag = onDrag(canvas, (data) => {
-      if (!data.isDragging && dragStartPos) {
-        // Drag ended
-        handleDragEnd(data);
-      } else if (data.isDragging && !draggedElement) {
-        // Drag started
-        handleDragStart(data);
-      } else if (data.isDragging && draggedElement) {
-        // Drag moving
-        handleDragMove(data);
+    renderer.setCallbacks({
+      onElementTap: (element, action) => {
+        if (onTapAction) {
+          onTapAction(element, action);
+        }
+      },
+      onDragStart: (element) => {
+        if (onDragStart) {
+          onDragStart(element);
+        }
+      },
+      onDragMove: (element, dx, dy) => {
+        if (onDragMove) {
+          onDragMove(element, dx, dy);
+        }
+      },
+      onDragEnd: (source, target) => {
+        if (onDragEnd) {
+          onDragEnd(source, target);
+        }
       }
     });
+
+    initialized = true;
   }
 
   /**
-   * Remove all input listeners
+   * Remove input listeners
    */
   function destroy() {
-    if (cleanupTap) cleanupTap();
-    if (cleanupDrag) cleanupDrag();
-    draggedElement = null;
-    dragStartPos = null;
+    if (renderer && renderer.setCallbacks) {
+      renderer.setCallbacks({
+        onElementTap: null,
+        onDragStart: null,
+        onDragMove: null,
+        onDragEnd: null
+      });
+    }
+    initialized = false;
   }
 
   return { init, destroy };
@@ -156,7 +84,7 @@ export function createInput(options) {
  * Create sequence input handler for multi-tap sequences
  *
  * @param {Object} options - Configuration
- * @param {HTMLCanvasElement} options.canvas - Game canvas
+ * @param {HTMLCanvasElement} options.canvas - Game canvas (unused with Phaser)
  * @param {Object} options.renderer - Renderer instance
  * @param {Function} options.getState - Function to get current state
  * @param {Function} options.onSequenceStep - Callback for each step: (element, currentSequence)
@@ -165,20 +93,18 @@ export function createInput(options) {
  */
 export function createSequenceInput(options) {
   const {
-    canvas,
     renderer,
     getState,
     onSequenceStep,
     onSequenceComplete
   } = options;
 
-  let cleanupTap = null;
+  let initialized = false;
 
-  function handleTap({ x, y }) {
+  function handleTap(element) {
     const state = getState();
     if (!state || !state.puzzle) return;
 
-    const element = renderer.getElementAt(x, y, state.puzzle.elements, renderer.scale);
     if (!element || element.clickable === false) return;
 
     // Add to sequence
@@ -195,13 +121,31 @@ export function createSequenceInput(options) {
     }
   }
 
+  /**
+   * Initialize input listeners
+   */
   function init() {
-    disableTouchActions(canvas);
-    cleanupTap = onTap(canvas, handleTap);
+    if (initialized) return;
+
+    renderer.setCallbacks({
+      onElementTap: (element) => {
+        handleTap(element);
+      }
+    });
+
+    initialized = true;
   }
 
+  /**
+   * Remove all input listeners
+   */
   function destroy() {
-    if (cleanupTap) cleanupTap();
+    if (renderer && renderer.setCallbacks) {
+      renderer.setCallbacks({
+        onElementTap: null
+      });
+    }
+    initialized = false;
   }
 
   return { init, destroy };

@@ -85,7 +85,14 @@ class BrainTeaserGame {
       // Load puzzles
       await this.loadPuzzles();
 
-      // Create renderer
+      // Load saved progress
+      this.loadProgress();
+
+      // Create initial state first (needed for Phaser scene)
+      const puzzle = this.puzzles[this.currentPuzzleIndex];
+      this.state = createInitialState(puzzle);
+
+      // Create renderer (Phaser game initialized with initial state)
       this.renderer = createRenderer(this.canvas);
       this.renderer.setReducedMotion(isReducedMotionEnabled());
 
@@ -99,9 +106,7 @@ class BrainTeaserGame {
         onDragMove: (element, dx, dy) => this.handleDragMove(element, dx, dy),
         onDragEnd: (source, target) => this.handleDragEnd(source, target)
       });
-
-      // Load saved progress
-      this.loadProgress();
+      this.input.init();
 
       // Setup event listeners
       this.setupEventListeners();
