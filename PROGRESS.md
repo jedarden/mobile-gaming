@@ -45,17 +45,9 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ---
 
-## In Progress
-
-*None yet - next iteration will migrate Save the Character*
-
----
-
-## Completed Migrations
-
 ### Brain Teaser ✅
 
-**Commit:** (pending)
+**Commit:** `dddc594`
 
 **Changes:**
 - `renderer.js`: Replaced Canvas 2D with Phaser.Game and Phaser.Scene
@@ -78,6 +70,14 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 - `tests/unit/brain-teaser-input.test.js`: Updated for new architecture
   - Tests now mock `setCallbacks` method on renderer
   - Tests verify callback wiring through renderer
+
+**Tests:** All 5578 tests pass
+
+---
+
+## In Progress
+
+*None yet - next iteration will migrate Save the Character*
 
 ---
 
