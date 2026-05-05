@@ -3,8 +3,8 @@
  *
  * Orchestrates the Bus Jam puzzle game with:
  * - Game state management
- * - Canvas rendering
- * - User input handling
+ * - Phaser rendering
+ * - User input handling via Phaser scene
  * - Level progression
  * - Integration with shared systems
  */
@@ -34,6 +34,7 @@ import {
 } from './state.js';
 
 import { createRenderer } from './renderer.js';
+import { createInput } from './input.js';
 import { audio } from './audio.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
@@ -70,6 +71,7 @@ class BusJamGame {
     this.state = null;
     this.history = createHistory(50);
     this.renderer = null;
+    this.inputHandler = null;
 
     // Interaction state
     this.selectedBus = null;
@@ -81,8 +83,6 @@ class BusJamGame {
     this.dailySeed = null;
 
     // Bind methods
-    this.handleCanvasClick = this.handleCanvasClick.bind(this);
-    this.handleCanvasMove = this.handleCanvasMove.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleResize = this.handleResize.bind(this);
   }
@@ -103,11 +103,6 @@ class BusJamGame {
       // Load levels
       await this.loadLevels();
 
-      // Create renderer
-      this.renderer = createRenderer(this.canvas);
-      this.renderer.setReducedMotion(isReducedMotionEnabled());
-      this.renderer.setColorBlindMode(isColorBlindEnabled());
-
       // Check for daily mode
       const urlParams = new URLSearchParams(window.location.search);
       this.isDailyMode = urlParams.get('daily') === 'true';
@@ -120,11 +115,43 @@ class BusJamGame {
       // Load saved progress
       this.loadProgress();
 
-      // Setup event listeners
+      // Create initial state BEFORE renderer (needed for Phaser scene init)
+      const level = this.levels[this.currentLevelIndex];
+      this.state = createInitialState(level);
+      this.history.clear();
+      this.history.push(cloneState(this.state));
+
+      // Create renderer with state
+      this.renderer = createRenderer(this.canvas);
+      this.renderer.setReducedMotion(isReducedMotionEnabled());
+      this.renderer.setColorBlindMode(isColorBlindEnabled());
+
+      // Create input handler
+      this.inputHandler = createInput({
+        canvas: this.canvas,
+        renderer: this.renderer,
+        onCellTap: this.handleClickAt.bind(this),
+        onCellHover: this.handleHoverAt.bind(this)
+      });
+      this.inputHandler.init();
+
+      // Initialize renderer with state and callbacks
+      this.renderer.init(this.state, {
+        onCellTap: this.handleClickAt.bind(this),
+        onCellHover: this.handleHoverAt.bind(this)
+      });
+
+      // Resize and initial render
+      this.handleResize();
+
+      // Setup event listeners (keyboard and resize only - canvas handled by Phaser)
       this.setupEventListeners();
 
-      // Start game
-      this.startLevel(this.currentLevelIndex);
+      // Update UI
+      this.updateUI();
+
+      // Announce for screen readers
+      announce(`Level ${this.currentLevelIndex + 1} started. ${level.buses.length} buses, ${countRemainingPassengers(this.state)} passengers to pick up.`);
 
       console.log('Bus Jam initialized');
     } catch (error) {
@@ -275,12 +302,7 @@ class BusJamGame {
    * Setup event listeners
    */
   setupEventListeners() {
-    // Canvas events
-    this.canvas.addEventListener('click', this.handleCanvasClick);
-    this.canvas.addEventListener('mousemove', this.handleCanvasMove);
-    this.canvas.addEventListener('touchstart', this.handleCanvasClick, { passive: false });
-
-    // Keyboard
+    // Keyboard (not handled by Phaser)
     document.addEventListener('keydown', this.handleKeyDown);
 
     // Resize
@@ -333,70 +355,14 @@ class BusJamGame {
   }
 
   /**
-   * Start a level
+   * Handle click at grid position
    */
-  startLevel(index) {
-    if (index < 0 || index >= this.levels.length) return;
-
-    this.levelStartTime = Date.now();
-    if (index !== this.currentLevelIndex) this.levelRetries = 0;
-    this.currentLevelIndex = index;
-    const level = this.levels[index];
-
-    // Create initial state
-    this.state = createInitialState(level);
-    this.history.clear();
-    this.history.push(cloneState(this.state));
-
-    // Reset interaction state
-    this.selectedBus = null;
-    this.pathPreview = null;
-    this.animating = false;
-
-    // Resize and render
-    this.handleResize();
-    this.updateUI();
-
-    // Announce for screen readers
-    announce(`Level ${index + 1} started. ${level.buses.length} buses, ${countRemainingPassengers(this.state)} passengers to pick up.`);
-  }
-
-  /**
-   * Restart current level
-   */
-  restartLevel() {
-    this.levelRetries = (this.levelRetries || 0) + 1;
-    this.startLevel(this.currentLevelIndex);
-    audio.playSelect();
-  }
-
-  /**
-   * Handle canvas click
-   */
-  handleCanvasClick(e) {
+  handleClickAt(gridX, gridY) {
     if (this.animating || this.state.won) return;
-
-    e.preventDefault();
 
     // Initialize audio on first interaction
     audio.resume();
 
-    const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX || (e.touches && e.touches[0].clientX);
-    const y = e.clientY || (e.touches && e.touches[0].clientY);
-    const canvasX = x - rect.left;
-    const canvasY = y - rect.top;
-
-    const scale = this.renderer.scale;
-    const gridPos = this.renderer.canvasToGrid(canvasX, canvasY, scale);
-
-    this.handleClickAt(gridPos.x, gridPos.y);
-  }
-
-  /**
-   * Handle click at grid position
-   */
-  handleClickAt(gridX, gridY) {
     // Check if clicking on a bus
     const clickedBus = getBusAt(this.state, gridX, gridY);
 
@@ -435,24 +401,17 @@ class BusJamGame {
   }
 
   /**
-   * Handle canvas mouse move for path preview
+   * Handle hover at grid position (for path preview)
    */
-  handleCanvasMove(e) {
+  handleHoverAt(gridX, gridY) {
     if (this.animating || this.state.won || !this.selectedBus) return;
-
-    const rect = this.canvas.getBoundingClientRect();
-    const canvasX = e.clientX - rect.left;
-    const canvasY = e.clientY - rect.top;
-
-    const scale = this.renderer.scale;
-    const gridPos = this.renderer.canvasToGrid(canvasX, canvasY, scale);
 
     const bus = this.state.buses.find(b => b.id === this.selectedBus);
     if (!bus) return;
 
     // Update path preview
-    if (isRoad(this.state, gridPos.x, gridPos.y) && !getBusAt(this.state, gridPos.x, gridPos.y)) {
-      const path = findPath(this.state, bus, gridPos.x, gridPos.y);
+    if (isRoad(this.state, gridX, gridY) && !getBusAt(this.state, gridX, gridY)) {
+      const path = findPath(this.state, bus, gridX, gridY);
       this.pathPreview = path;
     } else {
       this.pathPreview = null;
@@ -593,6 +552,44 @@ class BusJamGame {
   hideWinOverlay() {
     this.winOverlay.classList.remove('active');
     this.winOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  /**
+   * Start a level
+   */
+  startLevel(index) {
+    if (index < 0 || index >= this.levels.length) return;
+
+    this.levelStartTime = Date.now();
+    if (index !== this.currentLevelIndex) this.levelRetries = 0;
+    this.currentLevelIndex = index;
+    const level = this.levels[index];
+
+    // Create initial state
+    this.state = createInitialState(level);
+    this.history.clear();
+    this.history.push(cloneState(this.state));
+
+    // Reset interaction state
+    this.selectedBus = null;
+    this.pathPreview = null;
+    this.animating = false;
+
+    // Resize and render
+    this.handleResize();
+    this.updateUI();
+
+    // Announce for screen readers
+    announce(`Level ${index + 1} started. ${level.buses.length} buses, ${countRemainingPassengers(this.state)} passengers to pick up.`);
+  }
+
+  /**
+   * Restart current level
+   */
+  restartLevel() {
+    this.levelRetries = (this.levelRetries || 0) + 1;
+    this.startLevel(this.currentLevelIndex);
+    audio.playSelect();
   }
 
   /**

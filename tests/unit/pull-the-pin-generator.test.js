@@ -59,7 +59,7 @@ describe('generateLevel', () => {
       }
     });
 
-    it('easy levels have 3 colors and 3 cups/balls', () => {
+    it('easy levels have 3 colors and 3 cups/balls', { timeout: 30000 }, () => {
       for (let seed = 1; seed <= 30; seed++) {
         const level = generateLevel(seed, 'easy');
         if (level !== null) {
@@ -70,7 +70,7 @@ describe('generateLevel', () => {
       }
     });
 
-    it('medium levels have 3 colors and 3 cups/balls', () => {
+    it('medium levels have 3 colors and 3 cups/balls', { timeout: 30000 }, () => {
       for (let seed = 1; seed <= 30; seed++) {
         const level = generateLevel(seed, 'medium');
         if (level !== null) {

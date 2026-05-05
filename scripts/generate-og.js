@@ -29,16 +29,19 @@ const BASE_URL = `http://localhost:${PORT}`;
 // Games to screenshot — slug matches src/games/<slug>/index.html
 // Hub uses a special path (src/hub/index.html) handled below
 const GAMES = [
-  { slug: 'water-sort',         title: 'Water Sort' },
   { slug: 'brain-teaser',       title: 'Brain Teaser' },
-  { slug: 'bus-jam',            title: 'Bus Jam' },
-  { slug: 'save-the-character', title: 'Save the Character' },
-  { slug: 'pull-the-pin',       title: 'Pull the Pin' },
-  { slug: 'jelly-shift',        title: 'Jelly Shift' },
-  { slug: 'giant-runner',       title: 'Giant Runner' },
-  { slug: 'crowd-runner',       title: 'Crowd Runner' },
   { slug: 'bridge-race',        title: 'Bridge Race' },
+  { slug: 'bus-jam',            title: 'Bus Jam' },
+  { slug: 'crowd-runner',       title: 'Crowd Runner' },
+  { slug: 'giant-runner',       title: 'Giant Runner' },
+  { slug: 'jelly-shift',        title: 'Jelly Shift' },
   { slug: 'makeover-run',       title: 'Makeover Run' },
+  { slug: 'merge-games',        title: 'Merge Games' },
+  { slug: 'parking-escape',     title: 'Parking Escape' },
+  { slug: 'pull-the-pin',       title: 'Pull the Pin' },
+  { slug: 'satisfying-asmr',    title: 'Satisfying ASMR' },
+  { slug: 'save-the-character', title: 'Save the Character' },
+  { slug: 'water-sort',         title: 'Water Sort' },
 ];
 
 /**
