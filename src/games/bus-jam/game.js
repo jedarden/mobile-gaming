@@ -13,7 +13,8 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { isColorBlindEnabled } from '../../shared/color-blind.js';
-import { getGameDailySeed } from '../../shared/daily.js';
+import { getGameDailySeed, completeDailyChallenge } from '../../shared/daily.js';
+import { shareDailyResult } from '../../shared/daily-share.js';
 import { createRNG } from '../../shared/rng.js';
 
 import {
@@ -60,6 +61,7 @@ class BusJamGame {
     this.btnNext = document.getElementById('btn-next');
     this.btnSound = document.getElementById('btn-sound');
     this.btnSettings = document.getElementById('btn-settings');
+    this.btnShareDaily = document.getElementById('btn-share-daily');
 
     // Overlays
     this.winOverlay = document.getElementById('win-overlay');
@@ -326,6 +328,7 @@ class BusJamGame {
       this.hideWinOverlay();
       this.nextLevel();
     });
+    this.btnShareDaily.addEventListener('click', () => this.handleShareDaily());
 
     // Settings overlay
     document.getElementById('btn-close-settings').addEventListener('click', () => {
@@ -519,6 +522,11 @@ class BusJamGame {
     // Award XP
     await awardLevelComplete(GAME_ID, stars, { moves: this.state.moves });
 
+    // Mark daily challenge as completed
+    if (this.isDailyMode) {
+      completeDailyChallenge(GAME_ID);
+    }
+
     // Save progress
     await this.saveProgress();
 
@@ -542,6 +550,9 @@ class BusJamGame {
     document.getElementById('stats-summary').textContent =
       `Completed in ${this.state.moves} moves!`;
 
+    // Show share button in daily mode
+    this.btnShareDaily.style.display = this.isDailyMode ? 'inline-flex' : 'none';
+
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');
   }
@@ -552,6 +563,23 @@ class BusJamGame {
   hideWinOverlay() {
     this.winOverlay.classList.remove('active');
     this.winOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  /**
+   * Handle daily challenge share
+   */
+  async handleShareDaily() {
+    const solveTime = this.levelStartTime ? (Date.now() - this.levelStartTime) / 1000 : 0;
+    const hintsUsed = this.hintSession?.level ?? 0;
+
+    await shareDailyResult({
+      gameId: GAME_ID,
+      moves: this.state.moves,
+      time: solveTime,
+      hints: hintsUsed,
+      date: new Date().toISOString().split('T')[0],
+      stars: calculateStars(this.state.moves, this.levels[this.currentLevelIndex].optimal)
+    });
   }
 
   /**
