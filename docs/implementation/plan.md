@@ -12,7 +12,7 @@ Build playable web-based versions of the 12 hyper-casual game types documented i
 |---|---|---|
 | Runtime | Browser (HTML5) | Zero-install; works on mobile and desktop; matches hyper-casual distribution model |
 | 2D rendering | Canvas 2D API → Phaser 3 (v3.90.0) | Currently raw Canvas 2D; migrating to Phaser game framework for WebGL rendering with Canvas fallback, built-in scene management, tweens, particles, and input. See `docs/research/phaser-evaluation.md` for trade-off analysis |
-| 3D rendering | Three.js | Required for Crowd Runner, Giant Runner, Bridge Race, Jelly Shift, Makeover Run, Bus Jam, and Merge Games |
+| 3D rendering | Three.js | Required for Crowd Runner, Giant Runner, Bridge Race, Jelly Shift, Makeover Run, and Merge Games |
 | Physics (2D) | Custom per-game → Phaser Arcade Physics / Matter.js | Currently hand-rolled per game; Phaser bundles Arcade (AABB collisions) and Matter.js (rigid-body constraints for Pull the Pin). Determinism maintained via fixed timestep and seeded RNG |
 | Physics (3D) | Cannon-es (Cannon.js ES fork) | Lightweight rigid-body + soft-body for Jelly Shift's blob deformation |
 | Build | Vite | Fast HMR; native ES module support; trivial multi-page setup |

@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: mobile-gaming-build
+  namespace: argo-workflows
+  labels:
+    app: mobile-gaming-build
+spec:
+  arguments:
+    parameters:
+    - name: repo
+      value: jedarden/mobile-gaming
+    - name: branch
+      value: main
+    - name: build-dir
+      value: .
+    - name: build-command
+      value: npm ci && npm run build && npm test
+    - name: output-dir
+      value: dist
+    - name: cf-project
+      value: mobile-gaming
+  entrypoint: build-and-deploy
+  serviceAccountName: argo-workflow
+  templates:
+  - name: build-and-deploy
+    activeDeadlineSeconds: 900
+    container:
+      image: docker.io/library/node:22
+      command:
+      - sh
+      - -c
+      args:
+      - |
+        set -e
+
+        # Install git
+        apt-get update -qq && apt-get install -y -qq git >/dev/null 2>&1
+
+        # Clone repo
+        BRANCH="{{workflow.parameters.branch}}"
+        git clone --depth 1 --branch "$BRANCH" \
+          "https://x-access-token:${GH_TOKEN}@github.com/{{workflow.parameters.repo}}.git" \
+          /workspace
+
+        # Build and test
+        cd /workspace/{{workflow.parameters.build-dir}}
+        {{workflow.parameters.build-command}}
+
+        # Deploy to Cloudflare Pages
+        npx wrangler@latest pages deploy {{workflow.parameters.output-dir}} \
+          --project-name="{{workflow.parameters.cf-project}}" \
+          --branch="$BRANCH" \
+          --commit-dirty=true
+      env:
+      - name: GH_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: github-webhook-secret
+            key: token
+      - name: CLOUDFLARE_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: cloudflare-pages-secret
+            key: CF_API_TOKEN
+      - name: CLOUDFLARE_ACCOUNT_ID
+        value: e26f015c7ba47a6ad6219385e77072b7
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 4Gi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+    retryStrategy:
+      limit: 3
+      retryPolicy: Always
+      backoff:
+        duration: 30s
+        factor: 2
