@@ -4,6 +4,8 @@
 
 Build playable web-based versions of the 12 hyper-casual game types documented in `docs/research/`. Each game is deployed as its own standalone static site. A hub page links to all games but each game is fully self-contained — playable at its own URL with zero dependency on the hub or other games. Every game includes automated playtesting that proves levels are completable and core mechanics function correctly.
 
+**Note:** Bus Jam was implemented as a 13th game beyond the original 12-game scope. It is a 2D puzzle game that follows the same architecture as Phase 1 games and is fully documented in section 1.5 below.
+
 ---
 
 ## Technology Stack
@@ -173,7 +175,8 @@ mobile-gaming/
 │       ├── bridge-race/
 │       ├── giant-runner/
 │       ├── jelly-shift/
-│       └── makeover-run/
+│       ├── makeover-run/
+│       └── bus-jam/           # 13th game — 2D puzzle, Phaser 3
 ├── tests/
 │   ├── solvers/            # algorithmic solvers that prove levels are completable
 │   ├── unit/               # per-game state machine and logic tests
@@ -798,6 +801,137 @@ Brain Teaser levels are hand-crafted — each puzzle is a unique lateral-thinkin
 - Load game → verify correct vehicle count renders
 - Drag target vehicle when path is blocked → verify it stops at obstruction
 - Execute solver's solution via drag automation → verify win animation
+
+---
+
+#### 1.5 Bus Jam
+
+**State model:**
+```
+{
+  grid: { cols: 6, rows: 6 },
+  buses: [
+    { id: "bus1", x: 1, y: 2, color: "red", passengers: 0, capacity: 3, direction: "right", exited: false },
+    { id: "bus2", x: 3, y: 4, color: "blue", passengers: 0, capacity: 3, direction: "up", exited: false },
+    ...
+  ],
+  stops: [
+    { x: 2, y: 1, color: "red", waiting: ["red", "red", "red"] },
+    { x: 4, y: 3, color: "blue", waiting: ["blue", "blue", "blue"] },
+    ...
+  ],
+  exits: [{ x: 5, y: 2 }],
+  roads: Set<"[x,y]">,  // set of "[x,y]" strings for O(1) road lookup
+  moves: 0,
+  selectedBus: null,
+  pathPreview: null,
+  animating: false,
+  won: false
+}
+```
+
+**Level format (JSON):**
+```json
+{
+  "id": "bj-001",
+  "difficulty": 0.15,
+  "optimal": 8,
+  "grid": { "cols": 6, "rows": 6 },
+  "buses": [
+    { "id": "bus1", "x": 1, "y": 2, "color": "red", "passengers": 0, "capacity": 3, "direction": "right" },
+    { "id": "bus2", "x": 3, "y": 4, "color": "blue", "passengers": 0, "capacity": 3, "direction": "up" }
+  ],
+  "stops": [
+    { "x": 2, "y": 1, "color": "red", "waiting": ["red", "red", "red"] },
+    { "x": 4, "y": 3, "color": "blue", "waiting": ["blue", "blue", "blue"] }
+  ],
+  "exits": [{ "x": 5, "y": 2 }],
+  "roads": [[0,2], [1,2], [2,2], [3,2], [4,2], [5,2], [2,1], [2,3], [3,4], [4,4]]
+}
+```
+
+**Core logic (`state.js`):**
+1. `isRoad(state, x, y)` → check if cell is a road (O(1) Set lookup)
+2. `getBusAt(state, x, y)` → returns bus at grid position or null
+3. `getStopAt(state, x, y)` → returns stop at grid position or null
+4. `isExit(state, x, y)` → check if cell is an exit
+5. `getValidMoves(state, bus)` → list of adjacent road cells not occupied by another bus
+6. `findPath(state, bus, targetX, targetY)` → BFS pathfinding; returns array of `{x, y, direction}` steps or null if unreachable
+7. `canBoard(state, bus)` → check if bus is adjacent to a matching-color stop with waiting passengers
+8. `boardPassenger(state, bus)` → remove one passenger from stop, increment bus passenger count
+9. `canExit(state, bus)` → check if bus is full and at an exit cell
+10. `executeExit(state, bus)` → mark bus as exited
+11. `checkWin(state)` → all buses exited AND all stops empty
+12. `getHint(state)` → priority-based hint system:
+    - Priority 1: Bus that can board passengers
+    - Priority 2: Full bus that can reach exit (with path)
+    - Priority 3: Bus that can reach matching stop (with path)
+    - Priority 4: Any valid move
+13. `cloneState(state)` → deep clone for undo/redo history
+
+**Rendering (`renderer.js`):**
+- Background: Sky gradient (top 35%) with building silhouettes and lit windows; grass below
+- Roads: Dark asphalt cells with dashed white center lines
+- Stops: Sidewalk base with color tint overlay; stop sign pole and circle head
+- Waiting passengers: Cartoon-style figures (circle head + rounded body) arranged in grid on stop
+- Buses: Rounded rectangle body with color, roof stripe, windows with glare, headlights (front-facing), drop shadow
+- Capacity indicators: Dots on bus showing passengers vs capacity; checkmark when full
+- Exit: Green glow circle with "EXIT" text and arrow
+- Path preview: Blue line from selected bus to target cell when hovering
+- Color-match glow: Line connecting bus to matching stop when within proximity
+- **Phaser migration:** Complete. `BusJamScene` class extends Phaser.Scene. Background uses gradient fill with building rectangles. Roads, stops, buses rendered via `Graphics` objects. Path preview via `Graphics.strokePath()`. Animations use `tweens.add()` with ease functions. `gridToCanvas()`, `canvasToGrid()`, `hitTestBusAt()` extracted as pure functions for testing.
+
+**Input:**
+- Tap bus → select (highlighted with glow ring)
+- Tap selected bus again → deselect
+- Tap road cell while bus selected → find path, animate movement along path
+- Hover road cell while bus selected → show path preview
+- Bus auto-boards when adjacent to matching stop (all passengers board one at a time)
+- Bus auto-exits when full and on exit cell
+- **Phaser migration:** Complete. Uses `scene.input.on('pointerdown')` and `scene.input.on('pointermove')`. No raw pointer event listeners.
+
+**Level generation (`generator.js`):**
+1. Choose difficulty preset (easy/medium/hard) → grid size, bus count, stop count, color count
+2. Create roads: all interior cells are roads (full grid connectivity)
+3. Place buses at random road positions (avoid overlaps)
+4. Place stops at random positions with matching colors to buses
+5. Place exit on edge cell
+6. No solver validation needed — full-grid road connectivity guarantees solvability
+
+**Automated playtesting:**
+
+*Solver (`tests/solvers/bus-jam-solver.test.js`):*
+- Input: level JSON
+- Algorithm: Greedy hint-following — at each step, call `getHint()` and execute one action:
+  - If hint type is `"board"`: board one passenger
+  - If hint type is `"exit"` or `"move"`: advance bus one step along hint path
+  - Auto-exit any full bus sitting on exit before each hint check
+- Returns: true if level reaches win condition within maxSteps (2000)
+- Completes all 30 hand-crafted levels
+
+*Unit tests:*
+- `isRoad`, `getBusAt`, `getStopAt`, `isExit` return correct values
+- `getValidMoves` returns all adjacent road cells not occupied
+- `findPath` returns shortest path for reachable targets, null for unreachable
+- `canBoard` detects adjacent matching stop with passengers
+- `boardPassenger` increments bus passenger count, decrements stop waiting
+- `canExit` returns true only for full buses at exit cells
+- `checkWin` returns true only when all buses exited and stops empty
+
+*Integration tests:*
+- For every level in `levels/bus-jam/*.json`: run solver → assert solution exists
+- For every level: apply solver solution → assert final state is won
+- Validate schema: every level has required fields, bus count matches stop count
+- Generated levels: generate 10 per difficulty tier → all have required fields
+
+*E2E tests (Playwright):*
+- Load game → verify correct bus/stop/exit count renders
+- Tap bus → verify selection glow appears
+- Tap road cell while selected → verify bus animates along path
+- Move bus adjacent to matching stop → verify auto-boarding animation
+- Fill bus and move to exit → verify auto-exit and win overlay
+
+**Note:** Bus Jam is the 13th game implemented, beyond the original 12-game scope documented in this plan. It was added as a 2D puzzle game using Phaser 3 and follows the same architecture as other Phase 1 games.
 
 ---
 
