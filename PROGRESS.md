@@ -13,7 +13,8 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 4. ✅ **Parking Escape** — Complete
 5. ✅ **Satisfying ASMR** — Complete
 6. ✅ **Pull the Pin** — Complete
-7. ✅ **Shared utilities cleanup** — Complete
+7. ✅ **Bus Jam** — Complete
+8. ✅ **Shared utilities cleanup** — Complete
 
 ---
 
@@ -205,9 +206,33 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ---
 
-## In Progress
+### Bus Jam ✅
 
-*None - all migrations complete*
+**Commit:** Pre-existing (migration already complete)
+
+**Changes:**
+- `renderer.js`: Phaser 3 implementation (BusJamScene)
+  - Converted Canvas 2D to Phaser.Game and Phaser.Scene
+  - Preserved sky + building silhouette background for city atmosphere
+  - Preserved cartoon bus with headlights, bumper, drop shadow
+  - Preserved passenger figures: head + body + smiley face
+  - Preserved sidewalk curb border around stops
+  - Preserved color-match glow line between bus and matching stop
+  - Preserved bus movement animations with ease-out
+  - Preserved exit animations
+  - Preserved path preview for selected bus
+  - Extracted `gridToCanvas`, `canvasToGrid`, `hitTestBusAt` as pure functions
+
+- `input.js`: Simplified for Phaser pointer events
+  - Input handling done by Phaser scene's pointer events
+  - Kept fallback canvas listeners for testing compatibility
+
+- `game.js`: Refactored for Phaser Scene lifecycle
+  - Initialize renderer with state for Phaser scene init
+  - Use `createInput` for Phaser callback wiring
+  - Initialize state before renderer for Phaser scene init
+
+**Tests:** All 5378 tests pass
 
 ---
 
@@ -224,16 +249,20 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 - Removed corresponding test files
 - Updated `tests/unit/ux-polish.test.js` to remove tests for deleted modules
 
-**Tests:** All 5374 tests pass
+**Tests:** All 5378 tests pass
 
 ---
 
+## In Progress
+
+*None - all migrations complete*
+
 ---
 
-## Verification (2026-03-28)
+## Verification (2026-05-05)
 
-- All 5374 tests pass
-- All 7 migration steps complete
+- All 5378 tests pass
+- All 8 migration steps complete (including Bus Jam)
 - Project is fully migrated from Canvas 2D to Phaser 3
 
 ---
