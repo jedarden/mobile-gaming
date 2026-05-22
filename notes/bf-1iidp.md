@@ -1,56 +1,76 @@
-# Level Corpus Quality Audit (bf-1iidp)
+# Level Corpus Quality Audit (Bead bf-1iidp)
 
-## Plan vs Actual
+## Executive Summary
 
-### Plan Specification (Content Pipeline §1849-1850)
+The committed level corpus meets or exceeds target counts for 11 of 12 games, but **fails to implement the plan's quality curation pipeline**. The plan specifies a "generate 200 → solver-rank → hand-pick best" approach for Water Sort, Parking Escape, and Pull the Pin, with selection based on solver move counts and interesting intermediate states. **This pipeline was not implemented.**
 
-| Game | Plan Process |
-|------|--------------|
-| Water Sort | Generate 200 → rank by solver move count → pick levels with interesting intermediate states |
-| Parking Escape | Generate 200 → rank by optimal move count → hand-pick |
+## Plan Requirements vs Actual Implementation
 
-### Actual Implementation
+### Water Sort
+- **Plan**: "Generator → solver-rank → hand-pick best | Generate 200, rank by solver move count, pick levels with interesting intermediate states | 30 (10 easy, 10 medium, 10 hard)"
+- **Actual**: 30 levels with good difficulty distribution (0.05-0.98), but levels are hand-designed, not selected from 200 generated candidates
+- **Evidence**: `scripts/curate-levels.js` directly defines levels as JSON objects; no ranking logic exists
 
-The curation script (`scripts/curate-levels.js`) shows a different approach:
+### Parking Escape  
+- **Plan**: "Generator → solver-rank → hand-pick | 30 levels | Same pipeline; rank by optimal move count"
+- **Actual**: Only 10 levels exist (not 30), with IDs like `pe-gen-easy-0-102` indicating direct generation without curation
+- **Gap**: Missing 20 levels
 
-**Water Sort:**
-- First 24 levels read from existing `src/games/water-sort/levels.json`
-- Levels ws-025 through ws-030 hand-crafted with explicit tube configurations
-- No evidence of generating 200 levels and ranking them
+### Pull the Pin
+- **Plan**: "Generator → solver-rank → hand-pick | 20 levels | Physics makes generation less reliable; more manual curation"
+- **Actual**: 20 levels exist, but no evidence of solver-based ranking or intermediate state analysis
+- **Status**: Count correct, curation method unknown
 
-**Parking Escape:**
-- All 30 levels explicitly defined in the curation script
-- Each level hand-crafted with `targetMoves` field
-- No generation/ranking pipeline executed
+### Merge Games
+- **Plan**: "Generator | 15 levels"
+- **Actual**: 11 levels (4 short), with `mg-gen-easy-0-1` style IDs indicating direct generation
+- **Gap**: Missing 4 levels
 
-**Other Games:**
-- Pull the Pin: 20 hand-authored levels
-- Merge Games: Generated with specific seeds (5 easy @ seed 1001, 5 medium @ 2001, 5 hard @ 3001)
-- Satisfying ASMR: Generated with specific seeds (4 easy @ 2001, 3 medium @ 3001, 3 hard @ 4001)
+### Satisfying ASMR
+- **Plan**: "Generator | 10 levels"
+- **Actual**: 11 levels (1 over target - acceptable margin), with `asmr-gen-*` IDs
+- **Status**: Acceptable
 
-## Quality Assessment
+## Current Level Counts
 
-### What Works
-- All levels have verified optimal move counts (`optimal` for water-sort, `targetMoves` for parking-escape)
-- Levels are properly sorted by difficulty (easy → medium → hard progression)
-- Level counts meet or exceed plan targets
+| Game | Current | Target | Status |
+|------|---------|--------|--------|
+| water-sort | 30 | 30 | ✅ Count, ❌ Quality pipeline |
+| brain-teaser | 25 | 25 | ✅ |
+| pull-the-pin | 20 | 20 | ✅ Count, ❓ Quality pipeline |
+| parking-escape | 10 | 30 | ❌ Missing 20 |
+| merge-games | 11 | 15 | ❌ Missing 4 |
+| satisfying-asmr | 11 | 10 | ✅ |
+| crowd-runner | 20 | 20 | ✅ |
+| giant-runner | 20 | 20 | ✅ |
+| jelly-shift | 15 | 15 | ✅ |
+| makeover-run | 12 | 15 | ❌ Missing 3 |
+| bridge-race | 15 | 15 | ✅ |
+| save-the-character | 20 | 20 | ✅ |
+| bus-jam | 30 | ? | ✅ (no target specified) |
 
-### Gap from Plan
-The "interesting intermediate states" criterion from the plan cannot be verified because:
-1. No intermediate state data is captured in level files
-2. No ranking from a larger pool occurred
-3. Selection was hand-crafted, not data-driven
+## Missing Implementation
 
-## Conclusion
+### No Ranking Script
+No script exists that:
+1. Generates 200 candidate levels
+2. Runs solver on each to get move counts
+3. Ranks by move count or difficulty
+4. Analyzes intermediate states for "interesting" properties
+5. Selects top N levels
 
-The committed levels are **high quality and playable**, but they do **not follow the plan's specified curation pipeline**. The levels were hand-crafted rather than generated at scale and ranked. This is a process deviation, not a quality issue—the levels themselves are valid and well-structured.
+### No Intermediate State Analysis
+The plan specifies "pick levels with interesting intermediate states" but no code evaluates intermediate state properties (e.g., symmetry, near-solution states, branching factor).
+
+### Curate Script Doesn't Implement Curation
+`scripts/curate-levels.js` is a misnomer—it directly defines level JSON rather than implementing any selection or ranking logic.
 
 ## Recommendation
 
-If the plan's "generate 200 → rank" approach is desired for future level additions, it would require:
-1. A bulk generation script that produces N candidates
-2. Solver analysis that captures intermediate state diversity
-3. A ranking/scoring function that weights move count + state variety
-4. Selection of top-K levels from ranked candidates
+To fully satisfy the plan's quality bar, implement the curation pipeline for the specified games:
 
-For the current corpus, the hand-crafted approach is sufficient for shipping.
+1. **Water Sort**: Generate 200 levels per difficulty tier → rank by solver move count → select 10 best per tier based on intermediate state diversity
+2. **Parking Escape**: Generate 200 levels → rank by optimal move count → select 30 with spread across difficulty ranges
+3. **Pull the Pin**: Generate 200 levels → rank by solver success rate → select 20 with interesting pin-ordering dependencies
+
+Alternatively, if the current hand-crafted levels are deemed sufficient quality, update the plan to reflect the actual approach used.
