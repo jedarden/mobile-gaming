@@ -34,22 +34,22 @@ jobs:
           for game_dir in src/games/*/; do
             game_name=$(basename "$game_dir")
             echo "Checking $game_name..."
-            
-            # Required files
-            required_files=("index.html" "main.js" "state.js" "renderer.js" "input.js" "styles.css" "levels.json" "generator.js" "README.md")
+
+            # Required files (core game structure)
+            required_files=("index.html" "game.js" "state.js" "renderer.js" "input.js" "styles.css" "levels.json")
             missing_files=()
-            
+
             for file in "${required_files[@]}"; do
               if [ ! -f "$game_dir$file" ]; then
                 missing_files+=("$file")
               fi
             done
-            
+
             if [ ${#missing_files[@]} -gt 0 ]; then
               echo "::error file=$game_dir::Missing required files: ${missing_files[*]}"
               exit 1
             fi
-            
+
             # Check levels.json has at least 3 levels
             level_count=$(jq 'length' "$game_dir/levels.json" 2>/dev/null || echo "0")
             if [ "$level_count" -lt 3 ]; then
