@@ -30,6 +30,12 @@ The local WorkflowTemplate file had an incorrect build command:
 
 Note: This file appears to be unused by the actual CI/CD pipeline (the sensor uses `website-build`), but it's now consistent with the correct build order.
 
+## Git History
+
+- **Initial setup**: Commit 7ae2dda (April 4, 2026) - Added mobile-gaming to both EventSource and Sensor
+- **Build command fix**: Commit 7402f29 (May 5, 2026) - "fix(ci): gate mobile-gaming deploys on tests and level validation"
+- The configuration has been in place for nearly 2 months
+
 ## Verification
 
 No changes needed to declarative-config - the Argo Events configuration is already complete and correct.
