@@ -15,7 +15,7 @@ spec:
     - name: build-dir
       value: .
     - name: build-command
-      value: npm ci && npm run build && npm test
+      value: npm ci && npm test && npm run test:levels && npm run build
     - name: output-dir
       value: dist
     - name: cf-project
