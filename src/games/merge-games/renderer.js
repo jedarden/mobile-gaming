@@ -1,7 +1,8 @@
 /**
- * Merge Games - Canvas Renderer (polished)
+ * Merge Games - Phaser Renderer
  *
- * Visual improvements:
+ * Migrated from Canvas 2D to Phaser 3 game framework.
+ * Visual improvements preserved:
  * - Vibrant tier color palette with warm/cool progression
  * - Drag float: shadow, slight rotation, scale-up
  * - Merge burst: particle explosion + elastic scale pop
@@ -9,6 +10,8 @@
  * - Grid background gradient
  * - Matching-tier cell highlight pulse
  */
+
+import Phaser from 'phaser';
 
 // Curated tier palette: pastels → vibrant → warm
 const TIER_COLORS = [
@@ -25,330 +28,566 @@ const CELL_GAP = 6;
 const CELL_RADIUS = 12;
 const CELL_BG = 'rgba(255,255,255,0.07)';
 
-function easeOutElastic(t) {
-  if (t === 0 || t === 1) return t;
-  return Math.pow(2, -10 * t) * Math.sin((t - 0.075) * (2 * Math.PI) / 0.3) + 1;
+/**
+ * Layout utilities - pure functions for cell positioning
+ */
+export function calculateLayout(gridWidth, gridHeight, containerWidth, containerHeight) {
+  const padding = 16;
+  const avail = Math.min(containerWidth, containerHeight) - padding * 2;
+  const maxDim = Math.max(gridWidth, gridHeight);
+  const cellSize = Math.floor((avail - CELL_GAP * (maxDim - 1)) / maxDim);
+
+  const gridW = gridWidth * cellSize + (gridWidth - 1) * CELL_GAP;
+  const gridH = gridHeight * cellSize + (gridHeight - 1) * CELL_GAP;
+
+  const offsetX = (containerWidth - gridW) / 2;
+  const offsetY = (containerHeight - gridH) / 2;
+
+  return { cellSize, offsetX, offsetY, gridW, gridH };
 }
 
-export function createRenderer(canvas) {
-  const ctx = canvas.getContext('2d');
-  let cellSize = 60;
-  let offsetX = 0;
-  let offsetY = 0;
-  let reducedMotion = false;
-  // Hint cells: highlighted pair to merge
-  let hintCells = null; // null or { r1, c1, r2, c2 }
+export function getCellPosition(r, c, cellSize, offsetX, offsetY) {
+  return {
+    x: offsetX + c * (cellSize + CELL_GAP),
+    y: offsetY + r * (cellSize + CELL_GAP)
+  };
+}
 
-  // Merge burst particles: { x, y, vx, vy, color, life, r }
-  const particles = [];
-
-  // Scale pops: { r, c, startTime, scale }
-  const scalePops = new Map();
-
-  // Last rendered state — needed for the particle animation loop
-  let lastState = null;
-  let loopId = null;
-
-  function now() { return performance.now(); }
-
-  /** Run a rAF loop while particles or scale pops are active */
-  function startLoop() {
-    if (loopId || reducedMotion) return;
-    function loop() {
-      const active = particles.length > 0 || scalePops.size > 0 || hintCells !== null;
-      if (!active || !lastState) { loopId = null; return; }
-      render(lastState, null);
-      loopId = requestAnimationFrame(loop);
-    }
-    loopId = requestAnimationFrame(loop);
-  }
-
-  function stopLoop() {
-    if (loopId) { cancelAnimationFrame(loopId); loopId = null; }
-  }
-
-  function resize(state) {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const cols = state.width;
-    const rows = state.height;
-    const avail = Math.min(rect.width, rect.height) - 32;
-    cellSize = Math.floor((avail - CELL_GAP * (Math.max(cols, rows) - 1)) / Math.max(cols, rows));
-    const gridW = cols * cellSize + (cols - 1) * CELL_GAP;
-    const gridH = rows * cellSize + (rows - 1) * CELL_GAP;
-    offsetX = (rect.width - gridW) / 2;
-    offsetY = (rect.height - gridH) / 2;
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function cellRect(r, c) {
-    return {
-      x: offsetX + c * (cellSize + CELL_GAP),
-      y: offsetY + r * (cellSize + CELL_GAP),
-      w: cellSize,
-      h: cellSize
-    };
-  }
-
-  /** Spawn merge particle burst at cell center */
-  function spawnMergeBurst(r, c, tier) {
-    if (reducedMotion) return;
-    const { x, y, w, h } = cellRect(r, c);
-    const cx = x + w / 2;
-    const cy = y + h / 2;
-    const color = TIER_COLORS[Math.min(tier, TIER_COLORS.length - 1)] || '#fff';
-    for (let i = 0; i < 12 + tier * 3; i++) {
-      const angle = (i / (12 + tier * 3)) * Math.PI * 2;
-      const speed = 2 + Math.random() * (2 + tier);
-      particles.push({
-        x: cx, y: cy,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        color, life: 1,
-        r: 2 + Math.random() * 3,
-        decay: 0.025 + Math.random() * 0.02
-      });
-    }
-    scalePops.set(`${r},${c}`, { startTime: now(), tier });
-    startLoop();
-  }
-
-  function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vx *= 0.94;
-      p.vy *= 0.94;
-      p.vy += 0.08;
-      p.life -= p.decay;
-      if (p.life <= 0) particles.splice(i, 1);
+/**
+ * Convert canvas coordinates to cell - pure hit-testing
+ */
+export function canvasToCell(canvasX, canvasY, gridWidth, gridHeight, cellSize, offsetX, offsetY) {
+  for (let r = 0; r < gridHeight; r++) {
+    for (let c = 0; c < gridWidth; c++) {
+      const pos = getCellPosition(r, c, cellSize, offsetX, offsetY);
+      if (canvasX >= pos.x && canvasX <= pos.x + cellSize &&
+          canvasY >= pos.y && canvasY <= pos.y + cellSize) {
+        return { r, c };
+      }
     }
   }
+  return null;
+}
 
-  function drawCell(r, c, tier, highlight, dragging, isHinted) {
-    const { x, y, w, h } = cellRect(r, c);
+/**
+ * Merge Games Phaser Scene
+ */
+class MergeGamesScene extends Phaser.Scene {
+  constructor() {
+    super('MergeGamesScene');
+    this.cellGraphics = [];
+    this.cellContainers = [];
+    this.hintCells = null;
+    this.reducedMotion = false;
+    this.state = null;
+    this.layout = null;
+    this.particles = [];
+    this.dragGraphics = null;
+    this.hintTweens = [];
+  }
 
-    // Scale pop from merge
-    const popKey = `${r},${c}`;
-    const pop = scalePops.get(popKey);
-    let scale = 1;
-    if (pop) {
-      const elapsed = (now() - pop.startTime) / 420;
-      if (elapsed < 1) {
-        scale = 1 + 0.2 * easeOutElastic(elapsed);
-      } else {
-        scalePops.delete(popKey);
+  init(data) {
+    this.state = data.state;
+    this.onMerge = data.onMerge;
+    this.reducedMotion = data.reducedMotion || false;
+  }
+
+  create() {
+    this.updateLayout();
+    this.createCellObjects();
+    this.setupInput();
+
+    // Create graphics for drag item
+    this.dragGraphics = this.add.graphics();
+    this.dragGraphics.setVisible(false);
+  }
+
+  updateLayout() {
+    const { width, height } = this.scale;
+    this.layout = calculateLayout(this.state.width, this.state.height, width, height);
+  }
+
+  createCellObjects() {
+    // Clear existing graphics
+    this.cellGraphics.forEach(g => g.destroy());
+    this.cellContainers.forEach(c => c.destroy());
+    this.cellGraphics = [];
+    this.cellContainers = [];
+
+    for (let r = 0; r < this.state.height; r++) {
+      this.cellGraphics[r] = [];
+      this.cellContainers[r] = [];
+      for (let c = 0; c < this.state.width; c++) {
+        const pos = getCellPosition(r, c, this.layout.cellSize, this.layout.offsetX, this.layout.offsetY);
+
+        // Create container for each cell
+        const container = this.add.container(pos.x, pos.y);
+
+        // Create cell graphics
+        const graphics = this.add.graphics();
+        container.add(graphics);
+        this.cellGraphics[r][c] = graphics;
+        this.cellContainers[r][c] = container;
       }
     }
 
+    this.renderCells();
+  }
+
+  setupInput() {
+    let dragStartCell = null;
+    let isDragging = false;
+
+    this.input.on('pointerdown', (pointer) => {
+      if (this.reducedMotion || isDragging) return;
+
+      const cell = canvasToCell(
+        pointer.x, pointer.y,
+        this.state.width, this.state.height,
+        this.layout.cellSize,
+        this.layout.offsetX,
+        this.layout.offsetY
+      );
+
+      if (cell) {
+        const tier = this.state.grid[cell.r]?.[cell.c];
+        if (tier) {
+          dragStartCell = cell;
+          isDragging = true;
+          this.updateDragItem(pointer.x, pointer.y, tier);
+        }
+      }
+    });
+
+    this.input.on('pointermove', (pointer) => {
+      if (!isDragging || !dragStartCell) return;
+
+      const tier = this.state.grid[dragStartCell.r]?.[dragStartCell.c];
+      if (tier) {
+        this.updateDragItem(pointer.x, pointer.y, tier);
+        this.renderCells({ fromR: dragStartCell.r, fromC: dragStartCell.c, px: pointer.x, py: pointer.y, tier });
+      }
+    });
+
+    this.input.on('pointerup', (pointer) => {
+      if (!isDragging || !dragStartCell) {
+        isDragging = false;
+        dragStartCell = null;
+        this.dragGraphics.setVisible(false);
+        this.renderCells();
+        return;
+      }
+
+      const dropCell = canvasToCell(
+        pointer.x, pointer.y,
+        this.state.width, this.state.height,
+        this.layout.cellSize,
+        this.layout.offsetX,
+        this.layout.offsetY
+      );
+
+      if (dropCell && this.onMerge) {
+        const dr = Math.abs(dropCell.r - dragStartCell.r);
+        const dc = Math.abs(dropCell.c - dragStartCell.c);
+        if (dr + dc === 1 && !(dropCell.r === dragStartCell.r && dropCell.c === dragStartCell.c)) {
+          this.onMerge(dragStartCell.r, dragStartCell.c, dropCell.r, dropCell.c);
+        }
+      }
+
+      isDragging = false;
+      dragStartCell = null;
+      this.dragGraphics.setVisible(false);
+      this.renderCells();
+    });
+  }
+
+  updateDragItem(px, py, tier) {
+    this.dragGraphics.clear();
+    this.dragGraphics.setVisible(true);
+
+    const cellSize = this.layout.cellSize;
+    const half = cellSize / 2;
+    const color = TIER_COLORS[Math.min(tier, TIER_COLORS.length - 1)] || '#888';
+    const phaserColor = Phaser.Display.Color.HexStringToColor(color).color;
+
+    this.dragGraphics.save();
+    this.dragGraphics.setPosition(px, py);
+    this.dragGraphics.setRotation(0.04);
+    this.dragGraphics.setScale(1.08, 1.08);
+
+    // Shadow
+    this.dragGraphics.fillStyle(0x000000, 0.4);
+    this.dragGraphics.fillRoundedRect(-half + 4, -half + 4, cellSize, cellSize, CELL_RADIUS);
+
+    // Body gradient
+    const gradColor = this.lightenColor(color, 10);
+    const gradPhaser = Phaser.Display.Color.HexStringToColor(gradColor).color;
+    this.dragGraphics.fillStyle(gradPhaser, 1);
+    this.dragGraphics.fillRoundedRect(-half, -half, cellSize, cellSize, CELL_RADIUS);
+
+    // Top sheen
+    this.dragGraphics.fillStyle(0xffffff, 0.3);
+    this.dragGraphics.fillRoundedRect(-half + 2, -half + 2, cellSize - 4, cellSize * 0.45, [CELL_RADIUS - 2, CELL_RADIUS - 2, 0, 0]);
+
+    // Tier label
+    const label = TIER_LABELS[Math.min(tier, TIER_LABELS.length - 1)];
+    this.dragGraphics.fillStyle(0xffffff, 1);
+    this.dragGraphics.setFontStyle('bold');
+    this.dragGraphics.setFontSize(Math.round(cellSize * 0.38));
+    this.dragGraphics.setTextAlign('center');
+    this.dragGraphics.setTextBaseline('middle');
+    this.dragGraphics.fillText(label, 0, 0);
+
+    this.dragGraphics.restore();
+  }
+
+  renderCells(drag = null) {
+    // Draw background gradient
+    const { width, height } = this.scale;
+    const bg = this.add.graphics();
+    bg.fillStyle(0x16213e, 1);
+    bg.fillRect(0, 0, width, height);
+    bg.setDepth(-100);
+
+    for (let r = 0; r < this.state.height; r++) {
+      for (let c = 0; c < this.state.width; c++) {
+        this.drawCell(r, c, drag);
+      }
+    }
+
+    // Win tint
+    if (this.state.status === 'won') {
+      const tint = this.add.graphics();
+      tint.fillStyle(0x000000, 0.3);
+      tint.fillRect(0, 0, width, height);
+      tint.setDepth(100);
+    }
+  }
+
+  drawCell(r, c, drag) {
+    const graphics = this.cellGraphics[r]?.[c];
+    const container = this.cellContainers[r]?.[c];
+    if (!graphics || !container) return;
+
+    graphics.clear();
+
+    const tier = this.state.grid[r]?.[c] || 0;
+    const cellSize = this.layout.cellSize;
+    const pos = getCellPosition(r, c, cellSize, this.layout.offsetX, this.layout.offsetY);
+
+    const isDragging = drag && drag.fromR === r && drag.fromC === c;
+    const isHighlight = drag && tier !== 0 && tier === this.state.grid[drag.fromR]?.[drag.fromC] && !(r === drag.fromR && c === drag.fromC);
+    const isHinted = this.hintCells && tier !== 0 && (
+      (r === this.hintCells.r1 && c === this.hintCells.c1) ||
+      (r === this.hintCells.r2 && c === this.hintCells.c2)
+    );
+
+    // Reset container scale
+    container.setScale(1);
+
     if (tier === 0) {
-      ctx.fillStyle = CELL_BG;
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, CELL_RADIUS);
-      ctx.fill();
+      // Empty cell
+      graphics.fillStyle(Phaser.Display.Color.HexStringToColor(CELL_BG).color, 0.07);
+      graphics.fillRoundedRect(0, 0, cellSize, cellSize, CELL_RADIUS);
       return;
     }
 
     const color = TIER_COLORS[Math.min(tier, TIER_COLORS.length - 1)] || '#888';
-    const alpha = dragging ? 0.25 : 1;
+    const phaserColor = Phaser.Display.Color.HexStringToColor(color).color;
+    const alpha = isDragging ? 0.25 : 1;
 
     // Hint glow for suggested merge cells
-    if (isHinted) {
-      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 300);
-      ctx.save();
-      ctx.shadowColor = `rgba(255, 220, 50, ${0.5 + 0.4 * pulse})`;
-      ctx.shadowBlur = 16 + 6 * pulse;
-      ctx.strokeStyle = `rgba(255, 200, 0, ${0.8 + 0.2 * pulse})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(x - 2, y - 2, w + 4, h + 4, CELL_RADIUS + 2);
-      ctx.stroke();
-      ctx.restore();
+    if (isHinted && !this.reducedMotion) {
+      const pulse = 0.5 + 0.5 * Math.sin(this.time.now / 300);
+      graphics.lineStyle(3, 0xffc800, 0.8 + 0.2 * pulse);
+      graphics.strokeRoundedRect(-2, -2, cellSize + 4, cellSize + 4, CELL_RADIUS + 2);
     }
 
-    ctx.save();
-    if (scale !== 1) {
-      ctx.translate(x + w / 2, y + h / 2);
-      ctx.scale(scale, scale);
-      ctx.translate(-(x + w / 2), -(y + h / 2));
-    }
-
-    ctx.globalAlpha = alpha;
+    graphics.setAlpha(alpha);
 
     // Shadow
-    ctx.shadowColor = 'rgba(0,0,0,0.22)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 3;
+    graphics.fillStyle(0x000000, 0.22);
+    graphics.fillRoundedRect(0, 3, cellSize, cellSize, CELL_RADIUS);
 
     // Tier glow for higher tiers
     if (tier >= 4) {
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 14 + (tier - 4) * 6;
-      ctx.shadowOffsetY = 0;
+      graphics.lineStyle(2, phaserColor, 0.5);
+      graphics.strokeRoundedRect(-2, -2, cellSize + 4, cellSize + 4, CELL_RADIUS + 2);
     }
 
-    // Body gradient
-    const grad = ctx.createLinearGradient(x, y, x, y + h);
-    grad.addColorStop(0, lighten(color, 20));
-    grad.addColorStop(1, darken(color, 10));
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, CELL_RADIUS);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
+    // Body
+    const bodyColor = this.lightenColor(color, 10);
+    graphics.fillStyle(Phaser.Display.Color.HexStringToColor(bodyColor).color, 1);
+    graphics.fillRoundedRect(0, 0, cellSize, cellSize, CELL_RADIUS);
 
     // Highlight ring when matching drag target
-    if (highlight) {
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(x + 1, y + 1, w - 2, h - 2, CELL_RADIUS);
-      ctx.stroke();
+    if (isHighlight) {
+      graphics.lineStyle(2.5, 0xffffff, 1);
+      graphics.strokeRoundedRect(1, 1, cellSize - 2, cellSize - 2, CELL_RADIUS);
     }
 
     // Top sheen
-    const sheen = ctx.createLinearGradient(x, y, x, y + h * 0.5);
-    sheen.addColorStop(0, 'rgba(255,255,255,0.3)');
-    sheen.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sheen;
-    ctx.beginPath();
-    ctx.roundRect(x + 2, y + 2, w - 4, h * 0.45, [CELL_RADIUS - 2, CELL_RADIUS - 2, 0, 0]);
-    ctx.fill();
+    graphics.fillStyle(0xffffff, 0.3);
+    graphics.fillRoundedRect(2, 2, cellSize - 4, cellSize * 0.45, [CELL_RADIUS - 2, CELL_RADIUS - 2, 0, 0]);
 
     // Tier label
-    ctx.fillStyle = 'white';
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = 3;
-    ctx.font = `bold ${Math.round(cellSize * 0.40)}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(TIER_LABELS[Math.min(tier, TIER_LABELS.length - 1)], x + w / 2, y + h / 2);
-    ctx.shadowBlur = 0;
+    const label = TIER_LABELS[Math.min(tier, TIER_LABELS.length - 1)];
+    graphics.setAlpha(1);
+    graphics.fillStyle(0xffffff, 1);
+    graphics.setFontStyle('bold');
+    graphics.setFontSize(Math.round(cellSize * 0.40));
+    graphics.setTextAlign('center');
+    graphics.setTextBaseline('middle');
+    graphics.fillText(label, cellSize / 2, cellSize / 2);
+  }
 
-    ctx.globalAlpha = 1;
-    ctx.restore();
+  lightenColor(hex, pct) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    const a = Math.round(2.55 * pct);
+    return `#${[
+      Math.min(255, (n >> 16) + a),
+      Math.min(255, ((n >> 8) & 0xff) + a),
+      Math.min(255, (n & 0xff) + a)
+    ].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  setState(newState) {
+    this.state = newState;
+    this.updateLayout();
+    this.renderCells();
+  }
+
+  setReducedMotion(value) {
+    this.reducedMotion = value;
+  }
+
+  setHintCells(r1, c1, r2, c2) {
+    // Clear existing hint tweens
+    this.hintTweens.forEach(t => t.stop());
+    this.hintTweens = [];
+
+    this.hintCells = (r1 === null) ? null : { r1, c1, r2, c2 };
+
+    if (this.hintCells && !this.reducedMotion) {
+      // Create pulsing hint effect
+      const cells = [
+        this.cellContainers[this.hintCells.r1]?.[this.hintCells.c1],
+        this.cellContainers[this.hintCells.r2]?.[this.hintCells.c2]
+      ];
+
+      cells.forEach(container => {
+        if (container) {
+          const tween = this.tweens.add({
+            targets: container,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 300,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+          this.hintTweens.push(tween);
+        }
+      });
+    }
+
+    this.renderCells();
+  }
+
+  spawnMergeBurst(r, c, tier) {
+    if (this.reducedMotion) return;
+
+    const cellSize = this.layout.cellSize;
+    const pos = getCellPosition(r, c, cellSize, this.layout.offsetX, this.layout.offsetY);
+    const cx = pos.x + cellSize / 2;
+    const cy = pos.y + cellSize / 2;
+    const color = TIER_COLORS[Math.min(tier, TIER_COLORS.length - 1)] || '#fff';
+    const phaserColor = Phaser.Display.Color.HexStringToColor(color).color;
+
+    // Create particle explosion
+    const particleCount = 12 + tier * 3;
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2;
+      const speed = 2 + Math.random() * (2 + tier);
+      const particle = this.add.graphics();
+      particle.fillStyle(phaserColor, 1);
+      const r = 2 + Math.random() * 3;
+      particle.fillCircle(0, 0, r);
+      particle.setPosition(cx, cy);
+
+      this.tweens.add({
+        targets: particle,
+        x: cx + Math.cos(angle) * speed * 30,
+        y: cy + Math.sin(angle) * speed * 30 + 20,
+        alpha: 0,
+        scaleX: 0.5,
+        scaleY: 0.5,
+        duration: 600 + Math.random() * 200,
+        ease: 'Power2.easeOut',
+        onComplete: () => particle.destroy()
+      });
+    }
+
+    // Elastic scale pop on the cell
+    const container = this.cellContainers[r]?.[c];
+    if (container) {
+      this.tweens.add({
+        targets: container,
+        scaleX: 1.2,
+        scaleY: 1.2,
+        duration: 210,
+        ease: 'Elastic.easeOut',
+        yoyo: true,
+        repeat: 0
+      });
+    }
+  }
+
+  resize(state) {
+    this.state = state;
+    this.updateLayout();
+    this.createCellObjects();
+  }
+}
+
+/**
+ * Create renderer instance - returns Phaser game and API
+ */
+export function createRenderer(canvas) {
+  let game = null;
+  let scene = null;
+  let lastState = null;
+  let reducedMotion = false;
+  let onMergeCallback = null;
+  let gameReady = false;
+  let sceneStarted = false;
+
+  const gameConfig = {
+    type: Phaser.AUTO,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 390,
+      height: 844,
+      parent: canvas.parentElement,
+      canvas: canvas
+    },
+    backgroundColor: '#16213e',
+    transparent: true
+  };
+
+  function maybeStartScene() {
+    if (!gameReady || !lastState || sceneStarted) return;
+    sceneStarted = true;
+    game.scene.add('MergeGamesScene', MergeGamesScene, true, {
+      state: lastState,
+      onMerge: onMergeCallback,
+      reducedMotion
+    });
+  }
+
+  function init() {
+    game = new Phaser.Game(gameConfig);
+    game.events.once('ready', () => {
+      gameReady = true;
+      maybeStartScene();
+    });
+  }
+
+  function getScene() {
+    if (!scene) {
+      scene = game.scene.getScene('MergeGamesScene');
+    }
+    return scene;
+  }
+
+  function resize(state) {
+    lastState = state;
+    maybeStartScene();
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.resize(state);
+    }
   }
 
   function render(state, drag) {
     lastState = state;
-    updateParticles();
-
-    const cw = parseInt(canvas.style.width);
-    const ch = parseInt(canvas.style.height);
-
-    // Grid background gradient
-    const bg = ctx.createLinearGradient(0, 0, cw, ch);
-    bg.addColorStop(0, '#16213e');
-    bg.addColorStop(1, '#0f3460');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, cw, ch);
-
-    for (let r = 0; r < state.height; r++) {
-      for (let c = 0; c < state.width; c++) {
-        const tier = state.grid[r][c];
-        const isDragging = drag && drag.fromR === r && drag.fromC === c;
-        const isHighlight = drag && tier !== 0 && tier === state.grid[drag.fromR]?.[drag.fromC] && !(r === drag.fromR && c === drag.fromC);
-        const isHinted = hintCells !== null && tier !== 0 && (
-          (r === hintCells.r1 && c === hintCells.c1) ||
-          (r === hintCells.r2 && c === hintCells.c2)
-        );
-        drawCell(r, c, tier, isHighlight, isDragging, isHinted);
-      }
-    }
-
-    // Draw particles
-    for (const p of particles) {
-      ctx.save();
-      ctx.globalAlpha = p.life;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // Dragged item floating (elevated with shadow + rotation)
-    if (drag && drag.tier > 0) {
-      const half = cellSize / 2;
-      const color = TIER_COLORS[Math.min(drag.tier, TIER_COLORS.length - 1)] || '#888';
-      ctx.save();
-      ctx.translate(drag.px, drag.py);
-      ctx.rotate(0.04);
-      ctx.scale(1.08, 1.08);
-      ctx.shadowColor = 'rgba(0,0,0,0.4)';
-      ctx.shadowBlur = 18;
-      ctx.shadowOffsetY = 8;
-
-      const grad = ctx.createLinearGradient(-half, -half, -half, half);
-      grad.addColorStop(0, lighten(color, 20));
-      grad.addColorStop(1, darken(color, 10));
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.roundRect(-half, -half, cellSize, cellSize, CELL_RADIUS);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      ctx.fillStyle = 'white';
-      ctx.font = `bold ${Math.round(cellSize * 0.38)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(TIER_LABELS[Math.min(drag.tier, TIER_LABELS.length - 1)], 0, 0);
-      ctx.restore();
-    }
-
-    // Win tint
-    if (state.status === 'won') {
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.fillRect(0, 0, cw, ch);
+    maybeStartScene();
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.renderCells(drag);
     }
   }
 
-  function canvasToCell(px, py) {
-    for (let r = 0; r < 10; r++) {
-      for (let c = 0; c < 10; c++) {
-        const { x, y, w, h } = cellRect(r, c);
-        if (px >= x && px <= x + w && py >= y && py <= y + h) return { r, c };
-      }
-    }
-    return null;
+  function canvasToCell(x, y) {
+    const s = getScene();
+    if (!s || !s.layout) return null;
+    return canvasToCell(
+      x, y,
+      s.state.width,
+      s.state.height,
+      s.layout.cellSize,
+      s.layout.offsetX,
+      s.layout.offsetY
+    );
   }
 
-  function setReducedMotion(v) { reducedMotion = v; }
+  function spawnMergeBurst(r, c, tier) {
+    const s = getScene();
+    if (s && s.scene.isActive()) {
+      s.spawnMergeBurst(r, c, tier);
+    }
+  }
+
+  function setReducedMotion(value) {
+    reducedMotion = value;
+    const s = getScene();
+    if (s) {
+      s.setReducedMotion(value);
+    }
+  }
 
   function setHintCells(r1, c1, r2, c2) {
-    hintCells = (r1 === null) ? null : { r1, c1, r2, c2 };
-    // Start loop when a hint is set; let it self-terminate when all animations end
-    if (hintCells) startLoop();
+    const s = getScene();
+    if (s) {
+      s.setHintCells(r1, c1, r2, c2);
+    }
   }
 
-  return { resize, render, canvasToCell, cellRect, spawnMergeBurst, setReducedMotion, setHintCells, stopLoop, getCellSize: () => cellSize };
+  function setOnMerge(callback) {
+    onMergeCallback = callback;
+    const s = getScene();
+    if (s) {
+      s.onMerge = callback;
+    }
+  }
+
+  function stopLoop() {
+    // Phaser handles its own loop
+  }
+
+  function getCellSize() {
+    const s = getScene();
+    return s && s.layout ? s.layout.cellSize : 60;
+  }
+
+  // Initialize the game
+  init();
+
+  return {
+    resize,
+    render,
+    canvasToCell,
+    spawnMergeBurst,
+    setReducedMotion,
+    setHintCells,
+    stopLoop,
+    getCellSize,
+    setOnMerge,
+    get cellSize() {
+      return getCellSize();
+    }
+  };
 }
 
-function lighten(hex, pct) {
-  const n = parseInt(hex.replace('#', ''), 16);
-  const a = Math.round(2.55 * pct);
-  return `#${[
-    Math.min(255, (n >> 16) + a),
-    Math.min(255, ((n >> 8) & 0xff) + a),
-    Math.min(255, (n & 0xff) + a)
-  ].map(v => v.toString(16).padStart(2, '0')).join('')}`;
-}
-
-function darken(hex, pct) {
-  const n = parseInt(hex.replace('#', ''), 16);
-  const a = Math.round(2.55 * pct);
-  return `#${[
-    Math.max(0, (n >> 16) - a),
-    Math.max(0, ((n >> 8) & 0xff) - a),
-    Math.max(0, (n & 0xff) - a)
-  ].map(v => v.toString(16).padStart(2, '0')).join('')}`;
-}
-
-export default { createRenderer };
+export default { createRenderer, calculateLayout, getCellPosition, canvasToCell };

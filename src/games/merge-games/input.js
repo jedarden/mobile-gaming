@@ -3,81 +3,54 @@
  *
  * Drag a tile from one cell and drop on an adjacent cell.
  * If same tier → merge. If empty → move (not supported, only merge).
+ *
+ * With Phaser, input is handled by the scene, so this module
+ * provides a thin wrapper to wire up callbacks.
  */
 
-import { disableTouchActions } from '../../shared/input.js';
+/**
+ * Create input handler for Merge Games
+ *
+ * @param {Object} options - Configuration
+ * @param {HTMLCanvasElement} options.canvas - Game canvas element (used by Phaser)
+ * @param {Object} options.renderer - Renderer instance (Phaser game wrapper)
+ * @param {Function} options.getState - Function to get current game state
+ * @param {Function} options.onMerge - Callback when a merge occurs: (r1, c1, r2, c2)
+ * @returns {Object} Input controller with init() and destroy() methods
+ */
+export function createInput(options) {
+  const { renderer, getState, onMerge } = options;
+  let initialized = false;
 
-export function createInput({ canvas, renderer, getState, onMerge }) {
-  let drag = null;
-  let listeners = [];
-
-  function add(el, ev, fn, opts) {
-    el.addEventListener(ev, fn, opts);
-    listeners.push(() => el.removeEventListener(ev, fn, opts));
-  }
-
-  function getPoint(e) {
-    const touch = e.touches ? e.touches[0] : e;
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top
-    };
-  }
-
-  function onDown(e) {
-    e.preventDefault();
-    const { x, y } = getPoint(e);
-    const state = getState();
-    if (!state || state.status !== 'playing') return;
-    const cell = renderer.canvasToCell(x, y);
-    if (!cell) return;
-    const tier = state.grid[cell.r]?.[cell.c];
-    if (!tier) return;
-    drag = { fromR: cell.r, fromC: cell.c, tier, px: x, py: y };
-    renderer.render(state, drag);
-  }
-
-  function onMove(e) {
-    e.preventDefault();
-    if (!drag) return;
-    const { x, y } = getPoint(e);
-    drag.px = x;
-    drag.py = y;
-    const state = getState();
-    if (state) renderer.render(state, drag);
-  }
-
-  function onUp(_e) {
-    if (!drag) return;
-    const state = getState();
-    if (state) {
-      const cell = renderer.canvasToCell(drag.px, drag.py);
-      if (cell && !(cell.r === drag.fromR && cell.c === drag.fromC)) {
-        const dr = Math.abs(cell.r - drag.fromR);
-        const dc = Math.abs(cell.c - drag.fromC);
-        if (dr + dc === 1) { // adjacent
-          onMerge(drag.fromR, drag.fromC, cell.r, cell.c);
-        }
-      }
-      renderer.render(state, null);
-    }
-    drag = null;
-  }
-
+  /**
+   * Initialize input handling
+   * Wire up callback to renderer's Phaser scene
+   */
   function init() {
-    disableTouchActions(canvas);
-    add(canvas, 'mousedown', onDown);
-    add(canvas, 'mousemove', onMove);
-    add(window, 'mouseup', onUp);
-    add(canvas, 'touchstart', onDown, { passive: false });
-    add(canvas, 'touchmove', onMove, { passive: false });
-    add(window, 'touchend', onUp);
+    if (initialized) return;
+
+    // The renderer handles input via Phaser scene
+    // We just need to set the callback
+    if (renderer && renderer.setOnMerge) {
+      renderer.setOnMerge((r1, c1, r2, c2) => {
+        const state = getState();
+        if (state && state.status === 'playing') {
+          onMerge(r1, c1, r2, c2);
+        }
+      });
+    }
+
+    initialized = true;
   }
 
+  /**
+   * Remove input listeners
+   */
   function destroy() {
-    listeners.forEach(fn => fn());
-    listeners = [];
+    if (renderer && renderer.setOnMerge) {
+      renderer.setOnMerge(null);
+    }
+    initialized = false;
   }
 
   return { init, destroy };

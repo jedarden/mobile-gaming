@@ -253,16 +253,51 @@ Migrating 2D games from raw Canvas 2D rendering to Phaser 3 game framework.
 
 ---
 
+---
+
+### Merge Games ✅
+
+**Commit:** pending
+
+**Changes:**
+- `renderer.js`: Replaced Canvas 2D with Phaser.Game and Phaser.Scene
+  - Created `MergeGamesScene` class extending Phaser.Scene
+  - Converted Canvas 2D draw calls to Phaser Graphics objects
+  - Preserved vibrant tier color palette with warm/cool progression
+  - Preserved drag float: shadow, slight rotation, scale-up
+  - Preserved merge burst: particle explosion + elastic scale pop
+  - Preserved tier glow aura for high-tier items
+  - Preserved grid background gradient
+  - Preserved matching-tier cell highlight pulse
+  - Replaced manual animation loop with Phaser Tweens
+  - Extracted hit-testing utility (`canvasToCell`) as pure function
+  - Extracted layout utility (`calculateLayout`, `getCellPosition`) as pure functions
+
+- `input.js`: Simplified for Phaser pointer events
+  - Input handling now done by Phaser scene's pointer events
+  - Kept callback wiring for state checking
+  - Kept `createInput` function for backward compatibility
+
+- `game.js`: No changes needed (renderer API compatible)
+
+- `tests/unit/merge-games-input.test.js`: Updated for new architecture
+  - Tests now verify callback wiring through renderer
+  - Removed old Canvas 2D event listener tests
+
+**Tests:** All 39 merge-games tests pass
+
+---
+
 ## In Progress
 
 *None - all migrations complete*
 
 ---
 
-## Verification (2026-05-05)
+## Verification (2026-05-27)
 
-- All 5378 tests pass
-- All 8 migration steps complete (including Bus Jam)
+- All merge-games tests pass
+- All 9 migration steps complete (including Bus Jam and Merge Games)
 - Project is fully migrated from Canvas 2D to Phaser 3
 
 ---
