@@ -1,56 +1,39 @@
-# Argo Events CI for mobile-gaming - Status
+# Argo Events CI Verification (bf-3yfhu)
 
-## Date: 2026-05-26
+## Status: Already Configured
 
-## Finding: Argo Events Configuration Already Complete
+All Argo Events CI configuration for mobile-gaming was already in place in `jedarden/declarative-config`.
 
-The declarative-config repository already has the complete Argo Events configuration for mobile-gaming:
+## Verified Configuration
 
-### 1. github-eventsource.yml (/home/coding/declarative-config/k8s/iad-ci/argo-events/github-eventsource.yml)
-- Lines 400-420: `mobile-gaming` webhook entry configured
-- Endpoint: `/mobile-gaming`
-- Events: `push`
+### 1. EventSource
+**File**: `k8s/iad-ci/argo-events/github-eventsource.yml`
+- mobile-gaming webhook entry exists (endpoint: `/mobile-gaming`)
+- Added in initial iad-ci setup (commit `7ae2dda`)
 
-### 2. website-build-sensor.yml (/home/coding/declarative-config/k8s/iad-ci/argo-events/website-build-sensor.yml)
-- Lines 48-60: `mobile-gaming-push` dependency configured
-- Lines 159-183: `mobile-gaming-deploy` trigger configured
-- Build command (line 181): `"npm ci && npm test && npm run test:levels && npm run build"` ✓ CORRECT
+### 2. Sensor
+**File**: `k8s/iad-ci/argo-events/website-build-sensor.yml`
+- `mobile-gaming-push` dependency configured (filters on `push` to `refs/heads/main`)
+- `mobile-gaming-deploy` trigger configured
+- Uses parameterized `website-build` WorkflowTemplate
 
-### 3. WorkflowTemplate
-- Uses the parameterized `website-build` template (not a game-specific one)
-- The `website-build-workflowtemplate.yml` accepts a `build-command` parameter
-- The sensor passes the correct build command as a parameter
+### 3. Build Command
+**Correct order**: `"npm ci && npm test && npm run test:levels && npm run build"`
+- Tests run BEFORE build (failing test blocks deployment without wasting build time)
+- Fixed in commit `7402f29` (2026-05-05)
 
-## Changes Made
+### 4. WorkflowTemplate
+**File**: `k8s/iad-ci/argo-workflows/website-build-workflowtemplate.yml`
+- Parameterized template `website-build` exists
+- Accepts: `repo`, `branch`, `build-dir`, `build-command`, `output-dir`, `cf-project`
 
-### Fixed .workflow/mobile-gaming-build.yaml
-The local WorkflowTemplate file had an incorrect build command:
-- Before: `npm ci && npm run build && npm test` (wrong order, missing test:levels)
-- After: `npm ci && npm test && npm run test:levels && npm run build`
+## Local .workflow File
 
-Note: This file appears to be unused by the actual CI/CD pipeline (the sensor uses `website-build`), but it's now consistent with the correct build order.
+The local `.workflow/mobile-gaming-build.yaml` is redundant:
+- CI uses the parameterized `website-build` template via the sensor
+- Local file has correct build command but is not deployed
+- Can be kept for reference or removed
 
-## Git History
+## No Changes Required
 
-- **Initial setup**: Commit 7ae2dda (April 4, 2026) - Added mobile-gaming to both EventSource and Sensor
-- **Build command fix**: Commit 7402f29 (May 5, 2026) - "fix(ci): gate mobile-gaming deploys on tests and level validation"
-- The configuration has been in place for nearly 2 months
-
-## Verification
-
-No changes needed to declarative-config - the Argo Events configuration is already complete and correct.
-
-To verify CI is working:
-1. Push to mobile-gaming main branch
-2. Check the workflow runs at: https://argo-ci.ardenone.com
-3. Verify the build command includes all test steps
-
-## Architecture
-
-The setup uses a shared `website-build` WorkflowTemplate that is parameterized:
-- `repo`: jedarden/mobile-gaming
-- `build-command`: npm ci && npm test && npm run test:levels && npm run build
-- `cf-project`: mobile-gaming
-- `output-dir`: dist
-
-This is the same pattern used by other website repos (jedarden.com, morejoyfulyou.com, etc.).
+All configuration was already present and correct. No changes to declarative-config were needed.
