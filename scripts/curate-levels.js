@@ -113,9 +113,9 @@ function generateAndRankWaterSort() {
   console.log('\n── Water Sort: Generate-200-and-Rank Pipeline ──');
 
   const tiers = [
-    { name: 'easy',   difficulty: 0.2, count: 200, maxMoves: 50 },
-    { name: 'medium', difficulty: 0.5, count: 200, maxMoves: 80 },
-    { name: 'hard',   difficulty: 0.8, count: 200, maxMoves: 120 }
+    { name: 'easy',   difficulty: 0.2, count: 50, maxMoves: 50 },
+    { name: 'medium', difficulty: 0.5, count: 50, maxMoves: 80 },
+    { name: 'hard',   difficulty: 0.8, count: 50, maxMoves: 120 }
   ];
 
   const allCandidates = [];
@@ -210,9 +210,9 @@ function generateAndRankParkingEscape() {
   console.log('\n── Parking Escape: Generate-200-and-Rank Pipeline ──');
 
   const tiers = [
-    { name: 'easy',   difficulty: 'easy',   count: 200, maxMoves: 50 },
-    { name: 'medium', difficulty: 'medium', count: 200, maxMoves: 100 },
-    { name: 'hard',   difficulty: 'hard',   count: 200, maxMoves: 150 }
+    { name: 'easy',   difficulty: 'easy',   count: 50, maxMoves: 50 },
+    { name: 'medium', difficulty: 'medium', count: 50, maxMoves: 100 },
+    { name: 'hard',   difficulty: 'hard',   count: 50, maxMoves: 150 }
   ];
 
   const allCandidates = [];
