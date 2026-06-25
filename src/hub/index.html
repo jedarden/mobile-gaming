@@ -13,6 +13,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <title>Mobile Games Hub</title>
   <link rel="stylesheet" href="./styles.css">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
 </head>
 <body>
   <div class="container">
@@ -286,5 +290,20 @@
   </div>
 
   <script src="./hub.js" type="module"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('SW registered:', registration);
+          })
+          .catch(error => {
+            console.log('SW registration failed:', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
