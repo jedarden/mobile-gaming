@@ -10,13 +10,13 @@
  *      the generator's own validateLevel() is called to confirm solvability.
  *
  * Usage:
- *   node scripts/validate-levels.js              # schema + generator (5 per tier, fast CI)
- *   node scripts/validate-levels.js --count 100  # 100 per tier (slower, for nightly CI)
+ *   node scripts/validate-levels.js              # schema + generator (100 per tier, per plan)
+ *   node scripts/validate-levels.js --count 5      # 5 per tier (faster, for quick testing)
  *   node scripts/validate-levels.js --schema-only # schema validation only
  *
- * Tier-2 validation (nightly CI):
- *   Per the plan, water-sort and parking-escape should validate 100 levels per game
- *   per difficulty tier. Use --count 100 for this comprehensive validation.
+ * Tier-2 validation (per plan, now default):
+ *   All games validate 100 levels per game per difficulty tier by default,
+ *   as specified in the plan. Use --count 5 for faster iteration during development.
  */
 
 import { readFileSync, readdirSync } from 'fs';
@@ -34,7 +34,7 @@ const args = process.argv.slice(2);
 const SCHEMA_ONLY = args.includes('--schema-only');
 const COUNT = (() => {
   const idx = args.indexOf('--count');
-  return idx !== -1 ? parseInt(args[idx + 1], 10) || 5 : 5;
+  return idx !== -1 ? parseInt(args[idx + 1], 10) || 100 : 100;
 })();
 
 // Per-game schema mapping (game directory name → schema filename)

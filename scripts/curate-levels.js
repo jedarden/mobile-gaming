@@ -107,15 +107,15 @@ function calculateParkingDiversity(level, solution) {
  * Generate and rank levels for Water Sort.
  * Pipeline: generate 200 per tier → solve → rank by (move count, diversity) → pick top 30 across all tiers
  *
- * OPTIMIZATION: Uses tier-specific maxMoves limits and progress logging to complete in reasonable time.
+ * This is the plan-required "Generate-200-and-Rank" pipeline.
  */
 function generateAndRankWaterSort() {
   console.log('\n── Water Sort: Generate-200-and-Rank Pipeline ──');
 
   const tiers = [
-    { name: 'easy',   difficulty: 0.2, count: 50, maxMoves: 50 },
-    { name: 'medium', difficulty: 0.5, count: 50, maxMoves: 80 },
-    { name: 'hard',   difficulty: 0.8, count: 50, maxMoves: 120 }
+    { name: 'easy',   difficulty: 0.2, count: 200, maxMoves: 50 },
+    { name: 'medium', difficulty: 0.5, count: 200, maxMoves: 80 },
+    { name: 'hard',   difficulty: 0.8, count: 200, maxMoves: 120 }
   ];
 
   const allCandidates = [];
@@ -163,8 +163,8 @@ function generateAndRankWaterSort() {
       seed++;
       globalIndex++;
 
-      // Progress logging every 50 levels
-      if ((i + 1) % 50 === 0) {
+      // Progress logging every 10 levels
+      if ((i + 1) % 10 === 0) {
         console.log(`    Progress: ${i + 1}/${tier.count} (solved: ${solved}, unsolved: ${unsolved}, invalid: ${invalid})`);
       }
     }
@@ -203,16 +203,16 @@ function generateAndRankWaterSort() {
  * Generate and rank levels for Parking Escape.
  * Pipeline: generate 200 per tier → solve → rank by (move count, diversity) → pick top 30 across all tiers
  *
- * OPTIMIZATION: Uses tier-specific maxMoves limits and progress logging. Parking escape solver
+ * This is the plan-required "Generate-200-and-Rank" pipeline. Parking escape solver
  * is faster than water-sort, so we can use higher limits.
  */
 function generateAndRankParkingEscape() {
   console.log('\n── Parking Escape: Generate-200-and-Rank Pipeline ──');
 
   const tiers = [
-    { name: 'easy',   difficulty: 'easy',   count: 50, maxMoves: 50 },
-    { name: 'medium', difficulty: 'medium', count: 50, maxMoves: 100 },
-    { name: 'hard',   difficulty: 'hard',   count: 50, maxMoves: 150 }
+    { name: 'easy',   difficulty: 'easy',   count: 200, maxMoves: 50 },
+    { name: 'medium', difficulty: 'medium', count: 200, maxMoves: 100 },
+    { name: 'hard',   difficulty: 'hard',   count: 200, maxMoves: 150 }
   ];
 
   const allCandidates = [];
@@ -260,8 +260,8 @@ function generateAndRankParkingEscape() {
 
       globalIndex++;
 
-      // Progress logging every 50 levels
-      if ((i + 1) % 50 === 0) {
+      // Progress logging every 10 levels
+      if ((i + 1) % 10 === 0) {
         console.log(`    Progress: ${i + 1}/${levels.length} (solved: ${solved}, unsolved: ${unsolved}, invalid: ${invalid})`);
       }
     }
