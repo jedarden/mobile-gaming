@@ -1,0 +1,29 @@
+{
+  "id": "ws-044",
+  "difficulty": 0.2,
+  "tubes": [
+    [
+      "blue",
+      "green",
+      "green",
+      "red"
+    ],
+    [
+      "red",
+      "green",
+      "green",
+      "blue"
+    ],
+    [
+      "red",
+      "red",
+      "blue",
+      "blue"
+    ],
+    [],
+    []
+  ],
+  "maxSegments": 4,
+  "colorCount": 3,
+  "optimal": 7
+}
