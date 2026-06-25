@@ -24,3 +24,11 @@ Fixed the CI workflow to include the missing `npm run test:levels` validation st
 ## Verification
 
 The CI now properly validates level schemas and runs generator verification in the unit test phase, ensuring broken levels or generator issues are caught early in the pipeline.
+
+## Re-verification (2025-06-25)
+
+Verified both workflow templates are still in the correct state:
+- `.workflow/mobile-gaming-build.yaml`: Contains `npm ci && npm test && npm run test:levels && npm run build && npm run test:bundle-size` ✓
+- `declarative-config`: CI workflow includes `npm run test:levels` in unit step ✓
+
+No changes needed - the fix from May 2026 remains in place.
