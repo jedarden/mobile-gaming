@@ -1,33 +1,5 @@
 [
   {
-    "id": "ws-122",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "blue",
-        "red",
-        "red"
-      ],
-      [
-        "green",
-        "green",
-        "blue",
-        "blue"
-      ],
-      [
-        "green",
-        "green",
-        "red",
-        "red"
-      ],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 4
-  },
-  {
     "id": "ws-150",
     "difficulty": 0.2,
     "tubes": [
@@ -57,12 +29,18 @@
     "optimal": 4
   },
   {
-    "id": "ws-067",
+    "id": "ws-122",
     "difficulty": 0.2,
     "tubes": [
       [
-        "green",
         "blue",
+        "blue",
+        "red",
+        "red"
+      ],
+      [
+        "green",
+        "green",
         "blue",
         "blue"
       ],
@@ -70,19 +48,13 @@
         "green",
         "green",
         "red",
-        "green"
-      ],
-      [
-        "red",
-        "red",
-        "red",
-        "blue"
+        "red"
       ],
       []
     ],
     "maxSegments": 4,
     "colorCount": 3,
-    "optimal": 5
+    "optimal": 4
   },
   {
     "id": "ws-119",
@@ -141,6 +113,176 @@
     "maxSegments": 4,
     "colorCount": 3,
     "optimal": 5
+  },
+  {
+    "id": "ws-067",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "blue",
+        "blue",
+        "blue"
+      ],
+      [
+        "green",
+        "green",
+        "red",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "red",
+        "blue"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 5
+  },
+  {
+    "id": "ws-072",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "red",
+        "red",
+        "red",
+        "blue"
+      ],
+      [
+        "green",
+        "blue",
+        "blue",
+        "green"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "red"
+      ],
+      [],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 6
+  },
+  {
+    "id": "ws-108",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "green",
+        "blue",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "green",
+        "blue"
+      ],
+      [
+        "blue",
+        "blue",
+        "red",
+        "red"
+      ],
+      [],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 6
+  },
+  {
+    "id": "ws-060",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "green",
+        "green",
+        "blue"
+      ],
+      [
+        "red",
+        "red",
+        "blue",
+        "red"
+      ],
+      [
+        "blue",
+        "blue",
+        "green",
+        "red"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 6
+  },
+  {
+    "id": "ws-076",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "blue",
+        "blue",
+        "red",
+        "blue"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "red",
+        "green"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 6
+  },
+  {
+    "id": "ws-091",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "blue",
+        "blue",
+        "red",
+        "red"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "red"
+      ],
+      [
+        "green",
+        "green",
+        "red",
+        "blue"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 6
   },
   {
     "id": "ws-002",
@@ -257,375 +399,38 @@
     "optimal": 6
   },
   {
-    "id": "ws-060",
+    "id": "ws-124",
     "difficulty": 0.2,
     "tubes": [
       [
-        "green",
-        "green",
-        "green",
-        "blue"
-      ],
-      [
-        "red",
-        "red",
-        "blue",
-        "red"
-      ],
-      [
-        "blue",
-        "blue",
-        "green",
-        "red"
-      ],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 6
-  },
-  {
-    "id": "ws-072",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "red",
-        "red",
-        "red",
-        "blue"
-      ],
-      [
-        "green",
+        "yellow",
         "blue",
         "blue",
         "green"
       ],
       [
-        "green",
-        "green",
         "blue",
+        "red",
+        "red",
         "red"
+      ],
+      [
+        "green",
+        "green",
+        "green",
+        "red"
+      ],
+      [
+        "yellow",
+        "yellow",
+        "blue",
+        "yellow"
       ],
       [],
       []
     ],
     "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 6
-  },
-  {
-    "id": "ws-076",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "blue",
-        "red",
-        "blue"
-      ],
-      [
-        "green",
-        "green",
-        "blue",
-        "green"
-      ],
-      [
-        "red",
-        "red",
-        "red",
-        "green"
-      ],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 6
-  },
-  {
-    "id": "ws-091",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "blue",
-        "red",
-        "red"
-      ],
-      [
-        "green",
-        "green",
-        "blue",
-        "red"
-      ],
-      [
-        "green",
-        "green",
-        "red",
-        "blue"
-      ],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 6
-  },
-  {
-    "id": "ws-108",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "green",
-        "green",
-        "blue",
-        "green"
-      ],
-      [
-        "red",
-        "red",
-        "green",
-        "blue"
-      ],
-      [
-        "blue",
-        "blue",
-        "red",
-        "red"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 6
-  },
-  {
-    "id": "ws-003",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "green",
-        "green",
-        "red"
-      ],
-      [
-        "blue",
-        "red",
-        "red",
-        "green"
-      ],
-      [
-        "green",
-        "red",
-        "blue",
-        "blue"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-004",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "red",
-        "red",
-        "red"
-      ],
-      [
-        "green",
-        "blue",
-        "green",
-        "blue"
-      ],
-      [
-        "blue",
-        "green",
-        "green",
-        "red"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-005",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "red",
-        "green",
-        "blue",
-        "green"
-      ],
-      [
-        "blue",
-        "red",
-        "red",
-        "red"
-      ],
-      [
-        "green",
-        "blue",
-        "blue",
-        "green"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-013",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "red",
-        "blue",
-        "red",
-        "blue"
-      ],
-      [
-        "green",
-        "red",
-        "red",
-        "blue"
-      ],
-      [
-        "blue",
-        "green",
-        "green",
-        "green"
-      ],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-018",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "blue",
-        "red",
-        "green"
-      ],
-      [
-        "red",
-        "blue",
-        "green",
-        "green"
-      ],
-      [
-        "red",
-        "red",
-        "blue",
-        "green"
-      ],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-021",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "green",
-        "blue",
-        "red",
-        "red"
-      ],
-      [
-        "green",
-        "blue",
-        "blue",
-        "red"
-      ],
-      [
-        "blue",
-        "green",
-        "green",
-        "red"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-033",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "green",
-        "blue",
-        "green",
-        "green"
-      ],
-      [
-        "red",
-        "red",
-        "green",
-        "blue"
-      ],
-      [
-        "red",
-        "red",
-        "blue",
-        "blue"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-044",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "blue",
-        "green",
-        "green",
-        "red"
-      ],
-      [
-        "red",
-        "green",
-        "green",
-        "blue"
-      ],
-      [
-        "red",
-        "red",
-        "blue",
-        "blue"
-      ],
-      [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
+    "colorCount": 4,
     "optimal": 7
   },
   {
@@ -680,34 +485,6 @@
         "green"
       ],
       [],
-      []
-    ],
-    "maxSegments": 4,
-    "colorCount": 3,
-    "optimal": 7
-  },
-  {
-    "id": "ws-087",
-    "difficulty": 0.2,
-    "tubes": [
-      [
-        "green",
-        "green",
-        "blue",
-        "blue"
-      ],
-      [
-        "green",
-        "red",
-        "blue",
-        "green"
-      ],
-      [
-        "red",
-        "red",
-        "blue",
-        "red"
-      ],
       []
     ],
     "maxSegments": 4,
@@ -831,6 +608,92 @@
     "optimal": 7
   },
   {
+    "id": "ws-144",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "green",
+        "blue",
+        "green"
+      ],
+      [
+        "blue",
+        "red",
+        "green",
+        "blue"
+      ],
+      [
+        "red",
+        "red",
+        "red",
+        "blue"
+      ],
+      [],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-161",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "blue",
+        "red",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "blue",
+        "blue"
+      ],
+      [
+        "green",
+        "green",
+        "blue",
+        "red"
+      ],
+      [],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-087",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "green",
+        "blue",
+        "blue"
+      ],
+      [
+        "green",
+        "red",
+        "blue",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "blue",
+        "red"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
     "id": "ws-105",
     "difficulty": 0.2,
     "tubes": [
@@ -852,6 +715,147 @@
         "blue",
         "red"
       ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-121",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "blue",
+        "blue",
+        "red",
+        "green"
+      ],
+      [
+        "red",
+        "blue",
+        "blue",
+        "green"
+      ],
+      [
+        "green",
+        "red",
+        "red",
+        "green"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-143",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "blue",
+        "blue",
+        "red"
+      ],
+      [
+        "red",
+        "blue",
+        "green",
+        "green"
+      ],
+      [
+        "green",
+        "red",
+        "red",
+        "blue"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-159",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "green",
+        "green",
+        "red"
+      ],
+      [
+        "red",
+        "blue",
+        "green",
+        "red"
+      ],
+      [
+        "blue",
+        "red",
+        "blue",
+        "blue"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-163",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "green",
+        "blue",
+        "red",
+        "blue"
+      ],
+      [
+        "blue",
+        "blue",
+        "green",
+        "green"
+      ],
+      [
+        "red",
+        "red",
+        "green",
+        "red"
+      ],
+      []
+    ],
+    "maxSegments": 4,
+    "colorCount": 3,
+    "optimal": 7
+  },
+  {
+    "id": "ws-003",
+    "difficulty": 0.2,
+    "tubes": [
+      [
+        "blue",
+        "green",
+        "green",
+        "red"
+      ],
+      [
+        "blue",
+        "red",
+        "red",
+        "green"
+      ],
+      [
+        "green",
+        "red",
+        "blue",
+        "blue"
+      ],
+      [],
       []
     ],
     "maxSegments": 4,
