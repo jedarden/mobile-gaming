@@ -140,7 +140,9 @@ export function generateLevel(seed, difficulty = 'medium', index = 0) {
   const obstacles = [];
 
   // Calculate how many matching orbs we need to beat the boss
-  const targetScale = bossScale * 1.35;
+  // Use a higher multiplier for hard difficulty to account for 70% collection simulation
+  const difficultyMultiplier = difficulty === 'hard' ? 1.55 : 1.35;
+  const targetScale = bossScale * difficultyMultiplier;
   const scaleNeeded = targetScale - startScale;
 
   const avgValue = (MATCHING_VALUE_MIN + MATCHING_VALUE_MAX) / 2;
@@ -264,11 +266,121 @@ export function generateLevels(count = 20) {
   return levels;
 }
 
+/**
+ * Calculate playability metrics for a level.
+ * Higher scores indicate better, more engaging levels.
+ *
+ * Metrics:
+ * - Collectible spacing: even distribution vs clumped
+ * - Wrong-color challenge: not too many, not too few
+ * - Obstacle density: balanced difficulty
+ * - Scale growth curve: smooth progression
+ *
+ * @param {Object} level - Level object
+ * @returns {Object} Metrics object with overall score
+ */
+export function calculatePlayabilityMetrics(level) {
+  const collectibles = level.collectibles || [];
+  const obstacles = level.obstacles || [];
+  const playerColor = level.playerColor || 'blue';
+  const courseLength = level.courseLength || 300;
+
+  // Metric 1: Collectible spacing (0-30 points)
+  const matching = collectibles.filter(c => c.color === playerColor);
+  const spacings = [];
+  for (let i = 1; i < matching.length; i++) {
+    spacings.push(matching[i].z - matching[i - 1].z);
+  }
+  const avgSpacing = spacings.length > 0 ?
+    spacings.reduce((a, b) => a + b, 0) / spacings.length : 0;
+  const spacingVariance = spacings.length > 1 ?
+    Math.max(...spacings) - Math.min(...spacings) : 0;
+  // Prefer moderate variance - not too uniform, not too clumped
+  const spacingScore = spacingVariance > 0 && spacingVariance < avgSpacing * 0.5 ? 30 :
+                       spacingVariance > 0 ? 20 : 10;
+
+  // Metric 2: Wrong-color ratio (0-25 points)
+  const wrongColor = collectibles.filter(c => c.color !== playerColor);
+  const wrongColorRatio = matching.length > 0 ? wrongColor.length / matching.length : 0;
+  // Ideal ratio: 20-35%
+  const wrongColorScore = wrongColorRatio >= 0.2 && wrongColorRatio <= 0.35 ? 25 :
+                          wrongColorRatio >= 0.15 && wrongColorRatio < 0.2 ? 15 :
+                          wrongColorRatio > 0.35 && wrongColorRatio <= 0.5 ? 15 : 5;
+
+  // Metric 3: Obstacle density (0-25 points)
+  const obstacleDensity = obstacles.length / Math.max(1, matching.length);
+  // Ideal: 10-20% of matching collectible count
+  const obstacleScore = obstacleDensity >= 0.1 && obstacleDensity <= 0.2 ? 25 :
+                       obstacleDensity >= 0.05 && obstacleDensity < 0.1 ? 15 :
+                       obstacleDensity > 0.2 && obstacleDensity <= 0.3 ? 15 : 5;
+
+  // Metric 4: Scale growth curve (0-20 points)
+  const optimalScale = calculateOptimalScale(level);
+  const averageScale = calculateAverageScale(level);
+  const bossScale = level.boss.scale || 5;
+  // Check if there's room for growth
+  const growthRoom = optimalScale - bossScale;
+  const growthScore = growthRoom > 0.5 && growthRoom < 2.0 ? 20 :
+                      growthRoom >= 0.2 && growthRoom <= 0.5 ? 10 : 5;
+
+  const totalScore = spacingScore + wrongColorScore + obstacleScore + growthScore;
+
+  return {
+    overall: totalScore,
+    collectibleSpacing: spacingScore,
+    wrongColorBalance: wrongColorScore,
+    obstacleDensity: obstacleScore,
+    growthCurve: growthScore,
+    details: {
+      matchingCount: matching.length,
+      wrongColorCount: wrongColor.length,
+      wrongColorRatio: wrongColorRatio,
+      obstacleCount: obstacles.length,
+      obstacleDensity: obstacleDensity,
+      optimalScale: optimalScale,
+      averageScale: averageScale,
+      growthRoom: growthRoom
+    }
+  };
+}
+
+/**
+ * Rank a list of levels by playability.
+ * Returns levels sorted by score (highest first).
+ *
+ * @param {Object[]} levels - Array of level objects
+ * @returns {Object[]} Sorted levels with metrics attached
+ */
+export function rankLevels(levels) {
+  const levelsWithMetrics = levels.map(level => ({
+    ...level,
+    metrics: calculatePlayabilityMetrics(level)
+  }));
+
+  return levelsWithMetrics.sort((a, b) =>
+    b.metrics.overall - a.metrics.overall
+  );
+}
+
+/**
+ * Curate the best N levels from a ranked list.
+ *
+ * @param {Object[]} rankedLevels - Sorted levels (from rankLevels)
+ * @param {number} count - Number of levels to select
+ * @returns {Object[]} Curated levels
+ */
+export function curateBestLevels(rankedLevels, count) {
+  return rankedLevels.slice(0, Math.min(count, rankedLevels.length));
+}
+
 export default {
   generateLevel,
   generateLevels,
   generateBatch,
   validateLevel,
   calculateOptimalScale,
-  calculateAverageScale
+  calculateAverageScale,
+  calculatePlayabilityMetrics,
+  rankLevels,
+  curateBestLevels
 };

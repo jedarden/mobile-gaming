@@ -1,338 +1,6 @@
 [
   {
-    "id": 1,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 69,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 107.9,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 146.9,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
-      },
-      {
-        "z": 185.8,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 224.6,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 263.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 302.3,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      }
-    ],
-    "speed": 2.1,
-    "difficulty": 0.05
-  },
-  {
-    "id": 2,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 68,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 105.9,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 143.7,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 181.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 219.3,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 257,
-        "hole": {
-          "shape": "wide",
-          "width": 2.5,
-          "height": 0.4
-        }
-      },
-      {
-        "z": 294.6,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 332.2,
-        "hole": {
-          "shape": "wide",
-          "width": 2.5,
-          "height": 0.4
-        }
-      }
-    ],
-    "speed": 2.2,
-    "difficulty": 0.1
-  },
-  {
-    "id": 3,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 2.5,
-          "height": 0.4
-        }
-      },
-      {
-        "z": 66.9,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 103.8,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 140.5,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
-      },
-      {
-        "z": 177.2,
-        "hole": {
-          "shape": "wide",
-          "width": 2.5,
-          "height": 0.4
-        }
-      },
-      {
-        "z": 213.9,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 250.4,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 286.9,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
-      },
-      {
-        "z": 323.3,
-        "hole": {
-          "shape": "wide",
-          "width": 2.5,
-          "height": 0.4
-        }
-      },
-      {
-        "z": 359.6,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      }
-    ],
-    "speed": 2.3,
-    "difficulty": 0.15000000000000002
-  },
-  {
-    "id": 4,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 65.9,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 101.7,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 137.4,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 173,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 208.5,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 243.9,
-        "hole": {
-          "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
-      },
-      {
-        "z": 279.2,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 314.4,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 349.5,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
-      },
-      {
-        "z": 384.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      }
-    ],
-    "speed": 2.4,
-    "difficulty": 0.2
-  },
-  {
-    "id": 5,
+    "id": "js-gen-easy-0-1",
     "walls": [
       {
         "z": 30,
@@ -345,21 +13,21 @@
       {
         "z": 64.9,
         "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
         }
       },
       {
-        "z": 99.6,
+        "z": 99.7,
         "hole": {
           "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
+          "width": 1.25,
+          "height": 0.8
         }
       },
       {
-        "z": 134.3,
+        "z": 134.4,
         "hole": {
           "shape": "tall",
           "width": 0.8,
@@ -367,7 +35,7 @@
         }
       },
       {
-        "z": 168.8,
+        "z": 169,
         "hole": {
           "shape": "wide",
           "width": 2,
@@ -375,23 +43,7 @@
         }
       },
       {
-        "z": 203.1,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 237.4,
-        "hole": {
-          "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
-      },
-      {
-        "z": 271.5,
+        "z": 203.5,
         "hole": {
           "shape": "tall",
           "width": 0.7,
@@ -399,54 +51,46 @@
         }
       },
       {
-        "z": 305.5,
+        "z": 237.89999999999998,
         "hole": {
           "shape": "wide",
           "width": 1.43,
           "height": 0.7
         }
-      },
-      {
-        "z": 339.4,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 373.1,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 406.8,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
       }
     ],
-    "speed": 2.5,
-    "difficulty": 0.25
+    "speed": 1.8,
+    "difficulty": 0.2
   },
   {
-    "id": 6,
+    "id": "js-gen-easy-1-2",
     "walls": [
       {
         "z": 30,
         "hole": {
           "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
+          "width": 2,
+          "height": 0.5
         }
       },
       {
-        "z": 63.9,
+        "z": 64.9,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 99.7,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 134.4,
         "hole": {
           "shape": "tall",
           "width": 0.8,
@@ -454,7 +98,46 @@
         }
       },
       {
-        "z": 97.6,
+        "z": 169,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 203.5,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      },
+      {
+        "z": 237.89999999999998,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 272.2,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      }
+    ],
+    "speed": 1.8,
+    "difficulty": 0.2
+  },
+  {
+    "id": "js-gen-easy-2-3",
+    "walls": [
+      {
+        "z": 30,
         "hole": {
           "shape": "wide",
           "width": 2.5,
@@ -462,23 +145,7 @@
         }
       },
       {
-        "z": 131.1,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 164.5,
-        "hole": {
-          "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
-      },
-      {
-        "z": 197.8,
+        "z": 64.9,
         "hole": {
           "shape": "tall",
           "width": 0.6,
@@ -486,31 +153,15 @@
         }
       },
       {
-        "z": 230.9,
+        "z": 99.7,
         "hole": {
           "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
+          "width": 2.5,
+          "height": 0.4
         }
       },
       {
-        "z": 263.8,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 296.6,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 329.3,
+        "z": 134.4,
         "hole": {
           "shape": "tall",
           "width": 0.7,
@@ -518,15 +169,31 @@
         }
       },
       {
-        "z": 361.8,
+        "z": 169,
         "hole": {
           "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
+          "width": 1.67,
+          "height": 0.6
         }
       },
       {
-        "z": 394.1,
+        "z": 203.5,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      },
+      {
+        "z": 237.89999999999998,
+        "hole": {
+          "shape": "wide",
+          "width": 2.5,
+          "height": 0.4
+        }
+      },
+      {
+        "z": 272.2,
         "hole": {
           "shape": "tall",
           "width": 0.5,
@@ -534,11 +201,11 @@
         }
       }
     ],
-    "speed": 2.6,
-    "difficulty": 0.30000000000000004
+    "speed": 1.8,
+    "difficulty": 0.2
   },
   {
-    "id": 7,
+    "id": "js-gen-easy-3-4",
     "walls": [
       {
         "z": 30,
@@ -549,517 +216,157 @@
         }
       },
       {
-        "z": 62.8,
+        "z": 64.9,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 99.7,
+        "hole": {
+          "shape": "wide",
+          "width": 2.5,
+          "height": 0.4
+        }
+      },
+      {
+        "z": 134.4,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 169,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 203.5,
+        "hole": {
+          "shape": "tall",
+          "width": 0.4,
+          "height": 2.5
+        }
+      },
+      {
+        "z": 237.89999999999998,
+        "hole": {
+          "shape": "wide",
+          "width": 1.25,
+          "height": 0.8
+        }
+      },
+      {
+        "z": 272.2,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      }
+    ],
+    "speed": 1.8,
+    "difficulty": 0.2
+  },
+  {
+    "id": "js-gen-easy-4-5",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 64.9,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 99.7,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 134.4,
+        "hole": {
+          "shape": "tall",
+          "width": 0.4,
+          "height": 2.5
+        }
+      },
+      {
+        "z": 169,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 203.5,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 237.89999999999998,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 272.2,
         "hole": {
           "shape": "tall",
           "width": 0.8,
           "height": 1.25
         }
-      },
-      {
-        "z": 95.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 128,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 160.3,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 192.4,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
-      },
-      {
-        "z": 224.3,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 256.1,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 287.7,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 319.1,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 350.4,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 381.5,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 412.4,
-        "hole": {
-          "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
       }
     ],
-    "speed": 2.7,
-    "difficulty": 0.35000000000000003
+    "speed": 1.8,
+    "difficulty": 0.2
   },
   {
-    "id": 8,
+    "id": "js-gen-medium-0-1",
     "walls": [
       {
         "z": 30,
         "hole": {
           "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
-      },
-      {
-        "z": 61.8,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 93.4,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 124.8,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 156,
-        "hole": {
-          "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
-      },
-      {
-        "z": 187,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 217.8,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
-        }
-      },
-      {
-        "z": 248.4,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 278.8,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 309,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 339,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 368.8,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 398.4,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 427.8,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      }
-    ],
-    "speed": 2.8,
-    "difficulty": 0.4
-  },
-  {
-    "id": 9,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 60.8,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 91.3,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 121.6,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 151.7,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 181.6,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 211.3,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 240.7,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 269.9,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 298.9,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
-        }
-      },
-      {
-        "z": 327.6,
-        "hole": {
-          "shape": "wide",
-          "width": 2,
-          "height": 0.5
-        }
-      },
-      {
-        "z": 356.1,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 384.4,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 412.5,
-        "hole": {
-          "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
-        }
-      },
-      {
-        "z": 440.4,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      }
-    ],
-    "speed": 2.9,
-    "difficulty": 0.45
-  },
-  {
-    "id": 10,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
+          "width": 2.5,
+          "height": 0.4
         }
       },
       {
         "z": 59.8,
         "hole": {
           "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 89.3,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 118.5,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 147.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 176.3,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 204.8,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 233,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 261,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 288.8,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 316.3,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 343.5,
-        "hole": {
-          "shape": "tall",
           "width": 0.6,
           "height": 1.67
         }
       },
       {
-        "z": 370.5,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
-        }
-      },
-      {
-        "z": 397.3,
-        "hole": {
-          "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
-        }
-      },
-      {
-        "z": 423.8,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 450,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      }
-    ],
-    "speed": 3,
-    "difficulty": 0.5
-  },
-  {
-    "id": 11,
-    "walls": [
-      {
-        "z": 30,
+        "z": 89.4,
         "hole": {
           "shape": "wide",
           "width": 1.25,
@@ -1067,33 +374,15 @@
         }
       },
       {
-        "z": 58.7,
+        "z": 118.80000000000001,
         "hole": {
           "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
+          "width": 0.8,
+          "height": 1.25
         }
       },
       {
-        "z": 87.2,
-        "hole": {
-          "shape": "wide",
-          "width": 1.43,
-          "height": 0.7
-        }
-      },
-      {
-        "z": 115.4,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
-        }
-      },
-      {
-        "z": 143.3,
+        "z": 148,
         "hole": {
           "shape": "wide",
           "width": 2,
@@ -1101,33 +390,15 @@
         }
       },
       {
-        "z": 170.9,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 198.2,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 225.3,
+        "z": 177,
         "hole": {
           "shape": "tall",
-          "width": 0.6,
-          "height": 1.67
+          "width": 0.7,
+          "height": 1.43
         }
       },
       {
-        "z": 252.1,
+        "z": 205.8,
         "hole": {
           "shape": "wide",
           "width": 1.43,
@@ -1135,17 +406,62 @@
         }
       },
       {
-        "z": 278.6,
+        "z": 234.4,
         "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
         }
       },
       {
-        "z": 304.9,
+        "z": 262.8,
+        "hole": {
+          "shape": "wide",
+          "width": 1.25,
+          "height": 0.8
+        }
+      },
+      {
+        "z": 291,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      },
+      {
+        "z": 319,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      }
+    ],
+    "speed": 2,
+    "difficulty": 0.4
+  },
+  {
+    "id": "js-gen-medium-1-2",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 59.8,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 89.4,
         "hole": {
           "shape": "wide",
           "width": 1.67,
@@ -1153,58 +469,15 @@
         }
       },
       {
-        "z": 330.9,
+        "z": 118.80000000000001,
         "hole": {
           "shape": "tall",
-          "width": 0.7,
-          "height": 1.43
+          "width": 0.8,
+          "height": 1.25
         }
       },
       {
-        "z": 356.6,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 382,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 407.1,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 432,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
-        }
-      }
-    ],
-    "speed": 3.1,
-    "difficulty": 0.55
-  },
-  {
-    "id": 12,
-    "walls": [
-      {
-        "z": 30,
+        "z": 148,
         "hole": {
           "shape": "wide",
           "width": 1.43,
@@ -1212,33 +485,15 @@
         }
       },
       {
-        "z": 57.7,
+        "z": 177,
         "hole": {
           "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
+          "width": 0.6,
+          "height": 1.67
         }
       },
       {
-        "z": 85.1,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 112.2,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 139,
+        "z": 205.8,
         "hole": {
           "shape": "wide",
           "width": 2,
@@ -1246,178 +501,54 @@
         }
       },
       {
-        "z": 165.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 191.7,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.7,
-          "heightH": 1.8,
-          "widthV": 1.8,
-          "heightV": 0.7
-        }
-      },
-      {
-        "z": 217.6,
+        "z": 234.4,
         "hole": {
           "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
+          "width": 0.7,
+          "height": 1.43
         }
       },
       {
-        "z": 243.2,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 268.5,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 293.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 318.2,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 342.6,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 366.7,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 390.5,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 414,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 437.2,
+        "z": 262.8,
         "hole": {
           "shape": "wide",
           "width": 2.5,
           "height": 0.4
         }
+      },
+      {
+        "z": 291,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 319,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
       }
     ],
-    "speed": 3.2,
-    "difficulty": 0.6000000000000001
+    "speed": 2,
+    "difficulty": 0.4
   },
   {
-    "id": 13,
+    "id": "js-gen-medium-2-3",
     "walls": [
       {
         "z": 30,
         "hole": {
           "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
+          "width": 2.5,
+          "height": 0.4
         }
       },
       {
-        "z": 56.7,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 83,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 109.1,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 134.8,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 160.1,
-        "hole": {
-          "shape": "tall",
-          "width": 0.5,
-          "height": 2
-        }
-      },
-      {
-        "z": 185.2,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 209.9,
+        "z": 59.8,
         "hole": {
           "shape": "tall",
           "width": 0.6,
@@ -1425,33 +556,31 @@
         }
       },
       {
-        "z": 234.3,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 258.4,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 282.1,
+        "z": 89.4,
         "hole": {
           "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
+          "width": 2.5,
+          "height": 0.4
         }
       },
       {
-        "z": 305.6,
+        "z": 118.80000000000001,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 148,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 177,
         "hole": {
           "shape": "tall",
           "width": 0.6,
@@ -1459,43 +588,23 @@
         }
       },
       {
-        "z": 328.7,
+        "z": 205.8,
         "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
+          "shape": "wide",
+          "width": 2.5,
+          "height": 0.4
         }
       },
       {
-        "z": 351.4,
+        "z": 234.4,
         "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 373.9,
-        "hole": {
-          "shape": "tall",
+          "shape": "wide",
           "width": 1,
           "height": 1
         }
       },
       {
-        "z": 396,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 417.8,
+        "z": 262.8,
         "hole": {
           "shape": "wide",
           "width": 1.67,
@@ -1503,235 +612,38 @@
         }
       },
       {
-        "z": 439.3,
+        "z": 291,
         "hole": {
-          "shape": "wide",
+          "shape": "tall",
+          "width": 0.4,
+          "height": 2.5
+        }
+      },
+      {
+        "z": 319,
+        "hole": {
+          "shape": "tall",
           "width": 1,
           "height": 1
         }
       }
     ],
-    "speed": 3.3,
-    "difficulty": 0.65
+    "speed": 2,
+    "difficulty": 0.4
   },
   {
-    "id": 14,
+    "id": "js-gen-medium-3-4",
     "walls": [
       {
         "z": 30,
         "hole": {
           "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
+          "width": 2,
+          "height": 0.5
         }
       },
       {
-        "z": 55.7,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 80.9,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 105.9,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 130.5,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 154.7,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 178.6,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 202.2,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 225.4,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 248.2,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      },
-      {
-        "z": 270.7,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 292.9,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 314.7,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 336.1,
-        "hole": {
-          "shape": "tall",
-          "width": 0.4,
-          "height": 2.5
-        }
-      },
-      {
-        "z": 357.2,
-        "hole": {
-          "shape": "tall",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 378,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 398.4,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 418.4,
-        "hole": {
-          "shape": "wide",
-          "width": 1,
-          "height": 1
-        }
-      },
-      {
-        "z": 438.1,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.6,
-          "heightH": 2,
-          "widthV": 2,
-          "heightV": 0.6
-        }
-      }
-    ],
-    "speed": 3.4000000000000004,
-    "difficulty": 0.7000000000000001
-  },
-  {
-    "id": 15,
-    "walls": [
-      {
-        "z": 30,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 54.6,
-        "hole": {
-          "shape": "tall",
-          "width": 0.8,
-          "height": 1.25
-        }
-      },
-      {
-        "z": 78.9,
-        "hole": {
-          "shape": "wide",
-          "width": 1.67,
-          "height": 0.6
-        }
-      },
-      {
-        "z": 102.8,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
-        }
-      },
-      {
-        "z": 126.3,
-        "hole": {
-          "shape": "wide",
-          "width": 1.25,
-          "height": 0.8
-        }
-      },
-      {
-        "z": 149.4,
+        "z": 59.8,
         "hole": {
           "shape": "tall",
           "width": 0.5,
@@ -1739,17 +651,31 @@
         }
       },
       {
-        "z": 172.1,
+        "z": 89.4,
         "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
+          "shape": "tall",
+          "width": 1,
+          "height": 1
         }
       },
       {
-        "z": 194.5,
+        "z": 118.80000000000001,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 148,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 177,
         "hole": {
           "shape": "tall",
           "width": 0.4,
@@ -1757,25 +683,23 @@
         }
       },
       {
-        "z": 216.5,
+        "z": 205.8,
+        "hole": {
+          "shape": "wide",
+          "width": 1.25,
+          "height": 0.8
+        }
+      },
+      {
+        "z": 234.4,
         "hole": {
           "shape": "tall",
-          "width": 1,
-          "height": 1
+          "width": 0.7,
+          "height": 1.43
         }
       },
       {
-        "z": 238.1,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 259.4,
+        "z": 262.8,
         "hole": {
           "shape": "wide",
           "width": 1.43,
@@ -1783,25 +707,94 @@
         }
       },
       {
-        "z": 280.3,
+        "z": 291,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 319,
         "hole": {
           "shape": "wide",
-          "width": 1,
-          "height": 1
+          "width": 2,
+          "height": 0.5
         }
       },
       {
-        "z": 300.8,
+        "z": 346.8,
         "hole": {
-          "shape": "plus",
-          "widthH": 0.8,
-          "heightH": 1.5,
-          "widthV": 1.5,
-          "heightV": 0.8
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      }
+    ],
+    "speed": 2,
+    "difficulty": 0.4
+  },
+  {
+    "id": "js-gen-medium-4-5",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
         }
       },
       {
-        "z": 320.9,
+        "z": 59.8,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 89.4,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 118.80000000000001,
+        "hole": {
+          "shape": "tall",
+          "width": 0.4,
+          "height": 2.5
+        }
+      },
+      {
+        "z": 148,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 177,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 205.8,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 234.4,
         "hole": {
           "shape": "tall",
           "width": 0.8,
@@ -1809,33 +802,46 @@
         }
       },
       {
-        "z": 340.6,
+        "z": 262.8,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 291,
         "hole": {
           "shape": "tall",
-          "width": 1,
-          "height": 1
+          "width": 0.7,
+          "height": 1.43
         }
       },
       {
-        "z": 360,
-        "hole": {
-          "shape": "plus",
-          "widthH": 0.5,
-          "heightH": 2.5,
-          "widthV": 2.5,
-          "heightV": 0.5
-        }
-      },
-      {
-        "z": 379,
+        "z": 319,
         "hole": {
           "shape": "wide",
           "width": 1.43,
           "height": 0.7
         }
+      }
+    ],
+    "speed": 2,
+    "difficulty": 0.4
+  },
+  {
+    "id": "js-gen-hard-1-2",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
       },
       {
-        "z": 397.6,
+        "z": 54.7,
         "hole": {
           "shape": "wide",
           "width": 1,
@@ -1843,7 +849,15 @@
         }
       },
       {
-        "z": 415.9,
+        "z": 79.1,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 103.19999999999999,
         "hole": {
           "shape": "plus",
           "widthH": 0.8,
@@ -1853,15 +867,549 @@
         }
       },
       {
-        "z": 433.9,
+        "z": 126.99999999999999,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 150.49999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      },
+      {
+        "z": 173.69999999999996,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.6,
+          "heightH": 2,
+          "widthV": 2,
+          "heightV": 0.6
+        }
+      },
+      {
+        "z": 196.59999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 219.19999999999996,
+        "hole": {
+          "shape": "tall",
+          "width": 1,
+          "height": 1
+        }
+      },
+      {
+        "z": 241.49999999999994,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 263.49999999999994,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 285.19999999999993,
+        "hole": {
+          "shape": "wide",
+          "width": 1,
+          "height": 1
+        }
+      },
+      {
+        "z": 306.5999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 327.6999999999999,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      }
+    ],
+    "speed": 2.2,
+    "difficulty": 0.6
+  },
+  {
+    "id": "js-gen-hard-3-4",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 54.7,
+        "hole": {
+          "shape": "wide",
+          "width": 1,
+          "height": 1
+        }
+      },
+      {
+        "z": 79.1,
+        "hole": {
+          "shape": "tall",
+          "width": 1,
+          "height": 1
+        }
+      },
+      {
+        "z": 103.19999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.5,
+          "heightH": 2.5,
+          "widthV": 2.5,
+          "heightV": 0.5
+        }
+      },
+      {
+        "z": 126.99999999999999,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 150.49999999999997,
         "hole": {
           "shape": "tall",
           "width": 0.4,
           "height": 2.5
         }
+      },
+      {
+        "z": 173.69999999999996,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 196.59999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 219.19999999999996,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 241.49999999999994,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 263.49999999999994,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 285.19999999999993,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 306.5999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 327.6999999999999,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      },
+      {
+        "z": 348.4999999999999,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
       }
     ],
-    "speed": 3.5,
-    "difficulty": 0.75
+    "speed": 2.2,
+    "difficulty": 0.6
+  },
+  {
+    "id": "js-gen-hard-4-5",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 54.7,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 79.1,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 103.19999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.5,
+          "heightH": 2.5,
+          "widthV": 2.5,
+          "heightV": 0.5
+        }
+      },
+      {
+        "z": 126.99999999999999,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 150.49999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 173.69999999999996,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.6,
+          "heightH": 2,
+          "widthV": 2,
+          "heightV": 0.6
+        }
+      },
+      {
+        "z": 196.59999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.8,
+          "height": 1.25
+        }
+      },
+      {
+        "z": 219.19999999999996,
+        "hole": {
+          "shape": "wide",
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      {
+        "z": 241.49999999999994,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 263.49999999999994,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 285.19999999999993,
+        "hole": {
+          "shape": "tall",
+          "width": 0.7,
+          "height": 1.43
+        }
+      },
+      {
+        "z": 306.5999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.5,
+          "heightH": 2.5,
+          "widthV": 2.5,
+          "heightV": 0.5
+        }
+      },
+      {
+        "z": 327.6999999999999,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      }
+    ],
+    "speed": 2.2,
+    "difficulty": 0.6
+  },
+  {
+    "id": "js-gen-hard-7-8",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 54.7,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 79.1,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 103.19999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.7,
+          "heightH": 1.8,
+          "widthV": 1.8,
+          "heightV": 0.7
+        }
+      },
+      {
+        "z": 126.99999999999999,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      },
+      {
+        "z": 150.49999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.8,
+          "height": 1.25
+        }
+      },
+      {
+        "z": 173.69999999999996,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.5,
+          "heightH": 2.5,
+          "widthV": 2.5,
+          "heightV": 0.5
+        }
+      },
+      {
+        "z": 196.59999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.6,
+          "height": 1.67
+        }
+      },
+      {
+        "z": 219.19999999999996,
+        "hole": {
+          "shape": "tall",
+          "width": 1,
+          "height": 1
+        }
+      },
+      {
+        "z": 241.49999999999994,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.7,
+          "heightH": 1.8,
+          "widthV": 1.8,
+          "heightV": 0.7
+        }
+      }
+    ],
+    "speed": 2.2,
+    "difficulty": 0.6
+  },
+  {
+    "id": "js-gen-hard-8-9",
+    "walls": [
+      {
+        "z": 30,
+        "hole": {
+          "shape": "wide",
+          "width": 1.25,
+          "height": 0.8
+        }
+      },
+      {
+        "z": 54.7,
+        "hole": {
+          "shape": "tall",
+          "width": 0.4,
+          "height": 2.5
+        }
+      },
+      {
+        "z": 79.1,
+        "hole": {
+          "shape": "wide",
+          "width": 1.25,
+          "height": 0.8
+        }
+      },
+      {
+        "z": 103.19999999999999,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.7,
+          "heightH": 1.8,
+          "widthV": 1.8,
+          "heightV": 0.7
+        }
+      },
+      {
+        "z": 126.99999999999999,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 150.49999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.5,
+          "height": 2
+        }
+      },
+      {
+        "z": 173.69999999999996,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.8,
+          "heightH": 1.5,
+          "widthV": 1.5,
+          "heightV": 0.8
+        }
+      },
+      {
+        "z": 196.59999999999997,
+        "hole": {
+          "shape": "tall",
+          "width": 0.4,
+          "height": 2.5
+        }
+      },
+      {
+        "z": 219.19999999999996,
+        "hole": {
+          "shape": "wide",
+          "width": 1.43,
+          "height": 0.7
+        }
+      },
+      {
+        "z": 241.49999999999994,
+        "hole": {
+          "shape": "plus",
+          "widthH": 0.7,
+          "heightH": 1.8,
+          "widthV": 1.8,
+          "heightV": 0.7
+        }
+      },
+      {
+        "z": 263.49999999999994,
+        "hole": {
+          "shape": "wide",
+          "width": 1.67,
+          "height": 0.6
+        }
+      }
+    ],
+    "speed": 2.2,
+    "difficulty": 0.6
   }
 ]

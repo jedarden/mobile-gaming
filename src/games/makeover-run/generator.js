@@ -127,4 +127,105 @@ export function generateBatch(baseSeed, difficulty, count) {
   return levels;
 }
 
-export default { generateLevel, validateLevel, generateBatch };
+/**
+ * Calculate playability metrics for a level.
+ * Higher scores indicate better, more engaging levels.
+ *
+ * Metrics:
+ * - Category balance: all 4 categories get upgrades
+ * - Upgrade variety: mix of upgrade:2 and upgrade:3
+ * - Station spacing: even distribution
+ * - Strategic depth: clear positive vs negative choices
+ *
+ * @param {Object} level - Level object
+ * @returns {Object} Metrics object with overall score
+ */
+export function calculatePlayabilityMetrics(level) {
+  const stations = level.stations || [];
+  const positives = stations.filter(s => s.positive);
+  const negatives = stations.filter(s => !s.positive);
+
+  // Metric 1: Category balance (0-30 points)
+  const upgradedCategories = new Set();
+  for (const station of positives) {
+    upgradedCategories.add(station.type);
+  }
+  const balanceScore = upgradedCategories.size >= 4 ? 30 :
+                      upgradedCategories.size >= 3 ? 20 : 10;
+
+  // Metric 2: Upgrade variety (0-25 points)
+  const upgrade2Count = positives.filter(s => s.upgrade === 2).length;
+  const upgrade3Count = positives.filter(s => s.upgrade === 3).length;
+  const hasMix = upgrade2Count > 0 && upgrade3Count > 0;
+  const varietyScore = hasMix ? 25 : 15;
+
+  // Metric 3: Station spacing (0-25 points)
+  const zPositions = positives.map(s => s.z).sort((a, b) => a - b);
+  const spacings = [];
+  for (let i = 1; i < zPositions.length; i++) {
+    spacings.push(zPositions[i] - zPositions[i - 1]);
+  }
+  const avgSpacing = spacings.length > 0 ?
+    spacings.reduce((a, b) => a + b, 0) / spacings.length : 0;
+  const spacingVariance = spacings.length > 1 ?
+    Math.max(...spacings) - Math.min(...spacings) : 0;
+  // Prefer consistent spacing
+  const spacingScore = spacingVariance < avgSpacing * 0.3 ? 25 :
+                      spacingVariance < avgSpacing * 0.5 ? 20 : 15;
+
+  // Metric 4: Strategic depth (0-20 points)
+  const positiveCount = positives.length;
+  const totalPairs = Math.min(positives.length, negatives.length);
+  // More pairs = more strategic decisions
+  const strategicScore = totalPairs >= 8 ? 20 :
+                       totalPairs >= 6 ? 15 : 10;
+
+  const totalScore = balanceScore + varietyScore + spacingScore + strategicScore;
+
+  return {
+    overall: totalScore,
+    categoryBalance: balanceScore,
+    upgradeVariety: varietyScore,
+    stationSpacing: spacingScore,
+    strategicDepth: strategicScore,
+    details: {
+      categoriesCovered: upgradedCategories.size,
+      upgrade2Count: upgrade2Count,
+      upgrade3Count: upgrade3Count,
+      stationPairs: totalPairs,
+      avgSpacing: Math.round(avgSpacing),
+      spacingVariance: Math.round(spacingVariance)
+    }
+  };
+}
+
+/**
+ * Rank a list of levels by playability.
+ * Returns levels sorted by score (highest first).
+ *
+ * @param {Object[]} levels - Array of level objects
+ * @returns {Object[]} Sorted levels with metrics attached
+ */
+export function rankLevels(levels) {
+  const levelsWithMetrics = levels.map(level => ({
+    ...level,
+    metrics: calculatePlayabilityMetrics(level)
+  }));
+
+  return levelsWithMetrics.sort((a, b) =>
+    b.metrics.overall - a.metrics.overall
+  );
+}
+
+/**
+ * Curate the best N levels from a ranked list.
+ *
+ * @param {Object[]} rankedLevels - Sorted levels (from rankLevels)
+ * @param {number} count - Number of levels to select
+ * @returns {Object[]} Curated levels
+ */
+export function curateBestLevels(rankedLevels, count) {
+  return rankedLevels.slice(0, Math.min(count, rankedLevels.length));
+}
+
+export default { generateLevel, validateLevel, generateBatch, calculatePlayabilityMetrics, rankLevels, curateBestLevels };

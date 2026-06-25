@@ -1,90 +1,68 @@
 [
   {
-    "id": "cr-001",
-    "startingCrowd": 10,
-    "courseLength": 400,
-    "speed": 1.5,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 3
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      }
-    ],
-    "boss": {
-      "size": 40
-    },
-    "difficulty": "easy"
-  },
-  {
-    "id": "cr-002",
-    "startingCrowd": 8,
-    "courseLength": 400,
+    "id": "gen-easy-1-2",
+    "startingCrowd": 9,
+    "courseLength": 382,
     "speed": 1.6,
     "gates": [
       {
-        "z": 80,
+        "z": 111,
         "left": {
-          "op": "×",
-          "value": 3
+          "op": "÷",
+          "value": 2
         },
         "right": {
-          "op": "+",
-          "value": 5
+          "op": "×",
+          "value": 3
         }
       },
       {
-        "z": 160,
+        "z": 164,
+        "left": {
+          "op": "−",
+          "value": 7
+        },
+        "right": {
+          "op": "+",
+          "value": 22
+        }
+      },
+      {
+        "z": 218,
+        "left": {
+          "op": "−",
+          "value": 9
+        },
+        "right": {
+          "op": "+",
+          "value": 18
+        }
+      },
+      {
+        "z": 271,
         "left": {
           "op": "+",
-          "value": 12
+          "value": 24
         },
         "right": {
           "op": "−",
           "value": 4
         }
-      },
+      }
+    ],
+    "boss": {
+      "size": 68
+    },
+    "difficulty": "easy"
+  },
+  {
+    "id": "gen-easy-2-3",
+    "startingCrowd": 10,
+    "courseLength": 353,
+    "speed": 1.4,
+    "gates": [
       {
-        "z": 240,
+        "z": 102,
         "left": {
           "op": "×",
           "value": 2
@@ -95,100 +73,178 @@
         }
       },
       {
-        "z": 320,
+        "z": 152,
         "left": {
           "op": "+",
-          "value": 10
+          "value": 20
         },
         "right": {
           "op": "−",
-          "value": 6
+          "value": 10
+        }
+      },
+      {
+        "z": 201,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 9
+        }
+      },
+      {
+        "z": 251,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 10
         }
       }
     ],
     "boss": {
-      "size": 50
+      "size": 270
     },
     "difficulty": "easy"
   },
   {
-    "id": "cr-003",
-    "startingCrowd": 10,
-    "courseLength": 450,
+    "id": "gen-easy-3-4",
+    "startingCrowd": 9,
+    "courseLength": 383,
+    "speed": 1.4,
+    "gates": [
+      {
+        "z": 111,
+        "left": {
+          "op": "−",
+          "value": 12
+        },
+        "right": {
+          "op": "+",
+          "value": 17
+        }
+      },
+      {
+        "z": 165,
+        "left": {
+          "op": "÷",
+          "value": 3
+        },
+        "right": {
+          "op": "×",
+          "value": 3
+        }
+      },
+      {
+        "z": 218,
+        "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 34
+        }
+      },
+      {
+        "z": 272,
+        "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
+          "op": "×",
+          "value": 3
+        }
+      }
+    ],
+    "boss": {
+      "size": 252
+    },
+    "difficulty": "easy"
+  },
+  {
+    "id": "gen-easy-8-9",
+    "startingCrowd": 8,
+    "courseLength": 435,
     "speed": 1.7,
     "gates": [
       {
-        "z": 70,
+        "z": 141,
         "left": {
-          "op": "+",
-          "value": 15
+          "op": "×",
+          "value": 3
         },
         "right": {
           "op": "−",
-          "value": 5
+          "value": 12
         }
       },
       {
-        "z": 140,
+        "z": 218,
         "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 3
-        }
-      },
-      {
-        "z": 210,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 280,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 350,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
           "op": "÷",
           "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 33
+        }
+      },
+      {
+        "z": 294,
+        "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 21
         }
       }
     ],
     "boss": {
-      "size": 80
+      "size": 59
     },
     "difficulty": "easy"
   },
   {
-    "id": "cr-004",
-    "startingCrowd": 10,
-    "courseLength": 500,
-    "speed": 1.8,
+    "id": "gen-easy-10-11",
+    "startingCrowd": 11,
+    "courseLength": 403,
+    "speed": 1.6,
     "gates": [
       {
-        "z": 80,
+        "z": 117,
         "left": {
+          "op": "−",
+          "value": 8
+        },
+        "right": {
+          "op": "×",
+          "value": 3
+        }
+      },
+      {
+        "z": 173,
+        "left": {
+          "op": "−",
+          "value": 9
+        },
+        "right": {
           "op": "+",
-          "value": 10
+          "value": 27
+        }
+      },
+      {
+        "z": 230,
+        "left": {
+          "op": "×",
+          "value": 2
         },
         "right": {
           "op": "−",
@@ -196,144 +252,66 @@
         }
       },
       {
-        "z": 160,
+        "z": 286,
         "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
           "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 400,
-        "left": {
+          "value": 8
+        },
+        "right": {
           "op": "+",
           "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
         }
       }
     ],
     "boss": {
-      "size": 90
+      "size": 113
     },
-    "difficulty": "medium"
+    "difficulty": "easy"
   },
   {
-    "id": "cr-005",
-    "startingCrowd": 10,
-    "courseLength": 560,
-    "speed": 1.9,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      }
-    ],
-    "boss": {
-      "size": 120
-    },
-    "difficulty": "medium"
-  },
-  {
-    "id": "cr-006",
-    "startingCrowd": 12,
-    "courseLength": 600,
+    "id": "gen-medium-1-2",
+    "startingCrowd": 11,
+    "courseLength": 499,
     "speed": 2,
     "gates": [
       {
-        "z": 80,
+        "z": 125,
+        "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
+          "op": "×",
+          "value": 3
+        }
+      },
+      {
+        "z": 175,
+        "left": {
+          "op": "−",
+          "value": 7
+        },
+        "right": {
+          "op": "+",
+          "value": 22
+        }
+      },
+      {
+        "z": 225,
+        "left": {
+          "op": "−",
+          "value": 9
+        },
+        "right": {
+          "op": "+",
+          "value": 18
+        }
+      },
+      {
+        "z": 274,
         "left": {
           "op": "+",
-          "value": 8
+          "value": 24
         },
         "right": {
           "op": "−",
@@ -341,58 +319,25 @@
         }
       },
       {
-        "z": 160,
+        "z": 324,
         "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
+          "op": "÷",
           "value": 3
         },
         "right": {
           "op": "+",
-          "value": 12
+          "value": 24
         }
       },
       {
-        "z": 400,
+        "z": 374,
         "left": {
-          "op": "−",
-          "value": 5
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      },
-      {
-        "z": 500,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "×",
+          "op": "÷",
           "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 16
         }
       }
     ],
@@ -402,38 +347,16 @@
     "difficulty": "medium"
   },
   {
-    "id": "cr-007",
-    "startingCrowd": 15,
-    "courseLength": 650,
-    "speed": 2.1,
+    "id": "gen-medium-2-3",
+    "startingCrowd": 12,
+    "courseLength": 455,
+    "speed": 1.8,
     "gates": [
       {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
+        "z": 114,
         "left": {
           "op": "×",
           "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 20
         },
         "right": {
           "op": "÷",
@@ -441,477 +364,188 @@
         }
       },
       {
-        "z": 320,
+        "z": 159,
+        "left": {
+          "op": "+",
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 205,
         "left": {
           "op": "×",
           "value": 3
         },
         "right": {
           "op": "−",
-          "value": 12
+          "value": 9
         }
       },
       {
-        "z": 400,
+        "z": 250,
         "left": {
-          "op": "+",
-          "value": 15
+          "op": "×",
+          "value": 3
         },
         "right": {
-          "op": "÷",
-          "value": 4
+          "op": "−",
+          "value": 10
         }
       },
       {
-        "z": 480,
+        "z": 296,
         "left": {
           "op": "×",
           "value": 2
         },
         "right": {
-          "op": "+",
-          "value": 10
+          "op": "−",
+          "value": 13
         }
       },
       {
-        "z": 560,
+        "z": 341,
         "left": {
-          "op": "+",
-          "value": 25
+          "op": "×",
+          "value": 2
         },
         "right": {
-          "op": "−",
-          "value": 20
+          "op": "÷",
+          "value": 3
         }
       }
     ],
     "boss": {
-      "size": 150
+      "size": 1267
     },
     "difficulty": "medium"
   },
   {
-    "id": "cr-008",
-    "startingCrowd": 10,
-    "courseLength": 700,
-    "speed": 2.2,
+    "id": "gen-medium-4-5",
+    "startingCrowd": 11,
+    "courseLength": 566,
+    "speed": 2,
     "gates": [
       {
-        "z": 80,
+        "z": 142,
         "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 3
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 12
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 580,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
           "op": "−",
           "value": 10
+        },
+        "right": {
+          "op": "+",
+          "value": 18
         }
-      }
-    ],
-    "boss": {
-      "size": 180
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-009",
-    "startingCrowd": 10,
-    "courseLength": 750,
-    "speed": 2.3,
-    "gates": [
+      },
       {
-        "z": 80,
+        "z": 198,
         "left": {
           "op": "+",
-          "value": 15
+          "value": 22
         },
         "right": {
           "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      }
-    ],
-    "boss": {
-      "size": 250
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-010",
-    "startingCrowd": 10,
-    "courseLength": 800,
-    "speed": 2.4,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
           "value": 12
         }
       },
       {
-        "z": 320,
+        "z": 255,
         "left": {
-          "op": "+",
-          "value": 25
+          "op": "−",
+          "value": 8
         },
         "right": {
-          "op": "÷",
-          "value": 3
+          "op": "+",
+          "value": 22
         }
       },
       {
-        "z": 400,
+        "z": 311,
         "left": {
           "op": "×",
           "value": 2
         },
         "right": {
           "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
           "value": 10
         }
       },
       {
-        "z": 660,
+        "z": 368,
         "left": {
           "op": "+",
-          "value": 20
+          "value": 10
         },
         "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 425,
+        "left": {
           "op": "−",
-          "value": 15
+          "value": 7
+        },
+        "right": {
+          "op": "+",
+          "value": 23
         }
       }
     ],
     "boss": {
-      "size": 300
+      "size": 143
     },
-    "difficulty": "hard"
+    "difficulty": "medium"
   },
   {
-    "id": "cr-011",
-    "startingCrowd": 10,
-    "courseLength": 850,
-    "speed": 2.5,
+    "id": "gen-medium-6-7",
+    "startingCrowd": 15,
+    "courseLength": 459,
+    "speed": 2.1,
     "gates": [
       {
-        "z": 80,
+        "z": 122,
         "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
           "op": "÷",
           "value": 2
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 3
         },
         "right": {
           "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
           "value": 25
         }
       },
       {
-        "z": 720,
+        "z": 176,
         "left": {
-          "op": "+",
-          "value": 40
+          "op": "−",
+          "value": 10
         },
         "right": {
-          "op": "÷",
-          "value": 3
-        }
-      }
-    ],
-    "boss": {
-      "size": 400
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-012",
-    "startingCrowd": 10,
-    "courseLength": 900,
-    "speed": 2.6,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
           "op": "×",
           "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
         }
       },
       {
-        "z": 160,
+        "z": 229,
         "left": {
           "op": "+",
-          "value": 10
+          "value": 14
+        },
+        "right": {
+          "op": "−",
+          "value": 8
+        }
+      },
+      {
+        "z": 283,
+        "left": {
+          "op": "×",
+          "value": 2
         },
         "right": {
           "op": "−",
@@ -919,143 +553,44 @@
         }
       },
       {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 320,
+        "z": 337,
         "left": {
           "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 25
+          "value": 13
         },
         "right": {
           "op": "÷",
           "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 810,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "−",
-          "value": 30
         }
       }
     ],
     "boss": {
-      "size": 500
+      "size": 161
     },
-    "difficulty": "hard"
+    "difficulty": "medium"
   },
   {
-    "id": "cr-013",
-    "startingCrowd": 10,
-    "courseLength": 950,
-    "speed": 2.7,
+    "id": "gen-medium-7-8",
+    "startingCrowd": 11,
+    "courseLength": 544,
+    "speed": 2.1,
     "gates": [
       {
-        "z": 80,
+        "z": 145,
         "left": {
-          "op": "×",
-          "value": 2
+          "op": "−",
+          "value": 7
         },
         "right": {
           "op": "+",
-          "value": 8
+          "value": 26
         }
       },
       {
-        "z": 160,
+        "z": 209,
         "left": {
           "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
+          "value": 17
         },
         "right": {
           "op": "−",
@@ -1063,132 +598,55 @@
         }
       },
       {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 480,
+        "z": 272,
         "left": {
           "op": "+",
           "value": 25
         },
         "right": {
+          "op": "−",
+          "value": 6
+        }
+      },
+      {
+        "z": 335,
+        "left": {
           "op": "÷",
           "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
         },
         "right": {
           "op": "+",
-          "value": 15
+          "value": 18
         }
       },
       {
-        "z": 640,
+        "z": 399,
         "left": {
           "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 2
+          "value": 16
         },
         "right": {
           "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 820,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
+          "value": 3
         }
       }
     ],
     "boss": {
-      "size": 600
+      "size": 90
     },
-    "difficulty": "hard"
+    "difficulty": "medium"
   },
   {
-    "id": "cr-014",
-    "startingCrowd": 12,
-    "courseLength": 1000,
+    "id": "gen-hard-0-1",
+    "startingCrowd": 11,
+    "courseLength": 600,
     "speed": 2.8,
     "gates": [
       {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 6
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
+        "z": 137,
         "left": {
           "op": "×",
           "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 30
         },
         "right": {
           "op": "÷",
@@ -1196,1197 +654,365 @@
         }
       },
       {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
+        "z": 183,
         "left": {
           "op": "×",
           "value": 2
         },
         "right": {
-          "op": "+",
-          "value": 20
+          "op": "÷",
+          "value": 2
         }
       },
       {
-        "z": 720,
+        "z": 230,
         "left": {
+          "op": "+",
+          "value": 10
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 277,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 3
+        }
+      },
+      {
+        "z": 323,
+        "left": {
+          "op": "−",
+          "value": 5
+        },
+        "right": {
           "op": "+",
           "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 830,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 700
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-015",
-    "startingCrowd": 15,
-    "courseLength": 1050,
-    "speed": 2.9,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 12
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 18
-        }
-      },
-      {
-        "z": 730,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 840,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 800
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-016",
-    "startingCrowd": 10,
-    "courseLength": 1100,
-    "speed": 3,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 12
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 18
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 750,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 860,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 900
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-017",
-    "startingCrowd": 10,
-    "courseLength": 1150,
-    "speed": 3.1,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 330,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 420,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 510,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 600,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 780,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 880,
-        "left": {
-          "op": "+",
-          "value": 60
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1000
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-018",
-    "startingCrowd": 10,
-    "courseLength": 1200,
-    "speed": 3.2,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 4
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 6
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 360,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 450,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 540,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 12
-        }
-      },
-      {
-        "z": 630,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 810,
-        "left": {
-          "op": "+",
-          "value": 45
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 900,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 1100
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-019",
-    "startingCrowd": 10,
-    "courseLength": 1250,
-    "speed": 3.3,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
         }
       },
       {
         "z": 370,
         "left": {
           "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 460,
-        "left": {
-          "op": "×",
-          "value": 2
+          "value": 34
         },
         "right": {
           "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 417,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 463,
+        "left": {
+          "op": "−",
+          "value": 4
+        },
+        "right": {
+          "op": "+",
           "value": 15
-        }
-      },
-      {
-        "z": 555,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 745,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 840,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      },
-      {
-        "z": 950,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
         }
       }
     ],
     "boss": {
-      "size": 1200
+      "size": 426
     },
     "difficulty": "hard"
   },
   {
-    "id": "cr-020",
+    "id": "gen-hard-1-2",
     "startingCrowd": 10,
-    "courseLength": 1300,
-    "speed": 3.5,
+    "courseLength": 665,
+    "speed": 2.5,
     "gates": [
       {
-        "z": 90,
+        "z": 146,
         "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 190,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 290,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
           "op": "÷",
           "value": 2
-        }
-      },
-      {
-        "z": 390,
-        "left": {
-          "op": "×",
-          "value": 2
         },
         "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 490,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 590,
-        "left": {
           "op": "×",
           "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
         }
       },
       {
-        "z": 690,
+        "z": 193,
         "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
           "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 790,
-        "left": {
-          "op": "×",
-          "value": 2
+          "value": 7
         },
         "right": {
           "op": "+",
-          "value": 35
+          "value": 22
         }
       },
       {
-        "z": 890,
+        "z": 239,
         "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 1000,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
           "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 1400
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-013",
-    "startingCrowd": 10,
-    "courseLength": 950,
-    "speed": 2.7,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
+          "value": 9
         },
         "right": {
           "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 820,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 600
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-014",
-    "startingCrowd": 12,
-    "courseLength": 1000,
-    "speed": 2.8,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 6
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 830,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 700
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-015",
-    "startingCrowd": 15,
-    "courseLength": 1050,
-    "speed": 2.9,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 12
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
           "value": 18
         }
       },
       {
-        "z": 730,
+        "z": 286,
+        "left": {
+          "op": "+",
+          "value": 24
+        },
+        "right": {
+          "op": "−",
+          "value": 4
+        }
+      },
+      {
+        "z": 333,
+        "left": {
+          "op": "÷",
+          "value": 3
+        },
+        "right": {
+          "op": "+",
+          "value": 24
+        }
+      },
+      {
+        "z": 379,
+        "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
+          "op": "+",
+          "value": 16
+        }
+      },
+      {
+        "z": 426,
+        "left": {
+          "op": "+",
+          "value": 9
+        },
+        "right": {
+          "op": "−",
+          "value": 13
+        }
+      },
+      {
+        "z": 472,
         "left": {
           "op": "×",
           "value": 2
         },
         "right": {
-          "op": "+",
-          "value": 15
+          "op": "−",
+          "value": 10
         }
       },
       {
-        "z": 840,
+        "z": 519,
         "left": {
-          "op": "+",
-          "value": 40
+          "op": "−",
+          "value": 15
         },
         "right": {
-          "op": "÷",
-          "value": 5
+          "op": "×",
+          "value": 2
         }
       }
     ],
     "boss": {
-      "size": 800
+      "size": 446
     },
     "difficulty": "hard"
   },
   {
-    "id": "cr-016",
-    "startingCrowd": 10,
-    "courseLength": 1100,
-    "speed": 3,
+    "id": "gen-hard-2-3",
+    "startingCrowd": 11,
+    "courseLength": 607,
+    "speed": 2.2,
     "gates": [
       {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 12
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
+        "z": 134,
         "left": {
           "op": "×",
           "value": 2
         },
         "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 176,
+        "left": {
           "op": "+",
-          "value": 8
+          "value": 20
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 219,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 9
+        }
+      },
+      {
+        "z": 261,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "−",
+          "value": 10
+        }
+      },
+      {
+        "z": 304,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "−",
+          "value": 13
+        }
+      },
+      {
+        "z": 346,
+        "left": {
+          "op": "×",
+          "value": 2
+        },
+        "right": {
+          "op": "÷",
+          "value": 3
+        }
+      },
+      {
+        "z": 388,
+        "left": {
+          "op": "−",
+          "value": 11
+        },
+        "right": {
+          "op": "+",
+          "value": 16
+        }
+      },
+      {
+        "z": 431,
+        "left": {
+          "op": "×",
+          "value": 3
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      },
+      {
+        "z": 473,
+        "left": {
+          "op": "+",
+          "value": 36
+        },
+        "right": {
+          "op": "÷",
+          "value": 2
+        }
+      }
+    ],
+    "boss": {
+      "size": 3604
+    },
+    "difficulty": "hard"
+  },
+  {
+    "id": "gen-hard-3-4",
+    "startingCrowd": 10,
+    "courseLength": 666,
+    "speed": 2.2,
+    "gates": [
+      {
+        "z": 147,
+        "left": {
+          "op": "−",
+          "value": 12
+        },
+        "right": {
+          "op": "+",
+          "value": 17
+        }
+      },
+      {
+        "z": 193,
+        "left": {
+          "op": "÷",
+          "value": 3
+        },
+        "right": {
+          "op": "×",
+          "value": 3
         }
       },
       {
         "z": 240,
         "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
           "op": "+",
-          "value": 18
+          "value": 34
+        }
+      },
+      {
+        "z": 286,
+        "left": {
+          "op": "÷",
+          "value": 2
+        },
+        "right": {
+          "op": "×",
+          "value": 3
+        }
+      },
+      {
+        "z": 333,
+        "left": {
+          "op": "+",
+          "value": 21
         },
         "right": {
           "op": "÷",
@@ -2394,1252 +1020,77 @@
         }
       },
       {
-        "z": 320,
+        "z": 380,
         "left": {
-          "op": "×",
-          "value": 3
+          "op": "+",
+          "value": 16
         },
         "right": {
-          "op": "+",
-          "value": 10
+          "op": "÷",
+          "value": 3
         }
       },
       {
-        "z": 400,
+        "z": 426,
         "left": {
-          "op": "+",
-          "value": 25
+          "op": "×",
+          "value": 2
         },
         "right": {
           "op": "−",
-          "value": 10
+          "value": 8
         }
       },
       {
-        "z": 480,
+        "z": 473,
         "left": {
-          "op": "×",
+          "op": "÷",
           "value": 2
         },
         "right": {
           "op": "+",
-          "value": 15
+          "value": 22
         }
       },
       {
-        "z": 560,
+        "z": 519,
         "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
           "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 750,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 860,
-        "left": {
-          "op": "×",
           "value": 2
         },
         "right": {
-          "op": "+",
-          "value": 30
+          "op": "×",
+          "value": 3
         }
       }
     ],
     "boss": {
-      "size": 900
+      "size": 1839
     },
     "difficulty": "hard"
   },
   {
-    "id": "cr-017",
+    "id": "gen-hard-4-5",
     "startingCrowd": 10,
-    "courseLength": 1150,
-    "speed": 3.1,
+    "courseLength": 755,
+    "speed": 2.6,
     "gates": [
       {
-        "z": 80,
+        "z": 166,
         "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 330,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 420,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 510,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 600,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 780,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 880,
-        "left": {
-          "op": "+",
-          "value": 60
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1000
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-018",
-    "startingCrowd": 10,
-    "courseLength": 1200,
-    "speed": 3.2,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 4
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 6
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 360,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 450,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 540,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 12
-        }
-      },
-      {
-        "z": 630,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 810,
-        "left": {
-          "op": "+",
-          "value": 45
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 900,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 1100
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-019",
-    "startingCrowd": 10,
-    "courseLength": 1250,
-    "speed": 3.3,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
           "op": "−",
           "value": 10
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "×",
-          "value": 3
         },
         "right": {
           "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 370,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 460,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 555,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 745,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 840,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      },
-      {
-        "z": 950,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1200
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-020",
-    "startingCrowd": 10,
-    "courseLength": 1300,
-    "speed": 3.5,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 190,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 290,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 390,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 490,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 590,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 790,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 35
-        }
-      },
-      {
-        "z": 890,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 1000,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 1400
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-013",
-    "startingCrowd": 10,
-    "courseLength": 950,
-    "speed": 2.7,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 820,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 600
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-014",
-    "startingCrowd": 12,
-    "courseLength": 1000,
-    "speed": 2.8,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 6
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 830,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 700
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-015",
-    "startingCrowd": 15,
-    "courseLength": 1050,
-    "speed": 2.9,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 12
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
           "value": 18
         }
       },
       {
-        "z": 730,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 840,
+        "z": 219,
         "left": {
           "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 800
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-016",
-    "startingCrowd": 10,
-    "courseLength": 1100,
-    "speed": 3,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 12
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 18
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 750,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 860,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 900
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-017",
-    "startingCrowd": 10,
-    "courseLength": 1150,
-    "speed": 3.1,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 330,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 420,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 510,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 600,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 780,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 880,
-        "left": {
-          "op": "+",
-          "value": 60
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1000
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-018",
-    "startingCrowd": 10,
-    "courseLength": 1200,
-    "speed": 3.2,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 4
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 6
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 360,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 450,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 540,
-        "left": {
-          "op": "×",
-          "value": 2
+          "value": 22
         },
         "right": {
           "op": "−",
@@ -3647,462 +1098,18 @@
         }
       },
       {
-        "z": 630,
+        "z": 272,
         "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 810,
-        "left": {
-          "op": "+",
-          "value": 45
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 900,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 1100
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-019",
-    "startingCrowd": 10,
-    "courseLength": 1250,
-    "speed": 3.3,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 370,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 460,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 555,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 745,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 840,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      },
-      {
-        "z": 950,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1200
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-020",
-    "startingCrowd": 10,
-    "courseLength": 1300,
-    "speed": 3.5,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 190,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 290,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 390,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 490,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 590,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 790,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 35
-        }
-      },
-      {
-        "z": 890,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 1000,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 1400
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-013",
-    "startingCrowd": 10,
-    "courseLength": 950,
-    "speed": 2.7,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
           "op": "−",
           "value": 8
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "×",
-          "value": 2
         },
         "right": {
           "op": "+",
-          "value": 5
+          "value": 22
         }
       },
       {
-        "z": 480,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 820,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 600
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-014",
-    "startingCrowd": 12,
-    "courseLength": 1000,
-    "speed": 2.8,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 6
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
+        "z": 325,
         "left": {
           "op": "×",
           "value": 2
@@ -4113,132 +1120,43 @@
         }
       },
       {
-        "z": 400,
+        "z": 378,
         "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 830,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 700
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-015",
-    "startingCrowd": 15,
-    "courseLength": 1050,
-    "speed": 2.9,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
           "op": "+",
           "value": 10
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "+",
-          "value": 15
         },
         "right": {
           "op": "÷",
-          "value": 2
+          "value": 3
         }
       },
       {
-        "z": 400,
+        "z": 430,
+        "left": {
+          "op": "−",
+          "value": 7
+        },
+        "right": {
+          "op": "+",
+          "value": 23
+        }
+      },
+      {
+        "z": 483,
+        "left": {
+          "op": "−",
+          "value": 11
+        },
+        "right": {
+          "op": "+",
+          "value": 14
+        }
+      },
+      {
+        "z": 536,
         "left": {
           "op": "×",
-          "value": 2
+          "value": 3
         },
         "right": {
           "op": "−",
@@ -4246,176 +1164,10 @@
         }
       },
       {
-        "z": 480,
+        "z": 589,
         "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 640,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "−",
-          "value": 18
-        }
-      },
-      {
-        "z": 730,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 840,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 800
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-016",
-    "startingCrowd": 10,
-    "courseLength": 1100,
-    "speed": 3,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "+",
-          "value": 12
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "+",
-          "value": 18
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 320,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 400,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
           "op": "−",
           "value": 10
-        }
-      },
-      {
-        "z": 480,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 560,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 750,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 860,
-        "left": {
-          "op": "×",
-          "value": 2
         },
         "right": {
           "op": "+",
@@ -4424,495 +1176,7 @@
       }
     ],
     "boss": {
-      "size": 900
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-017",
-    "startingCrowd": 10,
-    "courseLength": 1150,
-    "speed": 3.1,
-    "gates": [
-      {
-        "z": 80,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 160,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 240,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 12
-        }
-      },
-      {
-        "z": 330,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 420,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 510,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 600,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 780,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 880,
-        "left": {
-          "op": "+",
-          "value": 60
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1000
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-018",
-    "startingCrowd": 10,
-    "courseLength": 1200,
-    "speed": 3.2,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 10
-        },
-        "right": {
-          "op": "−",
-          "value": 4
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 6
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 8
-        }
-      },
-      {
-        "z": 360,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 450,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 540,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 12
-        }
-      },
-      {
-        "z": 630,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 720,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 810,
-        "left": {
-          "op": "+",
-          "value": 45
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 900,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 25
-        }
-      }
-    ],
-    "boss": {
-      "size": 1100
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-019",
-    "startingCrowd": 10,
-    "courseLength": 1250,
-    "speed": 3.3,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 8
-        }
-      },
-      {
-        "z": 180,
-        "left": {
-          "op": "+",
-          "value": 20
-        },
-        "right": {
-          "op": "−",
-          "value": 10
-        }
-      },
-      {
-        "z": 270,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 5
-        }
-      },
-      {
-        "z": 370,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 460,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 15
-        }
-      },
-      {
-        "z": 555,
-        "left": {
-          "op": "+",
-          "value": 35
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 650,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 20
-        }
-      },
-      {
-        "z": 745,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 840,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 30
-        }
-      },
-      {
-        "z": 950,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 5
-        }
-      }
-    ],
-    "boss": {
-      "size": 1200
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "cr-020",
-    "startingCrowd": 10,
-    "courseLength": 1300,
-    "speed": 3.5,
-    "gates": [
-      {
-        "z": 90,
-        "left": {
-          "op": "+",
-          "value": 15
-        },
-        "right": {
-          "op": "−",
-          "value": 5
-        }
-      },
-      {
-        "z": 190,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 10
-        }
-      },
-      {
-        "z": 290,
-        "left": {
-          "op": "+",
-          "value": 25
-        },
-        "right": {
-          "op": "÷",
-          "value": 2
-        }
-      },
-      {
-        "z": 390,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "−",
-          "value": 20
-        }
-      },
-      {
-        "z": 490,
-        "left": {
-          "op": "+",
-          "value": 40
-        },
-        "right": {
-          "op": "÷",
-          "value": 3
-        }
-      },
-      {
-        "z": 590,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "+",
-          "value": 15
-        }
-      },
-      {
-        "z": 690,
-        "left": {
-          "op": "+",
-          "value": 30
-        },
-        "right": {
-          "op": "−",
-          "value": 25
-        }
-      },
-      {
-        "z": 790,
-        "left": {
-          "op": "×",
-          "value": 2
-        },
-        "right": {
-          "op": "+",
-          "value": 35
-        }
-      },
-      {
-        "z": 890,
-        "left": {
-          "op": "+",
-          "value": 50
-        },
-        "right": {
-          "op": "÷",
-          "value": 4
-        }
-      },
-      {
-        "z": 1000,
-        "left": {
-          "op": "×",
-          "value": 3
-        },
-        "right": {
-          "op": "−",
-          "value": 30
-        }
-      }
-    ],
-    "boss": {
-      "size": 1400
+      "size": 470
     },
     "difficulty": "hard"
   }

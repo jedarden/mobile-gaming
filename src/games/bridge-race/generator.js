@@ -200,4 +200,103 @@ export function generateBatch(baseSeed, difficulty, count) {
   return levels;
 }
 
-export default { generateLevel, validateLevel, generateBatch };
+/**
+ * Calculate playability metrics for a level.
+ * Higher scores indicate better, more engaging levels.
+ *
+ * Metrics:
+ * - Block distribution: even spread of blue blocks
+ * - Bridge variety: varied required cell counts
+ * - Opponent balance: fair competition
+ * - Strategic depth: multiple pile sizes to optimize
+ *
+ * @param {Object} level - Level object
+ * @returns {Object} Metrics object with overall score
+ */
+export function calculatePlayabilityMetrics(level) {
+  const bridges = level.bridges || [];
+  const blockPiles = level.blockPiles || [];
+  const opponents = level.opponents || [];
+  const playerColor = level.playerColor || 'blue';
+
+  // Metric 1: Block distribution (0-30 points)
+  const bluePiles = blockPiles.filter(p => p.color === playerColor);
+  const pileSizes = bluePiles.map(p => p.count);
+  const avgPileSize = pileSizes.length > 0 ?
+    pileSizes.reduce((a, b) => a + b, 0) / pileSizes.length : 0;
+  const pileVariance = pileSizes.length > 1 ?
+    Math.max(...pileSizes) - Math.min(...pileSizes) : 0;
+  // Prefer some variance but not extreme
+  const distributionScore = pileVariance > 0 && pileVariance < avgPileSize * 0.8 ? 30 :
+                           pileVariance > 0 ? 20 : 10;
+
+  // Metric 2: Bridge variety (0-25 points)
+  const bridgeReqs = bridges.map(b => b.required);
+  const bridgeVariance = bridgeReqs.length > 1 ?
+    Math.max(...bridgeReqs) - Math.min(...bridgeReqs) : 0;
+  // Some variance in bridge difficulty adds interest
+  const bridgeScore = bridgeVariance > 0 ? 25 : 15;
+
+  // Metric 3: Opponent balance (0-25 points)
+  const opponentCount = opponents.length;
+  // 1-2 opponents is ideal for challenge
+  const opponentScore = opponentCount === 1 ? 25 :
+                       opponentCount === 2 ? 20 :
+                       opponentCount === 0 ? 10 : 15;
+
+  // Metric 4: Strategic depth (0-20 points)
+  // Check if there are multiple pile sizes (creating collection choices)
+  const uniqueSizes = new Set(pileSizes);
+  const strategicScore = uniqueSizes.size >= 3 ? 20 :
+                        uniqueSizes.size === 2 ? 15 : 10;
+
+  const totalScore = distributionScore + bridgeScore + opponentScore + strategicScore;
+
+  return {
+    overall: totalScore,
+    blockDistribution: distributionScore,
+    bridgeVariety: bridgeScore,
+    opponentBalance: opponentScore,
+    strategicDepth: strategicScore,
+    details: {
+      bluePileCount: bluePiles.length,
+      avgPileSize: Math.round(avgPileSize),
+      pileVariance: pileVariance,
+      bridgeCount: bridges.length,
+      bridgeVariance: bridgeVariance,
+      opponentCount: opponentCount,
+      uniquePileSizes: uniqueSizes.size
+    }
+  };
+}
+
+/**
+ * Rank a list of levels by playability.
+ * Returns levels sorted by score (highest first).
+ *
+ * @param {Object[]} levels - Array of level objects
+ * @returns {Object[]} Sorted levels with metrics attached
+ */
+export function rankLevels(levels) {
+  const levelsWithMetrics = levels.map(level => ({
+    ...level,
+    metrics: calculatePlayabilityMetrics(level)
+  }));
+
+  return levelsWithMetrics.sort((a, b) =>
+    b.metrics.overall - a.metrics.overall
+  );
+}
+
+/**
+ * Curate the best N levels from a ranked list.
+ *
+ * @param {Object[]} rankedLevels - Sorted levels (from rankLevels)
+ * @param {number} count - Number of levels to select
+ * @returns {Object[]} Curated levels
+ */
+export function curateBestLevels(rankedLevels, count) {
+  return rankedLevels.slice(0, Math.min(count, rankedLevels.length));
+}
+
+export default { generateLevel, validateLevel, generateBatch, calculatePlayabilityMetrics, rankLevels, curateBestLevels };

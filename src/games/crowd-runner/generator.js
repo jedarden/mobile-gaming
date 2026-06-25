@@ -218,4 +218,105 @@ export function generateBatch(baseSeed, difficulty, count) {
   return levels;
 }
 
-export default { generateLevel, validateLevel, generateBatch };
+/**
+ * Calculate playability metrics for a level.
+ * Higher scores indicate better, more engaging levels.
+ *
+ * Metrics:
+ * - Decision diversity: variety of gate operations (+, -, ×, ÷)
+ * - Crowd variance: how much crowd size can fluctuate
+ * - Balance margin: ratio between optimal and worst paths
+ * - Gate spacing: variety of z-spacing between gates
+ *
+ * @param {Object} level - Level object
+ * @returns {Object} Metrics object with overall score
+ */
+export function calculatePlayabilityMetrics(level) {
+  const gates = level.gates || [];
+  const startCrowd = level.startingCrowd || 10;
+
+  // Metric 1: Decision diversity (0-30 points)
+  const opTypes = new Set();
+  for (const gate of gates) {
+    opTypes.add(gate.left.op);
+    opTypes.add(gate.right.op);
+  }
+  const diversityScore = Math.min(30, opTypes.size * 10);
+
+  // Metric 2: Crowd variance (0-25 points)
+  // Simulate crowd size changes through level
+  const crowdSizes = [startCrowd];
+  let currentCrowd = startCrowd;
+  for (const gate of gates) {
+    const leftResult = applyOp(currentCrowd, gate.left);
+    const rightResult = applyOp(currentCrowd, gate.right);
+    currentCrowd = Math.max(leftResult, rightResult);
+    crowdSizes.push(currentCrowd);
+  }
+  const variance = Math.max(...crowdSizes) - Math.min(...crowdSizes);
+  const varianceScore = Math.min(25, variance * 2);
+
+  // Metric 3: Balance margin (0-25 points)
+  const { optimal, worst } = evaluateAllPaths(level);
+  const margin = optimal / Math.max(1, worst);
+  // Ideal margin is 1.5-2.5 (not too easy, not impossible)
+  const idealMargin = margin >= 1.5 && margin <= 2.5 ? 25 :
+                      margin >= 1.3 && margin < 1.5 ? 15 :
+                      margin > 2.5 && margin <= 3.0 ? 15 : 5;
+
+  // Metric 4: Gate spacing variety (0-20 points)
+  const spacings = [];
+  for (let i = 1; i < gates.length; i++) {
+    spacings.push(gates[i].z - gates[i - 1].z);
+  }
+  const spacingVariance = spacings.length > 1 ?
+    Math.max(...spacings) - Math.min(...spacings) : 0;
+  const spacingScore = Math.min(20, spacingVariance / 2);
+
+  const totalScore = diversityScore + varianceScore + idealMargin + spacingScore;
+
+  return {
+    overall: totalScore,
+    diversity: diversityScore,
+    crowdVariance: varianceScore,
+    balanceMargin: idealMargin,
+    spacingVariety: spacingScore,
+    details: {
+      opTypeCount: opTypes.size,
+      crowdVarianceValue: variance,
+      optimalWorstRatio: margin,
+      spacingVarianceValue: spacingVariance
+    }
+  };
+}
+
+/**
+ * Rank a list of levels by playability.
+ * Returns levels sorted by score (highest first).
+ *
+ * @param {Object[]} levels - Array of level objects
+ * @returns {Object[]} Sorted levels with metrics attached
+ */
+export function rankLevels(levels) {
+  const levelsWithMetrics = levels.map(level => ({
+    ...level,
+    metrics: calculatePlayabilityMetrics(level)
+  }));
+
+  return levelsWithMetrics.sort((a, b) =>
+    b.metrics.overall - a.metrics.overall
+  );
+}
+
+/**
+ * Curate the best N levels from a ranked list.
+ *
+ * @param {Object[]} rankedLevels - Sorted levels (from rankLevels)
+ * @param {number} count - Number of levels to select
+ * @returns {Object[]} Curated levels
+ */
+export function curateBestLevels(rankedLevels, count) {
+  return rankedLevels.slice(0, Math.min(count, rankedLevels.length));
+}
+
+export default { generateLevel, validateLevel, generateBatch, calculatePlayabilityMetrics, rankLevels, curateBestLevels };

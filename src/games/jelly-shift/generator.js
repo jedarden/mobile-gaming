@@ -240,4 +240,117 @@ export function generateBatch(baseSeed, difficulty, count) {
   return levels;
 }
 
-export default { generateLevel, generateBatch, validateLevel, getValidWidthRange, isHoleAchievable, isTransitionAchievable };
+/**
+ * Calculate playability metrics for a level.
+ * Higher scores indicate better, more engaging levels.
+ *
+ * Metrics:
+ * - Shape diversity: mix of tall, wide, plus holes
+ * - Transition variety: alternating tall/wide patterns
+ * - Difficulty progression: intervals decrease smoothly
+ * - Achievability margins: holes not too tight
+ *
+ * @param {Object} level - Level object
+ * @returns {Object} Metrics object with overall score
+ */
+export function calculatePlayabilityMetrics(level) {
+  const walls = level.walls || [];
+  const speed = level.speed || 2.0;
+
+  // Metric 1: Shape diversity (0-30 points)
+  const shapes = new Set();
+  for (const wall of walls) {
+    shapes.add(wall.hole.shape);
+  }
+  const diversityScore = shapes.has('plus') ?
+    (shapes.size * 10) : Math.min(30, shapes.size * 12);
+
+  // Metric 2: Transition variety (0-25 points)
+  const transitions = [];
+  for (let i = 1; i < walls.length; i++) {
+    const prevShape = walls[i - 1].hole.shape;
+    const currShape = walls[i].hole.shape;
+    transitions.push(prevShape !== currShape ? 1 : 0);
+  }
+  const alternationRate = transitions.length > 0 ?
+    transitions.reduce((a, b) => a + b, 0) / transitions.length : 0;
+  const transitionScore = alternationRate >= 0.5 ? 25 :
+                         alternationRate >= 0.3 ? 20 : 15;
+
+  // Metric 3: Difficulty progression (0-25 points)
+  const intervals = [];
+  for (let i = 1; i < walls.length; i++) {
+    intervals.push(walls[i].z - walls[i - 1].z);
+  }
+  // Check if intervals generally decrease (ramp up difficulty)
+  let decreases = 0;
+  for (let i = 1; i < intervals.length; i++) {
+    if (intervals[i] < intervals[i - 1]) decreases++;
+  }
+  const progressionRate = intervals.length > 1 ? decreases / (intervals.length - 1) : 0;
+  const progressionScore = progressionRate >= 0.6 ? 25 :
+                           progressionRate >= 0.4 ? 20 : 15;
+
+  // Metric 4: Achievability margins (0-20 points)
+  let tightHoles = 0;
+  let comfortableHoles = 0;
+  for (const wall of walls) {
+    const range = getValidWidthRange(wall.hole);
+    const margin = range.max - range.min;
+    if (margin < 0.3) tightHoles++;
+    else if (margin > 0.5) comfortableHoles++;
+  }
+  // Prefer balance - not too tight, not too loose
+  const comfortRatio = walls.length > 0 ? comfortableHoles / walls.length : 0;
+  const marginScore = comfortRatio >= 0.4 && comfortRatio <= 0.7 ? 20 :
+                     comfortRatio >= 0.2 ? 15 : 10;
+
+  const totalScore = diversityScore + transitionScore + progressionScore + marginScore;
+
+  return {
+    overall: totalScore,
+    shapeDiversity: diversityScore,
+    transitionVariety: transitionScore,
+    difficultyProgression: progressionScore,
+    achievabilityMargins: marginScore,
+    details: {
+      shapeTypes: Array.from(shapes),
+      alternationRate: alternationRate,
+      progressionRate: progressionRate,
+      tightHoles: tightHoles,
+      comfortableHoles: comfortableHoles,
+      comfortRatio: comfortRatio
+    }
+  };
+}
+
+/**
+ * Rank a list of levels by playability.
+ * Returns levels sorted by score (highest first).
+ *
+ * @param {Object[]} levels - Array of level objects
+ * @returns {Object[]} Sorted levels with metrics attached
+ */
+export function rankLevels(levels) {
+  const levelsWithMetrics = levels.map(level => ({
+    ...level,
+    metrics: calculatePlayabilityMetrics(level)
+  }));
+
+  return levelsWithMetrics.sort((a, b) =>
+    b.metrics.overall - a.metrics.overall
+  );
+}
+
+/**
+ * Curate the best N levels from a ranked list.
+ *
+ * @param {Object[]} rankedLevels - Sorted levels (from rankLevels)
+ * @param {number} count - Number of levels to select
+ * @returns {Object[]} Curated levels
+ */
+export function curateBestLevels(rankedLevels, count) {
+  return rankedLevels.slice(0, Math.min(count, rankedLevels.length));
+}
+
+export default { generateLevel, generateBatch, validateLevel, getValidWidthRange, isHoleAchievable, isTransitionAchievable, calculatePlayabilityMetrics, rankLevels, curateBestLevels };
