@@ -1,85 +1,135 @@
 {
   "id": 6,
-  "courseLength": 325,
+  "courseLength": 242,
   "startScale": 1,
-  "playerColor": "orange",
-  "speed": 3.5,
+  "playerColor": "yellow",
+  "speed": 2.9,
   "collectibles": [
     {
       "x": -1,
-      "z": 32,
-      "color": "orange",
-      "value": 0.1
-    },
-    {
-      "x": 0,
-      "z": 65,
-      "color": "orange",
-      "value": 0.12
-    },
-    {
-      "x": 1,
-      "z": 97,
-      "color": "green",
-      "value": 0.05
-    },
-    {
-      "x": -1,
-      "z": 130,
-      "color": "orange",
+      "z": 13,
+      "color": "yellow",
       "value": 0.11
     },
     {
       "x": 0,
-      "z": 162,
-      "color": "orange",
-      "value": 0.13
+      "z": 27,
+      "color": "yellow",
+      "value": 0.09
     },
     {
-      "x": 1,
-      "z": 195,
+      "x": 2,
+      "z": 40,
+      "color": "yellow",
+      "value": 0.12
+    },
+    {
+      "x": 2,
+      "z": 54,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": -1,
+      "z": 67,
+      "color": "yellow",
+      "value": 0.08
+    },
+    {
+      "x": 2,
+      "z": 81,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": -2,
+      "z": 91,
       "color": "red",
       "value": 0.05
     },
     {
-      "x": -1,
-      "z": 227,
+      "x": -2,
+      "z": 93,
       "color": "orange",
-      "value": 0.12
+      "value": 0.05
     },
     {
-      "x": 0,
-      "z": 260,
-      "color": "orange",
+      "x": -1,
+      "z": 94,
+      "color": "yellow",
       "value": 0.1
     },
     {
       "x": 1,
-      "z": 292,
-      "color": "purple",
+      "z": 108,
+      "color": "yellow",
+      "value": 0.15
+    },
+    {
+      "x": 2,
+      "z": 121,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": -2,
+      "z": 134,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": 0,
+      "z": 148,
+      "color": "yellow",
+      "value": 0.12
+    },
+    {
+      "x": 0,
+      "z": 161,
+      "color": "yellow",
+      "value": 0.14
+    },
+    {
+      "x": 1,
+      "z": 175,
+      "color": "yellow",
+      "value": 0.09
+    },
+    {
+      "x": 1,
+      "z": 188,
+      "color": "yellow",
+      "value": 0.1
+    },
+    {
+      "x": 2,
+      "z": 202,
+      "color": "yellow",
+      "value": 0.08
+    },
+    {
+      "x": -2,
+      "z": 204,
+      "color": "blue",
       "value": 0.05
+    },
+    {
+      "x": 1,
+      "z": 215,
+      "color": "yellow",
+      "value": 0.13
     }
   ],
   "obstacles": [
     {
       "x": 1,
-      "z": 82,
-      "width": 1.5
-    },
-    {
-      "x": 0,
-      "z": 178,
-      "width": 1.5
-    },
-    {
-      "x": -1,
-      "z": 245,
+      "z": 7,
       "width": 1.5
     }
   ],
   "boss": {
-    "z": 325,
-    "scale": 2.8
+    "z": 242,
+    "scale": 2
   },
   "difficulty": "easy"
 }

@@ -1,63 +1,28 @@
 {
   "id": "ws-018",
-  "difficulty": 0.55,
-  "optimal": 16,
+  "difficulty": 0.2,
   "tubes": [
     [
-      "green",
-      "orange",
       "blue",
-      "purple"
-    ],
-    [
+      "blue",
       "red",
-      "yellow",
-      "green",
-      "orange"
-    ],
-    [
-      "blue",
-      "purple",
-      "red",
-      "yellow"
-    ],
-    [
-      "yellow",
-      "blue",
-      "orange",
       "green"
     ],
     [
-      "purple",
-      "red",
-      "yellow",
-      "blue"
-    ],
-    [
-      "orange",
-      "green",
-      "purple",
-      "red"
-    ],
-    [
       "red",
       "blue",
       "green",
-      "yellow"
+      "green"
     ],
     [
-      "yellow",
-      "purple",
-      "orange",
-      "blue"
-    ],
-    [
-      "green",
       "red",
-      "purple",
-      "orange"
+      "red",
+      "blue",
+      "green"
     ],
     []
   ],
-  "maxSegments": 4
+  "maxSegments": 4,
+  "colorCount": 3,
+  "optimal": 7
 }

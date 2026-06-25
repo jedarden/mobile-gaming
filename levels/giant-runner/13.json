@@ -1,90 +1,206 @@
 {
   "id": 13,
-  "courseLength": 500,
+  "courseLength": 296,
   "startScale": 1,
-  "playerColor": "blue",
-  "speed": 4.2,
+  "playerColor": "orange",
+  "speed": 2.9,
   "collectibles": [
     {
-      "x": 0,
-      "z": 50,
-      "color": "blue",
-      "value": 0.11
+      "x": -2,
+      "z": 11,
+      "color": "orange",
+      "value": 0.13
     },
     {
       "x": 1,
-      "z": 100,
+      "z": 22,
+      "color": "orange",
+      "value": 0.11
+    },
+    {
+      "x": 2,
+      "z": 25,
       "color": "blue",
+      "value": 0.05
+    },
+    {
+      "x": 1,
+      "z": 33,
+      "color": "orange",
+      "value": 0.14
+    },
+    {
+      "x": 0,
+      "z": 44,
+      "color": "orange",
+      "value": 0.09
+    },
+    {
+      "x": 1,
+      "z": 55,
+      "color": "orange",
+      "value": 0.1
+    },
+    {
+      "x": -2,
+      "z": 66,
+      "color": "orange",
+      "value": 0.13
+    },
+    {
+      "x": 1,
+      "z": 77,
+      "color": "orange",
+      "value": 0.12
+    },
+    {
+      "x": -1,
+      "z": 88,
+      "color": "orange",
+      "value": 0.14
+    },
+    {
+      "x": 2,
+      "z": 99,
+      "color": "orange",
+      "value": 0.1
+    },
+    {
+      "x": 1,
+      "z": 110,
+      "color": "orange",
+      "value": 0.13
+    },
+    {
+      "x": 0,
+      "z": 110,
+      "color": "purple",
+      "value": 0.05
+    },
+    {
+      "x": 1,
+      "z": 120,
+      "color": "blue",
+      "value": 0.05
+    },
+    {
+      "x": -2,
+      "z": 121,
+      "color": "orange",
       "value": 0.1
     },
     {
       "x": -1,
-      "z": 150,
-      "color": "red",
-      "value": 0.05
+      "z": 132,
+      "color": "orange",
+      "value": 0.1
     },
     {
-      "x": 0,
-      "z": 200,
-      "color": "blue",
-      "value": 0.12
+      "x": -2,
+      "z": 143,
+      "color": "orange",
+      "value": 0.15
     },
     {
-      "x": 1,
-      "z": 250,
-      "color": "blue",
-      "value": 0.13
+      "x": -2,
+      "z": 153,
+      "color": "orange",
+      "value": 0.08
     },
     {
       "x": -1,
-      "z": 300,
-      "color": "yellow",
-      "value": 0.05
+      "z": 164,
+      "color": "orange",
+      "value": 0.13
     },
     {
-      "x": 0,
-      "z": 350,
-      "color": "blue",
+      "x": -2,
+      "z": 175,
+      "color": "orange",
+      "value": 0.13
+    },
+    {
+      "x": 2,
+      "z": 186,
+      "color": "orange",
+      "value": 0.13
+    },
+    {
+      "x": 2,
+      "z": 197,
+      "color": "orange",
       "value": 0.11
     },
     {
       "x": 1,
-      "z": 400,
-      "color": "blue",
+      "z": 208,
+      "color": "orange",
+      "value": 0.15
+    },
+    {
+      "x": -2,
+      "z": 217,
+      "color": "purple",
+      "value": 0.05
+    },
+    {
+      "x": 1,
+      "z": 219,
+      "color": "orange",
+      "value": 0.11
+    },
+    {
+      "x": -2,
+      "z": 223,
+      "color": "yellow",
+      "value": 0.05
+    },
+    {
+      "x": -2,
+      "z": 230,
+      "color": "orange",
       "value": 0.12
     },
     {
       "x": -1,
-      "z": 450,
+      "z": 241,
       "color": "orange",
-      "value": 0.05
+      "value": 0.14
+    },
+    {
+      "x": 0,
+      "z": 252,
+      "color": "orange",
+      "value": 0.15
+    },
+    {
+      "x": 2,
+      "z": 263,
+      "color": "orange",
+      "value": 0.14
+    },
+    {
+      "x": 0,
+      "z": 274,
+      "color": "orange",
+      "value": 0.15
     }
   ],
   "obstacles": [
     {
-      "x": -1,
-      "z": 125,
+      "x": -2,
+      "z": 5,
       "width": 1.5
     },
     {
       "x": 1,
-      "z": 225,
-      "width": 1.5
-    },
-    {
-      "x": 0,
-      "z": 325,
-      "width": 1.5
-    },
-    {
-      "x": -1,
-      "z": 425,
+      "z": 143,
       "width": 1.5
     }
   ],
   "boss": {
-    "z": 500,
-    "scale": 5.6
+    "z": 296,
+    "scale": 2.8
   },
-  "difficulty": "medium"
+  "difficulty": "easy"
 }

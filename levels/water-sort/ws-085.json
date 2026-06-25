@@ -1,0 +1,53 @@
+{
+  "id": "ws-085",
+  "difficulty": 0.8,
+  "tubes": [
+    [
+      "orange",
+      "green",
+      "green",
+      "blue"
+    ],
+    [
+      "blue",
+      "cyan",
+      "orange",
+      "orange"
+    ],
+    [
+      "cyan",
+      "green",
+      "yellow",
+      "purple"
+    ],
+    [
+      "green",
+      "cyan",
+      "yellow",
+      "orange"
+    ],
+    [
+      "purple",
+      "blue",
+      "yellow",
+      "red"
+    ],
+    [
+      "cyan",
+      "purple",
+      "red",
+      "red"
+    ],
+    [
+      "purple",
+      "yellow",
+      "red",
+      "blue"
+    ],
+    [],
+    []
+  ],
+  "maxSegments": 4,
+  "colorCount": 7,
+  "optimal": 20
+}

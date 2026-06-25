@@ -13,6 +13,10 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { generateBatch as generateMergeBatch } from '../src/games/merge-games/generator.js';
 import { generateBatch as generateAsmrBatch } from '../src/games/satisfying-asmr/generator.js';
+import { generateLevel as generateWaterSortLevel } from '../src/games/water-sort/generator.js';
+import { solve as solveWaterSort, createInitialState as createWaterSortState, pour as pourWaterSort, checkWin as checkWaterSortWin } from '../src/games/water-sort/state.js';
+import { generateBatch as generateParkingBatch } from '../src/games/parking-escape/generator.js';
+import { solve as solveParking, createInitialState as createParkingState, applyMove as applyParkingMove, checkWin as checkParkingWin } from '../src/games/parking-escape/state.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -23,6 +27,273 @@ function ensure(dir) { mkdirSync(dir, { recursive: true }); }
 function writeJSON(path, data) { writeFileSync(path, JSON.stringify(data, null, 2) + '\n'); }
 function readLevels(game) {
   return JSON.parse(readFileSync(join(SRC_GAMES, game, 'levels.json'), 'utf-8'));
+}
+
+/**
+ * Serialize water-sort tube state to canonical string for deduplication.
+ * Tubes are sorted by content to ensure equivalent states have same key.
+ *
+ * @param {Array} tubes - Array of tube objects (from state) or string arrays (from level)
+ * @returns {string} Canonical serialized state
+ */
+function serializeWaterSortState(tubes) {
+  // Handle both tube objects (from state) and plain arrays (from level data)
+  const normalized = tubes.map(t => {
+    if (Array.isArray(t)) {
+      return t.join(':');
+    }
+    return t.segments.join(':');
+  });
+  normalized.sort();
+  return normalized.join('|');
+}
+
+/**
+ * Serialize parking-escape vehicle positions to canonical string.
+ *
+ * @param {Array} vehicles - Array of vehicle objects
+ * @returns {string} Canonical serialized state
+ */
+function serializeParkingState(vehicles) {
+  // Sort by ID to ensure equivalent states have same key
+  const normalized = vehicles.map(v => `${v.id}:${v.x},${v.y}`);
+  normalized.sort();
+  return normalized.join('|');
+}
+
+/**
+ * Calculate intermediate state diversity for Water Sort.
+ * Simulates the solution path and counts unique states visited.
+ */
+function calculateWaterSortDiversity(level, solution) {
+  if (!solution || !solution.path || solution.path.length === 0) return 0;
+
+  const state = createWaterSortState(level);
+  const uniqueStates = new Set();
+  uniqueStates.add(serializeWaterSortState(state.tubes));
+
+  let currentState = state;
+  for (const [fromIdx, toIdx] of solution.path) {
+    currentState = pourWaterSort(currentState, fromIdx, toIdx);
+    uniqueStates.add(serializeWaterSortState(currentState.tubes));
+    if (checkWaterSortWin(currentState)) break;
+  }
+
+  return uniqueStates.size;
+}
+
+/**
+ * Calculate intermediate state diversity for Parking Escape.
+ * Simulates the solution path and counts unique vehicle configurations.
+ */
+function calculateParkingDiversity(level, solution) {
+  if (!solution || !solution.path || solution.path.length === 0) return 0;
+
+  const state = createParkingState(level);
+  const uniqueStates = new Set();
+  uniqueStates.add(serializeParkingState(state.vehicles));
+
+  let currentState = state;
+  for (const move of solution.path) {
+    currentState = applyParkingMove(currentState, move.vehicleId, move.direction, move.distance);
+    uniqueStates.add(serializeParkingState(currentState.vehicles));
+    if (checkParkingWin(currentState)) break;
+  }
+
+  return uniqueStates.size;
+}
+
+/**
+ * Generate and rank levels for Water Sort.
+ * Pipeline: generate 200 per tier → solve → rank by (move count, diversity) → pick top 30 across all tiers
+ *
+ * OPTIMIZATION: Uses tier-specific maxMoves limits and progress logging to complete in reasonable time.
+ */
+function generateAndRankWaterSort() {
+  console.log('\n── Water Sort: Generate-200-and-Rank Pipeline ──');
+
+  const tiers = [
+    { name: 'easy',   difficulty: 0.2, count: 200, maxMoves: 50 },
+    { name: 'medium', difficulty: 0.5, count: 200, maxMoves: 80 },
+    { name: 'hard',   difficulty: 0.8, count: 200, maxMoves: 120 }
+  ];
+
+  const allCandidates = [];
+  let globalIndex = 1;
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels (maxMoves=${tier.maxMoves})...`);
+    const candidates = [];
+    let seed = 1000;
+    let solved = 0;
+    let unsolved = 0;
+    let invalid = 0;
+
+    for (let i = 0; i < tier.count; i++) {
+      const level = generateWaterSortLevel(seed, tier.difficulty);
+      if (!level) {
+        invalid++;
+        seed++;
+        continue;
+      }
+
+      const solution = solveWaterSort(level, tier.maxMoves);
+      if (!solution) {
+        unsolved++;
+        seed++;
+        continue;
+      }
+
+      solved++;
+      const optimalMoves = solution.cost;
+      const diversity = calculateWaterSortDiversity(level, solution);
+
+      candidates.push({
+        level: {
+          ...level,
+          id: `ws-${String(globalIndex).padStart(3, '0')}`,
+          optimal: optimalMoves,
+          difficulty: tier.difficulty
+        },
+        optimalMoves,
+        diversity,
+        tier: tier.name
+      });
+
+      seed++;
+      globalIndex++;
+
+      // Progress logging every 50 levels
+      if ((i + 1) % 50 === 0) {
+        console.log(`    Progress: ${i + 1}/${tier.count} (solved: ${solved}, unsolved: ${unsolved}, invalid: ${invalid})`);
+      }
+    }
+
+    console.log(`    Tier complete: ${solved} solved, ${unsolved} unsolved (>${tier.maxMoves} moves), ${invalid} invalid`);
+    console.log(`    Generated ${candidates.length} valid ${tier.name} levels`);
+
+    // Sort by optimal moves (ascending) then by diversity (descending)
+    candidates.sort((a, b) => {
+      if (a.optimalMoves !== b.optimalMoves) {
+        return a.optimalMoves - b.optimalMoves;
+      }
+      return b.diversity - a.diversity;
+    });
+
+    console.log(`    Tier ${tier.name} candidates (moves: ${candidates[0]?.optimalMoves}-${candidates[candidates.length-1]?.optimalMoves}, diversity: ${candidates[0]?.diversity}-${candidates[candidates.length-1]?.diversity})`);
+    allCandidates.push(...candidates);
+  }
+
+  // Sort all candidates across tiers by optimal moves (ascending) then by diversity (descending)
+  allCandidates.sort((a, b) => {
+    if (a.optimalMoves !== b.optimalMoves) {
+      return a.optimalMoves - b.optimalMoves;
+    }
+    return b.diversity - a.diversity;
+  });
+
+  // Pick top 30 across all tiers
+  const selected = allCandidates.slice(0, 30);
+  console.log(`    Selected top ${selected.length} levels across all tiers (moves: ${selected[0]?.optimalMoves}-${selected[selected.length-1]?.optimalMoves}, diversity: ${selected[0]?.diversity}-${selected[selected.length-1]?.diversity})`);
+
+  return selected.map(c => c.level);
+}
+
+/**
+ * Generate and rank levels for Parking Escape.
+ * Pipeline: generate 200 per tier → solve → rank by (move count, diversity) → pick top 30 across all tiers
+ *
+ * OPTIMIZATION: Uses tier-specific maxMoves limits and progress logging. Parking escape solver
+ * is faster than water-sort, so we can use higher limits.
+ */
+function generateAndRankParkingEscape() {
+  console.log('\n── Parking Escape: Generate-200-and-Rank Pipeline ──');
+
+  const tiers = [
+    { name: 'easy',   difficulty: 'easy',   count: 200, maxMoves: 50 },
+    { name: 'medium', difficulty: 'medium', count: 200, maxMoves: 100 },
+    { name: 'hard',   difficulty: 'hard',   count: 200, maxMoves: 150 }
+  ];
+
+  const allCandidates = [];
+  let globalIndex = 1;
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels (maxMoves=${tier.maxMoves})...`);
+
+    // Use generateBatch from parking-escape generator
+    const levels = generateParkingBatch(5000, tier.difficulty, tier.count);
+
+    const candidates = [];
+    let solved = 0;
+    let unsolved = 0;
+    let invalid = 0;
+
+    for (let i = 0; i < levels.length; i++) {
+      const level = levels[i];
+      if (!level || !level.targetMoves) {
+        invalid++;
+        continue;
+      }
+
+      // generateBatch already runs the solver, so targetMoves is the optimal move count
+      // Run solver again to get path for diversity calculation
+      const solution = solveParking(level, tier.maxMoves);
+      if (!solution) {
+        unsolved++;
+        continue;
+      }
+
+      solved++;
+      const optimalMoves = solution.cost;
+      const diversity = calculateParkingDiversity(level, solution);
+
+      candidates.push({
+        level: {
+          ...level,
+          id: `pe-${String(globalIndex).padStart(3, '0')}`
+        },
+        optimalMoves,
+        diversity,
+        tier: tier.name
+      });
+
+      globalIndex++;
+
+      // Progress logging every 50 levels
+      if ((i + 1) % 50 === 0) {
+        console.log(`    Progress: ${i + 1}/${levels.length} (solved: ${solved}, unsolved: ${unsolved}, invalid: ${invalid})`);
+      }
+    }
+
+    console.log(`    Tier complete: ${solved} solved, ${unsolved} unsolved (>${tier.maxMoves} moves), ${invalid} invalid`);
+    console.log(`    Generated ${candidates.length} valid ${tier.name} levels`);
+
+    // Sort by optimal moves (ascending) then by diversity (descending)
+    candidates.sort((a, b) => {
+      if (a.optimalMoves !== b.optimalMoves) {
+        return a.optimalMoves - b.optimalMoves;
+      }
+      return b.diversity - a.diversity;
+    });
+
+    console.log(`    Tier ${tier.name} candidates (moves: ${candidates[0]?.optimalMoves}-${candidates[candidates.length-1]?.optimalMoves}, diversity: ${candidates[0]?.diversity}-${candidates[candidates.length-1]?.diversity})`);
+    allCandidates.push(...candidates);
+  }
+
+  // Sort all candidates across tiers by optimal moves (ascending) then by diversity (descending)
+  allCandidates.sort((a, b) => {
+    if (a.optimalMoves !== b.optimalMoves) {
+      return a.optimalMoves - b.optimalMoves;
+    }
+    return b.diversity - a.diversity;
+  });
+
+  // Pick top 30 across all tiers
+  const selected = allCandidates.slice(0, 30);
+  console.log(`    Selected top ${selected.length} levels across all tiers (moves: ${selected[0]?.optimalMoves}-${selected[selected.length-1]?.optimalMoves}, diversity: ${selected[0]?.diversity}-${selected[selected.length-1]?.diversity})`);
+
+  return selected.map(c => c.level);
 }
 
 /**
@@ -40,138 +311,9 @@ function commitLevels(game, levels) {
 }
 
 // ─── WATER SORT ──────────────────────────────────────────────────────────────
-// Current: 24 levels (ws-001..ws-024). Target: 30 (10 easy, 10 medium, 10 hard)
-// Adding 6 hard levels (ws-025..ws-030) with increasing color counts.
+// Generate-200-and-Rank Pipeline: generate 200 per tier, solve, rank, pick top 30 across all tiers
 
-const wsNewLevels = [
-  {
-    // 8 colors, 9 tubes (8 filled + 1 empty), difficulty 0.73
-    // Color distribution matches solved-state rotation: each color 4× verified
-    "id": "ws-025",
-    "difficulty": 0.73,
-    "optimal": 20,
-    "tubes": [
-      ["orange", "blue", "red", "green"],
-      ["yellow", "pink", "cyan", "purple"],
-      ["green", "purple", "yellow", "orange"],
-      ["cyan", "red", "pink", "blue"],
-      ["purple", "yellow", "green", "cyan"],
-      ["blue", "orange", "purple", "pink"],
-      ["red", "cyan", "orange", "yellow"],
-      ["pink", "green", "blue", "red"],
-      []
-    ],
-    "maxSegments": 4
-  },
-  {
-    // 9 colors, 10 tubes (9 filled + 1 empty), difficulty 0.78
-    "id": "ws-026",
-    "difficulty": 0.78,
-    "optimal": 22,
-    "tubes": [
-      ["red", "cyan", "green", "purple"],
-      ["blue", "orange", "pink", "yellow"],
-      ["teal", "yellow", "red", "blue"],
-      ["purple", "pink", "orange", "teal"],
-      ["yellow", "teal", "blue", "green"],
-      ["orange", "red", "purple", "pink"],
-      ["cyan", "green", "yellow", "orange"],
-      ["pink", "purple", "cyan", "red"],
-      ["green", "teal", "cyan", "blue"],
-      []
-    ],
-    "maxSegments": 4
-  },
-  {
-    // 10 colors, 11 tubes (10 filled + 1 empty), difficulty 0.83
-    // Systematic rotation: tube i = [3i, 3i+1, 3i+2, 3i+3] mod 10
-    "id": "ws-027",
-    "difficulty": 0.83,
-    "optimal": 24,
-    "tubes": [
-      ["red", "blue", "green", "yellow"],
-      ["yellow", "purple", "orange", "cyan"],
-      ["cyan", "pink", "teal", "lime"],
-      ["lime", "red", "blue", "green"],
-      ["blue", "green", "yellow", "purple"],
-      ["purple", "orange", "cyan", "pink"],
-      ["pink", "teal", "lime", "red"],
-      ["red", "blue", "green", "yellow"],
-      ["teal", "lime", "red", "blue"],
-      ["orange", "cyan", "pink", "teal"],
-      []
-    ],
-    "maxSegments": 4
-  },
-  {
-    // 11 colors, 12 tubes (11 filled + 1 empty), difficulty 0.87
-    "id": "ws-028",
-    "difficulty": 0.87,
-    "optimal": 26,
-    "tubes": [
-      ["red", "blue", "green", "yellow"],
-      ["yellow", "purple", "orange", "cyan"],
-      ["cyan", "pink", "teal", "lime"],
-      ["lime", "indigo", "red", "blue"],
-      ["blue", "green", "yellow", "purple"],
-      ["purple", "orange", "cyan", "pink"],
-      ["pink", "teal", "lime", "indigo"],
-      ["indigo", "red", "blue", "green"],
-      ["green", "yellow", "purple", "orange"],
-      ["orange", "cyan", "pink", "teal"],
-      ["teal", "lime", "indigo", "red"],
-      []
-    ],
-    "maxSegments": 4
-  },
-  {
-    // 12 colors, 13 tubes (12 filled + 1 empty), difficulty 0.92
-    "id": "ws-029",
-    "difficulty": 0.92,
-    "optimal": 28,
-    "tubes": [
-      ["red", "blue", "green", "yellow"],
-      ["orange", "cyan", "pink", "teal"],
-      ["indigo", "coral", "red", "blue"],
-      ["yellow", "purple", "orange", "cyan"],
-      ["teal", "lime", "indigo", "coral"],
-      ["blue", "green", "yellow", "purple"],
-      ["cyan", "pink", "teal", "lime"],
-      ["coral", "red", "blue", "green"],
-      ["purple", "orange", "cyan", "pink"],
-      ["lime", "indigo", "coral", "red"],
-      ["green", "yellow", "purple", "orange"],
-      ["pink", "teal", "lime", "indigo"],
-      []
-    ],
-    "maxSegments": 4
-  },
-  {
-    // 12 colors, 14 tubes (12 filled + 2 empty), difficulty 0.98 — maximum hard
-    "id": "ws-030",
-    "difficulty": 0.98,
-    "optimal": 30,
-    "tubes": [
-      ["red", "pink", "green", "yellow"],
-      ["blue", "teal", "lime", "indigo"],
-      ["green", "yellow", "purple", "orange"],
-      ["lime", "indigo", "coral", "red"],
-      ["purple", "orange", "cyan", "pink"],
-      ["coral", "red", "blue", "green"],
-      ["cyan", "pink", "teal", "lime"],
-      ["orange", "cyan", "pink", "teal"],
-      ["teal", "lime", "indigo", "coral"],
-      ["yellow", "purple", "orange", "cyan"],
-      ["indigo", "coral", "red", "blue"],
-      ["pink", "green", "yellow", "purple"],
-      [],
-      []
-    ],
-    "maxSegments": 4
-  }
-];
-
-const wsLevels = [...readLevels('water-sort'), ...wsNewLevels];
+const wsLevels = generateAndRankWaterSort();
 commitLevels('water-sort', wsLevels);
 
 // ─── PULL THE PIN ─────────────────────────────────────────────────────────────
@@ -956,505 +1098,9 @@ const brLevels = [...readLevels('bridge-race'), ...brNewLevels];
 commitLevels('bridge-race', brLevels);
 
 // ─── PARKING ESCAPE ──────────────────────────────────────────────────────────
-// New game: 30 levels (Rush Hour style). Hero exits right at (5,2).
-// targetMoves = optimal move count.
+// Generate-200-and-Rank Pipeline: generate 200 per tier, solve, rank, pick top 30
 
-const peLevels = [
-  // ── EASY (pe-001..pe-010) ──
-  {
-    "id": "pe-001", "difficulty": 1, "targetMoves": 2,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 1, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-002", "difficulty": 1, "targetMoves": 3,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-003", "difficulty": 1, "targetMoves": 3,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-004", "difficulty": 1, "targetMoves": 4,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-005", "difficulty": 2, "targetMoves": 4,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-006", "difficulty": 2, "targetMoves": 5,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "c", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-007", "difficulty": 2, "targetMoves": 5,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-008", "difficulty": 2, "targetMoves": 6,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 4, "y": 1, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-009", "difficulty": 2, "targetMoves": 6,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 4, "y": 2, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-010", "difficulty": 3, "targetMoves": 7,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 1, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 3, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "e", "type": "car",   "x": 4, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  // ── MEDIUM (pe-011..pe-020) ──
-  {
-    "id": "pe-011", "difficulty": 4, "targetMoves": 8,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "c", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-012", "difficulty": 4, "targetMoves": 9,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 2, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 3, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-013", "difficulty": 4, "targetMoves": 9,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 3, "y": 0, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 4, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-014", "difficulty": 5, "targetMoves": 10,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "f", "type": "car",   "x": 4, "y": 1, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-015", "difficulty": 5, "targetMoves": 10,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 4, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 0, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-016", "difficulty": 5, "targetMoves": 11,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "c", "type": "car",   "x": 4, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "e", "type": "car",   "x": 1, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-017", "difficulty": 6, "targetMoves": 12,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-018", "difficulty": 6, "targetMoves": 13,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "e", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 3, "y": 3, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-019", "difficulty": 6, "targetMoves": 14,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 3, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "f", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 2, "y": 3, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "i", "type": "car",   "x": 4, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-020", "difficulty": 7, "targetMoves": 15,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 4, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "g", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "j", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  // ── HARD (pe-021..pe-030) ──
-  {
-    "id": "pe-021", "difficulty": 7, "targetMoves": 16,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 3, "y": 0, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "d", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "e", "type": "car",   "x": 4, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 4, "width": 3, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 4, "y": 4, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-022", "difficulty": 7, "targetMoves": 17,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 4, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 0, "y": 5, "width": 3, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-023", "difficulty": 8, "targetMoves": 18,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 2, "y": 3, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-024", "difficulty": 8, "targetMoves": 18,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 2, "y": 2, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 3, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-025", "difficulty": 8, "targetMoves": 19,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 0, "y": 4, "width": 3, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-026", "difficulty": 9, "targetMoves": 20,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 3, "y": 2, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "g", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "k", "type": "car",   "x": 4, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-027", "difficulty": 9, "targetMoves": 21,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 3, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "f", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 4, "y": 4, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "k", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-028", "difficulty": 9, "targetMoves": 22,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 4, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 2, "y": 1, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 2, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 4, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 3, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 0, "y": 4, "width": 3, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "k", "type": "car",   "x": 2, "y": 3, "width": 1, "height": 2, "orientation": "vertical" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-029", "difficulty": 10, "targetMoves": 24,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "truck", "x": 2, "y": 0, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "b", "type": "truck", "x": 4, "y": 2, "width": 1, "height": 3, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "f", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "i", "type": "car",   "x": 0, "y": 3, "width": 3, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 3, "y": 5, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "k", "type": "car",   "x": 0, "y": 5, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  },
-  {
-    "id": "pe-030", "difficulty": 10, "targetMoves": 25,
-    "grid": {
-      "width": 6, "height": 6,
-      "vehicles": [
-        { "id": "h", "type": "hero",  "x": 0, "y": 2, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "a", "type": "car",   "x": 2, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "b", "type": "car",   "x": 3, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "c", "type": "car",   "x": 4, "y": 2, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "d", "type": "car",   "x": 0, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "e", "type": "car",   "x": 2, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "f", "type": "car",   "x": 3, "y": 0, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "g", "type": "car",   "x": 4, "y": 0, "width": 1, "height": 2, "orientation": "vertical" },
-        { "id": "i", "type": "car",   "x": 0, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "j", "type": "car",   "x": 2, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "k", "type": "car",   "x": 4, "y": 4, "width": 2, "height": 1, "orientation": "horizontal" },
-        { "id": "l", "type": "car",   "x": 0, "y": 3, "width": 2, "height": 1, "orientation": "horizontal" }
-      ],
-      "exit": { "x": 5, "y": 2, "direction": "right" }
-    }
-  }
-];
+const peLevels = generateAndRankParkingEscape();
 
 // Write individual parking-escape levels (no src/games entry since game not implemented)
 const peDir = join(LEVELS_DIR, 'parking-escape');

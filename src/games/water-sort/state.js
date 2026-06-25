@@ -270,6 +270,64 @@ export function calculateStars(moves, optimal) {
   return 1;
 }
 
+/**
+ * Serialize tube state to string for visited set.
+ * @param {Array} tubes - Array of tube objects
+ * @returns {string} Serialized state
+ */
+function serializeTubes(tubes) {
+  return tubes.map(t => t.segments.join(':')).join('|');
+}
+
+/**
+ * BFS solver: find minimum moves to solve the level.
+ * @param {Object} level - Level definition
+ * @param {number} maxMoves - Maximum search depth (default 50)
+ * @returns {{ cost: number, path: Array }|null} Solution or null if unsolvable
+ */
+export function solve(level, maxMoves = 50) {
+  const initialState = createInitialState(level);
+  const initKey = serializeTubes(initialState.tubes);
+
+  if (checkWin(initialState)) {
+    return { cost: 0, path: [] };
+  }
+
+  const visited = new Map([[initKey, null]]);
+  const queue = [{ state: initialState, key: initKey }];
+  const MAX_STATES = 1000000;
+
+  while (queue.length > 0 && visited.size < MAX_STATES) {
+    const { state, key: posKey } = queue.shift();
+
+    if (state.moves >= maxMoves) continue;
+
+    for (const [fromIdx, toIdx] of getValidMoves(state)) {
+      const newState = pour(state, fromIdx, toIdx);
+      const newKey = serializeTubes(newState.tubes);
+
+      if (visited.has(newKey)) continue;
+
+      visited.set(newKey, { parentKey: posKey, move: [fromIdx, toIdx] });
+
+      if (checkWin(newState)) {
+        const path = [];
+        let cur = newKey;
+        while (visited.get(cur) !== null) {
+          const { parentKey, move: m } = visited.get(cur);
+          path.unshift(m);
+          cur = parentKey;
+        }
+        return { cost: path.length, path };
+      }
+
+      queue.push({ state: newState, key: newKey });
+    }
+  }
+
+  return null;
+}
+
 export default {
   LIQUID_COLORS,
   createInitialState,
@@ -284,5 +342,6 @@ export default {
   isStuck,
   cloneState,
   createGameHistory,
-  calculateStars
+  calculateStars,
+  solve
 };
