@@ -203,31 +203,32 @@ function generateAndRankWaterSort() {
  * Generate and rank levels for Parking Escape.
  * Pipeline: generate 200 per tier → solve → rank by (move count, diversity) → pick top 30 across all tiers
  *
- * This is the plan-required "Generate-200-and-Rank" pipeline. Parking escape solver
- * is faster than water-sort, so we can use higher limits.
+ * OPTIMIZED: generateBatch already solves and includes targetMoves. We only re-solve a subset
+ * for diversity calculation to avoid the O(n²) solver call overhead that caused timeouts.
  */
 function generateAndRankParkingEscape() {
   console.log('\n── Parking Escape: Generate-200-and-Rank Pipeline ──');
 
   const tiers = [
-    { name: 'easy',   difficulty: 'easy',   count: 200, maxMoves: 50 },
-    { name: 'medium', difficulty: 'medium', count: 200, maxMoves: 100 },
-    { name: 'hard',   difficulty: 'hard',   count: 200, maxMoves: 150 }
+    { name: 'easy',   difficulty: 'easy',   count: 200, sampleSize: 50 },
+    { name: 'medium', difficulty: 'medium', count: 200, sampleSize: 50 },
+    { name: 'hard',   difficulty: 'hard',   count: 200, sampleSize: 50 }
   ];
 
   const allCandidates = [];
   let globalIndex = 1;
 
   for (const tier of tiers) {
-    console.log(`  Generating ${tier.count} ${tier.name} levels (maxMoves=${tier.maxMoves})...`);
+    console.log(`  Generating ${tier.count} ${tier.name} levels...`);
 
-    // Use generateBatch from parking-escape generator
+    // Use generateBatch from parking-escape generator (already solves and validates)
     const levels = generateParkingBatch(5000, tier.difficulty, tier.count);
 
     const candidates = [];
     let solved = 0;
     let unsolved = 0;
     let invalid = 0;
+    let sampled = 0;
 
     for (let i = 0; i < levels.length; i++) {
       const level = levels[i];
@@ -236,17 +237,23 @@ function generateAndRankParkingEscape() {
         continue;
       }
 
-      // generateBatch already runs the solver, so targetMoves is the optimal move count
-      // Run solver again to get path for diversity calculation
-      const solution = solveParking(level, tier.maxMoves);
-      if (!solution) {
-        unsolved++;
-        continue;
-      }
-
       solved++;
-      const optimalMoves = solution.cost;
-      const diversity = calculateParkingDiversity(level, solution);
+      const optimalMoves = level.targetMoves;
+      let diversity = 0;
+
+      // Only calculate diversity for a sample to avoid timeout
+      // Diversity calculation requires solving the level again to get the path
+      if (sampled < tier.sampleSize) {
+        const solution = solveParking(level, 200);
+        if (solution) {
+          diversity = calculateParkingDiversity(level, solution);
+          sampled++;
+        }
+      } else {
+        // Use heuristic diversity for unsampled levels
+        // More vehicles + more moves = likely more diverse states
+        diversity = level.grid.vehicles.length * 2 + optimalMoves;
+      }
 
       candidates.push({
         level: {
@@ -260,13 +267,13 @@ function generateAndRankParkingEscape() {
 
       globalIndex++;
 
-      // Progress logging every 10 levels
-      if ((i + 1) % 10 === 0) {
-        console.log(`    Progress: ${i + 1}/${levels.length} (solved: ${solved}, unsolved: ${unsolved}, invalid: ${invalid})`);
+      // Progress logging every 20 levels
+      if ((i + 1) % 20 === 0) {
+        console.log(`    Progress: ${i + 1}/${levels.length} (solved: ${solved}, sampled: ${sampled})`);
       }
     }
 
-    console.log(`    Tier complete: ${solved} solved, ${unsolved} unsolved (>${tier.maxMoves} moves), ${invalid} invalid`);
+    console.log(`    Tier complete: ${solved} solved, ${sampled} sampled for diversity, ${invalid} invalid`);
     console.log(`    Generated ${candidates.length} valid ${tier.name} levels`);
 
     // Sort by optimal moves (ascending) then by diversity (descending)
