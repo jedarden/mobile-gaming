@@ -1,610 +1,222 @@
 [
   {
-    "id": "gr-gen-easy-3-1782411120296.6912",
-    "courseLength": 212,
-    "startScale": 1,
-    "playerColor": "orange",
-    "speed": 2.9,
-    "collectibles": [
-      {
-        "x": 1,
-        "z": 11,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 21,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 32,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -1,
-        "z": 42,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": -2,
-        "z": 53,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 64,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 73,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 74,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 85,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 95,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 106,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 117,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 2,
-        "z": 127,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 138,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 148,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 159,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 161,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 170,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 170,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 180,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 189,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 191,
-        "color": "orange",
-        "value": 0.12
-      }
-    ],
-    "obstacles": [
-      {
-        "x": -2,
-        "z": 5,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 101,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 212,
-      "scale": 2.2
-    },
-    "difficulty": "easy"
-  },
-  {
-    "id": "gr-gen-easy-7-1782411120301.6912",
-    "courseLength": 266,
-    "startScale": 1,
-    "playerColor": "red",
-    "speed": 2.9,
-    "collectibles": [
-      {
-        "x": -1,
-        "z": 13,
-        "color": "red",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 25,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 38,
-        "color": "red",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 51,
-        "color": "red",
-        "value": 0.08
-      },
-      {
-        "x": -1,
-        "z": 63,
-        "color": "red",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 76,
-        "color": "red",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 89,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": -1,
-        "z": 101,
-        "color": "red",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 114,
-        "color": "red",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 126,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 127,
-        "color": "red",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 130,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 131,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 139,
-        "color": "red",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 152,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": 0,
-        "z": 165,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 177,
-        "color": "red",
-        "value": 0.15
-      },
-      {
-        "x": 0,
-        "z": 190,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": -1,
-        "z": 190,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 203,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 215,
-        "color": "red",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 228,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 241,
-        "color": "red",
-        "value": 0.09
-      }
-    ],
-    "obstacles": [
-      {
-        "x": 2,
-        "z": 6,
-        "width": 1.5
-      },
-      {
-        "x": 0,
-        "z": 127,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 266,
-      "scale": 2.3
-    },
-    "difficulty": "easy"
-  },
-  {
-    "id": "gr-gen-easy-14-1782411120311.6912",
-    "courseLength": 224,
-    "startScale": 1,
-    "playerColor": "red",
-    "speed": 2.7,
-    "collectibles": [
-      {
-        "x": -2,
-        "z": 11,
-        "color": "red",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 21,
-        "color": "red",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 32,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 43,
-        "color": "red",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 53,
-        "color": "red",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 54,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 64,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": 0,
-        "z": 75,
-        "color": "red",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 82,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 85,
-        "color": "red",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 96,
-        "color": "red",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 107,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 117,
-        "color": "red",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 128,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": 0,
-        "z": 139,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": 2,
-        "z": 149,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 151,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 160,
-        "color": "red",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 171,
-        "color": "red",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 181,
-        "color": "red",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 192,
-        "color": "red",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 195,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 203,
-        "color": "red",
-        "value": 0.13
-      }
-    ],
-    "obstacles": [
-      {
-        "x": 1,
-        "z": 5,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 107,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 224,
-      "scale": 2.3
-    },
-    "difficulty": "easy"
-  },
-  {
-    "id": "gr-gen-medium-0-1782411122285.173",
-    "courseLength": 428,
+    "courseLength": 267,
     "startScale": 1,
     "playerColor": "purple",
-    "speed": 3.5,
+    "speed": 2.8,
     "collectibles": [
       {
-        "x": -1,
-        "z": 14,
+        "x": -2,
+        "z": 22,
         "color": "purple",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 28,
-        "color": "purple",
-        "value": 0.13
+        "value": 0.08
       },
       {
         "x": 2,
-        "z": 41,
+        "z": 45,
         "color": "purple",
         "value": 0.1
       },
       {
-        "x": -2,
-        "z": 51,
+        "x": 0,
+        "z": 67,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 0,
+        "z": 86,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 89,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 89,
         "color": "yellow",
         "value": 0.05
       },
       {
+        "x": -1,
+        "z": 111,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
         "x": 1,
+        "z": 134,
+        "color": "purple",
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 156,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 178,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 200,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 223,
+        "color": "purple",
+        "value": 0.14
+      }
+    ],
+    "obstacles": [
+      {
+        "x": 2,
+        "z": 11,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 267,
+      "scale": 1.6
+    },
+    "difficulty": "easy",
+    "id": 1
+  },
+  {
+    "courseLength": 290,
+    "startScale": 1,
+    "playerColor": "purple",
+    "speed": 2.6,
+    "collectibles": [
+      {
+        "x": 1,
+        "z": 14,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 28,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 41,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": 0,
         "z": 55,
         "color": "purple",
         "value": 0.13
       },
       {
         "x": -1,
+        "z": 60,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 0,
         "z": 69,
         "color": "purple",
-        "value": 0.13
+        "value": 0.12
       },
       {
         "x": 0,
         "z": 83,
         "color": "purple",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 97,
-        "color": "purple",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 110,
-        "color": "purple",
         "value": 0.14
       },
       {
-        "x": 1,
-        "z": 123,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 124,
+        "x": -1,
+        "z": 97,
         "color": "purple",
-        "value": 0.15
+        "value": 0.13
       },
       {
         "x": 2,
+        "z": 110,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 124,
+        "color": "purple",
+        "value": 0.08
+      },
+      {
+        "x": -2,
+        "z": 137,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": 1,
         "z": 138,
         "color": "purple",
-        "value": 0.15
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 138,
+        "color": "red",
+        "value": 0.05
       },
       {
         "x": -2,
         "z": 152,
         "color": "purple",
-        "value": 0.14
+        "value": 0.08
       },
       {
-        "x": 0,
+        "x": 1,
         "z": 166,
         "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 179,
-        "color": "purple",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 193,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 197,
-        "color": "red",
-        "value": 0.05
+        "value": 0.09
       },
       {
         "x": -1,
-        "z": 207,
+        "z": 180,
         "color": "purple",
         "value": 0.13
       },
       {
         "x": -2,
+        "z": 193,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 207,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 2,
         "z": 221,
         "color": "purple",
         "value": 0.15
+      },
+      {
+        "x": -1,
+        "z": 232,
+        "color": "yellow",
+        "value": 0.05
       },
       {
         "x": -2,
@@ -613,2178 +225,112 @@
         "value": 0.12
       },
       {
-        "x": -2,
-        "z": 243,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 246,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
         "x": 1,
         "z": 249,
-        "color": "purple",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 258,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 262,
         "color": "purple",
         "value": 0.11
       },
       {
-        "x": -1,
-        "z": 276,
-        "color": "purple",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 290,
+        "x": 2,
+        "z": 262,
         "color": "purple",
         "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 304,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 318,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 331,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 345,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 359,
-        "color": "purple",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 373,
-        "color": "purple",
-        "value": 0.15
-      },
-      {
-        "x": -1,
-        "z": 387,
-        "color": "purple",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 400,
-        "color": "purple",
-        "value": 0.08
       }
     ],
     "obstacles": [
       {
-        "x": -1,
+        "x": 2,
         "z": 7,
         "width": 1.5
       },
       {
         "x": 0,
-        "z": 140,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 274,
+        "z": 138,
         "width": 1.5
       }
     ],
     "boss": {
-      "z": 428,
-      "scale": 3.2
+      "z": 290,
+      "scale": 2.3
     },
-    "difficulty": "medium"
+    "difficulty": "easy",
+    "id": 2
   },
   {
-    "id": "gr-gen-medium-1-1782411122297.173",
-    "courseLength": 391,
+    "courseLength": 208,
     "startScale": 1,
-    "playerColor": "purple",
-    "speed": 3.2,
+    "playerColor": "green",
+    "speed": 2.6,
     "collectibles": [
       {
-        "x": 2,
-        "z": 13,
-        "color": "purple",
-        "value": 0.14
+        "x": -2,
+        "z": 8,
+        "color": "green",
+        "value": 0.11
       },
       {
-        "x": 1,
-        "z": 25,
-        "color": "purple",
+        "x": 2,
+        "z": 17,
+        "color": "green",
         "value": 0.13
       },
       {
-        "x": 1,
-        "z": 38,
-        "color": "purple",
-        "value": 0.12
+        "x": 0,
+        "z": 25,
+        "color": "green",
+        "value": 0.09
       },
       {
         "x": -1,
+        "z": 33,
+        "color": "green",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 42,
+        "color": "green",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 49,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -2,
         "z": 50,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 51,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 63,
-        "color": "purple",
+        "color": "green",
         "value": 0.12
       },
       {
         "x": -2,
-        "z": 76,
-        "color": "purple",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 88,
-        "color": "purple",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 101,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 114,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 126,
-        "color": "purple",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 139,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 151,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 164,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 177,
-        "color": "purple",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 189,
-        "color": "purple",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 202,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 214,
-        "color": "purple",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 227,
-        "color": "purple",
+        "z": 58,
+        "color": "green",
         "value": 0.13
       },
       {
         "x": 0,
-        "z": 240,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 252,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 265,
-        "color": "purple",
-        "value": 0.15
-      },
-      {
-        "x": 1,
-        "z": 273,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 277,
-        "color": "purple",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 290,
-        "color": "purple",
-        "value": 0.14
-      },
-      {
-        "x": -1,
-        "z": 303,
-        "color": "purple",
-        "value": 0.09
-      },
-      {
-        "x": 1,
-        "z": 315,
-        "color": "purple",
-        "value": 0.08
-      },
-      {
-        "x": 2,
-        "z": 328,
-        "color": "purple",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 330,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 331,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 334,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 341,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 350,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 353,
-        "color": "purple",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 366,
-        "color": "purple",
-        "value": 0.08
-      }
-    ],
-    "obstacles": [
-      {
-        "x": 2,
-        "z": 6,
-        "width": 1.5
-      },
-      {
-        "x": 1,
-        "z": 128,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 250,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 391,
-      "scale": 3.2
-    },
-    "difficulty": "medium"
-  },
-  {
-    "id": "gr-gen-medium-2-1782411122325.173",
-    "courseLength": 407,
-    "startScale": 1,
-    "playerColor": "orange",
-    "speed": 3.4,
-    "collectibles": [
-      {
-        "x": 2,
-        "z": 13,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 25,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 27,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 38,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 51,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 64,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 76,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 2,
-        "z": 89,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 102,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 114,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 127,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 140,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 2,
-        "z": 153,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 165,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 2,
-        "z": 178,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 191,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 204,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 216,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 225,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 229,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 233,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 242,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 254,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 267,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 280,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 2,
-        "z": 292,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 293,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": 1,
-        "z": 297,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 305,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": -2,
-        "z": 318,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 319,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 331,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 332,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 343,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 356,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 369,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 382,
-        "color": "orange",
-        "value": 0.1
-      }
-    ],
-    "obstacles": [
-      {
-        "x": -1,
-        "z": 6,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 102,
-        "width": 1.5
-      },
-      {
-        "x": 0,
-        "z": 197,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 293,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 407,
-      "scale": 3.2
-    },
-    "difficulty": "medium"
-  },
-  {
-    "id": "gr-gen-hard-0-1782411119388.7712",
-    "courseLength": 492,
-    "startScale": 1,
-    "playerColor": "green",
-    "speed": 3.8,
-    "collectibles": [
-      {
-        "x": 0,
-        "z": 6,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 11,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 13,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 17,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 2,
-        "z": 23,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": 0,
-        "z": 28,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 34,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 40,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 45,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 51,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": 1,
-        "z": 57,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 62,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": -1,
         "z": 67,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 68,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 1,
-        "z": 70,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 74,
         "color": "green",
         "value": 0.14
       },
       {
-        "x": 0,
-        "z": 79,
+        "x": -2,
+        "z": 75,
         "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 85,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 90,
-        "color": "green",
-        "value": 0.08
+        "value": 0.13
       },
       {
         "x": -2,
+        "z": 83,
+        "color": "green",
+        "value": 0.08
+      },
+      {
+        "x": 2,
         "z": 92,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 94,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 96,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 102,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 104,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 107,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 113,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 119,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 124,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 130,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 131,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 136,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 141,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 143,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 147,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 147,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 153,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 158,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 164,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 165,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 170,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 175,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 176,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 181,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": -1,
-        "z": 187,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 192,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 1,
-        "z": 195,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 198,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 202,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 204,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 209,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 215,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 221,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 221,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 226,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 232,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 238,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 243,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 249,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 254,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 260,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 266,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": -1,
-        "z": 271,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": -1,
-        "z": 271,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 277,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 283,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": 1,
-        "z": 288,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 0,
-        "z": 294,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 300,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 305,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 310,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 311,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 317,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 322,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 328,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 334,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 339,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 345,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 351,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 356,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 362,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 368,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 373,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 376,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 379,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 385,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 390,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 396,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 402,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 407,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 1,
-        "z": 413,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 418,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 419,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 424,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": 1,
-        "z": 430,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 434,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 435,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 441,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": 1,
-        "z": 447,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 447,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 452,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 458,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 464,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 469,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 475,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 481,
-        "color": "green",
-        "value": 0.11
-      }
-    ],
-    "obstacles": [
-      {
-        "x": 0,
-        "z": 3,
-        "width": 1.5
-      },
-      {
-        "x": 1,
-        "z": 47,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 90,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 134,
-        "width": 1.5
-      },
-      {
-        "x": 1,
-        "z": 178,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 221,
-        "width": 1.5
-      },
-      {
-        "x": 1,
-        "z": 265,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 309,
-        "width": 1.5
-      },
-      {
-        "x": 0,
-        "z": 352,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 396,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 440,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 492,
-      "scale": 6.9
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "gr-gen-hard-1-1782411119389.7712",
-    "courseLength": 560,
-    "startScale": 1,
-    "playerColor": "orange",
-    "speed": 3.9,
-    "collectibles": [
-      {
-        "x": -2,
-        "z": 6,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 11,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 17,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 0,
-        "z": 23,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 29,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 34,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 40,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": -1,
-        "z": 46,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 47,
-        "color": "purple",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 51,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 57,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 63,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 67,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 69,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 74,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 80,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 86,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 91,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 95,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 97,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 103,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 109,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 114,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 120,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 126,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 131,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 137,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 143,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 143,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 149,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 154,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 160,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": -1,
-        "z": 166,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": -1,
-        "z": 171,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 177,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 181,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 183,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 189,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": 2,
-        "z": 189,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 194,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 197,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 200,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 1,
-        "z": 206,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 211,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 217,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 223,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 228,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 229,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 234,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 240,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 246,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 251,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 257,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 263,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 269,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 274,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 275,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 278,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 280,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 286,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 291,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": -1,
-        "z": 297,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 303,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 303,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 309,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 314,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 320,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 324,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 326,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 0,
-        "z": 331,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 337,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 341,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 342,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 343,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 349,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 0,
-        "z": 354,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 360,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 366,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -1,
-        "z": 371,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": 1,
-        "z": 373,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 377,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 383,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 383,
-        "color": "green",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 384,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 389,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 394,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 1,
-        "z": 400,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 406,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 411,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 0,
-        "z": 417,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 421,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 423,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 424,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 429,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 434,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": 1,
-        "z": 440,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 443,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 446,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 451,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 457,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 463,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 469,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 474,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 480,
-        "color": "orange",
-        "value": 0.13
-      },
-      {
-        "x": 2,
-        "z": 486,
-        "color": "orange",
-        "value": 0.09
-      },
-      {
-        "x": 2,
-        "z": 491,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 2,
-        "z": 497,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 502,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 503,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 509,
-        "color": "orange",
-        "value": 0.08
-      },
-      {
-        "x": 0,
-        "z": 514,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 519,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 520,
-        "color": "orange",
-        "value": 0.15
-      },
-      {
-        "x": -2,
-        "z": 526,
-        "color": "orange",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 527,
-        "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": -2,
-        "z": 531,
-        "color": "orange",
-        "value": 0.12
-      },
-      {
-        "x": 2,
-        "z": 537,
-        "color": "orange",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 543,
-        "color": "orange",
-        "value": 0.14
-      },
-      {
-        "x": -2,
-        "z": 549,
-        "color": "orange",
-        "value": 0.09
-      }
-    ],
-    "obstacles": [
-      {
-        "x": -1,
-        "z": 3,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 45,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 87,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 129,
-        "width": 1.5
-      },
-      {
-        "x": 0,
-        "z": 172,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 214,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 256,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 298,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 340,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 383,
-        "width": 1.5
-      },
-      {
-        "x": 1,
-        "z": 425,
-        "width": 1.5
-      },
-      {
-        "x": 0,
-        "z": 467,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 509,
-        "width": 1.5
-      }
-    ],
-    "boss": {
-      "z": 560,
-      "scale": 7.7
-    },
-    "difficulty": "hard"
-  },
-  {
-    "id": "gr-gen-hard-2-1782411119390.7712",
-    "courseLength": 565,
-    "startScale": 1,
-    "playerColor": "green",
-    "speed": 4,
-    "collectibles": [
-      {
-        "x": -2,
-        "z": 9,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 18,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 27,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 1,
-        "z": 36,
-        "color": "green",
-        "value": 0.14
-      },
-      {
-        "x": 2,
-        "z": 46,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 55,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 64,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 73,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 82,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -1,
-        "z": 91,
         "color": "green",
         "value": 0.11
       },
@@ -2792,444 +338,2814 @@
         "x": 2,
         "z": 100,
         "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 0,
-        "z": 109,
-        "color": "green",
         "value": 0.13
       },
       {
-        "x": -2,
-        "z": 114,
-        "color": "orange",
+        "x": 1,
+        "z": 108,
+        "color": "green",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 111,
+        "color": "red",
         "value": 0.05
       },
       {
         "x": 0,
-        "z": 118,
+        "z": 116,
         "color": "green",
         "value": 0.1
       },
       {
-        "x": 1,
-        "z": 128,
+        "x": 0,
+        "z": 125,
         "color": "green",
-        "value": 0.09
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 133,
+        "color": "green",
+        "value": 0.15
       },
       {
         "x": -2,
-        "z": 137,
+        "z": 141,
         "color": "green",
-        "value": 0.13
+        "value": 0.11
       },
       {
-        "x": -2,
-        "z": 146,
-        "color": "green",
-        "value": 0.09
+        "x": 2,
+        "z": 145,
+        "color": "blue",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 148,
+        "color": "orange",
+        "value": 0.05
       },
       {
         "x": 0,
         "z": 150,
-        "color": "orange",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 155,
         "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 164,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 173,
-        "color": "green",
-        "value": 0.11
+        "value": 0.14
       },
       {
         "x": 0,
-        "z": 173,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": -1,
-        "z": 181,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 182,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": 1,
-        "z": 191,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -2,
-        "z": 200,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 2,
-        "z": 210,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -2,
-        "z": 219,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 228,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 237,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 246,
+        "z": 158,
         "color": "green",
         "value": 0.13
       },
       {
+        "x": 1,
+        "z": 159,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 166,
+        "color": "green",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 175,
+        "color": "green",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 183,
+        "color": "green",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 191,
+        "color": "green",
+        "value": 0.12
+      }
+    ],
+    "obstacles": [
+      {
+        "x": 1,
+        "z": 4,
+        "width": 1.5
+      },
+      {
         "x": 0,
-        "z": 250,
+        "z": 100,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 208,
+      "scale": 2.7
+    },
+    "difficulty": "easy",
+    "id": 3
+  },
+  {
+    "courseLength": 412,
+    "startScale": 1,
+    "playerColor": "purple",
+    "speed": 3.3,
+    "collectibles": [
+      {
+        "x": -1,
+        "z": 12,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 24,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 36,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 48,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 58,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 61,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 73,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 85,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 97,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 109,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 121,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 133,
+        "color": "purple",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 145,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 146,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 158,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 0,
+        "z": 170,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 182,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 194,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 201,
+        "color": "blue",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 206,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 218,
+        "color": "purple",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 230,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 242,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 254,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 267,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 279,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 288,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 291,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 303,
+        "color": "purple",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 315,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 327,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 339,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 351,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 363,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 364,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 367,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 376,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 378,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 388,
+        "color": "purple",
+        "value": 0.15
+      }
+    ],
+    "obstacles": [
+      {
+        "x": 1,
+        "z": 6,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 103,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 200,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 297,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 412,
+      "scale": 3.4
+    },
+    "difficulty": "medium",
+    "id": 4
+  },
+  {
+    "courseLength": 408,
+    "startScale": 1,
+    "playerColor": "yellow",
+    "speed": 3.3,
+    "collectibles": [
+      {
+        "x": 0,
+        "z": 9,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 19,
+        "color": "yellow",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 28,
+        "color": "yellow",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 38,
+        "color": "yellow",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 47,
+        "color": "yellow",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 57,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": 2,
+        "z": 62,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 66,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 73,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 76,
+        "color": "yellow",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 85,
+        "color": "yellow",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 95,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 104,
+        "color": "yellow",
+        "value": 0.1
+      },
+      {
+        "x": 0,
+        "z": 114,
+        "color": "yellow",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 123,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 133,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 142,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": 2,
+        "z": 152,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 161,
+        "color": "yellow",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 171,
+        "color": "yellow",
+        "value": 0.08
+      },
+      {
+        "x": -2,
+        "z": 180,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": 2,
+        "z": 181,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 190,
+        "color": "yellow",
+        "value": 0.1
+      },
+      {
+        "x": -1,
+        "z": 192,
         "color": "purple",
         "value": 0.05
       },
       {
         "x": 1,
-        "z": 250,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 255,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 264,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 273,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 283,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 292,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": 2,
-        "z": 301,
-        "color": "green",
-        "value": 0.15
-      },
-      {
-        "x": -1,
-        "z": 310,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 319,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": -1,
-        "z": 328,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 337,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 344,
+        "z": 199,
         "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": 0,
+        "z": 200,
+        "color": "purple",
         "value": 0.05
       },
       {
         "x": -2,
-        "z": 346,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -2,
-        "z": 355,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 362,
+        "z": 203,
         "color": "blue",
         "value": 0.05
       },
       {
-        "x": 1,
-        "z": 363,
-        "color": "blue",
-        "value": 0.05
-      },
-      {
-        "x": 2,
-        "z": 365,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": 0,
-        "z": 374,
-        "color": "green",
-        "value": 0.11
-      },
-      {
         "x": -1,
-        "z": 383,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 2,
-        "z": 392,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": -1,
-        "z": 401,
-        "color": "green",
-        "value": 0.12
-      },
-      {
-        "x": -2,
-        "z": 410,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 419,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 1,
-        "z": 428,
-        "color": "green",
-        "value": 0.11
-      },
-      {
-        "x": 1,
-        "z": 437,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -2,
-        "z": 445,
+        "z": 209,
         "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 447,
-        "color": "green",
-        "value": 0.09
-      },
-      {
-        "x": -1,
-        "z": 456,
-        "color": "green",
         "value": 0.15
       },
       {
         "x": 0,
-        "z": 457,
-        "color": "red",
-        "value": 0.05
-      },
-      {
-        "x": 1,
-        "z": 465,
-        "color": "green",
-        "value": 0.1
-      },
-      {
-        "x": 0,
-        "z": 474,
-        "color": "green",
+        "z": 218,
+        "color": "yellow",
         "value": 0.12
       },
       {
         "x": 1,
-        "z": 483,
-        "color": "green",
+        "z": 228,
+        "color": "yellow",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 237,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
+        "x": -1,
+        "z": 247,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 256,
+        "color": "yellow",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 266,
+        "color": "yellow",
         "value": 0.14
       },
       {
+        "x": -2,
+        "z": 275,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
         "x": 0,
-        "z": 492,
-        "color": "green",
-        "value": 0.11
+        "z": 285,
+        "color": "yellow",
+        "value": 0.15
       },
       {
         "x": -2,
-        "z": 501,
-        "color": "green",
-        "value": 0.13
-      },
-      {
-        "x": -1,
-        "z": 506,
+        "z": 294,
         "color": "yellow",
-        "value": 0.05
-      },
-      {
-        "x": 0,
-        "z": 509,
-        "color": "red",
-        "value": 0.05
+        "value": 0.13
       },
       {
         "x": 2,
-        "z": 510,
-        "color": "green",
-        "value": 0.08
-      },
-      {
-        "x": -1,
-        "z": 519,
-        "color": "green",
+        "z": 304,
+        "color": "yellow",
         "value": 0.13
       },
       {
+        "x": -2,
+        "z": 313,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 323,
+        "color": "yellow",
+        "value": 0.1
+      },
+      {
+        "x": -1,
+        "z": 332,
+        "color": "yellow",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 342,
+        "color": "yellow",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 351,
+        "color": "yellow",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 361,
+        "color": "yellow",
+        "value": 0.15
+      },
+      {
         "x": 0,
-        "z": 522,
+        "z": 370,
+        "color": "yellow",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 371,
         "color": "red",
         "value": 0.05
       },
       {
-        "x": 1,
-        "z": 529,
-        "color": "green",
-        "value": 0.1
+        "x": -2,
+        "z": 380,
+        "color": "yellow",
+        "value": 0.12
       },
       {
-        "x": 0,
-        "z": 532,
+        "x": 2,
+        "z": 380,
         "color": "orange",
         "value": 0.05
       },
       {
-        "x": 1,
-        "z": 538,
-        "color": "green",
+        "x": 2,
+        "z": 386,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 389,
+        "color": "yellow",
         "value": 0.08
+      }
+    ],
+    "obstacles": [
+      {
+        "x": 1,
+        "z": 5,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 83,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 160,
+        "width": 1.5
       },
       {
         "x": 2,
-        "z": 547,
+        "z": 238,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 316,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 408,
+      "scale": 4.2
+    },
+    "difficulty": "medium",
+    "id": 5
+  },
+  {
+    "courseLength": 422,
+    "startScale": 1,
+    "playerColor": "purple",
+    "speed": 3.1,
+    "collectibles": [
+      {
+        "x": 0,
+        "z": 12,
+        "color": "purple",
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 25,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 37,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 50,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 62,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 64,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 74,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 87,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 99,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 104,
         "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 112,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 113,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 124,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": -1,
+        "z": 137,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 149,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 161,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 174,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 178,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 186,
+        "color": "purple",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 199,
+        "color": "purple",
+        "value": 0.15
+      },
+      {
+        "x": 0,
+        "z": 211,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 214,
+        "color": "blue",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 223,
+        "color": "purple",
+        "value": 0.11
+      },
+      {
+        "x": 1,
+        "z": 236,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 248,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 261,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 270,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 273,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 285,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 298,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 310,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 323,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 335,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 348,
+        "color": "purple",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 358,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 360,
+        "color": "purple",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 372,
+        "color": "purple",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 385,
+        "color": "purple",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 397,
+        "color": "purple",
         "value": 0.14
       }
     ],
     "obstacles": [
       {
-        "x": 0,
-        "z": 5,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 65,
-        "width": 1.5
-      },
-      {
-        "x": 2,
-        "z": 126,
+        "x": -2,
+        "z": 6,
         "width": 1.5
       },
       {
         "x": 1,
-        "z": 187,
+        "z": 106,
         "width": 1.5
       },
       {
         "x": 0,
-        "z": 248,
-        "width": 1.5
-      },
-      {
-        "x": 1,
-        "z": 308,
-        "width": 1.5
-      },
-      {
-        "x": -1,
-        "z": 369,
+        "z": 205,
         "width": 1.5
       },
       {
         "x": -2,
-        "z": 430,
-        "width": 1.5
-      },
-      {
-        "x": -2,
-        "z": 491,
+        "z": 304,
         "width": 1.5
       }
     ],
     "boss": {
-      "z": 565,
-      "scale": 5
+      "z": 422,
+      "scale": 3.4
     },
-    "difficulty": "hard"
+    "difficulty": "medium",
+    "id": 6
+  },
+  {
+    "courseLength": 573,
+    "startScale": 1,
+    "playerColor": "blue",
+    "speed": 3.8,
+    "collectibles": [
+      {
+        "x": 1,
+        "z": 9,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 14,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 18,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 27,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": -1,
+        "z": 36,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 0,
+        "z": 39,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 42,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 45,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -1,
+        "z": 55,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 64,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 73,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 82,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 91,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 100,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 109,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 118,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 121,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 127,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 136,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 146,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 155,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 161,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 164,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 164,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 173,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 182,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 1,
+        "z": 191,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 200,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 209,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 1,
+        "z": 218,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 0,
+        "z": 227,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 236,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 246,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 255,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 264,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 264,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 273,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 2,
+        "z": 282,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 291,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 300,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 309,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 318,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 327,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 2,
+        "z": 329,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 332,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 337,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 346,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 2,
+        "z": 353,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 355,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 364,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 373,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 382,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 391,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 400,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 408,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 409,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 418,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 425,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 427,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 437,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 446,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 455,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 464,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 472,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 473,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 482,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 491,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 500,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 501,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 502,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 509,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 518,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 528,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 537,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 546,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 555,
+        "color": "blue",
+        "value": 0.11
+      }
+    ],
+    "obstacles": [
+      {
+        "x": 2,
+        "z": 5,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 66,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 128,
+        "width": 1.5
+      },
+      {
+        "x": 0,
+        "z": 189,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 251,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 313,
+        "width": 1.5
+      },
+      {
+        "x": -1,
+        "z": 374,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 436,
+        "width": 1.5
+      },
+      {
+        "x": -1,
+        "z": 498,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 573,
+      "scale": 5.1
+    },
+    "difficulty": "hard",
+    "id": 7
+  },
+  {
+    "courseLength": 593,
+    "startScale": 1,
+    "playerColor": "blue",
+    "speed": 3.7,
+    "collectibles": [
+      {
+        "x": 0,
+        "z": 8,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 15,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 1,
+        "z": 23,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 31,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 39,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 46,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 54,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 62,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 69,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 0,
+        "z": 77,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 85,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 1,
+        "z": 91,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 92,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -2,
+        "z": 100,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 102,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 106,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 108,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 116,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 2,
+        "z": 122,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 123,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 126,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 131,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 139,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 146,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 154,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 162,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 169,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 177,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 185,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 188,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 193,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 200,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 202,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 208,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 216,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 223,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 231,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 239,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 242,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 246,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 250,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 254,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 262,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 270,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 276,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 276,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 276,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 277,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 282,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 285,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 293,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 300,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -1,
+        "z": 305,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 308,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 313,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 316,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 323,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 331,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 339,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 347,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 1,
+        "z": 354,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 362,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 370,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 377,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 385,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": -1,
+        "z": 393,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 400,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 408,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 416,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -1,
+        "z": 420,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 424,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 428,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 431,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 439,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 447,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 454,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 462,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 470,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 477,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 485,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 493,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 501,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 508,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 516,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 522,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 524,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 531,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 539,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 547,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 554,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 562,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 2,
+        "z": 570,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 578,
+        "color": "blue",
+        "value": 0.12
+      }
+    ],
+    "obstacles": [
+      {
+        "x": 1,
+        "z": 4,
+        "width": 1.5
+      },
+      {
+        "x": -1,
+        "z": 62,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 119,
+        "width": 1.5
+      },
+      {
+        "x": -1,
+        "z": 177,
+        "width": 1.5
+      },
+      {
+        "x": -1,
+        "z": 235,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 293,
+        "width": 1.5
+      },
+      {
+        "x": 0,
+        "z": 350,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 408,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 466,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 524,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 593,
+      "scale": 6.2
+    },
+    "difficulty": "hard",
+    "id": 8
+  },
+  {
+    "courseLength": 460,
+    "startScale": 1,
+    "playerColor": "blue",
+    "speed": 3.7,
+    "collectibles": [
+      {
+        "x": 0,
+        "z": 6,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 11,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 15,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 17,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 22,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 28,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 34,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 39,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 45,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 49,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 50,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 56,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 59,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 62,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 67,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 69,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 73,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 79,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -1,
+        "z": 84,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 90,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 93,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 95,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 101,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 107,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -2,
+        "z": 112,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 2,
+        "z": 118,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": -2,
+        "z": 118,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 123,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -1,
+        "z": 129,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 133,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 135,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 138,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 140,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 146,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 151,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 0,
+        "z": 157,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 158,
+        "color": "purple",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 163,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 168,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 174,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 180,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 185,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 191,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 195,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 2,
+        "z": 196,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 2,
+        "z": 202,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 208,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 213,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 215,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": -2,
+        "z": 219,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 224,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 0,
+        "z": 230,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 236,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 241,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 0,
+        "z": 247,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 252,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 258,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -2,
+        "z": 261,
+        "color": "orange",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 264,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 268,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 269,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 275,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 280,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 1,
+        "z": 286,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": -2,
+        "z": 292,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 297,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -2,
+        "z": 303,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -1,
+        "z": 307,
+        "color": "yellow",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 309,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 0,
+        "z": 314,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 2,
+        "z": 320,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": -2,
+        "z": 321,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 325,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 2,
+        "z": 331,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 1,
+        "z": 337,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": -1,
+        "z": 342,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 348,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -2,
+        "z": 353,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 2,
+        "z": 359,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": -1,
+        "z": 365,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 1,
+        "z": 370,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 376,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 381,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": 0,
+        "z": 387,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": 0,
+        "z": 393,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 1,
+        "z": 398,
+        "color": "blue",
+        "value": 0.1
+      },
+      {
+        "x": 1,
+        "z": 404,
+        "color": "blue",
+        "value": 0.14
+      },
+      {
+        "x": 2,
+        "z": 410,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -1,
+        "z": 415,
+        "color": "blue",
+        "value": 0.09
+      },
+      {
+        "x": -1,
+        "z": 421,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": -2,
+        "z": 425,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": 0,
+        "z": 426,
+        "color": "blue",
+        "value": 0.12
+      },
+      {
+        "x": 2,
+        "z": 431,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 431,
+        "color": "red",
+        "value": 0.05
+      },
+      {
+        "x": 1,
+        "z": 432,
+        "color": "blue",
+        "value": 0.13
+      },
+      {
+        "x": -2,
+        "z": 435,
+        "color": "green",
+        "value": 0.05
+      },
+      {
+        "x": -1,
+        "z": 438,
+        "color": "blue",
+        "value": 0.11
+      },
+      {
+        "x": 0,
+        "z": 443,
+        "color": "blue",
+        "value": 0.15
+      },
+      {
+        "x": 1,
+        "z": 449,
+        "color": "blue",
+        "value": 0.08
+      },
+      {
+        "x": 0,
+        "z": 449,
+        "color": "orange",
+        "value": 0.05
+      }
+    ],
+    "obstacles": [
+      {
+        "x": -2,
+        "z": 3,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 40,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 78,
+        "width": 1.5
+      },
+      {
+        "x": 0,
+        "z": 115,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 152,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 190,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 227,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 265,
+        "width": 1.5
+      },
+      {
+        "x": -2,
+        "z": 302,
+        "width": 1.5
+      },
+      {
+        "x": 2,
+        "z": 339,
+        "width": 1.5
+      },
+      {
+        "x": 1,
+        "z": 377,
+        "width": 1.5
+      },
+      {
+        "x": 0,
+        "z": 414,
+        "width": 1.5
+      }
+    ],
+    "boss": {
+      "z": 460,
+      "scale": 6.5
+    },
+    "difficulty": "hard",
+    "id": 9
   }
 ]
