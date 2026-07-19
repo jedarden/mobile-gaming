@@ -3,24 +3,21 @@
 /**
  * Level Curation Pipeline for Runner Games
  *
- * Implements the generate → rank → curate pipeline for the 5 runner games:
+ * Generates, ranks, and curates the best levels for 5 runner games:
  * - crowd-runner
  * - giant-runner
  * - bridge-race
  * - jelly-shift
  * - makeover-run
- *
- * Usage: node scripts/curate-runner-levels.js
  */
 
-import fs from 'fs';
-import path from 'path';
+import { readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.dirname(__dirname);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-// Games to process
 const GAMES = [
   'crowd-runner',
   'giant-runner',
@@ -29,157 +26,135 @@ const GAMES = [
   'makeover-run'
 ];
 
-// Configuration for each game
-const CURATION_CONFIG = {
-  'crowd-runner': {
-    generateCount: { easy: 20, medium: 20, hard: 20 },
-    curateCount: { easy: 5, medium: 5, hard: 5 }
-  },
-  'giant-runner': {
-    generateCount: { easy: 20, medium: 20, hard: 20 },
-    curateCount: { easy: 5, medium: 5, hard: 5 }
-  },
-  'bridge-race': {
-    generateCount: { easy: 20, medium: 20, hard: 20 },
-    curateCount: { easy: 5, medium: 5, hard: 5 }
-  },
-  'jelly-shift': {
-    generateCount: { easy: 20, medium: 20, hard: 20 },
-    curateCount: { easy: 5, medium: 5, hard: 5 }
-  },
-  'makeover-run': {
-    generateCount: { easy: 20, medium: 20, hard: 20 },
-    curateCount: { easy: 5, medium: 5, hard: 5 }
-  }
+const DIFFICULTIES = ['easy', 'medium', 'hard'];
+const LEVELS_PER_DIFFICULTY = 3;
+const GENERATION_BATCH_SIZE = 20;
+
+// ID prefix patterns for each game
+const ID_PREFIXES = {
+  'crowd-runner': 'cr',
+  'giant-runner': null,  // numeric ID
+  'bridge-race': 'br',
+  'jelly-shift': null,   // numeric ID
+  'makeover-run': 'mr'
 };
 
-/**
- * Load game generator module
- */
-async function loadGenerator(game) {
-  const generatorPath = path.join(projectRoot, 'src', 'games', game, 'generator.js');
-  const module = await import(`file://${generatorPath}`);
-  return module;
+// Games that have 'difficulty' field in schema (bridge-race doesn't)
+const GAMES_WITH_DIFFICULTY = new Set(['crowd-runner', 'giant-runner', 'jelly-shift', 'makeover-run']);
+
+async function importModule(path) {
+  return await import(path);
 }
 
-/**
- * Generate, rank, and curate levels for a single game
- */
-async function processGame(game) {
-  console.log(`\n🎮 Processing ${game}...`);
+async function curateGame(gameName) {
+  console.log(`\n=== ${gameName} ===`);
 
-  const generator = await loadGenerator(game);
-  const config = CURATION_CONFIG[game];
+  const generatorPath = join(__dirname, '..', 'src', 'games', gameName, 'generator.js');
+  const generator = await importModule(generatorPath);
 
-  const curatedLevels = [];
-  const metrics = { easy: [], medium: [], hard: [] };
+  const allCuratedLevels = [];
+  let totalGenerated = 0;
+  let totalCurated = 0;
 
-  for (const difficulty of ['easy', 'medium', 'hard']) {
-    console.log(`  📊 Generating ${config.generateCount[difficulty]} ${difficulty} levels...`);
+  for (const difficulty of DIFFICULTIES) {
+    console.log(`  Generating ${GENERATION_BATCH_SIZE} ${difficulty} levels...`);
 
-    // Step 1: Generate levels
-    const baseSeed = 1;
-    let seed = baseSeed;
-    const generated = [];
+    const levels = generator.generateBatch(
+      Date.now() + Math.random() * 10000,
+      difficulty,
+      GENERATION_BATCH_SIZE
+    );
 
-    for (let i = 0; i < config.generateCount[difficulty]; i++) {
-      const level = generator.generateLevel(seed, difficulty, i);
-      const validation = generator.validateLevel(level);
+    totalGenerated += levels.length;
+    console.log(`    Generated ${levels.length} levels`);
 
-      if (validation.valid) {
-        generated.push(level);
-      } else {
-        console.log(`    ⚠️  Seed ${seed} rejected: ${validation.reason || validation.errors?.join(', ')}`);
+    if (levels.length === 0) {
+      console.log(`    WARNING: No valid levels generated for ${difficulty}`);
+      continue;
+    }
+
+    const ranked = generator.rankLevels(levels);
+
+    console.log(`    Top 3 ${difficulty} scores:`);
+    ranked.slice(0, 3).forEach((level, i) => {
+      console.log(`      ${i + 1}. ${level.id}: ${level.metrics.overall} (${JSON.stringify(level.metrics.details)})`);
+    });
+
+    const curated = generator.curateBestLevels(ranked, LEVELS_PER_DIFFICULTY);
+    curated.forEach(level => {
+      const { metrics, ...levelWithoutMetrics } = level;
+      // Remove 'difficulty' field if game schema doesn't include it
+      if (!GAMES_WITH_DIFFICULTY.has(gameName) && 'difficulty' in levelWithoutMetrics) {
+        delete levelWithoutMetrics.difficulty;
       }
-      seed++;
-    }
+      allCuratedLevels.push(levelWithoutMetrics);
+    });
 
-    console.log(`    ✓ Generated ${generated.length} valid levels`);
-
-    // Step 2: Rank by playability
-    console.log(`  🏆 Ranking levels by playability...`);
-    const ranked = generator.rankLevels ? generator.rankLevels(generated) : generated;
-
-    if (ranked.length > 0 && ranked[0].metrics) {
-      console.log(`    Best score: ${ranked[0].metrics.overall}/100`);
-      console.log(`    Worst score: ${ranked[ranked.length - 1].metrics.overall}/100`);
-      metrics[difficulty] = ranked.map(l => l.metrics.overall);
-    }
-
-    // Step 3: Curate the best
-    const curateCount = config.curateCount[difficulty];
-    const curated = generator.curateBestLevels ?
-      generator.curateBestLevels(ranked, curateCount) :
-      ranked.slice(0, curateCount);
-
-    curatedLevels.push(...curated);
-    console.log(`    ✓ Curated ${curated.length} levels`);
+    totalCurated += curated.length;
+    console.log(`    Curated ${curated.length} levels`);
   }
 
-  return { curatedLevels, metrics };
+  console.log(`  Total: generated ${totalGenerated}, curated ${totalCurated}`);
+
+  // Assign proper sequential IDs to curated levels
+  const idPrefix = ID_PREFIXES[gameName];
+  const levelsWithIds = allCuratedLevels.map((level, index) => {
+    const { id, ...levelWithoutId } = level;
+    if (idPrefix) {
+      // String ID format (e.g., "cr-001")
+      return {
+        ...levelWithoutId,
+        id: `${idPrefix}-${String(index + 1).padStart(3, '0')}`
+      };
+    } else {
+      // Numeric ID format
+      return {
+        ...levelWithoutId,
+        id: index + 1
+      };
+    }
+  });
+
+  const levelsPath = join(__dirname, '..', 'src', 'games', gameName, 'levels.json');
+  writeFileSync(levelsPath, JSON.stringify(levelsWithIds, null, 2));
+  console.log(`  ✓ Wrote ${levelsWithIds.length} levels to ${gameName}/levels.json`);
+
+  return { generated: totalGenerated, curated: totalCurated };
 }
 
-/**
- * Write curated levels to levels.json
- */
-function writeLevels(game, curatedLevels) {
-  const levelsPath = path.join(projectRoot, 'src', 'games', game, 'levels.json');
-
-  // Read existing levels to preserve structure
-  let existingLevels = [];
-  if (fs.existsSync(levelsPath)) {
-    const content = fs.readFileSync(levelsPath, 'utf-8');
-    existingLevels = JSON.parse(content);
-  }
-
-  // Map curated levels to the expected format (remove metrics before saving)
-  const cleanLevels = curatedLevels.map(({ metrics, ...level }) => level);
-
-  // Write curated levels
-  fs.writeFileSync(levelsPath, JSON.stringify(cleanLevels, null, 2));
-  console.log(`  💾 Wrote ${cleanLevels.length} levels to ${levelsPath}`);
-}
-
-/**
- * Main execution
- */
 async function main() {
-  console.log('🎯 Level Curation Pipeline for Runner Games');
-  console.log('=' .repeat(50));
+  console.log('╔════════════════════════════════════════════════════════════╗');
+  console.log('║   Runner Games Level Curation Pipeline                      ║');
+  console.log('╚════════════════════════════════════════════════════════════╝');
 
-  const results = {};
+  const startTime = Date.now();
+  let totalGenerated = 0;
+  let totalCurated = 0;
 
   for (const game of GAMES) {
     try {
-      const { curatedLevels, metrics } = await processGame(game);
-      writeLevels(game, curatedLevels);
-      results[game] = { success: true, count: curatedLevels.length, metrics };
+      const stats = await curateGame(game);
+      totalGenerated += stats.generated;
+      totalCurated += stats.curated;
     } catch (error) {
-      console.error(`❌ Error processing ${game}:`, error);
-      results[game] = { success: false, error: error.message };
+      console.error(`ERROR processing ${game}:`, error.message);
+      console.error(error.stack);
     }
   }
 
-  console.log('\n' + '='.repeat(50));
-  console.log('📈 Summary:');
-  console.log('='.repeat(50));
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
-  for (const [game, result] of Object.entries(results)) {
-    if (result.success) {
-      console.log(`✅ ${game}: ${result.count} levels curated`);
-      const avgScoreEasy = result.metrics.easy.length > 0 ?
-        (result.metrics.easy.reduce((a,b) => a+b, 0) / result.metrics.easy.length).toFixed(1) : 'N/A';
-      const avgScoreMedium = result.metrics.medium.length > 0 ?
-        (result.metrics.medium.reduce((a,b) => a+b, 0) / result.metrics.medium.length).toFixed(1) : 'N/A';
-      const avgScoreHard = result.metrics.hard.length > 0 ?
-        (result.metrics.hard.reduce((a,b) => a+b, 0) / result.metrics.hard.length).toFixed(1) : 'N/A';
-      console.log(`   Avg playability scores - Easy: ${avgScoreEasy}, Medium: ${avgScoreMedium}, Hard: ${avgScoreHard}`);
-    } else {
-      console.log(`❌ ${game}: Failed - ${result.error}`);
-    }
-  }
-
-  console.log('\n✨ Curation complete!');
+  console.log('\n╔════════════════════════════════════════════════════════════╗');
+  console.log('║   Summary                                                  ║');
+  console.log('╚════════════════════════════════════════════════════════════╝');
+  console.log(`  Games processed: ${GAMES.length}`);
+  console.log(`  Total levels generated: ${totalGenerated}`);
+  console.log(`  Total levels curated: ${totalCurated}`);
+  console.log(`  Time elapsed: ${elapsed}s`);
+  console.log('\n✓ Curation pipeline complete!');
 }
 
-main().catch(console.error);
+main().catch(error => {
+  console.error('Pipeline failed:', error);
+  process.exit(1);
+});
