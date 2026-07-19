@@ -21,9 +21,9 @@ function runConstraints(level, label) {
 
 // ─── Hand-crafted levels ──────────────────────────────────────────────────────
 
-describe('hand-crafted levels', () => {
-  it('all 12 levels are present', () => {
-    expect(levels).toHaveLength(12);
+describe('curated levels', () => {
+  it('all 9 levels are present (3 per difficulty: easy, medium, hard)', () => {
+    expect(levels).toHaveLength(9);
   });
 
   levels.forEach(level => {
