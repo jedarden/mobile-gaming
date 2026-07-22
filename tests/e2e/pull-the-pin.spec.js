@@ -58,4 +58,42 @@ test.describe('Pull the Pin', () => {
     await expect(page.locator('#game-container')).toBeVisible();
     await expect(page.locator('#game-main')).toBeVisible();
   });
+
+  test('has a share button', async ({ page }) => {
+    await expect(page.locator('#btn-share')).toBeVisible();
+  });
+
+  test('shareable state URL round-trips a mid-puzzle board', async ({ page }) => {
+    await page.waitForFunction(() => window.__ptpGame && window.__ptpGame.getState());
+
+    const freshPinText = await page.locator('#pin-count').textContent();
+
+    // Reach a distinctive mid-puzzle state: remove the first pin.
+    const before = await page.evaluate(() => {
+      const gs = window.__ptpGame.getState();
+      gs.pins[0].removed = true;
+      return { sig: gs.pins.map(p => `${p.id}:${p.removed ? 1 : 0}`).join('|') };
+    });
+
+    // Share → writes a #s=pull-the-pin.* hash to the address bar.
+    await page.click('#btn-share');
+    const hash = await page.evaluate(() => window.location.hash);
+    expect(hash.startsWith('#s=pull-the-pin.')).toBe(true);
+
+    // Reload with the shared hash → board resumes with the pin removed.
+    await page.goto(GAME_URL + hash);
+    await page.waitForSelector('#game-canvas');
+    await page.waitForFunction(() => window.__ptpGame && window.__ptpGame.getState() && window.__ptpGame.getState().pins[0].removed === true);
+    const after = await page.evaluate(() => ({
+      sig: window.__ptpGame.getState().pins.map(p => `${p.id}:${p.removed ? 1 : 0}`).join('|'),
+    }));
+    expect(after).toEqual(before);
+    // One fewer pin than a fresh load.
+    await expect(page.locator('#pin-count')).not.toHaveText(freshPinText);
+
+    // Control: a plain reload (no hash) starts fresh with all pins.
+    await page.goto(GAME_URL);
+    await page.waitForSelector('#game-canvas');
+    await expect(page.locator('#pin-count')).toHaveText(freshPinText);
+  });
 });

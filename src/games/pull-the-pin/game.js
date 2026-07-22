@@ -9,13 +9,17 @@ import * as state from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import levelsData from './levels.json';
-import { initStorage, updateGameStats } from '../../shared/storage.js';
+import { initStorage, getSettings, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { isColorBlindEnabled } from '../../shared/color-blind.js';
 import { createHintSession, getHintTokens } from '../../shared/hints.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 
@@ -27,7 +31,7 @@ const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
  * @returns {Object} Game controller
  */
 export function createGame(canvas, options = {}) {
-  const { onWin, onLose, onPinRemoved, audio } = options;
+  const { onWin, onLose, onPinRemoved } = options;
 
   // Load initial level
   let gameState = null;
@@ -130,9 +134,9 @@ export function createGame(canvas, options = {}) {
 
     haptic('pin_pull');
 
-    if (audio) {
-      audio.play('pull');
-    }
+    // Pin-pull SFX (gated by the shared soundEnabled setting)
+    resumeAudio();
+    playSound('slide');
 
     // Start physics simulation
     startPhysics();
@@ -223,10 +227,34 @@ export function createGame(canvas, options = {}) {
     }
   }
 
+  /**
+   * Hydrate the game from a decoded shared state (shared/state-url.js).
+   *
+   * The level is loaded first so the hint session / renderer are wired to the
+   * right level, then gameState is replaced with the restored board. A state
+   * captured mid-animation is normalized to 'playing' so the player can resume.
+   *
+   * @param {Object} level - Level definition (for hint session)
+   * @param {Object} saved - Decoded game state
+   * @returns {Object} The restored game state
+   */
+  function hydrate(level, saved) {
+    loadLevel(level);
+    if (saved && typeof saved === 'object') {
+      gameState = {
+        ...saved,
+        status: saved.status === 'animating' ? 'playing' : (saved.status || 'playing'),
+      };
+      render();
+    }
+    return gameState;
+  }
+
   return {
     loadLevel,
     reset,
     getState,
+    hydrate,
     render,
     destroy,
     showHint() { if (hintSession) hintSession.showHint(); },
@@ -247,6 +275,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initStorage();
   initAccessibility();
 
+  // Gate synthesized SFX on the persisted sound setting
+  setSoundEnabled(getSettings().soundEnabled);
+
   const canvas = document.getElementById('game-canvas');
   if (!canvas) return;
 
@@ -254,6 +285,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentLevelIndex = 0;
   let levelStartTime = Date.now();
   let levelRetries = 0;
+  let retryOverlay = null;
 
   const levelIndicator = document.getElementById('level-indicator');
   const pinCountEl = document.getElementById('pin-count');
@@ -313,6 +345,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   game.setReducedMotion(isReducedMotionEnabled());
   game.setColorBlindMode(isColorBlindEnabled());
+  // Exposed for e2e tests (shareable-state round-trip).
+  window.__ptpGame = game;
+
+  /**
+   * Read a shared puzzle state from window.location.hash, if present and valid.
+   * @returns {{levelIndex:number, state:Object}|null}
+   */
+  function readSharedState() {
+    const hash = window.location.hash;
+    if (!isStateHash(hash)) return null;
+    const decoded = decodeState(hash);
+    if (!decoded || decoded.gameId !== GAME_ID) return null;
+    const s = decoded.state;
+    if (!s || typeof s !== 'object' || !s.state) return null;
+    return s;
+  }
+
+  /**
+   * Encode the current puzzle into a #s=… link, put it in the address bar and
+   * copy it to the clipboard so it can be shared / resumed later.
+   */
+  async function shareState() {
+    const gs = game.getState();
+    if (!gs) return;
+    const payload = { levelIndex: currentLevelIndex, state: gs };
+    const hash = encodeState(GAME_ID, payload);
+    window.location.hash = hash;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(window.location.href);
+      }
+    } catch {
+      // Clipboard access can be denied; the hash is still shareable.
+    }
+    announce('Puzzle link copied to clipboard.');
+  }
+
+  const shareBtn = document.getElementById('btn-share');
+  if (shareBtn) shareBtn.addEventListener('click', shareState);
 
   function loadLevel(index) {
     const isRetry = index === currentLevelIndex && levelStartTime > 0;
@@ -354,5 +425,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     resetBtn.addEventListener('click', () => loadLevel(currentLevelIndex));
   }
 
-  loadLevel(0);
+  // A shared puzzle link (#s=...) takes precedence over loading level 1.
+  const shared = readSharedState();
+  if (shared) {
+    currentLevelIndex = Math.min(Math.max(shared.levelIndex | 0, 0), levels.length - 1);
+    levelStartTime = Date.now();
+    hideOverlay();
+    game.hydrate(levels[currentLevelIndex], shared.state);
+    updateUI(game.getState());
+    announce('Resumed a shared puzzle.');
+  } else {
+    loadLevel(0);
+  }
 });

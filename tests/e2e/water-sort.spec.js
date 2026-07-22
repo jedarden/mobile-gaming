@@ -89,4 +89,49 @@ test.describe('Water Sort', () => {
     await expect(overlay).toHaveAttribute('role', 'dialog');
     await expect(overlay).toHaveAttribute('aria-hidden', 'true');
   });
+
+  test('has a share button', async ({ page }) => {
+    await expect(page.locator('#btn-share')).toBeVisible();
+  });
+
+  test('shareable state URL round-trips a mid-puzzle board', async ({ page }) => {
+    await page.waitForFunction(() => window.__wsGame && window.__wsGame.state);
+
+    // Reach a distinctive, provably non-default board via the game instance.
+    const before = await page.evaluate(() => {
+      const g = window.__wsGame;
+      g.state.moves = 7;
+      // Move a segment between two tubes so the board differs from level 1.
+      const tubes = g.state.tubes;
+      if (tubes[0].segments.length > 0) {
+        tubes[tubes.length - 1].segments.push(tubes[0].segments.pop());
+      }
+      g.updateUI();
+      return {
+        moves: g.state.moves,
+        sig: g.state.tubes.map(t => t.segments.join('/')).join('|'),
+      };
+    });
+
+    // Share → writes a #s=water-sort.* hash to the address bar.
+    await page.click('#btn-share');
+    const hash = await page.evaluate(() => window.location.hash);
+    expect(hash.startsWith('#s=water-sort.')).toBe(true);
+
+    // Reload with the shared hash → board resumes in the exact shared state.
+    await page.goto(GAME_URL + hash);
+    await page.waitForSelector('#game-canvas');
+    await page.waitForFunction(() => window.__wsGame && window.__wsGame.state && window.__wsGame.state.moves === 7);
+    await expect(page.locator('#moves-display')).toHaveText('7');
+    const after = await page.evaluate(() => ({
+      moves: window.__wsGame.state.moves,
+      sig: window.__wsGame.state.tubes.map(t => t.segments.join('/')).join('|'),
+    }));
+    expect(after).toEqual(before);
+
+    // Control: a plain reload (no hash) starts fresh at level 1 / 0 moves.
+    await page.goto(GAME_URL);
+    await page.waitForSelector('#game-canvas');
+    await expect(page.locator('#moves-display')).toHaveText('0');
+  });
 });

@@ -77,4 +77,47 @@ test.describe('Parking Escape', () => {
     await expect(overlay).toHaveAttribute('role', 'dialog');
     await expect(overlay).toHaveAttribute('aria-hidden', 'true');
   });
+
+  test('has a share button', async ({ page }) => {
+    await expect(page.locator('#btn-share')).toBeVisible();
+  });
+
+  test('shareable state URL round-trips a mid-puzzle board', async ({ page }) => {
+    await page.waitForFunction(() => window.__peGame && window.__peGame.state);
+
+    // Reach a distinctive, provably non-default board via the game instance.
+    const before = await page.evaluate(() => {
+      const g = window.__peGame;
+      g.state.moves = 5;
+      // Nudge the first vehicle so the board differs from the level's start.
+      g.state.vehicles[0].x = 0;
+      g.state.vehicles[0].y = 0;
+      g.updateUI();
+      return {
+        moves: g.state.moves,
+        sig: g.state.vehicles.map(v => `${v.id}:${v.x},${v.y}`).join('|'),
+      };
+    });
+
+    // Share → writes a #s=parking-escape.* hash to the address bar.
+    await page.click('#btn-share');
+    const hash = await page.evaluate(() => window.location.hash);
+    expect(hash.startsWith('#s=parking-escape.')).toBe(true);
+
+    // Reload with the shared hash → board resumes in the exact shared state.
+    await page.goto(GAME_URL + hash);
+    await page.waitForSelector('#game-canvas');
+    await page.waitForFunction(() => window.__peGame && window.__peGame.state && window.__peGame.state.moves === 5);
+    await expect(page.locator('#moves-display')).toHaveText('5');
+    const after = await page.evaluate(() => ({
+      moves: window.__peGame.state.moves,
+      sig: window.__peGame.state.vehicles.map(v => `${v.id}:${v.x},${v.y}`).join('|'),
+    }));
+    expect(after).toEqual(before);
+
+    // Control: a plain reload (no hash) starts fresh at 0 moves.
+    await page.goto(GAME_URL);
+    await page.waitForSelector('#game-canvas');
+    await expect(page.locator('#moves-display')).toHaveText('0');
+  });
 });

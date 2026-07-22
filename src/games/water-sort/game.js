@@ -13,7 +13,8 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { isColorBlindEnabled } from '../../shared/color-blind.js';
-import { completeDailyChallenge, getGameDailySeed } from '../../shared/daily.js';
+import { completeDailyChallenge, getGameDailySeed, isGameDailyCompleted } from '../../shared/daily.js';
+import { createLevelNav } from '../../shared/level-nav.js';
 
 import {
   createInitialState,
@@ -33,8 +34,12 @@ import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { generateLevel } from './generator.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { createHintSession, getHintTokens } from '../../shared/hints.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
 
 // Game constants
 const GAME_ID = 'water-sort';
@@ -80,6 +85,10 @@ class WaterSortGame {
     // Hint session
     this.hintSession = null;
 
+    // Shared win/loss/stuck retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
+
     // Bind methods
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -93,20 +102,34 @@ class WaterSortGame {
       await initStorage();
       initAccessibility();
 
+      // Gate synthesized SFX on the persisted sound setting
+      setSoundEnabled(getSettings().soundEnabled);
+
       // Load levels
       await this.loadLevels();
 
+      // A shared puzzle link (#s=...) takes precedence over daily/saved progress.
+      const shared = this.readSharedState();
+
       // Check for daily mode
       const urlParams = new URLSearchParams(window.location.search);
-      this.isDailyMode = urlParams.get('daily') === 'true';
+      this.isDailyMode = !shared && urlParams.get('daily') === 'true';
 
       if (this.isDailyMode) {
         this.dailySeed = getGameDailySeed(GAME_ID);
         this.generateDailyLevel();
       }
 
-      // Load saved progress
-      this.loadProgress();
+      if (shared) {
+        // Resume the level the shared state belongs to.
+        this.currentLevelIndex = Math.min(
+          Math.max(shared.levelIndex | 0, 0),
+          this.levels.length - 1
+        );
+      } else {
+        // Load saved progress
+        this.loadProgress();
+      }
 
       // Create initial state first (needed for Phaser scene)
       const level = this.levels[this.currentLevelIndex];
@@ -128,8 +151,15 @@ class WaterSortGame {
       // Setup event listeners
       this.setupEventListeners();
 
+      // Level-select strip (must exist before startLevel so the board sizes
+      // around it)
+      this.initLevelNav();
+
       // Start game
       this.startLevel(this.currentLevelIndex);
+
+      // Hydrate the board from a shared puzzle link, if one was provided.
+      if (shared) this.applySharedState(shared);
 
       console.log('Water Sort initialized');
     } catch (error) {
@@ -195,6 +225,38 @@ class WaterSortGame {
   }
 
   /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   *
+   * The strip is appended to the game column and placed in normal flow (not
+   * the default fixed overlay) so it sits below the prev/next row and never
+   * covers existing controls.
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
+  }
+
+  /**
    * Setup event listeners
    */
   setupEventListeners() {
@@ -220,6 +282,9 @@ class WaterSortGame {
     this.btnSound.addEventListener('click', () => this.toggleSound());
     this.btnSettings.addEventListener('click', () => this.showSettings());
 
+    const shareBtn = document.getElementById('btn-share');
+    if (shareBtn) shareBtn.addEventListener('click', () => this.shareState());
+
     // Win overlay buttons
     document.getElementById('btn-replay').addEventListener('click', () => {
       this.hideWinOverlay();
@@ -237,6 +302,7 @@ class WaterSortGame {
 
     document.getElementById('setting-sound').addEventListener('change', (e) => {
       updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
     });
 
     document.getElementById('setting-haptic').addEventListener('change', (e) => {
@@ -293,6 +359,7 @@ class WaterSortGame {
       },
     });
     this.updateHintButton();
+    this.initRetryOverlay(index);
 
     this.selectedTube = null;
     this.animating = false;
@@ -310,6 +377,43 @@ class WaterSortGame {
   }
 
   /**
+   * (Re)create the shared win/loss/stuck retry overlay for the given level.
+   *
+   * A fresh instance per level keeps the persisted failure count scoped to
+   * gameId:levelIndex (so "Skip Level" appears after 3 fails on THIS level).
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => {
+        this.restartLevel();
+        if (this.hintSession) this.hintSession.showHint();
+        this.updateHintButton();
+      },
+      onShare: (stats) => {
+        quickShare({
+          title: 'Water Sort',
+          text: generateShareText({
+            gameName: 'Water Sort',
+            moves: stats.moves,
+            time: stats.time,
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+      // Puzzle games can dead-end: offer an undo back to the last good state.
+      onUndo: () => this.undo(),
+    });
+  }
+
+  /**
    * Restart current level
    */
   restartLevel() {
@@ -323,6 +427,75 @@ class WaterSortGame {
     const tokens = getHintTokens();
     btn.textContent = `Hint (${tokens})`;
     btn.disabled = tokens <= 0;
+  }
+
+  /**
+   * Serialize the current puzzle state for a shareable URL (shared/state-url.js).
+   * Only the fields needed to reconstruct the board are included.
+   */
+  serializeState() {
+    return {
+      levelIndex: this.currentLevelIndex,
+      tubes: this.state.tubes.map(t => [...t.segments]),
+      maxSegments: this.state.maxSegments,
+      moves: this.state.moves,
+    };
+  }
+
+  /**
+   * Encode the current puzzle into a #s=… link, put it in the address bar and
+   * copy it to the clipboard so it can be shared / resumed later.
+   */
+  async shareState() {
+    if (!this.state) return;
+    const hash = encodeState(GAME_ID, this.serializeState());
+    window.location.hash = hash;
+    let copied = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(window.location.href);
+        copied = true;
+      }
+    } catch {
+      // Clipboard access can be denied (permissions/insecure context); the hash
+      // is still in the address bar and shareable.
+    }
+    announce(copied ? 'Puzzle link copied to clipboard.' : 'Puzzle link added to the address bar.');
+  }
+
+  /**
+   * Read a shared puzzle state from window.location.hash, if present and valid.
+   * @returns {{levelIndex:number, tubes:string[][], maxSegments:number, moves:number}|null}
+   */
+  readSharedState() {
+    const hash = window.location.hash;
+    if (!isStateHash(hash)) return null;
+    const decoded = decodeState(hash);
+    if (!decoded || decoded.gameId !== GAME_ID) return null;
+    const s = decoded.state;
+    if (!s || !Array.isArray(s.tubes)) return null;
+    return s;
+  }
+
+  /**
+   * Replace the current board with a decoded shared state.
+   */
+  applySharedState(shared) {
+    this.state = {
+      tubes: shared.tubes.map((segments, i) => ({ id: i, segments: [...segments] })),
+      maxSegments: shared.maxSegments ?? this.state.maxSegments,
+      moves: shared.moves ?? 0,
+      selectedTube: null,
+      status: 'playing',
+    };
+    this.history = createGameHistory(100);
+    this.history.push(cloneState(this.state));
+    this.selectedTube = null;
+    this.animating = false;
+    this.handleResize();
+    this.updateUI();
+    this.render();
+    announce('Resumed a shared puzzle.');
   }
 
   /**
@@ -391,6 +564,9 @@ class WaterSortGame {
     // Apply pour
     this.state = pour(this.state, fromIdx, toIdx);
     haptic('tap');
+    // Pour SFX (gated by the shared soundEnabled setting)
+    resumeAudio();
+    playSound('whoosh');
     this.selectedTube = null;
 
     // Animate
@@ -417,6 +593,8 @@ class WaterSortGame {
         undoRate: this.state.moves > 0 ? (this.levelUndos || 0) / this.state.moves : 0,
         hintUsage: this.hintSession?.level ?? 0,
       }, { won: false, daily: this.isDailyMode });
+      // Auto-show the shared overlay in its stuck variant (Undo / Restart).
+      this.retryOverlay.show(ResultType.STUCK, { moves: this.state.moves });
     }
 
     this.animating = false;
@@ -430,6 +608,7 @@ class WaterSortGame {
   async handleWin() {
     const level = this.levels[this.currentLevelIndex];
     const stars = calculateStars(this.state.moves, level.optimal);
+    this.lastStars = stars;
     const solveTime = Date.now() - (this.levelStartTime || Date.now());
     const undoRate = this.state.moves > 0 ? (this.levelUndos || 0) / this.state.moves : 0;
 
@@ -454,7 +633,24 @@ class WaterSortGame {
 
     await this.saveProgress();
 
-    this.showWinOverlay(stars);
+    // Advance the level-select strip: mark this level complete, unlock + advance
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentLevelIndex);
+      }
+    }
+
+    const optimality = level.optimal
+      ? Math.round(Math.min(100, (level.optimal / Math.max(1, this.state.moves)) * 100))
+      : undefined;
+    this.retryOverlay.show(ResultType.WIN, {
+      moves: this.state.moves,
+      time: Math.round(solveTime / 1000),
+      optimality,
+      stars,
+    });
 
     announce(`Level complete! ${this.state.moves} moves. ${stars} stars!`);
   }
@@ -527,6 +723,7 @@ class WaterSortGame {
     const settings = getSettings();
     const muted = settings.soundEnabled;
     updateSettings({ soundEnabled: !muted });
+    setSoundEnabled(!muted);
     this.btnSound.innerHTML = muted
       ? '<span aria-hidden="true">🔇</span>'
       : '<span aria-hidden="true">🔊</span>';
@@ -624,6 +821,8 @@ class WaterSortGame {
 // Initialize game on load
 document.addEventListener('DOMContentLoaded', () => {
   const game = new WaterSortGame();
+  // Exposed for e2e tests (shareable-state round-trip).
+  window.__wsGame = game;
   game.init();
 });
 
