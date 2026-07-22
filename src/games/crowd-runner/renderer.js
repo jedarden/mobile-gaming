@@ -249,6 +249,9 @@ export function createRenderer(container) {
       fov: 55,
       backgroundColor: 0x87CEEB,
       antialias: true,
+      // Needed so shared/gameplay-share.js can copy WebGL frames into its
+      // 2D video compositor for the "Share your solve" clip.
+      preserveDrawingBuffer: true,
       cameraPosition: new THREE.Vector3(0, CAMERA_HEIGHT, -CAMERA_BACK)
     });
 

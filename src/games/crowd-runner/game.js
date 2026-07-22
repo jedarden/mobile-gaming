@@ -20,7 +20,11 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { createSolveRecorder } from '../../shared/gameplay-share.js';
 
 const GAME_ID   = 'crowd-runner';
 const LEVELS_URL = './levels.json';
@@ -52,6 +56,10 @@ class CrowdRunnerGame {
     this.animId      = null;
     this.isRunning   = false;
 
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars    = 0;
+
     this.gameLoop    = this.gameLoop.bind(this);
     this.handleResize = this.handleResize.bind(this);
   }
@@ -60,6 +68,9 @@ class CrowdRunnerGame {
     try {
       await initStorage();
       initAccessibility();
+
+      // Gate synthesized SFX on the persisted sound setting
+      setSoundEnabled(getSettings().soundEnabled);
 
       await this.loadLevels();
 
@@ -76,9 +87,26 @@ class CrowdRunnerGame {
       this.loadProgress();
       this.setupEventListeners();
       this.startLevel(this.currentLevelIndex);
+
+      // Passive gameplay recording for "Share your solve" (Phase 6.5).
+      this.initSolveRecorder();
     } catch (err) {
       console.error('Failed to initialize Crowd Runner:', err);
     }
+  }
+
+  /**
+   * Start passive gameplay capture so the win overlay's Share action can
+   * attach a recorded clip (shared/gameplay-share.js). Best-effort.
+   */
+  initSolveRecorder() {
+    this.solveRecorder = createSolveRecorder({
+      canvas: this.renderer.canvas,
+      gameName: 'Crowd Runner',
+    });
+    this.solveRecorder.start();
+    // Exposed for e2e verification of the record-and-share wiring.
+    if (typeof window !== 'undefined') window.__solveRecorder = this.solveRecorder;
   }
 
   async loadLevels() {
@@ -136,6 +164,7 @@ class CrowdRunnerGame {
 
     document.getElementById('setting-sound').addEventListener('change', e => {
       updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
     });
     document.getElementById('setting-haptic').addEventListener('change', e => {
       updateSettings({ hapticEnabled: e.target.checked });
@@ -155,6 +184,7 @@ class CrowdRunnerGame {
     const level = this.levels[index];
 
     this.state       = createInitialState(level);
+    this.initRetryOverlay(index);
     this.lastTime    = 0;
     this.accumulator = 0;
     this.isRunning   = true;
@@ -169,6 +199,40 @@ class CrowdRunnerGame {
     announce(`Level ${index + 1}. Starting crowd: ${level.startingCrowd}. Beat the boss of ${level.boss.size}!`);
   }
 
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => this.restartLevel(),
+      onShare: (stats) => {
+        // Prefer a recorded run clip with a burned-in outro card; fall back to
+        // a text-only share if passive capture never started.
+        if (this.solveRecorder && this.solveRecorder.isCapturing()) {
+          this.solveRecorder.shareSolve({ stats, url: window.location.href });
+        } else {
+          quickShare({
+            title: 'Crowd Runner',
+            text: generateShareText({
+              gameName: 'Crowd Runner',
+              stars: stats.stars,
+            }),
+            url: window.location.href,
+          });
+        }
+      },
+    });
+  }
+
   gameLoop(timestamp) {
     if (!this.isRunning) return;
 
@@ -179,7 +243,13 @@ class CrowdRunnerGame {
     this.accumulator += dt;
 
     while (this.accumulator >= FIXED_DT && this.state && !isGameOver(this.state)) {
+      const beforeCrossed = this.state.gates.filter(g => g.crossed).length;
       this.state = advance(this.state, FIXED_DT);
+      if (this.state.gates.filter(g => g.crossed).length > beforeCrossed) {
+        // Gate-cross SFX (gated by the shared soundEnabled setting)
+        resumeAudio();
+        playSound('pop');
+      }
       this.accumulator -= FIXED_DT;
     }
 
@@ -200,6 +270,8 @@ class CrowdRunnerGame {
 
   handleSteer(delta) {
     if (!this.state || isGameOver(this.state)) return;
+    // First steer gesture unlocks the AudioContext for SFX
+    resumeAudio();
     this.state = steer(this.state, delta);
   }
 
@@ -219,13 +291,14 @@ class CrowdRunnerGame {
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
         await this.saveProgress();
         haptic('win');
-        this.showWinOverlay(stars);
+        this.lastStars = stars;
+        this.retryOverlay.show(ResultType.WIN, { stars });
         announce(`Victory! Your crowd of ${this.state.crowdSize} defeated the boss! ${stars} star${stars !== 1 ? 's' : ''}!`);
       });
     } else {
       this.renderer.animateResult(false, () => {
         recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
-        this.showLoseOverlay();
+        this.retryOverlay.show(ResultType.LOSS, {});
         announce(`Defeated! Your crowd of ${this.state.crowdSize} was too small for the boss of ${this.state.boss.size}.`);
       });
     }

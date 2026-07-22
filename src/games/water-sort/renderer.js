@@ -541,7 +541,10 @@ export function createRenderer(canvas) {
       canvas: canvas
     },
     backgroundColor: '#0f0f23',
-    transparent: true
+    transparent: true,
+    // Keep the WebGL buffer readable so shared/gameplay-share.js can copy
+    // frames into its 2D video compositor for the "Share your solve" clip.
+    render: { preserveDrawingBuffer: true }
   };
 
   function maybeStartScene() {

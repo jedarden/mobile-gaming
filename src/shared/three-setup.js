@@ -22,6 +22,9 @@ const DEFAULTS = {
   backgroundColor: 0x000000,
   antialias: true,
   alpha: false,
+  // Keep the drawing buffer readable after render so the frame can be copied
+  // into a 2D compositor (used by shared/gameplay-share.js video capture).
+  preserveDrawingBuffer: false,
   get pixelRatio() {
     // Lazy evaluation to avoid accessing window at module load time
     const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
@@ -75,7 +78,8 @@ export function createThreeScene(container, options = {}) {
   // Create renderer
   const renderer = new THREE.WebGLRenderer({
     antialias: config.antialias,
-    alpha: config.alpha
+    alpha: config.alpha,
+    preserveDrawingBuffer: config.preserveDrawingBuffer
   });
 
   renderer.setPixelRatio(config.pixelRatio);

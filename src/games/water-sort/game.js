@@ -40,6 +40,7 @@ import { createHintSession, getHintTokens } from '../../shared/hints.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
+import { createSolveRecorder } from '../../shared/gameplay-share.js';
 
 // Game constants
 const GAME_ID = 'water-sort';
@@ -160,6 +161,9 @@ class WaterSortGame {
 
       // Hydrate the board from a shared puzzle link, if one was provided.
       if (shared) this.applySharedState(shared);
+
+      // Passive gameplay recording for "Share your solve" (Phase 6.5).
+      this.initSolveRecorder();
 
       console.log('Water Sort initialized');
     } catch (error) {
@@ -397,20 +401,41 @@ class WaterSortGame {
         this.updateHintButton();
       },
       onShare: (stats) => {
-        quickShare({
-          title: 'Water Sort',
-          text: generateShareText({
-            gameName: 'Water Sort',
-            moves: stats.moves,
-            time: stats.time,
-            stars: stats.stars,
-          }),
-          url: window.location.href,
-        });
+        // Prefer a recorded gameplay clip with a burned-in outro card; fall
+        // back to a text-only share if capture never started.
+        if (this.solveRecorder && this.solveRecorder.isCapturing()) {
+          this.solveRecorder.shareSolve({ stats, url: window.location.href });
+        } else {
+          quickShare({
+            title: 'Water Sort',
+            text: generateShareText({
+              gameName: 'Water Sort',
+              moves: stats.moves,
+              time: stats.time,
+              stars: stats.stars,
+            }),
+            url: window.location.href,
+          });
+        }
       },
       // Puzzle games can dead-end: offer an undo back to the last good state.
       onUndo: () => this.undo(),
     });
+  }
+
+  /**
+   * Start passive gameplay capture so the win overlay's Share action can
+   * attach a recorded clip (shared/gameplay-share.js). Best-effort: any
+   * failure is swallowed there and Share falls back to text-only.
+   */
+  initSolveRecorder() {
+    this.solveRecorder = createSolveRecorder({
+      canvas: this.canvas,
+      gameName: 'Water Sort',
+    });
+    this.solveRecorder.start();
+    // Exposed for e2e verification of the record-and-share wiring.
+    if (typeof window !== 'undefined') window.__solveRecorder = this.solveRecorder;
   }
 
   /**
