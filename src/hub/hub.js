@@ -19,6 +19,7 @@ import {
 } from '../shared/quick-play.js';
 import { createSettings, getSettings } from '../shared/settings.js';
 import { renderDashboard } from '../shared/analytics.js';
+import { exportProgress, importProgress } from '../shared/sync.js';
 
 // Game metadata for daily challenge (full list)
 const GAMES = [
@@ -160,8 +161,186 @@ function hideDevDashboard() {
   if (devOverlay) devOverlay.style.display = 'none';
 }
 
+// ─── Cross-Device Progress Sync UI ──────────────────────────────────────────
+
+/** Injected once for sync dialog/toast styles */
+let syncStylesInjected = false;
+
 /**
- * Initialize settings drawer with dev mode dashboard support
+ * Inject styles for the sync export dialog and result toast
+ */
+function injectSyncStyles() {
+  if (syncStylesInjected) return;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .mg-sync-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .mg-sync-dialog {
+      background: #1a1a2e;
+      color: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 340px;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .mg-sync-dialog-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .mg-sync-dialog-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+    .mg-sync-code {
+      display: block;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: white;
+      font-family: 'SF Mono', ui-monospace, Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 12px;
+      box-sizing: border-box;
+      word-break: break-all;
+      resize: none;
+      margin-bottom: 16px;
+    }
+    .mg-sync-dialog-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .mg-sync-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .mg-sync-btn-primary {
+      background: #2ecc71;
+      color: #0d1b12;
+    }
+    .mg-sync-btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    .mg-sync-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%);
+      z-index: 950;
+      max-width: 320px;
+      padding: 12px 20px;
+      border-radius: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .mg-sync-toast.mg-sync-ok { background: #2ecc71; color: #0d1b12; }
+    .mg-sync-toast.mg-sync-err { background: #e74c3c; }
+  `;
+  document.head.appendChild(style);
+  syncStylesInjected = true;
+}
+
+/**
+ * Show a transient toast message for sync results
+ * @param {string} message - Message to display
+ * @param {boolean} ok - Whether this is a success (green) or error (red) toast
+ */
+function showSyncToast(message, ok) {
+  injectSyncStyles();
+  const toast = document.createElement('div');
+  toast.className = `mg-sync-toast ${ok ? 'mg-sync-ok' : 'mg-sync-err'}`;
+  toast.setAttribute('role', 'status');
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 3000);
+}
+
+/**
+ * Show the sync export dialog with the generated code and a copy button.
+ * @param {string} code - Sync code from exportProgress()
+ */
+function showSyncExportDialog(code) {
+  injectSyncStyles();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'mg-sync-backdrop';
+
+  const dialog = document.createElement('div');
+  dialog.className = 'mg-sync-dialog';
+  dialog.innerHTML = `
+    <div class="mg-sync-dialog-title">Your Sync Code</div>
+    <div class="mg-sync-dialog-desc">Copy this code and enter it in Settings &rarr; Sync Progress (Import) on another device.</div>
+    <textarea class="mg-sync-code" readonly rows="4" aria-label="Sync code">${code}</textarea>
+    <div class="mg-sync-dialog-actions">
+      <button class="mg-sync-btn mg-sync-btn-secondary" data-sync-action="close">Close</button>
+      <button class="mg-sync-btn mg-sync-btn-primary" data-sync-action="copy">Copy</button>
+    </div>
+  `;
+
+  backdrop.appendChild(dialog);
+  document.body.appendChild(backdrop);
+
+  function close() {
+    if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+  }
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) close();
+  });
+
+  dialog.querySelector('[data-sync-action="close"]').addEventListener('click', close);
+
+  dialog.querySelector('[data-sync-action="copy"]').addEventListener('click', async () => {
+    let copied = false;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(code);
+        copied = true;
+      } catch {
+        copied = false;
+      }
+    }
+    if (!copied) {
+      // Fallback: select the text so the user can copy manually
+      const textarea = dialog.querySelector('.mg-sync-code');
+      textarea.focus();
+      textarea.select();
+    }
+    close();
+    showSyncToast(copied ? 'Sync code copied to clipboard' : 'Select the code and copy it manually', copied);
+  });
+}
+
+/**
+ * Initialize settings drawer with dev mode dashboard and progress sync support
  */
 function initSettings() {
   createSettings({
@@ -172,6 +351,18 @@ function initSettings() {
         showDevDashboard();
       } else {
         hideDevDashboard();
+      }
+    },
+    onSyncExport() {
+      const code = exportProgress();
+      showSyncExportDialog(code);
+    },
+    onSyncImport(code) {
+      const result = importProgress(code);
+      if (result.success) {
+        showSyncToast('Progress imported successfully', true);
+      } else {
+        showSyncToast(`Import failed: ${result.error || 'Invalid code'}`, false);
       }
     },
   });
