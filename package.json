@@ -11,6 +11,7 @@
     "test:deploy": "playwright test --config playwright.deploy.config.js",
     "test:levels": "node scripts/validate-levels.js",
     "test:bundle-size": "node scripts/check-bundle-size.js",
+    "test:og": "node scripts/check-og-images.js",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og": "node scripts/generate-og.js",
     "lint": "eslint src/"

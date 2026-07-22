@@ -123,8 +123,15 @@ async function waitForServer(url, retries = 20) {
 async function screenshotGame(context, slug, outputPath) {
   const page = await context.newPage();
   try {
-    const url = `${BASE_URL}/src/games/${slug}/index.html`;
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
+    // vite preview serves the flattened dist/ (see flattenSrcOutput in
+    // vite.config.js), so games live at /<slug>/, NOT /src/games/<slug>/.
+    // Using the dev-server path here previously 404'd for every game and
+    // produced 14 byte-identical screenshots of vite's fallback page.
+    const url = `${BASE_URL}/${slug}/index.html`;
+    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
+    if (!response || !response.ok()) {
+      throw new Error(`${url} returned HTTP ${response ? response.status() : 'no response'}`);
+    }
 
     // Wait for canvas or Three.js renderer to paint at least one frame
     await page.waitForFunction(() => {
@@ -169,7 +176,11 @@ async function main() {
     await waitForServer(BASE_URL);
     console.log(`Server ready at ${BASE_URL}\n`);
 
-    const browser = await chromium.launch();
+    // Allow pointing at a system/nix-provided chromium when Playwright's
+    // bundled headless shell can't find its shared libraries (e.g. NixOS).
+    // Set OG_CHROMIUM_PATH to an absolute chromium binary to override.
+    const executablePath = process.env.OG_CHROMIUM_PATH || undefined;
+    const browser = await chromium.launch(executablePath ? { executablePath } : {});
     const context = await browser.newContext({
       viewport: { width: 1200, height: 630 },
       deviceScaleFactor: 1,
@@ -182,7 +193,10 @@ async function main() {
     const hubOutputPath = join(OUTPUT_DIR, 'hub.png');
     try {
       const hubPage = await context.newPage();
-      await hubPage.goto(`${BASE_URL}/src/hub/index.html`, { waitUntil: 'networkidle', timeout: 15000 });
+      const hubResponse = await hubPage.goto(`${BASE_URL}/hub/index.html`, { waitUntil: 'networkidle', timeout: 15000 });
+      if (!hubResponse || !hubResponse.ok()) {
+        throw new Error(`hub returned HTTP ${hubResponse ? hubResponse.status() : 'no response'}`);
+      }
       await hubPage.waitForTimeout(500);
       await hubPage.screenshot({ path: hubOutputPath, clip: { x: 0, y: 0, width: 1200, height: 630 } });
       await hubPage.close();
