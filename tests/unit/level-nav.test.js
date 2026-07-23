@@ -217,7 +217,7 @@ describe('createLevelNav — daily dot', () => {
   it('daily dot contains a star symbol', () => {
     const { nav } = makeLevelNav({ hasDaily: true });
     const daily = nav.dotsContainer.querySelector('.mg-level-daily');
-    expect(daily.textContent).toBe('\u2605');
+    expect(daily.textContent).toBe('★');
   });
 
   it('does not create a daily dot when hasDaily is false', () => {
