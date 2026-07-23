@@ -314,12 +314,24 @@ test.describe('Level Navigation - Daily Challenge', () => {
           const el = document.querySelector('.mg-level-daily');
           return el && el.offsetParent !== null;
         }, { timeout: 5000 });
+        // Stability check: verify daily dot is stably visible
+        await page.waitForTimeout(50);
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.offsetParent !== null;
+        }, { timeout: 5000 });
         await expect(dailyDot).toBeVisible();
 
         // Wait for text content to be applied
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
           return el && el.textContent && el.textContent.length > 0;
+        }, { timeout: 5000 });
+        // Stability check: verify text content is stable
+        await page.waitForTimeout(50);
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.textContent && el.textContent === '★';
         }, { timeout: 5000 });
         const text = await dailyDot.evaluate(el => el.textContent);
         expect(text).toBe('★');
@@ -328,6 +340,12 @@ test.describe('Level Navigation - Daily Challenge', () => {
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
           return el && el.getAttribute('aria-label');
+        }, { timeout: 5000 });
+        // Stability check: verify aria-label is stable
+        await page.waitForTimeout(50);
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.getAttribute('aria-label') === 'Daily Challenge';
         }, { timeout: 5000 });
         const ariaLabel = await dailyDot.getAttribute('aria-label');
         expect(ariaLabel).toBe('Daily Challenge');
@@ -359,14 +377,63 @@ test.describe('Level Navigation - Daily Challenge', () => {
           return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
         }, { timeout: 5000 });
 
+        // Stability check: verify border color is stable
+        await page.waitForTimeout(50);
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
+        }, { timeout: 5000 });
+
         // Initially should be yellow (not completed)
         const initialBorder = await dailyDot.evaluate(el =>
           window.getComputedStyle(el).borderColor
         );
-        expect(initialBorder).toContain('66, 228, 240'); // #F0E442 yellow
+        expect(initialBorder).toContain('240, 228, 66'); // #F0E442 yellow
 
-        // Mark daily as completed via game logic (depends on game implementation)
-        // This may require completing the daily challenge in-game
+        // Mark daily as completed and reload
+        const today = new Date().toISOString().split('T')[0];
+        await page.evaluate((date) => {
+          const data = JSON.parse(localStorage.getItem('mg:daily') || '{"completed":{}}');
+          data.completed[date] = true;
+          data.completed[`${date}:water-sort`] = true;
+          localStorage.setItem('mg:daily', JSON.stringify(data));
+        }, today);
+
+        await page.reload();
+        await page.waitForSelector('#game-canvas', { timeout: 10000 });
+
+        // Wait for level-nav to be present and fully rendered
+        await page.waitForFunction(() => {
+          const nav = document.querySelector('.mg-level-nav');
+          return nav && nav.offsetParent !== null;
+        }, { timeout: 5000 });
+
+        // Stability check: verify level-nav is stably visible
+        await page.waitForTimeout(50);
+        await page.waitForFunction(() => {
+          const nav = document.querySelector('.mg-level-nav');
+          return nav && nav.offsetParent !== null;
+        }, { timeout: 5000 });
+
+        // Wait for daily dot styles to be applied after reload
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
+        }, { timeout: 5000 });
+
+        // Stability check: verify completed border color is stable
+        await page.waitForTimeout(50);
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          const borderColor = window.getComputedStyle(el).borderColor;
+          return el && el.offsetParent !== null && borderColor && borderColor.includes('0, 158, 115');
+        }, { timeout: 5000 });
+
+        // Should now show green border (completed)
+        const completedBorder = await dailyDot.evaluate(el =>
+          window.getComputedStyle(el).borderColor
+        );
+        expect(completedBorder).toContain('0, 158, 115'); // #009E73 green
       } else {
         test.skip();
       }
