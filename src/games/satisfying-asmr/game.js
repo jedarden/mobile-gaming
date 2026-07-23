@@ -2,7 +2,7 @@
  * Satisfying ASMR - Game Logic
  */
 
-import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats, set as storageSet, get as storageGet } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
@@ -14,9 +14,11 @@ import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
 
 const GAME_ID = 'satisfying-asmr';
 const LEVELS_URL = './levels.json';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 const SPRAY_RADIUS = 2; // grid cells
 
 class SatisfyingGame {
@@ -82,6 +84,14 @@ class SatisfyingGame {
     window.addEventListener('resize', this.handleResize);
     this.setupButtons();
     this.startLevel(this.currentLevelIndex);
+
+    // Setup visibility handler for state persistence on backgrounding
+    setupPuzzleVisibilityHandler({
+      onSave: () => this.saveGameState()
+    });
+
+    // Check for persisted state and restore it
+    this.restoreGameState();
   }
 
   setupButtons() {
@@ -243,6 +253,72 @@ class SatisfyingGame {
     document.getElementById('setting-motion').checked = s.reducedMotion;
     this.settingsOverlay.classList.add('active');
     this.settingsOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  /**
+   * Save current game state for persistence on backgrounding
+   * Persists level index, cells (progress), cleanedCount, totalDirt, and status
+   */
+  saveGameState() {
+    try {
+      if (!this.state || this.state.status === 'won') {
+        // Don't persist completed games
+        storageSet(STATE_KEY, null);
+        return;
+      }
+
+      const gameState = {
+        currentLevelIndex: this.currentLevelIndex,
+        isDailyMode: this.isDailyMode,
+        cells: [...this.state.cells],
+        width: this.state.width,
+        height: this.state.height,
+        totalDirt: this.state.totalDirt,
+        cleanedCount: this.state.cleanedCount,
+        patternType: this.state.patternType,
+      };
+      storageSet(STATE_KEY, gameState);
+    } catch (e) {
+      // Silently fail if storage is unavailable
+    }
+  }
+
+  /**
+   * Restore game state from localStorage
+   * Returns true if state was restored, false otherwise
+   */
+  restoreGameState() {
+    try {
+      const saved = storageGet(STATE_KEY, null);
+      if (!saved) return false;
+
+      // Only restore if we're on the same level
+      if (saved.currentLevelIndex !== this.currentLevelIndex) return false;
+      if (saved.isDailyMode !== this.isDailyMode) return false;
+
+      // Restore the game state
+      this.state = {
+        cells: [...saved.cells],
+        width: saved.width,
+        height: saved.height,
+        totalDirt: saved.totalDirt,
+        cleanedCount: saved.cleanedCount,
+        patternType: saved.patternType,
+        status: 'playing',
+      };
+
+      // Re-render the restored state
+      this.renderer.render(this.state);
+      this.updateUI();
+
+      // Clear the saved state after restoration
+      storageSet(STATE_KEY, null);
+
+      return true;
+    } catch (e) {
+      // Silently fail if restoration fails
+      return false;
+    }
   }
 }
 

@@ -9,7 +9,7 @@
  * - Integration with shared systems
  */
 
-import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats, set as storageSet, get as storageGet } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
@@ -32,10 +32,12 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
 
 // Game constants
 const GAME_ID = 'save-the-character';
 const LEVELS_URL = './levels.json';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 const RESULT_DISPLAY_DURATION = 1500; // ms to show result before progression
 
 /**
@@ -130,6 +132,14 @@ class SaveTheCharacterGame {
 
       // Start game
       this.startLevel(this.currentLevelIndex);
+
+      // Setup visibility handler for state persistence on backgrounding
+      setupPuzzleVisibilityHandler({
+        onSave: () => this.saveGameState()
+      });
+
+      // Check for persisted state and restore it
+      this.restoreGameState();
 
       console.log('Save the Character initialized');
     } catch (error) {
@@ -420,6 +430,79 @@ class SaveTheCharacterGame {
     this.state = null;
 
     console.log('Save the Character torn down');
+  }
+
+  /**
+   * Save current game state for persistence on backgrounding
+   * Persists level index, scenario id, and current selection state
+   */
+  saveGameState() {
+    try {
+      if (!this.state || this.state.status === 'won' || this.state.status === 'lost') {
+        // Don't persist completed games
+        storageSet(STATE_KEY, null);
+        return;
+      }
+
+      const gameState = {
+        currentLevelIndex: this.currentLevelIndex,
+        isDailyMode: this.isDailyMode,
+        scenario: {
+          id: this.state.scenario.id,
+          title: this.state.scenario.title,
+          threat: this.state.scenario.threat,
+          choices: this.state.scenario.choices.map(c => ({ ...c }))
+        },
+        selectedChoice: this.state.selectedChoice ? { ...this.state.selectedChoice } : null,
+        status: this.state.status,
+      };
+      storageSet(STATE_KEY, gameState);
+    } catch (e) {
+      // Silently fail if storage is unavailable
+    }
+  }
+
+  /**
+   * Restore game state from localStorage
+   * Returns true if state was restored, false otherwise
+   */
+  restoreGameState() {
+    try {
+      const saved = storageGet(STATE_KEY, null);
+      if (!saved) return false;
+
+      // Only restore if we're on the same level
+      if (saved.currentLevelIndex !== this.currentLevelIndex) return false;
+      if (saved.isDailyMode !== this.isDailyMode) return false;
+
+      // Restore the game state
+      this.state = {
+        scenario: {
+          id: saved.scenario.id,
+          title: saved.scenario.title,
+          threat: saved.scenario.threat,
+          choices: saved.scenario.choices.map(c => ({ ...c }))
+        },
+        selectedChoice: saved.selectedChoice ? { ...saved.selectedChoice } : null,
+        status: saved.status || 'choosing',
+      };
+
+      // Update renderer with restored state
+      this.renderer.render(this.state);
+
+      // Update input state
+      if (this.input) {
+        this.input.updateState(this.state);
+      }
+
+      // Clear the saved state after restoration
+      storageSet(STATE_KEY, null);
+
+      return true;
+    } catch (e) {
+      // Silently fail if restoration fails
+      return false;
+    }
   }
 }
 

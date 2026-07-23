@@ -9,7 +9,7 @@
  * - Integration with shared systems
  */
 
-import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats, set as storageSet, get as storageGet } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { isColorBlindEnabled } from '../../shared/color-blind.js';
@@ -18,6 +18,7 @@ import { shareDailyResult } from '../../shared/daily-share.js';
 import { createRNG } from '../../shared/rng.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
 
 import {
   createInitialState,
@@ -45,6 +46,7 @@ import { recordLevel } from '../../shared/adaptive.js';
 // Game constants
 const GAME_ID = 'bus-jam';
 const LEVELS_URL = './levels.json';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 
 class BusJamGame {
   constructor() {
@@ -164,6 +166,14 @@ class BusJamGame {
 
       // Announce for screen readers
       announce(`Level ${this.currentLevelIndex + 1} started. ${level.buses.length} buses, ${countRemainingPassengers(this.state)} passengers to pick up.`);
+
+      // Setup visibility handler for state persistence on backgrounding
+      setupPuzzleVisibilityHandler({
+        onSave: () => this.saveGameState()
+      });
+
+      // Check for persisted state and restore it
+      this.restoreGameState();
 
       console.log('Bus Jam initialized');
     } catch (error) {
@@ -825,6 +835,79 @@ class BusJamGame {
     this.btnUndo.disabled = !this.history.canUndo();
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;
+  }
+
+  /**
+   * Save current game state for persistence on backgrounding
+   * Persists level index, grid, buses, stops, roads, moves, and selection state
+   */
+  saveGameState() {
+    try {
+      if (!this.state || this.state.won) {
+        // Don't persist completed games
+        storageSet(STATE_KEY, null);
+        return;
+      }
+
+      const gameState = {
+        currentLevelIndex: this.currentLevelIndex,
+        isDailyMode: this.isDailyMode,
+        grid: { ...this.state.grid },
+        buses: this.state.buses.map(b => ({ ...b })),
+        stops: this.state.stops.map(s => ({ x: s.x, y: s.y, color: s.color, waiting: [...s.waiting] })),
+        exits: this.state.exits.map(e => ({ ...e })),
+        roads: Array.from(this.state.roads),
+        moves: this.state.moves,
+        selectedBus: this.state.selectedBus,
+      };
+      storageSet(STATE_KEY, gameState);
+    } catch (e) {
+      // Silently fail if storage is unavailable
+    }
+  }
+
+  /**
+   * Restore game state from localStorage
+   * Returns true if state was restored, false otherwise
+   */
+  restoreGameState() {
+    try {
+      const saved = storageGet(STATE_KEY, null);
+      if (!saved) return false;
+
+      // Only restore if we're on the same level
+      if (saved.currentLevelIndex !== this.currentLevelIndex) return false;
+      if (saved.isDailyMode !== this.isDailyMode) return false;
+
+      // Restore the game state
+      this.state = {
+        grid: { ...saved.grid },
+        buses: saved.buses.map(b => ({ ...b })),
+        stops: saved.stops.map(s => ({ x: s.x, y: s.y, color: s.color, waiting: [...s.waiting] })),
+        exits: saved.exits.map(e => ({ ...e })),
+        roads: new Set(saved.roads),
+        moves: saved.moves || 0,
+        selectedBus: saved.selectedBus || null,
+        animating: false,
+        won: false,
+      };
+
+      // Recreate history with restored state as base
+      this.history.clear();
+      this.history.push(cloneState(this.state));
+
+      // Re-render the restored state
+      this.render();
+      this.updateUI();
+
+      // Clear the saved state after restoration
+      storageSet(STATE_KEY, null);
+
+      return true;
+    } catch (e) {
+      // Silently fail if restoration fails
+      return false;
+    }
   }
 }
 
