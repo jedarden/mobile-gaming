@@ -1,39 +1,74 @@
 # parking-escape CI Workflow Monitoring Results
 
-**Bead:** bf-3m6ry  
-**Date:** 2026-07-23  
-**Workflow:** mobile-gaming-ci-manual-8htsd
+**Date**: 2026-07-23
+**Bead ID**: bf-3m6ry
+**Workflow Name**: mobile-gaming-ci-manual-xqgfl
 
-## Execution Summary
+## Workflow Execution Summary
 
-- **Final Status:** Failed (terminal state reached)
-- **Execution Time:** Started 2026-07-23T18:10:50Z, Finished 2026-07-23T18:16:44Z (~6 minutes)
-- **No Timeout Issues:** Workflow completed in reasonable time
+| Status | Details |
+|--------|---------|
+| **Submission Time** | 2026-07-23T18:19:36Z |
+| **Completion Time** | ~6 minutes |
+| **Final Phase** | Failed |
+| **Execution Time** | ~6 minutes (no hang) |
 
-## Step Results
+## Step-by-Step Results
 
-### lint: ✅ SUCCEEDED
-- Started: 2026-07-23T18:10:50Z
-- Finished: 2026-07-23T18:11:24Z (~34 seconds)
+### Step 1: lint - ✅ SUCCEEDED
+- Status: Completed successfully
+- No issues found
 
-### build: ❌ FAILED
-- Started: 2026-07-23T18:11:34Z
-- Finished: 2026-07-23T18:12:34Z
-- Error: `main: Error (exit code 1)`
+### Step 2: unit - ❌ FAILED  
+- **Phase**: Failed
+- **Error Message**: "Pod was active on the node longer than the specified deadline"
+- **Issue**: Unit test step exceeded 5-minute timeout (activeDeadlineSeconds: 300)
 
-### unit: ❌ FAILED
-- Started: 2026-07-23T18:11:34Z
-- Finished: 2026-07-23T18:16:36Z
-- Error: `Pod was active on the node longer than the specified deadline`
+### Step 3: build - ❌ FAILED
+- **Phase**: Failed  
+- **Error Message**: "main: Error (exit code 1)"
+- **Issue**: Build step failed with exit code 1
 
-## Pod-Level Status
+### Step 4: e2e
+- **Status**: Not executed (failed steps blocked execution)
 
-All pods were cleaned up successfully after workflow completion (`podGC: OnPodCompletion`):
-- `mobile-gaming-ci-manual-8htsd-build-*` - Failed
-- `mobile-gaming-ci-manual-8htsd-unit-*` - Failed (deadline exceeded)
+## Workflow Template Configuration
 
-## Conclusion
+From the `mobile-gaming-ci` WorkflowTemplate:
+- **lint**: activeDeadlineSeconds: 300 (5 minutes)
+- **unit**: activeDeadlineSeconds: 300 (5 minutes) ⚠️ TIMEOUT
+- **build**: activeDeadlineSeconds: 300 (5 minutes) ⚠️ FAILED
+- **e2e**: activeDeadlineSeconds: 600 (10 minutes)
 
-The workflow reached a terminal state (Failed) within reasonable time (~6 minutes total). No hang or timeout issues were observed. The workflow execution is complete and monitored from start to finish.
+## Acceptance Criteria Verification
 
-**Note:** The workflow failures are separate CI issues (build error + unit test deadline) and do not indicate a monitoring failure. The monitoring objective - verifying the workflow reaches a terminal state without hanging - was successfully met.
+| Criterion | Status | Details |
+|-----------|--------|---------|
+| Workflow status tracked from start to finish | ✅ | Monitored continuously from submission to completion |
+| Workflow reached terminal state | ✅ | Reached "Failed" state (terminal) |
+| Execution completed within reasonable time | ✅ | Completed in ~6 minutes (no hang) |
+| Pod-level status checked for all steps | ✅ | Verified all step statuses |
+| Error messages captured | ✅ | Detailed error messages documented |
+
+## Conclusions
+
+The CI workflow **does not hang** - it reaches a terminal state in reasonable time (~6 minutes). However, the workflow currently **fails consistently** due to:
+
+1. **Unit test timeout**: The unit tests take longer than 5 minutes to complete
+2. **Build failure**: The build step exits with code 1
+
+**Next steps for CI reliability**:
+- Investigate why unit tests are timing out (slow tests, hung tests, resource constraints)
+- Fix build step issues causing exit code 1
+- Consider increasing unit test timeout if tests are legitimately slow
+- Review bundle size budget enforcement (500KB JS, 100KB CSS)
+
+## Monitoring Approach
+
+Continuous polling was used with:
+- 15-second check intervals
+- Maximum monitoring time: 15 minutes
+- Terminal state detection on status changes
+- Break on timeout detection
+
+The workflow completed well within the monitoring timeout.
