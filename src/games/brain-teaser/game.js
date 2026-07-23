@@ -12,6 +12,8 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { createLevelNav } from '../../shared/level-nav.js';
+import { isGameDailyCompleted } from '../../shared/daily.js';
 
 import {
   createInitialState,
@@ -131,6 +133,10 @@ class BrainTeaserGame {
       // Setup event listeners
       this.setupEventListeners();
 
+      // Level-select strip (must exist before startPuzzle so the board sizes
+      // around it)
+      this.initLevelNav();
+
       // Start game
       this.startPuzzle(this.currentPuzzleIndex);
 
@@ -212,6 +218,38 @@ class BrainTeaserGame {
     if (!this.puzzles.length) return;
     const seed = getGameDailyNumericSeed(GAME_ID);
     this.currentPuzzleIndex = seed % this.puzzles.length;
+  }
+
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   *
+   * The strip is appended to the game column and placed in normal flow (not
+   * the default fixed overlay) so it sits below the prev/next row and never
+   * covers existing controls.
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.puzzles.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartPuzzle();
+        } else {
+          this.startPuzzle(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
   }
 
   /**
@@ -478,6 +516,15 @@ class BrainTeaserGame {
 
     // Save progress
     await this.saveProgress();
+
+    // Advance the level-select strip: mark this level complete, unlock + advance
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentPuzzleIndex);
+      }
+    }
 
     // Play celebration animation
     await this.renderer.playAnimation({ type: 'celebration' });
