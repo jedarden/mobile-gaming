@@ -1,7 +1,155 @@
 [
   {
     "version": 1,
-    "id": "pe-052",
+    "id": "pe-50",
+    "title": "Generated Level 50",
+    "difficulty": 3,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 5,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 4,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 3,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-51",
+    "title": "Generated Level 51",
+    "difficulty": 3,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 2,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "truck",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 2,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#F39C12"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-52",
     "title": "Generated Level 52",
     "difficulty": 3,
     "grid": {
@@ -20,28 +168,28 @@
         },
         {
           "id": "v0",
-          "type": "truck",
-          "x": 2,
-          "y": 4,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
+          "type": "car",
+          "x": 5,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
           "color": "#E74C3C"
         },
         {
           "id": "v1",
           "type": "car",
-          "x": 5,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
+          "x": 1,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
           "color": "#3498DB"
         },
         {
           "id": "v2",
           "type": "car",
-          "x": 2,
+          "x": 3,
           "y": 1,
           "width": 1,
           "height": 2,
@@ -50,23 +198,13 @@
         },
         {
           "id": "v3",
-          "type": "car",
-          "x": 1,
-          "y": 0,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 3,
+          "type": "truck",
+          "x": 2,
           "y": 1,
           "width": 1,
-          "height": 2,
+          "height": 3,
           "orientation": "vertical",
-          "color": "#9B59B6"
+          "color": "#F39C12"
         }
       ],
       "exit": {
@@ -80,7 +218,7 @@
   },
   {
     "version": 1,
-    "id": "pe-053",
+    "id": "pe-53",
     "title": "Generated Level 53",
     "difficulty": 3,
     "grid": {
@@ -99,8 +237,166 @@
         },
         {
           "id": "v0",
+          "type": "car",
+          "x": 1,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 4,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 1,
+          "y": 1,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
           "type": "truck",
           "x": 4,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-54",
+    "title": "Generated Level 54",
+    "difficulty": 3,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 5,
+          "y": 4,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 2,
+          "y": 3,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "truck",
+          "x": 2,
+          "y": 4,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 5,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 4,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 4,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-55",
+    "title": "Generated Level 55",
+    "difficulty": 6,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 5,
           "y": 0,
           "width": 1,
           "height": 3,
@@ -109,20 +405,20 @@
         },
         {
           "id": "v1",
-          "type": "car",
-          "x": 5,
-          "y": 3,
+          "type": "truck",
+          "x": 2,
+          "y": 0,
           "width": 1,
-          "height": 2,
+          "height": 3,
           "orientation": "vertical",
           "color": "#3498DB"
         },
         {
           "id": "v2",
-          "type": "truck",
-          "x": 2,
-          "y": 3,
-          "width": 3,
+          "type": "car",
+          "x": 1,
+          "y": 4,
+          "width": 2,
           "height": 1,
           "orientation": "horizontal",
           "color": "#2ECC71"
@@ -140,12 +436,22 @@
         {
           "id": "v4",
           "type": "car",
-          "x": 3,
-          "y": 5,
-          "width": 2,
+          "x": 4,
+          "y": 3,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "truck",
+          "x": 1,
+          "y": 3,
+          "width": 3,
           "height": 1,
           "orientation": "horizontal",
-          "color": "#9B59B6"
+          "color": "#1ABC9C"
         }
       ],
       "exit": {
@@ -154,14 +460,123 @@
         "direction": "right"
       }
     },
-    "targetMoves": 4,
+    "targetMoves": 9,
     "maxMoves": 50
   },
   {
     "version": 1,
-    "id": "pe-058",
+    "id": "pe-57",
+    "title": "Generated Level 57",
+    "difficulty": 6,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 0,
+          "y": 3,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 4,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "truck",
+          "x": 2,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 2,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "truck",
+          "x": 0,
+          "y": 5,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 1,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#34495E"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 9,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-58",
     "title": "Generated Level 58",
-    "difficulty": 3,
+    "difficulty": 6,
     "grid": {
       "width": 6,
       "height": 6,
@@ -179,10 +594,317 @@
         {
           "id": "v0",
           "type": "car",
-          "x": 5,
+          "x": 2,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 1,
           "y": 3,
           "width": 1,
           "height": 2,
+          "orientation": "vertical",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "car",
+          "x": 3,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "truck",
+          "x": 0,
+          "y": 0,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "truck",
+          "x": 4,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
+          "x": 0,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E67E22"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 11,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-59",
+    "title": "Generated Level 59",
+    "difficulty": 6,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 2,
+          "y": 0,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "car",
+          "x": 4,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "truck",
+          "x": 0,
+          "y": 4,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 5,
+          "y": 2,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 0,
+          "y": 3,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "car",
+          "x": 2,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "truck",
+          "x": 2,
+          "y": 3,
+          "width": 3,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E67E22"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 11,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-56",
+    "title": "Generated Level 56",
+    "difficulty": 7,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "car",
+          "x": 1,
+          "y": 3,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v1",
+          "type": "truck",
+          "x": 5,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#3498DB"
+        },
+        {
+          "id": "v2",
+          "type": "car",
+          "x": 3,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#2ECC71"
+        },
+        {
+          "id": "v3",
+          "type": "truck",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#F39C12"
+        },
+        {
+          "id": "v4",
+          "type": "car",
+          "x": 2,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "truck",
+          "x": 0,
+          "y": 3,
+          "width": 1,
+          "height": 3,
+          "orientation": "vertical",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
+          "x": 4,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 1,
+          "y": 4,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#34495E"
+        }
+      ],
+      "exit": {
+        "x": 6,
+        "y": 2,
+        "direction": "right"
+      }
+    },
+    "targetMoves": 15,
+    "maxMoves": 50
+  },
+  {
+    "version": 1,
+    "id": "pe-60",
+    "title": "Generated Level 60",
+    "difficulty": 9,
+    "grid": {
+      "width": 6,
+      "height": 6,
+      "vehicles": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "x": 0,
+          "y": 2,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v0",
+          "type": "truck",
+          "x": 3,
+          "y": 1,
+          "width": 1,
+          "height": 3,
           "orientation": "vertical",
           "color": "#E74C3C"
         },
@@ -191,16 +913,16 @@
           "type": "car",
           "x": 1,
           "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
           "color": "#3498DB"
         },
         {
           "id": "v2",
           "type": "car",
-          "x": 3,
-          "y": 1,
+          "x": 4,
+          "y": 4,
           "width": 1,
           "height": 2,
           "orientation": "vertical",
@@ -218,13 +940,53 @@
         },
         {
           "id": "v4",
-          "type": "truck",
+          "type": "car",
+          "x": 3,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "car",
           "x": 2,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "truck",
+          "x": 5,
           "y": 0,
           "width": 1,
           "height": 3,
           "orientation": "vertical",
-          "color": "#9B59B6"
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 2,
+          "y": 4,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#34495E"
+        },
+        {
+          "id": "v8",
+          "type": "car",
+          "x": 0,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#E74C3C"
         }
       ],
       "exit": {
@@ -233,14 +995,14 @@
         "direction": "right"
       }
     },
-    "targetMoves": 4,
+    "targetMoves": 19,
     "maxMoves": 50
   },
   {
     "version": 1,
-    "id": "pe-061",
+    "id": "pe-61",
     "title": "Generated Level 61",
-    "difficulty": 3,
+    "difficulty": 9,
     "grid": {
       "width": 6,
       "height": 6,
@@ -257,53 +1019,103 @@
         },
         {
           "id": "v0",
-          "type": "truck",
-          "x": 5,
-          "y": 1,
+          "type": "car",
+          "x": 4,
+          "y": 4,
           "width": 1,
-          "height": 3,
+          "height": 2,
           "orientation": "vertical",
           "color": "#E74C3C"
         },
         {
           "id": "v1",
-          "type": "car",
-          "x": 4,
+          "type": "truck",
+          "x": 0,
           "y": 4,
-          "width": 2,
+          "width": 3,
           "height": 1,
           "orientation": "horizontal",
           "color": "#3498DB"
         },
         {
           "id": "v2",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
+          "type": "car",
+          "x": 2,
+          "y": 5,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
           "color": "#2ECC71"
         },
         {
           "id": "v3",
-          "type": "truck",
-          "x": 0,
-          "y": 3,
+          "type": "car",
+          "x": 3,
+          "y": 1,
           "width": 1,
-          "height": 3,
+          "height": 2,
           "orientation": "vertical",
           "color": "#F39C12"
         },
         {
           "id": "v4",
           "type": "car",
+          "x": 2,
+          "y": 0,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#9B59B6"
+        },
+        {
+          "id": "v5",
+          "type": "car",
+          "x": 4,
+          "y": 1,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#1ABC9C"
+        },
+        {
+          "id": "v6",
+          "type": "car",
           "x": 3,
           "y": 3,
           "width": 1,
           "height": 2,
           "orientation": "vertical",
-          "color": "#9B59B6"
+          "color": "#E67E22"
+        },
+        {
+          "id": "v7",
+          "type": "car",
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#34495E"
+        },
+        {
+          "id": "v8",
+          "type": "car",
+          "x": 2,
+          "y": 2,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#E74C3C"
+        },
+        {
+          "id": "v9",
+          "type": "car",
+          "x": 5,
+          "y": 0,
+          "width": 1,
+          "height": 2,
+          "orientation": "vertical",
+          "color": "#3498DB"
         }
       ],
       "exit": {
@@ -312,14 +1124,14 @@
         "direction": "right"
       }
     },
-    "targetMoves": 4,
+    "targetMoves": 17,
     "maxMoves": 50
   },
   {
     "version": 1,
-    "id": "pe-062",
+    "id": "pe-62",
     "title": "Generated Level 62",
-    "difficulty": 3,
+    "difficulty": 9,
     "grid": {
       "width": 6,
       "height": 6,
@@ -336,482 +1148,8 @@
         },
         {
           "id": "v0",
-          "type": "car",
-          "x": 1,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 5,
-          "y": 2,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
           "type": "car",
           "x": 4,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-064",
-    "title": "Generated Level 64",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 3,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 5,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 3,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 3,
-          "y": 0,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-066",
-    "title": "Generated Level 66",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 1,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 3,
-          "y": 3,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 0,
-          "y": 4,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 3,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-067",
-    "title": "Generated Level 67",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 1,
-          "y": 1,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 4,
-          "y": 1,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 3,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 0,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-073",
-    "title": "Generated Level 73",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 3,
-          "y": 0,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 3,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 5,
-          "y": 1,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "truck",
-          "x": 3,
-          "y": 2,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-080",
-    "title": "Generated Level 80",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 2,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 1,
-          "y": 0,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 4,
-          "y": 2,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-081",
-    "title": "Generated Level 81",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 1,
           "y": 3,
           "width": 1,
           "height": 2,
@@ -820,90 +1158,11 @@
         },
         {
           "id": "v1",
-          "type": "truck",
-          "x": 3,
-          "y": 0,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 3,
-          "y": 4,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
           "type": "car",
-          "x": 1,
-          "y": 0,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
-          "y": 2,
+          "x": 3,
+          "y": 1,
           "width": 1,
           "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-086",
-    "title": "Generated Level 86",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "truck",
-          "x": 3,
-          "y": 0,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 0,
-          "y": 3,
-          "width": 1,
-          "height": 3,
           "orientation": "vertical",
           "color": "#3498DB"
         },
@@ -919,1035 +1178,8 @@
         },
         {
           "id": "v3",
-          "type": "truck",
-          "x": 2,
-          "y": 4,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 5,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-090",
-    "title": "Generated Level 90",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "truck",
-          "x": 4,
-          "y": 1,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 2,
-          "y": 4,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 1,
-          "y": 5,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 1,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 0,
-          "y": 1,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-094",
-    "title": "Generated Level 94",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 2,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
           "type": "car",
           "x": 4,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 3,
-          "y": 1,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "truck",
-          "x": 5,
-          "y": 3,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-095",
-    "title": "Generated Level 95",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "truck",
-          "x": 3,
-          "y": 3,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 1,
-          "y": 3,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 5,
-          "y": 0,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "truck",
-          "x": 0,
-          "y": 3,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-099",
-    "title": "Generated Level 99",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "truck",
-          "x": 5,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 3,
-          "y": 2,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "truck",
-          "x": 1,
-          "y": 3,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-102",
-    "title": "Generated Level 102",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 5,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 1,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 4,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 3,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-103",
-    "title": "Generated Level 103",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 0,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 4,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 5,
-          "y": 1,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-104",
-    "title": "Generated Level 104",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 3,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 4,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 1,
-          "y": 4,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-105",
-    "title": "Generated Level 105",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 0,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 2,
-          "y": 3,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 3,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 2,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 5,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-106",
-    "title": "Generated Level 106",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 3,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 4,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
-          "y": 5,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-108",
-    "title": "Generated Level 108",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 3,
-          "y": 4,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 0,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 3,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-109",
-    "title": "Generated Level 109",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 4,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 3,
-          "y": 1,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 3,
-          "y": 3,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 4,
-          "y": 4,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 1,
-          "y": 0,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-112",
-    "title": "Generated Level 112",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 0,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 3,
-          "y": 1,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 5,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 3,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-113",
-    "title": "Generated Level 113",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 4,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 3,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 3,
           "y": 5,
           "width": 2,
           "height": 1,
@@ -1957,407 +1189,72 @@
         {
           "id": "v4",
           "type": "truck",
-          "x": 0,
-          "y": 4,
+          "x": 2,
+          "y": 0,
           "width": 3,
           "height": 1,
           "orientation": "horizontal",
           "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-118",
-    "title": "Generated Level 118",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
         },
         {
-          "id": "v0",
+          "id": "v5",
           "type": "car",
-          "x": 5,
-          "y": 3,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "truck",
-          "x": 3,
-          "y": 2,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 4,
+          "x": 1,
           "y": 5,
           "width": 2,
           "height": 1,
           "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-119",
-    "title": "Generated Level 119",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
+          "color": "#1ABC9C"
         },
         {
-          "id": "v0",
-          "type": "car",
-          "x": 1,
-          "y": 4,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
+          "id": "v6",
           "type": "truck",
-          "x": 0,
-          "y": 0,
-          "width": 3,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
           "x": 5,
           "y": 2,
           "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 3,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-121",
-    "title": "Generated Level 121",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "car",
-          "x": 2,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 4,
-          "y": 3,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "truck",
-          "x": 4,
-          "y": 0,
-          "width": 1,
           "height": 3,
           "orientation": "vertical",
-          "color": "#2ECC71"
+          "color": "#E67E22"
         },
         {
-          "id": "v3",
+          "id": "v7",
           "type": "car",
-          "x": 1,
+          "x": 0,
+          "y": 1,
+          "width": 2,
+          "height": 1,
+          "orientation": "horizontal",
+          "color": "#34495E"
+        },
+        {
+          "id": "v8",
+          "type": "car",
+          "x": 0,
           "y": 4,
           "width": 1,
           "height": 2,
           "orientation": "vertical",
-          "color": "#F39C12"
+          "color": "#E74C3C"
         },
         {
-          "id": "v4",
+          "id": "v9",
           "type": "car",
-          "x": 5,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-122",
-    "title": "Generated Level 122",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
           "x": 0,
-          "y": 2,
+          "y": 3,
           "width": 2,
           "height": 1,
           "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
-          "type": "truck",
-          "x": 2,
-          "y": 3,
-          "width": 1,
-          "height": 3,
-          "orientation": "vertical",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 2,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
           "color": "#3498DB"
         },
         {
-          "id": "v2",
-          "type": "car",
-          "x": 4,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 5,
-          "y": 1,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 1,
-          "y": 0,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#9B59B6"
-        }
-      ],
-      "exit": {
-        "x": 6,
-        "y": 2,
-        "direction": "right"
-      }
-    },
-    "targetMoves": 4,
-    "maxMoves": 50
-  },
-  {
-    "version": 1,
-    "id": "pe-123",
-    "title": "Generated Level 123",
-    "difficulty": 3,
-    "grid": {
-      "width": 6,
-      "height": 6,
-      "vehicles": [
-        {
-          "id": "hero",
-          "type": "hero",
-          "x": 0,
-          "y": 2,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v0",
+          "id": "v10",
           "type": "truck",
           "x": 1,
           "y": 4,
           "width": 3,
           "height": 1,
           "orientation": "horizontal",
-          "color": "#E74C3C"
-        },
-        {
-          "id": "v1",
-          "type": "car",
-          "x": 2,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#3498DB"
-        },
-        {
-          "id": "v2",
-          "type": "car",
-          "x": 3,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
           "color": "#2ECC71"
-        },
-        {
-          "id": "v3",
-          "type": "car",
-          "x": 1,
-          "y": 1,
-          "width": 2,
-          "height": 1,
-          "orientation": "horizontal",
-          "color": "#F39C12"
-        },
-        {
-          "id": "v4",
-          "type": "car",
-          "x": 5,
-          "y": 2,
-          "width": 1,
-          "height": 2,
-          "orientation": "vertical",
-          "color": "#9B59B6"
         }
       ],
       "exit": {
@@ -2366,7 +1263,7 @@
         "direction": "right"
       }
     },
-    "targetMoves": 4,
+    "targetMoves": 17,
     "maxMoves": 50
   }
 ]
