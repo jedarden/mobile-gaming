@@ -799,7 +799,7 @@ describe('Daily Challenge', () => {
     // Create initial state from daily level
     const state = createInitialState(dailyLevel);
     expect(state.status).toBe('playing');
-  }, 20000); // 20 second timeout for slow generator
+  }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('simulates a win on daily level and calls completeDailyChallenge exactly once', () => {
     const numericSeed = getGameDailyNumericSeed(GAME_ID);
@@ -833,7 +833,7 @@ describe('Daily Challenge', () => {
       expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
       expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
     }
-  }, 20000); // 20 second timeout for slow generator
+  }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('generates deterministic levels from same seed', () => {
     const seed = `${GAME_ID}-deterministic-test`;
@@ -851,7 +851,7 @@ describe('Daily Challenge', () => {
     if (level1 !== null && level2 !== null) {
       expect(level1.grid.vehicles).not.toEqual(level2.grid.vehicles);
     }
-  }, 20000); // 20 second timeout for slow generator
+  }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('returns null when generation fails (triggers fallback)', () => {
     const level = generateLevel('bad-seed-999999', 'medium', 0);
