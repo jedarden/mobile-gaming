@@ -26,6 +26,7 @@ test.describe('Parking Escape', () => {
   });
 
   test('displays initial stats on level 1', async ({ page }) => {
+    await page.waitForSelector('#level-display', { state: 'visible', timeout: 5000 });
     await expect(page.locator('#level-display')).toHaveText('1');
     await expect(page.locator('#moves-display')).toHaveText('0');
     await expect(page.locator('#level-progress')).toContainText('Level 1');
@@ -44,20 +45,37 @@ test.describe('Parking Escape', () => {
   test('level navigation works', async ({ page }) => {
     await expect(page.locator('#btn-next')).toBeEnabled();
     await page.click('#btn-next');
+    await page.waitForFunction(() => {
+      const levelEl = document.getElementById('level-display');
+      return levelEl && levelEl.textContent === '2';
+    }, { timeout: 5000 });
     await expect(page.locator('#level-display')).toHaveText('2');
     await expect(page.locator('#level-progress')).toContainText('Level 2');
     await page.click('#btn-prev');
+    await page.waitForFunction(() => {
+      const levelEl = document.getElementById('level-display');
+      return levelEl && levelEl.textContent === '1';
+    }, { timeout: 5000 });
     await expect(page.locator('#level-display')).toHaveText('1');
   });
 
   test('restart button resets the level', async ({ page }) => {
     await page.click('#btn-restart');
+    await page.waitForFunction(() => {
+      const movesEl = document.getElementById('moves-display');
+      const levelEl = document.getElementById('level-display');
+      return movesEl && movesEl.textContent === '0' && levelEl && levelEl.textContent === '1';
+    }, { timeout: 5000 });
     await expect(page.locator('#moves-display')).toHaveText('0');
     await expect(page.locator('#level-display')).toHaveText('1');
   });
 
   test('settings overlay opens with all toggles', async ({ page }) => {
     await page.click('#btn-settings');
+    await page.waitForFunction(() => {
+      const overlay = document.getElementById('settings-overlay');
+      return overlay && overlay.getAttribute('aria-hidden') === 'false';
+    }, { timeout: 5000 });
     const overlay = page.locator('#settings-overlay');
     await expect(overlay).toHaveAttribute('aria-hidden', 'false');
     await expect(page.locator('#setting-sound')).toBeVisible();
@@ -67,8 +85,16 @@ test.describe('Parking Escape', () => {
 
   test('settings overlay closes', async ({ page }) => {
     await page.click('#btn-settings');
+    await page.waitForFunction(() => {
+      const overlay = document.getElementById('settings-overlay');
+      return overlay && overlay.getAttribute('aria-hidden') === 'false';
+    }, { timeout: 5000 });
     await expect(page.locator('#settings-overlay')).toHaveAttribute('aria-hidden', 'false');
     await page.click('#btn-close-settings');
+    await page.waitForFunction(() => {
+      const overlay = document.getElementById('settings-overlay');
+      return overlay && overlay.getAttribute('aria-hidden') === 'true';
+    }, { timeout: 5000 });
     await expect(page.locator('#settings-overlay')).toHaveAttribute('aria-hidden', 'true');
   });
 
@@ -118,6 +144,10 @@ test.describe('Parking Escape', () => {
     // Control: a plain reload (no hash) starts fresh at 0 moves.
     await page.goto(GAME_URL);
     await page.waitForSelector('#game-canvas');
+    await page.waitForFunction(() => {
+      const movesEl = document.getElementById('moves-display');
+      return movesEl && movesEl.textContent === '0';
+    }, { timeout: 5000 });
     await expect(page.locator('#moves-display')).toHaveText('0');
   });
 });
