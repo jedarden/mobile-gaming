@@ -220,8 +220,13 @@ class ParkingEscapeGame {
         window.location.search = '?daily=true';
       },
     });
+    // Change from fixed to relative positioning for proper flex layout integration
     this.levelNav.strip.style.position = 'relative';
     this.levelNav.strip.style.flexShrink = '0';
+    // Clear fixed-positioning styles that don't apply to relative positioning
+    this.levelNav.strip.style.bottom = '';
+    this.levelNav.strip.style.left = '';
+    this.levelNav.strip.style.right = '';
     window.dispatchEvent(new Event('resize'));
   }
 
