@@ -6,8 +6,9 @@ let mockNavigator;
 
 async function getFreshModule() {
   vi.resetModules();
+  vi.unstubAllGlobals();
 
-  // Mock navigator
+  // Mock navigator - use stubGlobal to avoid read-only property errors
   mockNavigator = {
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
     share: vi.fn(async () => {}),
@@ -17,14 +18,16 @@ async function getFreshModule() {
     }
   };
 
+  // Use stubGlobal to properly mock navigator
+  vi.stubGlobal('navigator', mockNavigator);
+
   // Mock window
-  global.navigator = mockNavigator;
-  global.window = {
+  vi.stubGlobal('window', {
     location: {
       href: 'https://example.com/game?level=1'
     },
     open: vi.fn()
-  };
+  });
 
   // Create a mock document with body
   const mockElement = () => ({
@@ -81,6 +84,7 @@ describe('share', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('hasWebShareSupport', () => {
@@ -91,7 +95,7 @@ describe('share', () => {
     it('returns false when navigator.share is not available', async () => {
       delete mockNavigator.share;
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       expect(mod.hasWebShareSupport()).toBe(false);
     });
@@ -105,7 +109,7 @@ describe('share', () => {
     it('returns false when canShare is not available', async () => {
       mockNavigator.canShare = undefined;
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       // Returns false when canShare is not a function
       expect(mod.hasFileShareSupport()).toBe(false);
@@ -115,7 +119,7 @@ describe('share', () => {
       // canShare IS a function, but returns false for the test file → hasFileShareSupport returns false
       mockNavigator.canShare = vi.fn(() => false);
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       expect(mod.hasFileShareSupport()).toBe(false);
     });
@@ -124,7 +128,7 @@ describe('share', () => {
       // Remove navigator.share so hasWebShareSupport() returns false
       delete mockNavigator.share;
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       expect(mod.hasFileShareSupport()).toBe(false);
     });
@@ -138,7 +142,7 @@ describe('share', () => {
     it('returns true for Android user agent', async () => {
       mockNavigator.userAgent = 'Mozilla/5.0 (Linux; Android 10; SM-G960F)';
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       expect(mod.isMobile()).toBe(true);
     });
@@ -146,7 +150,7 @@ describe('share', () => {
     it('returns false for desktop user agent', async () => {
       mockNavigator.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       expect(mod.isMobile()).toBe(false);
     });
@@ -163,7 +167,7 @@ describe('share', () => {
     it('excludes mobile-only platforms on desktop', async () => {
       mockNavigator.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       const platforms = mod.getAvailablePlatforms();
       expect(platforms).not.toContain('tiktok');
@@ -222,7 +226,7 @@ describe('share', () => {
     it('returns false when Web Share not available', async () => {
       delete mockNavigator.share;
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       const result = await mod.shareViaWebAPI({ title: 'Test' });
       expect(result).toBe(false);
@@ -231,7 +235,7 @@ describe('share', () => {
     it('returns false when canShare(shareData) returns false (share not permitted)', async () => {
       mockNavigator.canShare = vi.fn(() => false);
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       const result = await mod.shareViaWebAPI({ title: 'Test' });
       expect(result).toBe(false);
@@ -244,7 +248,7 @@ describe('share', () => {
         throw error;
       });
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       const result = await mod.shareViaWebAPI({ title: 'Test' });
       expect(result).toBe(true);
@@ -255,7 +259,7 @@ describe('share', () => {
         throw new Error('NotAllowedError');
       });
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       const result = await mod.shareViaWebAPI({ title: 'Test' });
       expect(result).toBe(false);
@@ -266,7 +270,7 @@ describe('share', () => {
       // and also makes the canShare guard at line 148 short-circuit (canShare is falsy)
       delete mockNavigator.canShare;
       vi.resetModules();
-      global.navigator = mockNavigator;
+      vi.stubGlobal('navigator', mockNavigator);
       const mod = await import('../../src/shared/share.js');
       const videoBlob = new Blob(['video'], { type: 'video/webm' });
       const result = await mod.shareViaWebAPI({ title: 'Test', videoBlob });
@@ -501,11 +505,11 @@ describe('share', () => {
       // shareViaWebAPI then just calls navigator.share → resolves → returns true → early return.
       vi.resetModules();
       const nativeShareFn = vi.fn(async () => {});
-      global.navigator = {
+      vi.stubGlobal('navigator', {
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
         share: nativeShareFn,
         // no canShare — hasFileShareSupport() returns false → no File creation → no canShare gate
-      };
+      });
       global.document.body.appendChild = vi.fn();
       vi.stubGlobal('requestAnimationFrame', vi.fn(cb => cb()));
       const mod = await import('../../src/shared/share.js');
@@ -527,12 +531,12 @@ describe('share', () => {
         dataset: {},
       };
       const bodyAppend = vi.fn();
-      global.navigator = {
+      vi.stubGlobal('navigator', {
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
         share: vi.fn(async () => { throw new Error('Permission denied'); }),
         // no canShare — hasFileShareSupport returns false → no File creation
-      };
-      global.document = {
+      });
+      vi.stubGlobal('document', {
         body: { appendChild: bodyAppend, removeChild: vi.fn() },
         head: { appendChild: vi.fn() },
         createElement: vi.fn(() => ({
@@ -544,7 +548,7 @@ describe('share', () => {
         })),
         getElementById: vi.fn(() => null), // style not yet injected → injectStyles proceeds
         querySelector: vi.fn(() => null),
-      };
+      });
       vi.stubGlobal('requestAnimationFrame', vi.fn(cb => cb()));
       const mod = await import('../../src/shared/share.js');
 
