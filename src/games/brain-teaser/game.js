@@ -29,10 +29,13 @@ import { createHintSession, getHintTokens } from '../../shared/hints.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { set as storageSet, get as storageGet } from '../../shared/storage.js';
 
 // Game constants
 const GAME_ID = 'brain-teaser';
 const LEVELS_URL = './levels.json';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 
 class BrainTeaserGame {
   constructor() {
@@ -130,6 +133,14 @@ class BrainTeaserGame {
 
       // Start game
       this.startPuzzle(this.currentPuzzleIndex);
+
+      // Setup visibility handler for state persistence on backgrounding
+      setupPuzzleVisibilityHandler({
+        onSave: () => this.saveGameState()
+      });
+
+      // Check for persisted state and restore it
+      this.restoreGameState();
 
       console.log('Brain Teaser initialized');
     } catch (error) {
@@ -646,6 +657,60 @@ class BrainTeaserGame {
     // Update buttons
     this.btnPrev.disabled = this.currentPuzzleIndex === 0;
     this.btnNext.disabled = this.currentPuzzleIndex >= this.puzzles.length - 1;
+  }
+
+  /**
+   * Save current game state for persistence on backgrounding
+   * Persists puzzle index and current attempts
+   */
+  saveGameState() {
+    try {
+      if (!this.state || this.state.status === 'solved') {
+        // Don't persist solved puzzles
+        storageSet(STATE_KEY, null);
+        return;
+      }
+
+      const gameState = {
+        currentPuzzleIndex: this.currentPuzzleIndex,
+        isDailyMode: this.isDailyMode,
+        attempts: this.state.attempts,
+        status: this.state.status,
+      };
+      storageSet(STATE_KEY, gameState);
+    } catch (e) {
+      // Silently fail if storage is unavailable
+    }
+  }
+
+  /**
+   * Restore game state from localStorage
+   * Returns true if state was restored, false otherwise
+   */
+  restoreGameState() {
+    try {
+      const saved = storageGet(STATE_KEY, null);
+      if (!saved) return false;
+
+      // Only restore if we're on the same puzzle
+      if (saved.currentPuzzleIndex !== this.currentPuzzleIndex) return false;
+      if (saved.isDailyMode !== this.isDailyMode) return false;
+
+      // Restore the game state
+      this.state.attempts = saved.attempts ?? 0;
+      this.state.status = saved.status || 'choosing';
+
+      this.updateUI();
+      this.render();
+
+      // Clear the saved state after restoration
+      storageSet(STATE_KEY, null);
+
+      return true;
+    } catch (e) {
+      // Silently fail if restoration fails
+      return false;
+    }
   }
 }
 

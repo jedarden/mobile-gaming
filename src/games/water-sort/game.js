@@ -41,10 +41,13 @@ import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
 import { createSolveRecorder } from '../../shared/gameplay-share.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { set as storageSet, get as storageGet } from '../../shared/storage.js';
 
 // Game constants
 const GAME_ID = 'water-sort';
 const LEVELS_URL = './levels.json';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 
 class WaterSortGame {
   constructor() {
@@ -164,6 +167,14 @@ class WaterSortGame {
 
       // Passive gameplay recording for "Share your solve" (Phase 6.5).
       this.initSolveRecorder();
+
+      // Setup visibility handler for state persistence on backgrounding
+      setupPuzzleVisibilityHandler({
+        onSave: () => this.saveGameState()
+      });
+
+      // Check for persisted state and restore it
+      this.restoreGameState();
 
       console.log('Water Sort initialized');
     } catch (error) {
@@ -840,6 +851,76 @@ class WaterSortGame {
     this.btnUndo.disabled = !this.history || !this.history.canUndo();
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;
+  }
+
+  /**
+   * Save current game state for persistence on backgrounding
+   * Persists level index, tubes, moves, history, and selection state
+   */
+  saveGameState() {
+    try {
+      if (!this.state || this.state.status === 'won' || this.state.status === 'stuck') {
+        // Don't persist completed or stuck games
+        storageSet(STATE_KEY, null);
+        return;
+      }
+
+      const gameState = {
+        currentLevelIndex: this.currentLevelIndex,
+        isDailyMode: this.isDailyMode,
+        tubes: this.state.tubes.map(t => ({ id: t.id, segments: [...t.segments] })),
+        maxSegments: this.state.maxSegments,
+        moves: this.state.moves,
+        selectedTube: this.state.selectedTube,
+        // Save history state for undo functionality
+        historyDepth: this.history ? this.history.depth() : 0,
+      };
+      storageSet(STATE_KEY, gameState);
+    } catch (e) {
+      // Silently fail if storage is unavailable
+    }
+  }
+
+  /**
+   * Restore game state from localStorage
+   * Returns true if state was restored, false otherwise
+   */
+  restoreGameState() {
+    try {
+      const saved = storageGet(STATE_KEY, null);
+      if (!saved) return false;
+
+      // Only restore if we're on the same level
+      if (saved.currentLevelIndex !== this.currentLevelIndex) return false;
+      if (saved.isDailyMode !== this.isDailyMode) return false;
+
+      // Restore the game state
+      this.state = {
+        tubes: saved.tubes.map((t, i) => ({ id: t.id, segments: [...t.segments] })),
+        maxSegments: saved.maxSegments,
+        moves: saved.moves || 0,
+        selectedTube: saved.selectedTube ?? null,
+        status: 'playing',
+      };
+
+      // Recreate history to the saved depth
+      if (this.history && saved.historyDepth > 0) {
+        this.history = createGameHistory(100);
+        // Push current state as base
+        this.history.push(cloneState(this.state));
+      }
+
+      this.selectedTube = null;
+      this.animating = false;
+
+      // Clear the saved state after restoration
+      storageSet(STATE_KEY, null);
+
+      return true;
+    } catch (e) {
+      // Silently fail if restoration fails
+      return false;
+    }
   }
 }
 

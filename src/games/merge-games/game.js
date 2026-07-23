@@ -16,9 +16,12 @@ import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { set as storageSet, get as storageGet } from '../../shared/storage.js';
 
 const GAME_ID = 'merge-games';
 const LEVELS_URL = './levels.json';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 
 class MergeGame {
   constructor() {
@@ -86,6 +89,14 @@ class MergeGame {
     window.addEventListener('resize', this.handleResize);
     this.setupButtons();
     this.startLevel(this.currentLevelIndex);
+
+    // Setup visibility handler for state persistence on backgrounding
+    setupPuzzleVisibilityHandler({
+      onSave: () => this.saveGameState()
+    });
+
+    // Check for persisted state and restore it
+    this.restoreGameState();
   }
 
   /**
@@ -297,6 +308,69 @@ class MergeGame {
     document.getElementById('setting-motion').checked = s.reducedMotion;
     this.settingsOverlay.classList.add('active');
     this.settingsOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  /**
+   * Save current game state for persistence on backgrounding
+   * Persists level index, grid state, moves, and status
+   */
+  saveGameState() {
+    try {
+      if (!this.state || this.state.status === 'won') {
+        // Don't persist completed games
+        storageSet(STATE_KEY, null);
+        return;
+      }
+
+      const gameState = {
+        currentLevelIndex: this.currentLevelIndex,
+        isDailyMode: this.isDailyMode,
+        grid: this.state.grid.map(row => [...row]),
+        moves: this.state.moves,
+        width: this.state.width,
+        height: this.state.height,
+        status: this.state.status,
+      };
+      storageSet(STATE_KEY, gameState);
+    } catch (e) {
+      // Silently fail if storage is unavailable
+    }
+  }
+
+  /**
+   * Restore game state from localStorage
+   * Returns true if state was restored, false otherwise
+   */
+  restoreGameState() {
+    try {
+      const saved = storageGet(STATE_KEY, null);
+      if (!saved) return false;
+
+      // Only restore if we're on the same level
+      if (saved.currentLevelIndex !== this.currentLevelIndex) return false;
+      if (saved.isDailyMode !== this.isDailyMode) return false;
+
+      // Restore the game state
+      this.state = {
+        grid: saved.grid.map(row => [...row]),
+        moves: saved.moves || 0,
+        width: saved.width,
+        height: saved.height,
+        status: saved.status || 'playing',
+      };
+
+      // Re-render the restored state
+      this.updateUI();
+      this.render();
+
+      // Clear the saved state after restoration
+      storageSet(STATE_KEY, null);
+
+      return true;
+    } catch (e) {
+      // Silently fail if restoration fails
+      return false;
+    }
   }
 }
 

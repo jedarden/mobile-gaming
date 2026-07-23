@@ -22,8 +22,12 @@ import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
 import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
+import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { set as storageSet, get as storageGet } from '../../shared/storage.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
+const GAME_ID = 'pull-the-pin';
+const STATE_KEY = `mg:${GAME_ID}:progress`;
 
 /**
  * Create game instance
@@ -270,8 +274,6 @@ export default {
   createGame
 };
 
-const GAME_ID = 'pull-the-pin';
-
 // Initialize game when page loads
 document.addEventListener('DOMContentLoaded', async () => {
   await initStorage();
@@ -458,5 +460,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     announce('Resumed a shared puzzle.');
   } else {
     loadLevel(0);
+  }
+
+  // Setup visibility handler for state persistence on backgrounding
+  setupPuzzleVisibilityHandler({
+    onSave: () => {
+      try {
+        const gs = game.getState();
+        if (!gs || gs.status === 'won' || gs.status === 'lost') {
+          storageSet(STATE_KEY, null);
+          return;
+        }
+        const gameState = {
+          currentLevelIndex,
+          isDailyMode,
+          state: gs,
+        };
+        storageSet(STATE_KEY, gameState);
+      } catch (e) {
+        // Silently fail if storage is unavailable
+      }
+    }
+  });
+
+  // Check for persisted state and restore it
+  try {
+    const saved = storageGet(STATE_KEY, null);
+    if (saved && saved.currentLevelIndex === currentLevelIndex && saved.isDailyMode === isDailyMode) {
+      game.hydrate(levels[currentLevelIndex], saved.state);
+      updateUI(game.getState());
+      storageSet(STATE_KEY, null); // Clear after restoration
+    }
+  } catch (e) {
+    // Silently fail if restoration fails
   }
 });
