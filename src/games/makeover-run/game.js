@@ -8,6 +8,7 @@
 import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
+import { initLifecycle, setupVisibilityHandler, pause, showResumeOverlay, resume, ready } from '../../shared/lifecycle.js';
 
 import {
   createInitialState,
@@ -32,6 +33,7 @@ import { generateLevel } from './generator.js';
 const GAME_ID   = 'makeover-run';
 const LEVELS_URL = './levels.json';
 const FIXED_DT   = 1 / 60;
+const STATE_KEY  = `mg:${GAME_ID}:state`;
 
 // Category display names for before/after overlay
 const CAT_LABELS = {
@@ -89,6 +91,17 @@ class MakeoverRunGame {
       // Gate synthesized SFX on the persisted sound setting
       setSoundEnabled(getSettings().soundEnabled);
 
+      // Initialize lifecycle system
+      initLifecycle({
+        container: this.container,
+        onSave: () => this.saveGameState(),
+        onRestore: () => this.restoreGameState(),
+        onPause: () => this.pauseGame(),
+        onResume: () => this.resumeGame(),
+        loadingOverlay: true,
+        errorBoundary: true
+      });
+
       await this.loadLevels();
 
       this.renderer = createRenderer(this.container);
@@ -112,7 +125,14 @@ class MakeoverRunGame {
       }
 
       this.setupEventListeners();
+
+      // Setup visibility handler for auto-pause on tab switch
+      setupVisibilityHandler();
+
       this.startLevel(this.currentLevelIndex);
+
+      // Mark game as ready
+      ready();
     } catch (err) {
       console.error('Failed to initialize Makeover Run:', err);
     }
@@ -408,6 +428,73 @@ class MakeoverRunGame {
   hideSettings() {
     this.settingsOverlay.classList.remove('active');
     this.settingsOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  /**
+   * Save current game state for lifecycle pause/resume
+   * Persists level index, level retry count, and current run state
+   */
+  saveGameState() {
+    try {
+      const gameState = {
+        currentLevelIndex: this.currentLevelIndex,
+        levelRetries: this.levelRetries || 0,
+        isDailyMode: this.isDailyMode,
+        // Store a snapshot of the current level for restoration
+        level: this.levels[this.currentLevelIndex],
+        // We don't persist the full in-game state because runner games
+        // reset on resume — player gets a fresh attempt at the same level
+      };
+      localStorage.setItem(STATE_KEY, JSON.stringify(gameState));
+    } catch (e) {
+      console.warn('Failed to save game state:', e);
+    }
+  }
+
+  /**
+   * Restore game state after lifecycle resume
+   * Restores level progress and restarts the level
+   */
+  restoreGameState() {
+    try {
+      const saved = localStorage.getItem(STATE_KEY);
+      if (saved) {
+        const gameState = JSON.parse(saved);
+        this.currentLevelIndex = gameState.currentLevelIndex;
+        this.levelRetries = gameState.levelRetries || 0;
+        this.isDailyMode = gameState.isDailyMode || false;
+
+        // Restore daily seed if needed
+        if (this.isDailyMode) {
+          this.dailySeed = getGameDailySeed(GAME_ID);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore game state:', e);
+    }
+  }
+
+  /**
+   * Pause the game's RAF loop
+   * Called by lifecycle.pause()
+   */
+  pauseGame() {
+    this.isRunning = false;
+    if (this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+  }
+
+  /**
+   * Resume the game's RAF loop
+   * Called by lifecycle.resume()
+   */
+  resumeGame() {
+    this.isRunning = true;
+    this.lastTime = 0;
+    this.accumulator = 0;
+    this.animId = requestAnimationFrame(this.gameLoop);
   }
 
   destroy() {
