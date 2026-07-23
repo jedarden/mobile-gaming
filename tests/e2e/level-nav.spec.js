@@ -295,7 +295,13 @@ test.describe('Level Navigation - Daily Challenge', () => {
       await page.goto(`/${gameId}/`);
       await page.waitForSelector('#game-canvas', { timeout: 10000 });
 
-      // Check if this game has daily challenge
+      // Wait for level-nav to be present and fully rendered
+      await page.waitForFunction(() => {
+        const nav = document.querySelector('.mg-level-nav');
+        return nav && nav.offsetParent !== null;
+      }, { timeout: 5000 });
+
+      // Check if this game has daily challenge (after level-nav is ready)
       const hasDaily = await page.evaluate(() => {
         // Games may opt into daily challenge - check if daily dot exists
         return document.querySelector('.mg-level-daily') !== null;
@@ -303,13 +309,26 @@ test.describe('Level Navigation - Daily Challenge', () => {
 
       if (hasDaily) {
         const dailyDot = page.locator('.mg-level-daily');
+        // Wait for the daily dot to be visible and stable
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.offsetParent !== null;
+        }, { timeout: 5000 });
         await expect(dailyDot).toBeVisible();
 
-        // Should have star character
+        // Wait for text content to be applied
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.textContent && el.textContent.length > 0;
+        }, { timeout: 5000 });
         const text = await dailyDot.evaluate(el => el.textContent);
         expect(text).toBe('★');
 
-        // Should have aria-label
+        // Wait for aria-label to be set
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.getAttribute('aria-label');
+        }, { timeout: 5000 });
         const ariaLabel = await dailyDot.getAttribute('aria-label');
         expect(ariaLabel).toBe('Daily Challenge');
       } else {
@@ -321,12 +340,24 @@ test.describe('Level Navigation - Daily Challenge', () => {
       await page.goto(`/${gameId}/`);
       await page.waitForSelector('#game-canvas', { timeout: 10000 });
 
+      // Wait for level-nav to be present and fully rendered
+      await page.waitForFunction(() => {
+        const nav = document.querySelector('.mg-level-nav');
+        return nav && nav.offsetParent !== null;
+      }, { timeout: 5000 });
+
       const hasDaily = await page.evaluate(() =>
         document.querySelector('.mg-level-daily') !== null
       );
 
       if (hasDaily) {
         const dailyDot = page.locator('.mg-level-daily');
+
+        // Wait for the daily dot to be visible and styles applied
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.mg-level-daily');
+          return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
+        }, { timeout: 5000 });
 
         // Initially should be yellow (not completed)
         const initialBorder = await dailyDot.evaluate(el =>
