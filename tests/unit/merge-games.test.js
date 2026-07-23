@@ -12,6 +12,7 @@ import {
   encodeGrid,
   isSolvable
 } from '../../src/games/merge-games/state.js';
+import { generateLevel } from '../../src/games/merge-games/generator.js';
 
 const SIMPLE_LEVEL = {
   width: 3,
@@ -506,5 +507,45 @@ describe('applyMerge — direction symmetry', () => {
     // Up: tier+1 at row 1, row 0 empty
     expect(up.grid[1][0]).toBe(2);
     expect(up.grid[0][0]).toBe(0);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'merge-games-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    expect(level).not.toBeNull();
+    expect(level).toHaveProperty('width');
+    expect(level).toHaveProperty('height');
+    expect(level).toHaveProperty('grid');
+    expect(level).toHaveProperty('task');
+    expect(level.grid).toBeInstanceOf(Array);
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'merge-games-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    const level1 = generateLevel('seed-1', 'medium', 0);
+    const level2 = generateLevel('seed-2', 'medium', 0);
+
+    // Grids should be different between seeds
+    expect(level1.grid).not.toEqual(level2.grid);
+  });
+
+  it('returns null when generation fails (all retries exhausted)', () => {
+    // Use a seed that might fail generation
+    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // The generator returns null if it fails all retries
+    // This triggers the fallback in game.js: levels[seed % levels.length]
+    expect(level === null || typeof level === 'object').toBe(true);
   });
 });

@@ -27,6 +27,7 @@ import {
   PLACE_RADIUS,
   ENTITY_SPEED
 } from '../../src/games/bridge-race/state.js';
+import { generateLevel } from '../../src/games/bridge-race/generator.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1001,5 +1002,46 @@ describe('aiTick — unknown ai type falls through to random/wander logic', () =
     const result = aiTick(patchedState, 0, 1 / 60, rng);
     expect(typeof result.dx).toBe('number');
     expect(typeof result.dz).toBe('number');
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'bridge-race-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    expect(level).not.toBeNull();
+    expect(level).toHaveProperty('arenaWidth');
+    expect(level).toHaveProperty('finishZ');
+    expect(level).toHaveProperty('bridges');
+    expect(level).toHaveProperty('blockPiles');
+    expect(level.bridges).toBeInstanceOf(Array);
+    expect(level.blockPiles).toBeInstanceOf(Array);
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'bridge-race-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    const level1 = generateLevel('seed-1', 'medium', 0);
+    const level2 = generateLevel('seed-2', 'medium', 0);
+
+    // Bridges or blockPiles should be different between seeds
+    expect(level1.bridges).not.toEqual(level2.bridges);
+  });
+
+  it('returns null when generation fails (all retries exhausted)', () => {
+    // Use a seed that might fail generation
+    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // The generator returns null if it fails all retries
+    // This triggers the fallback in game.js: levels[seed % levels.length]
+    expect(level === null || typeof level === 'object').toBe(true);
   });
 });

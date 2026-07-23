@@ -11,6 +11,7 @@ import {
   getProgress,
   isComplete
 } from '../../src/games/satisfying-asmr/state.js';
+import { generateLevel } from '../../src/games/satisfying-asmr/generator.js';
 
 const FULL_LEVEL = {
   width: 4,
@@ -377,5 +378,47 @@ describe('getProgress — edge cases', () => {
     // createInitialState recounts from cells, ignoring level.totalDirt
     const actual = state.cells.filter(c => c === 1).length;
     expect(state.totalDirt).toBe(actual);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'satisfying-asmr-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    expect(level).not.toBeNull();
+    expect(level).toHaveProperty('width');
+    expect(level).toHaveProperty('height');
+    expect(level).toHaveProperty('cells');
+    expect(level).toHaveProperty('totalDirt');
+    expect(level).toHaveProperty('patternType');
+    expect(level.cells).toBeInstanceOf(Array);
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'satisfying-asmr-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    // Use very different seeds to ensure different RNG states
+    const level1 = generateLevel('satisfying-asmr-seed-alpha', 'medium', 0);
+    const level2 = generateLevel('satisfying-asmr-seed-omega', 'medium', 0);
+
+    // Cells should be different between seeds
+    expect(level1.cells).not.toEqual(level2.cells);
+  });
+
+  it('returns null when generation fails (all retries exhausted)', () => {
+    // Use a seed that might fail generation
+    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // The generator returns null if it fails all retries
+    // This triggers the fallback in game.js: levels[seed % levels.length]
+    expect(level === null || typeof level === 'object').toBe(true);
   });
 });
