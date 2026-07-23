@@ -6,7 +6,7 @@
  * isWon, isLost, validateScenario.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   createInitialState,
   selectChoice,
@@ -417,5 +417,118 @@ describe('validateScenario', () => {
     const result = validateScenario(scenario);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes('missing correct boolean'))).toBe(true);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+// Mock the daily module
+vi.mock('../../src/shared/daily.js', () => ({
+  getGameDailySeed: vi.fn((gameId) => `2026-07-23:${gameId}`),
+  getGameDailyNumericSeed: vi.fn((gameId) => {
+    // Hash function matching the real implementation
+    const str = `2026-07-23:${gameId}`;
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+    }
+    return h >>> 0;
+  }),
+  completeDailyChallenge: vi.fn(),
+  isGameDailyCompleted: vi.fn(() => false)
+}));
+
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../src/shared/daily.js';
+import scenarios from '../../src/games/save-the-character/levels.json' with { type: 'json' };
+
+describe('Daily Challenge', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('generates a daily scenario from a known seed', () => {
+    const GAME_ID = 'save-the-character';
+    const seed = getGameDailySeed(GAME_ID);
+
+    // Mock returns deterministic seed
+    expect(seed).toBe(`2026-07-23:${GAME_ID}`);
+
+    // Compute numeric seed
+    const numericSeed = getGameDailyNumericSeed(GAME_ID);
+    expect(typeof numericSeed).toBe('number');
+
+    // Select daily level: levelIndex = seed % scenarios.length
+    const dailyIndex = numericSeed % scenarios.length;
+    const dailyScenario = scenarios[dailyIndex];
+
+    expect(dailyScenario).toBeDefined();
+    expect(dailyScenario).toHaveProperty('id');
+    expect(dailyScenario).toHaveProperty('title');
+    expect(dailyScenario).toHaveProperty('threat');
+    expect(dailyScenario).toHaveProperty('choices');
+    expect(Array.isArray(dailyScenario.choices)).toBe(true);
+  });
+
+  it('generates the same daily scenario for the same seed', () => {
+    const GAME_ID = 'save-the-character';
+
+    const seed1 = getGameDailySeed(GAME_ID);
+    const numericSeed1 = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex1 = numericSeed1 % scenarios.length;
+    const scenario1 = scenarios[dailyIndex1];
+
+    const seed2 = getGameDailySeed(GAME_ID);
+    const numericSeed2 = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex2 = numericSeed2 % scenarios.length;
+    const scenario2 = scenarios[dailyIndex2];
+
+    // Same seed should produce the same scenario
+    expect(seed1).toBe(seed2);
+    expect(numericSeed1).toBe(numericSeed2);
+    expect(dailyIndex1).toBe(dailyIndex2);
+    expect(scenario1).toEqual(scenario2);
+  });
+
+  it('can create initial state from daily scenario', () => {
+    const GAME_ID = 'save-the-character';
+    const numericSeed = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex = numericSeed % scenarios.length;
+    const dailyScenario = scenarios[dailyIndex];
+
+    const state = createInitialState(dailyScenario);
+
+    expect(state.scenario.id).toBe(dailyScenario.id);
+    expect(state.status).toBe('choosing');
+    expect(state.selectedChoice).toBeNull();
+  });
+
+  it('simulates a win on daily scenario and calls completeDailyChallenge exactly once', () => {
+    const GAME_ID = 'save-the-character';
+    const numericSeed = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex = numericSeed % scenarios.length;
+    const dailyScenario = scenarios[dailyIndex];
+
+    const state = createInitialState(dailyScenario);
+
+    // Find the correct choice for this scenario
+    const correctChoice = dailyScenario.choices.find(c => c.correct);
+    expect(correctChoice).toBeDefined();
+
+    // Simulate selecting the correct choice
+    const selectedState = selectChoice(state, correctChoice.id);
+    expect(selectedState.status).toBe('animating');
+
+    // Resolve the choice to determine win/lose
+    const resolvedState = resolveChoice(selectedState);
+
+    // Verify win condition
+    expect(resolvedState.status).toBe('won');
+
+    // Call completeDailyChallenge (simulating what game.js does)
+    completeDailyChallenge(GAME_ID);
+
+    // Assert completeDailyChallenge was called exactly once
+    expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
+    expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
   });
 });

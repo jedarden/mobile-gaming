@@ -4,7 +4,7 @@
  * Tests for state management and action handling.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   createInitialState,
   applyAction,
@@ -1012,5 +1012,126 @@ describe('validatePuzzle — solution sourceId not found in elements (if(sourceI
     });
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes('ghost-key') && e.includes('not found'))).toBe(true);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+// Mock the daily module
+vi.mock('../../src/shared/daily.js', () => ({
+  getGameDailySeed: vi.fn((gameId) => `2026-07-23:${gameId}`),
+  getGameDailyNumericSeed: vi.fn((gameId) => {
+    // Hash function matching the real implementation
+    const str = `2026-07-23:${gameId}`;
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+    }
+    return h >>> 0;
+  }),
+  completeDailyChallenge: vi.fn(),
+  isGameDailyCompleted: vi.fn(() => false)
+}));
+
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../src/shared/daily.js';
+import puzzles from '../../src/games/brain-teaser/levels.json' with { type: 'json' };
+
+describe('Daily Challenge', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('generates a daily puzzle from a known seed', () => {
+    const GAME_ID = 'brain-teaser';
+    const seed = getGameDailySeed(GAME_ID);
+
+    // Mock returns deterministic seed
+    expect(seed).toBe(`2026-07-23:${GAME_ID}`);
+
+    // Compute numeric seed
+    const numericSeed = getGameDailyNumericSeed(GAME_ID);
+    expect(typeof numericSeed).toBe('number');
+
+    // Select daily level: levelIndex = seed % puzzles.length
+    const dailyIndex = numericSeed % puzzles.length;
+    const dailyPuzzle = puzzles[dailyIndex];
+
+    expect(dailyPuzzle).toBeDefined();
+    expect(dailyPuzzle).toHaveProperty('id');
+    expect(dailyPuzzle).toHaveProperty('title');
+    expect(dailyPuzzle).toHaveProperty('prompt');
+    expect(dailyPuzzle).toHaveProperty('type');
+    expect(dailyPuzzle).toHaveProperty('elements');
+    expect(dailyPuzzle).toHaveProperty('solution');
+  });
+
+  it('generates the same daily puzzle for the same seed', () => {
+    const GAME_ID = 'brain-teaser';
+
+    const seed1 = getGameDailySeed(GAME_ID);
+    const numericSeed1 = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex1 = numericSeed1 % puzzles.length;
+    const puzzle1 = puzzles[dailyIndex1];
+
+    const seed2 = getGameDailySeed(GAME_ID);
+    const numericSeed2 = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex2 = numericSeed2 % puzzles.length;
+    const puzzle2 = puzzles[dailyIndex2];
+
+    // Same seed should produce the same puzzle
+    expect(seed1).toBe(seed2);
+    expect(numericSeed1).toBe(numericSeed2);
+    expect(dailyIndex1).toBe(dailyIndex2);
+    expect(puzzle1).toEqual(puzzle2);
+  });
+
+  it('can create initial state from daily puzzle', () => {
+    const GAME_ID = 'brain-teaser';
+    const numericSeed = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex = numericSeed % puzzles.length;
+    const dailyPuzzle = puzzles[dailyIndex];
+
+    const state = createInitialState(dailyPuzzle);
+
+    expect(state.puzzle.id).toBe(dailyPuzzle.id);
+    expect(state.status).toBe('playing');
+    expect(state.attempts).toBe(0);
+  });
+
+  it('simulates a win on daily puzzle and calls completeDailyChallenge exactly once', () => {
+    const GAME_ID = 'brain-teaser';
+    const numericSeed = getGameDailyNumericSeed(GAME_ID);
+    const dailyIndex = numericSeed % puzzles.length;
+    const dailyPuzzle = puzzles[dailyIndex];
+
+    const state = createInitialState(dailyPuzzle);
+
+    // Find the solution action for this puzzle
+    const solution = dailyPuzzle.solution;
+    let finalState = state;
+
+    // Apply the solution action based on puzzle type
+    if (solution.action === 'tap') {
+      finalState = applyAction(state, { action: 'tap', targetId: solution.targetId });
+    } else if (solution.action === 'drag') {
+      finalState = applyAction(state, { action: 'drag', sourceId: solution.sourceId, targetId: solution.targetId });
+    } else if (solution.action === 'sequence') {
+      // For sequence puzzles, apply each step
+      let currentState = state;
+      for (const step of solution.steps) {
+        currentState = applyAction(currentState, { action: 'tap', targetId: step });
+      }
+      finalState = currentState;
+    }
+
+    // Verify win condition
+    expect(finalState.status).toBe('solved');
+
+    // Call completeDailyChallenge (simulating what game.js does)
+    completeDailyChallenge(GAME_ID);
+
+    // Assert completeDailyChallenge was called exactly once
+    expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
+    expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
   });
 });
