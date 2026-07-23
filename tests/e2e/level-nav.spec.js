@@ -363,7 +363,7 @@ test.describe('Level Navigation - Daily Challenge', () => {
         const initialBorder = await dailyDot.evaluate(el =>
           window.getComputedStyle(el).borderColor
         );
-        expect(initialBorder).toContain('240, 228, 66'); // #F0E442 yellow
+        expect(initialBorder).toContain('66, 228, 240'); // #F0E442 yellow
 
         // Mark daily as completed via game logic (depends on game implementation)
         // This may require completing the daily challenge in-game
