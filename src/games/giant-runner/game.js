@@ -13,7 +13,8 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { initLifecycle, setupVisibilityHandler, pause, showResumeOverlay, resume, ready } from '../../shared/lifecycle.js';
-import { getGameDailySeed } from '../../shared/daily.js';
+import { getGameDailySeed, completeDailyChallenge, isGameDailyCompleted } from '../../shared/daily.js';
+import { createLevelNav } from '../../shared/level-nav.js';
 
 import {
   createInitialState,
@@ -141,6 +142,9 @@ class GiantRunnerGame {
       // Setup visibility handler for auto-pause on tab switch
       setupVisibilityHandler();
 
+      // Level-select strip (must exist before the board sizes around it)
+      this.initLevelNav();
+
       // Start game
       this.startLevel(this.currentLevelIndex);
 
@@ -211,6 +215,38 @@ class GiantRunnerGame {
     await updateGameStats(GAME_ID, {
       lastLevel: this.currentLevelIndex
     });
+  }
+
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   *
+   * The strip is appended to the game column and placed in normal flow (not
+   * the default fixed overlay) so it sits below the prev/next row and never
+   * covers existing controls.
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
   }
 
   /**
@@ -411,6 +447,15 @@ class GiantRunnerGame {
 
         // Award XP
         await awardLevelComplete(GAME_ID, stars, { finalScale: this.state.player.scale });
+
+        // Advance the level-select strip: mark this level complete, unlock + advance
+        if (this.levelNav) {
+          if (this.isDailyMode) {
+            this.levelNav.completeDaily();
+          } else {
+            this.levelNav.completeLevel(this.currentLevelIndex);
+          }
+        }
 
         // Save progress
         await this.saveProgress();

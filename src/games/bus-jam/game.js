@@ -19,6 +19,8 @@ import { createRNG } from '../../shared/rng.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { createLevelNav } from '../../shared/level-nav.js';
+import { isGameDailyCompleted } from '../../shared/daily.js';
 
 import {
   createInitialState,
@@ -160,6 +162,9 @@ class BusJamGame {
 
       // Setup event listeners (keyboard and resize only - canvas handled by Phaser)
       this.setupEventListeners();
+
+      // Level-select strip (must exist before the board sizes around it)
+      this.initLevelNav();
 
       // Update UI
       this.updateUI();
@@ -318,6 +323,38 @@ class BusJamGame {
     await updateGameStats(GAME_ID, {
       lastLevel: this.currentLevelIndex
     });
+  }
+
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   *
+   * The strip is appended to the game column and placed in normal flow (not
+   * the default fixed overlay) so it sits below the prev/next row and never
+   * covers existing controls.
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
   }
 
   /**
@@ -545,6 +582,15 @@ class BusJamGame {
     // Mark daily challenge as completed
     if (this.isDailyMode) {
       completeDailyChallenge(GAME_ID);
+    }
+
+    // Advance the level-select strip: mark this level complete, unlock + advance
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentLevelIndex);
+      }
     }
 
     // Save progress
