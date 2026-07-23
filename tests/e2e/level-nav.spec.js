@@ -19,6 +19,10 @@ const GAMES_WITH_LEVEL_NAV = [
   'jelly-shift',
   'pull-the-pin',
   'brain-teaser',
+  'makeover-run',
+  'merge-games',
+  'save-the-character',
+  'satisfying-asmr',
 ];
 
 // Games that may have level-nav (check dynamically)

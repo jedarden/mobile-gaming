@@ -14,10 +14,11 @@ import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
-import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge, isGameDailyCompleted } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
 import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
 import { set as storageSet, get as storageGet } from '../../shared/storage.js';
+import { createLevelNav } from '../../shared/level-nav.js';
 
 const GAME_ID = 'merge-games';
 const LEVELS_URL = './levels.json';
@@ -88,6 +89,11 @@ class MergeGame {
 
     window.addEventListener('resize', this.handleResize);
     this.setupButtons();
+
+    // Level-select strip (must exist before startLevel so the board sizes
+    // around it)
+    this.initLevelNav();
+
     this.startLevel(this.currentLevelIndex);
 
     // Setup visibility handler for state persistence on backgrounding
@@ -115,6 +121,38 @@ class MergeGame {
       this.levels = [this.levels[idx]];
       this.currentLevelIndex = 0;
     }
+  }
+
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   *
+   * The strip is appended to the game column and placed in normal flow (not
+   * the default fixed overlay) so it sits below the prev/next row and never
+   * covers existing controls.
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
   }
 
   setupButtons() {
@@ -271,6 +309,16 @@ class MergeGame {
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars });
     await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, moves });
     if (this.isDailyMode) completeDailyChallenge(GAME_ID);
+
+    // Advance the level-select strip: mark this level complete, unlock + advance
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentLevelIndex);
+      }
+    }
+
     document.getElementById('stars-display').querySelectorAll('.star').forEach((el, i) => {
       el.classList.toggle('filled', i < stars);
     });

@@ -20,10 +20,11 @@ import { createHintSession, getHintTokens } from '../../shared/hints.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
-import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge, isGameDailyCompleted } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
 import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
 import { set as storageSet, get as storageGet } from '../../shared/storage.js';
+import { createLevelNav } from '../../shared/level-nav.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 const GAME_ID = 'pull-the-pin';
@@ -290,6 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let levelStartTime = Date.now();
   let levelRetries = 0;
   let retryOverlay = null;
+  let lastStars = 0;
 
   // Daily challenge mode (reachable via ?daily=true)
   let isDailyMode = false;
@@ -314,6 +316,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (overlay) overlay.classList.add('hidden');
   }
 
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  function initRetryOverlay(index) {
+    if (retryOverlay) retryOverlay.destroy();
+    retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => loadLevel(currentLevelIndex),
+      onNext: () => {
+        if (currentLevelIndex < levels.length - 1) {
+          loadLevel(currentLevelIndex + 1);
+        }
+      },
+      onSkip: () => {
+        if (currentLevelIndex < levels.length - 1) {
+          loadLevel(currentLevelIndex + 1);
+        }
+      },
+      onHint: () => {
+        loadLevel(currentLevelIndex);
+        game.showHint();
+        updateHintButton();
+      },
+      onShare: (stats) => {
+        quickShare({
+          title: 'Pull the Pin',
+          text: generateShareText({
+            gameName: 'Pull the Pin',
+            moves: stats.moves,
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
+  }
+
   function updateUI(gameState) {
     if (levelIndicator) levelIndicator.textContent = isDailyMode ? 'Daily' : `Level ${currentLevelIndex + 1}`;
     if (pinCountEl && gameState) {
@@ -325,17 +368,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   const game = createGame(canvas, {
     async onWin() {
       haptic('win');
+      const solveTime = Date.now() - levelStartTime;
       recordLevel(GAME_ID, {
         retryCount: levelRetries,
-        solveTime: Date.now() - levelStartTime,
+        solveTime,
         hintUsage: game.getHintLevel(),
       }, { won: true });
       const hasNext = currentLevelIndex < levels.length - 1;
-      showOverlay('Level Complete!', 'All balls reached their cups!', hasNext);
       announce(`Level ${currentLevelIndex + 1} complete! All balls reached their cups!`);
       await updateGameStats(GAME_ID, { lastLevel: currentLevelIndex, played: 1, completed: 1, stars: 3 });
       await awardLevelComplete(GAME_ID, 3, { levelId: currentLevelIndex });
       if (isDailyMode) completeDailyChallenge(GAME_ID);
+
+      // Advance the level-select strip: mark this level complete, unlock + advance
+      if (levelNav) {
+        if (isDailyMode) {
+          levelNav.completeDaily();
+        } else {
+          levelNav.completeLevel(currentLevelIndex);
+        }
+      }
+
+      lastStars = 3;
+      retryOverlay.show(ResultType.WIN, {
+        moves: game.getState()?.moves || 0,
+        time: Math.round(solveTime / 1000),
+        stars: 3,
+      });
     },
     onLose() {
       haptic('fail');
@@ -344,8 +403,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         solveTime: Date.now() - levelStartTime,
         hintUsage: game.getHintLevel(),
       }, { won: false });
-      showOverlay('Try Again', 'A ball missed its cup.', false);
       announce('A ball missed its cup. Try again!');
+      retryOverlay.show(ResultType.LOSS, {
+        moves: game.getState()?.moves || 0,
+      });
     },
     onPinRemoved() {
       updateUI(game.getState());
@@ -401,6 +462,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     levelStartTime = Date.now();
     hideOverlay();
     game.loadLevel(levels[index]);
+    initRetryOverlay(index);
     updateUI(game.getState());
     announce(`Level ${index + 1}. Pull the pins to guide the balls into the cups.`);
   }
@@ -450,6 +512,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       levels = [levels[getGameDailyNumericSeed(GAME_ID) % levels.length]];
     }
   }
+
+  // Level-select strip (must exist before loading first level)
+  const container = document.querySelector('.game-container') || document.body;
+  const levelNav = createLevelNav({
+    container,
+    gameId: GAME_ID,
+    totalLevels: levels.length,
+    hasDaily: true,
+    dailyCompleted: isGameDailyCompleted(GAME_ID),
+    onLevelSelect: (index, restart) => {
+      if (restart) {
+        loadLevel(currentLevelIndex);
+      } else {
+        loadLevel(index);
+        levelNav.setCurrentLevel(index);
+      }
+    },
+    onDailySelect: () => {
+      window.location.search = '?daily=true';
+    },
+  });
+  levelNav.strip.style.position = 'relative';
+  levelNav.strip.style.flexShrink = '0';
+  window.dispatchEvent(new Event('resize'));
 
   if (shared) {
     currentLevelIndex = Math.min(Math.max(shared.levelIndex | 0, 0), levels.length - 1);

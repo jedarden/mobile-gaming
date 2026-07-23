@@ -31,8 +31,9 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
-import { getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { getGameDailyNumericSeed, completeDailyChallenge, isGameDailyCompleted } from '../../shared/daily.js';
 import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { createLevelNav } from '../../shared/level-nav.js';
 
 // Game constants
 const GAME_ID = 'save-the-character';
@@ -58,6 +59,7 @@ class SaveTheCharacterGame {
     this.state = null;
     this.renderer = null;
     this.input = null;
+    this.levelNav = null;
 
     // Animation state
     this.resultDisplayTime = null;
@@ -130,6 +132,9 @@ class SaveTheCharacterGame {
       // Setup event listeners
       this.setupEventListeners();
 
+      // Level-select strip
+      this.initLevelNav();
+
       // Start game
       this.startLevel(this.currentLevelIndex);
 
@@ -184,6 +189,34 @@ class SaveTheCharacterGame {
   loadProgress() {
     const stats = getGameStats(GAME_ID);
     this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
+  }
+
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.retryLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
   }
 
   /**
@@ -364,6 +397,15 @@ class SaveTheCharacterGame {
     // Save progress
     await this.saveProgress();
 
+    // Advance the level-select strip: mark this level complete, unlock + advance
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentLevelIndex);
+      }
+    }
+
     haptic('win');
     announce('Correct! The character is saved!');
   }
@@ -419,6 +461,12 @@ class SaveTheCharacterGame {
 
     // Remove event listeners
     window.removeEventListener('resize', this.handleResize);
+
+    // Destroy level nav
+    if (this.levelNav) {
+      this.levelNav.destroy();
+      this.levelNav = null;
+    }
 
     // Destroy Phaser renderer
     if (this.renderer) {

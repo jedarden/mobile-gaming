@@ -12,9 +12,10 @@ import { createInitialState, cleanArea, getProgress, isComplete } from './state.
 import { createRenderer } from './renderer.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
-import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge, isGameDailyCompleted } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
 import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
+import { createLevelNav } from '../../shared/level-nav.js';
 
 const GAME_ID = 'satisfying-asmr';
 const LEVELS_URL = './levels.json';
@@ -44,6 +45,7 @@ class SatisfyingGame {
     this.dailySeed = null;
     this.state = null;
     this.renderer = null;
+    this.levelNav = null;
 
     // Shared win/loss retry overlay (created per level)
     this.retryOverlay = null;
@@ -83,6 +85,10 @@ class SatisfyingGame {
 
     window.addEventListener('resize', this.handleResize);
     this.setupButtons();
+
+    // Level-select strip
+    this.initLevelNav();
+
     this.startLevel(this.currentLevelIndex);
 
     // Setup visibility handler for state persistence on backgrounding
@@ -186,6 +192,34 @@ class SatisfyingGame {
     }
   }
 
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   */
+  initLevelNav() {
+    const container = document.querySelector('.game-container') || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
+  }
+
   restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
   prevLevel() { if (this.currentLevelIndex > 0) this.startLevel(this.currentLevelIndex - 1); }
   nextLevel() { if (this.currentLevelIndex < this.levels.length - 1) this.startLevel(this.currentLevelIndex + 1); }
@@ -216,14 +250,28 @@ class SatisfyingGame {
   }
 
   async handleWin() {
-    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
+    const solveTime = Date.now() - (this.levelStartTime || Date.now());
+    recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime }, { won: true });
     const pct = Math.round(getProgress(this.state) * 100);
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars: 3 });
     await awardLevelComplete(GAME_ID, 3, { levelId: this.currentLevelIndex });
     if (this.isDailyMode) completeDailyChallenge(GAME_ID);
-    document.getElementById('stats-summary').textContent = `${pct}% of surface cleaned!`;
-    this.winOverlay.classList.add('active');
-    this.winOverlay.setAttribute('aria-hidden', 'false');
+
+    // Advance the level-select strip: mark this level complete, unlock + advance
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentLevelIndex);
+      }
+    }
+
+    this.lastStars = 3;
+    this.retryOverlay.show(ResultType.WIN, {
+      moves: Math.round(pct), // Use percentage as "moves" metric
+      time: Math.round(solveTime / 1000),
+      stars: 3,
+    });
     announce(`Sparkling clean! Surface fully cleaned.`);
   }
 

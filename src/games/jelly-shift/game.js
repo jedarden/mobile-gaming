@@ -15,6 +15,8 @@ import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { initLifecycle, setupVisibilityHandler, pause, showResumeOverlay, resume, ready } from '../../shared/lifecycle.js';
 import { initSwipeNav, saveGameState, getSavedGameState } from '../../shared/swipe-nav.js';
+import { createLevelNav } from '../../shared/level-nav.js';
+import { isGameDailyCompleted } from '../../shared/daily.js';
 
 import {
   createInitialState,
@@ -148,6 +150,9 @@ class JellyShiftGame {
         this.generateDailyLevel();
       }
 
+      // Level-select strip (must exist before startLevel)
+      this.initLevelNav();
+
       this.startLevel(this.currentLevelIndex);
 
       // Mark game as ready
@@ -213,6 +218,37 @@ class JellyShiftGame {
       this.levels = [this.levels[idx]];
       this.currentLevelIndex = 0;
     }
+  }
+
+  /**
+   * Build the bottom level-select strip (shared/level-nav.js).
+   *
+   * The strip is appended to the game container and placed in normal flow
+   * so it sits below the game area and never covers existing controls.
+   */
+  initLevelNav() {
+    const container = this.container || document.body;
+    this.levelNav = createLevelNav({
+      container,
+      gameId: GAME_ID,
+      totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
+      onLevelSelect: (index, restart) => {
+        if (restart) {
+          this.restartLevel();
+        } else {
+          this.startLevel(index);
+          this.levelNav.setCurrentLevel(index);
+        }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
+      },
+    });
+    this.levelNav.strip.style.position = 'relative';
+    this.levelNav.strip.style.flexShrink = '0';
+    window.dispatchEvent(new Event('resize'));
   }
 
   /**
@@ -424,6 +460,15 @@ class JellyShiftGame {
         if (this.isDailyMode) completeDailyChallenge(GAME_ID);
 
         await this.saveProgress();
+
+        // Advance the level-select strip: mark this level complete, unlock + advance
+        if (this.levelNav) {
+          if (this.isDailyMode) {
+            this.levelNav.completeDaily();
+          } else {
+            this.levelNav.completeLevel(this.currentLevelIndex);
+          }
+        }
 
         haptic('win');
         this.lastStars = stars;
