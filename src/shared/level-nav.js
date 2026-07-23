@@ -175,7 +175,7 @@ export function createLevelNav(options = {}) {
     const dailyDot = document.createElement('button');
     dailyDot.className = 'mg-level-dot mg-level-daily';
     dailyDot.setAttribute('aria-label', 'Daily Challenge');
-    dailyDot.textContent = '\u2605'; // star
+    dailyDot.textContent = '★'; // star
     dailyDot.style.cssText = `
       width: ${DOT_SIZE}px;
       height: ${DOT_SIZE}px;
@@ -401,7 +401,7 @@ export function createLevelNav(options = {}) {
         const dailyDot = document.createElement('button');
         dailyDot.className = 'mg-level-dot mg-level-daily';
         dailyDot.setAttribute('aria-label', 'Daily Challenge');
-        dailyDot.textContent = '\u2605';
+        dailyDot.textContent = '★';
         dailyDot.style.cssText = `
           width: ${DOT_SIZE}px;
           height: ${DOT_SIZE}px;
