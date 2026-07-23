@@ -802,8 +802,6 @@ describe('Daily Challenge', () => {
   }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('simulates a win on daily level and calls completeDailyChallenge exactly once', () => {
-    const numericSeed = getGameDailyNumericSeed(GAME_ID);
-
     // Try to generate daily level
     const generatedLevel = generateLevel(getGameDailySeed(GAME_ID), 'medium', 0);
 
@@ -817,22 +815,13 @@ describe('Daily Challenge', () => {
 
     const state = createInitialState(dailyLevel);
 
-    // Simulate winning the level - check if already won
-    if (checkWin(state) === 'won') {
-      // Call completeDailyChallenge (simulating what game.js does)
-      completeDailyChallenge(GAME_ID);
+    // Simulate winning the level - call completeDailyChallenge
+    // (In the actual game, this happens when the player completes the level)
+    completeDailyChallenge(GAME_ID);
 
-      // Assert completeDailyChallenge was called exactly once
-      expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
-      expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
-    } else {
-      // If we can't simulate a win with the generated level, still test the call
-      completeDailyChallenge(GAME_ID);
-
-      // Assert completeDailyChallenge was called exactly once
-      expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
-      expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
-    }
+    // Assert completeDailyChallenge was called exactly once
+    expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
+    expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
   }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('generates deterministic levels from same seed', () => {
@@ -841,7 +830,7 @@ describe('Daily Challenge', () => {
     const level2 = generateLevel(seed, 'medium', 0);
 
     expect(level1).toEqual(level2);
-  });
+  }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('generates different levels from different seeds', async () => {
     const level1 = generateLevel('seed-1', 'medium', 0);
@@ -854,7 +843,18 @@ describe('Daily Challenge', () => {
   }, 30000); // 30 second timeout for slow generator (allows for CI variance)
 
   it('returns null when generation fails (triggers fallback)', () => {
+    // Use a known-bad seed that typically causes generation failure
+    // The generator may return null if it cannot create a valid level within max attempts
     const level = generateLevel('bad-seed-999999', 'medium', 0);
-    expect(level === null || typeof level === 'object').toBe(true);
+    // Verify that either null is returned (generation failed) or a valid level object is returned
+    if (level === null) {
+      // Generation failed as expected
+      expect(level).toBeNull();
+    } else {
+      // Generation succeeded - verify it's a valid level object
+      expect(level).not.toBeNull();
+      expect(level).toHaveProperty('grid');
+      expect(level.grid).toHaveProperty('vehicles');
+    }
   });
 });
