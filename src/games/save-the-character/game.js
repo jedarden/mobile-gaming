@@ -15,6 +15,7 @@ import { initAccessibility, announce, isReducedMotionEnabled } from '../../share
 import { haptic } from '../../shared/haptics.js';
 import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 
 import {
   createInitialState,
@@ -60,6 +61,7 @@ class SaveTheCharacterGame {
     this.renderer = null;
     this.input = null;
     this.levelNav = null;
+    this.retryOverlay = null;
 
     // Animation state
     this.resultDisplayTime = null;
@@ -135,6 +137,15 @@ class SaveTheCharacterGame {
       // Level-select strip
       this.initLevelNav();
 
+      // Retry overlay
+      this.retryOverlay = createRetryOverlay({
+        container: this.container,
+        gameId: GAME_ID,
+        levelIndex: this.currentLevelIndex,
+        onRetry: () => this.retryLevel(),
+        onNext: () => this.nextLevel(),
+      });
+
       // Start game
       this.startLevel(this.currentLevelIndex);
 
@@ -145,8 +156,6 @@ class SaveTheCharacterGame {
 
       // Check for persisted state and restore it
       this.restoreGameState();
-
-      console.log('Save the Character initialized');
     } catch (error) {
       console.error('Failed to initialize Save the Character:', error);
       throw error;
@@ -300,6 +309,11 @@ class SaveTheCharacterGame {
       this.input.updateState(this.state);
     }
 
+    // Update retry overlay level index
+    if (this.retryOverlay) {
+      this.retryOverlay.levelIndex = index;
+    }
+
     // Announce for screen readers
     announce(`Scenario ${index + 1}: ${getScenarioTitle(this.state)}. ${getThreat(this.state)}`);
   }
@@ -357,15 +371,6 @@ class SaveTheCharacterGame {
 
     // Update renderer with resolved state
     this.renderer.render(this.state);
-
-    // Schedule progression
-    setTimeout(() => {
-      if (isWon(this.state)) {
-        this.nextLevel();
-      } else if (isLost(this.state)) {
-        this.retryLevel();
-      }
-    }, RESULT_DISPLAY_DURATION);
   }
 
   /**
@@ -408,6 +413,12 @@ class SaveTheCharacterGame {
 
     haptic('win');
     announce('Correct! The character is saved!');
+
+    // Show retry overlay
+    this.retryOverlay.show(ResultType.WIN, {
+      retryCount: this.levelRetries || 0,
+      solveTime: Date.now() - (this.levelStartTime || Date.now())
+    });
   }
 
   /**
@@ -417,6 +428,12 @@ class SaveTheCharacterGame {
     recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
     haptic('fail');
     announce('Wrong choice! The character was not saved. Try again!');
+
+    // Show retry overlay
+    this.retryOverlay.show(ResultType.LOSS, {
+      retryCount: this.levelRetries || 0,
+      solveTime: Date.now() - (this.levelStartTime || Date.now())
+    });
   }
 
   /**
@@ -468,6 +485,12 @@ class SaveTheCharacterGame {
       this.levelNav = null;
     }
 
+    // Destroy retry overlay
+    if (this.retryOverlay) {
+      this.retryOverlay.destroy();
+      this.retryOverlay = null;
+    }
+
     // Destroy Phaser renderer
     if (this.renderer) {
       this.renderer.destroy();
@@ -476,8 +499,6 @@ class SaveTheCharacterGame {
 
     // Clear state
     this.state = null;
-
-    console.log('Save the Character torn down');
   }
 
   /**
