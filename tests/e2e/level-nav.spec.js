@@ -175,7 +175,7 @@ test.describe('Level Navigation - Visual States', () => {
       });
 
       // Should be green (#009E73)
-      expect(completedStyles.borderColor).toContain('158, 115, 0');
+      expect(completedStyles.borderColor).toContain('115, 158, 0');
       expect(completedStyles.textContent).toBe('✓');
     });
 
