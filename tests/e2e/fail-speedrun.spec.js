@@ -130,7 +130,7 @@ test.describe('Fail Speedrun Mode', () => {
     });
   });
 
-  describe('Game Support', () => {
+  test.describe('Game Support', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(TEST_URL);
       await page.waitForSelector('#test-container', { timeout: 5000 });
@@ -179,7 +179,7 @@ test.describe('Fail Speedrun Mode', () => {
     });
   });
 
-  describe('Ad Recreation Badge', () => {
+  test.describe('Ad Recreation Badge', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(TEST_URL);
       await page.waitForSelector('#test-container', { timeout: 5000 });
@@ -279,7 +279,7 @@ test.describe('Fail Speedrun Mode', () => {
     });
   });
 
-  describe('Timer Precision', () => {
+  test.describe('Timer Precision', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(TEST_URL);
       await page.waitForSelector('#test-container', { timeout: 5000 });
@@ -339,7 +339,7 @@ test.describe('Fail Speedrun Mode', () => {
     });
   });
 
-  describe('UI Overlay', () => {
+  test.describe('UI Overlay', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(TEST_URL);
       await page.waitForSelector('#test-container', { timeout: 5000 });
@@ -411,7 +411,7 @@ test.describe('Fail Speedrun Mode', () => {
     });
   });
 
-  describe('Settings', () => {
+  test.describe('Settings', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(TEST_URL);
       await page.waitForSelector('#test-container', { timeout: 5000 });
