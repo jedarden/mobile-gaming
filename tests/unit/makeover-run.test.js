@@ -9,6 +9,7 @@ import {
   calculateStars, isRunning, isJudging, isGameOver,
   simulatePath, optimalPath, worstPath
 } from '../../src/games/makeover-run/state.js';
+import { generateLevel } from '../../src/games/makeover-run/generator.js';
 
 // ─── Test fixtures ────────────────────────────────────────────────────────────
 
@@ -538,5 +539,148 @@ describe('appearance invariants', () => {
     CATEGORIES.forEach(cat => {
       expect(state.appearance[cat]).toBeGreaterThanOrEqual(0);
     });
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'makeover-run-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'easy', 0);
+
+    // Generator always returns a level object
+    expect(level).not.toBeNull();
+    expect(typeof level).toBe('object');
+
+    expect(level).toHaveProperty('stations');
+    expect(level).toHaveProperty('courseLength');
+    expect(level).toHaveProperty('speed');
+    expect(level.stations).toBeInstanceOf(Array);
+    expect(level.stations.length).toBeGreaterThan(0);
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'makeover-run-deterministic-test';
+    const level1 = generateLevel(seed, 'easy', 0);
+    const level2 = generateLevel(seed, 'easy', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    const level1 = generateLevel('seed-1', 'easy', 0);
+    const level2 = generateLevel('seed-2', 'easy', 0);
+
+    // Different seeds should produce different stations
+    expect(level1.stations).not.toEqual(level2.stations);
+  });
+
+  it('returns a level with valid structure for all difficulties', () => {
+    const easyLevel = generateLevel('test-seed', 'easy', 0);
+    const mediumLevel = generateLevel('test-seed', 'medium', 0);
+    const hardLevel = generateLevel('test-seed', 'hard', 0);
+
+    // All levels should have stations
+    expect(easyLevel.stations.length).toBeGreaterThan(0);
+    expect(mediumLevel.stations.length).toBeGreaterThan(0);
+    expect(hardLevel.stations.length).toBeGreaterThan(0);
+
+    // Hard should have more stations than easy
+    expect(hardLevel.stations.length).toBeGreaterThanOrEqual(easyLevel.stations.length);
+  });
+
+  it('each station has valid properties', () => {
+    const level = generateLevel('station-test', 'easy', 0);
+
+    for (const station of level.stations) {
+      expect(station).toHaveProperty('z');
+      expect(station).toHaveProperty('x');
+      expect(station).toHaveProperty('positive');
+      expect(station.z).toBeGreaterThan(0);
+      expect([-1, 1]).toContain(station.x);
+    }
+  });
+
+  it('stations are ordered by increasing z position', () => {
+    const level = generateLevel('z-order-test', 'easy', 0);
+
+    for (let i = 1; i < level.stations.length; i++) {
+      expect(level.stations[i].z).toBeGreaterThanOrEqual(level.stations[i - 1].z);
+    }
+  });
+
+  it('has both positive and negative stations', () => {
+    const level = generateLevel('station-pairs-test', 'easy', 0);
+
+    const positives = level.stations.filter(s => s.positive);
+    const negatives = level.stations.filter(s => !s.positive);
+
+    expect(positives.length).toBeGreaterThan(0);
+    expect(negatives.length).toBeGreaterThan(0);
+  });
+
+  it('positive stations upgrade valid categories', () => {
+    const level = generateLevel('categories-test', 'easy', 0);
+
+    const positives = level.stations.filter(s => s.positive);
+
+    for (const station of positives) {
+      expect(station).toHaveProperty('type');
+      expect(CATEGORIES).toContain(station.type);
+      expect(station).toHaveProperty('upgrade');
+      expect([2, 3]).toContain(station.upgrade);
+    }
+  });
+
+  it('simulates a win with daily challenge seed', () => {
+    const seed = 'makeover-run-win-test';
+    const level = generateLevel(seed, 'easy', 0);
+
+    // Create initial state
+    let state = createInitialState(level);
+
+    // Simulate always steering left (toward positive stations)
+    const TICKS_TO_FINISH = 300;
+
+    for (let i = 0; i < TICKS_TO_FINISH; i++) {
+      if (isGameOver(state)) break;
+      if (isJudging(state)) {
+        state = judge(state);
+        break;
+      }
+
+      state = advance(state, 1/60);
+
+      // Steer left (negative delta) toward positive stations
+      state = steer(state, -0.5);
+    }
+
+    // After finishing course, should be in judging or complete
+    expect(state.status === 'judging' || state.status === 'complete').toBe(true);
+  });
+
+  it('optimal path achieves 3 stars', () => {
+    const level = generateLevel('optimal-test', 'easy', 0);
+
+    // Create state and always steer toward positive stations
+    let state = createInitialState(level);
+    const TICKS_TO_FINISH = 300;
+
+    for (let i = 0; i < TICKS_TO_FINISH; i++) {
+      if (isGameOver(state)) break;
+      if (isJudging(state)) {
+        state = judge(state);
+        break;
+      }
+
+      state = advance(state, 1/60);
+
+      // Steer left (toward positive stations at x=-1)
+      state = steer(state, -0.5);
+    }
+
+    expect(state.status).toBe('complete');
+    expect(state.stars).toBeGreaterThanOrEqual(3);
   });
 });

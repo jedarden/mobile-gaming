@@ -25,6 +25,7 @@ import {
   WALL_COLLISION_Z_THRESHOLD,
   validateLevel
 } from '../../src/games/jelly-shift/state.js';
+import { generateLevel } from '../../src/games/jelly-shift/generator.js';
 
 describe('Jelly Shift State', () => {
   let baseLevel;
@@ -751,5 +752,86 @@ describe('createGameHistory', () => {
     hist.push('c'); // oldest 'a' evicted; stack = ['b', 'c']
     expect(hist.canUndo()).toBe(true);
     expect(hist.undo()).toBe('b');
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'jelly-shift-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    // Generator always returns a level object
+    expect(level).not.toBeNull();
+    expect(typeof level).toBe('object');
+
+    expect(level).toHaveProperty('walls');
+    expect(level).toHaveProperty('speed');
+    expect(level.walls).toBeInstanceOf(Array);
+    expect(level.walls.length).toBeGreaterThan(0);
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'jelly-shift-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    const level1 = generateLevel('seed-1', 'medium', 0);
+    const level2 = generateLevel('seed-2', 'medium', 0);
+
+    // Different seeds should produce different walls
+    expect(level1.walls).not.toEqual(level2.walls);
+  });
+
+  it('returns a level with valid structure for all difficulties', () => {
+    const easyLevel = generateLevel('test-seed', 'easy', 0);
+    const mediumLevel = generateLevel('test-seed', 'medium', 0);
+    const hardLevel = generateLevel('test-seed', 'hard', 0);
+
+    // All levels should have walls
+    expect(easyLevel.walls.length).toBeGreaterThan(0);
+    expect(mediumLevel.walls.length).toBeGreaterThan(0);
+    expect(hardLevel.walls.length).toBeGreaterThan(0);
+
+    // Hard should have more walls than easy
+    expect(hardLevel.walls.length).toBeGreaterThanOrEqual(easyLevel.walls.length);
+  });
+
+  it('each wall has a hole with valid properties', () => {
+    const level = generateLevel('hole-test', 'medium', 0);
+
+    for (const wall of level.walls) {
+      expect(wall).toHaveProperty('z');
+      expect(wall).toHaveProperty('hole');
+      expect(wall.hole).toHaveProperty('shape');
+      expect(['tall', 'wide', 'plus']).toContain(wall.hole.shape);
+      expect(wall.hole).toHaveProperty('width');
+      expect(wall.hole).toHaveProperty('height');
+      expect(wall.z).toBeGreaterThan(0);
+    }
+  });
+
+  it('walls are ordered by increasing z position', () => {
+    const level = generateLevel('z-order-test', 'medium', 0);
+
+    for (let i = 1; i < level.walls.length; i++) {
+      expect(level.walls[i].z).toBeGreaterThan(level.walls[i - 1].z);
+    }
+  });
+
+  it('generated level can create valid initial state', () => {
+    const seed = 'jelly-shift-state-test';
+    const level = generateLevel(seed, 'easy', 0);
+    const state = createInitialState(level);
+
+    expect(state.status).toBe('running');
+    expect(state.walls).toHaveLength(level.walls.length);
+    expect(state.totalWalls).toBe(level.walls.length);
+    expect(state.wallsPassed).toBe(0);
   });
 });
