@@ -360,8 +360,8 @@ export function showLevelComplete(options = {}) {
   let starsHtml = '';
   for (let i = 0; i < 3; i++) {
     starsHtml += i < stats.stars
-      ? '<span class="mg-star-filled">\u2605</span>'
-      : '<span class="mg-star-empty">\u2605</span>';
+      ? '<span class="mg-star-filled">★</span>'
+      : '<span class="mg-star-empty">★</span>';
   }
 
   // Build stats HTML
