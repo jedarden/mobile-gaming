@@ -18,7 +18,7 @@ import { createLevelNav } from '../../shared/level-nav.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
-import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge, isGameDailyCompleted } from '../../shared/daily.js';
 import { generateLevel } from './generator.js';
 import { setupPuzzleVisibilityHandler } from '../../shared/lifecycle.js';
 import { set as storageSet, get as storageGet } from '../../shared/storage.js';
@@ -206,6 +206,8 @@ class ParkingEscapeGame {
       container,
       gameId: GAME_ID,
       totalLevels: this.levels.length,
+      hasDaily: true,
+      dailyCompleted: isGameDailyCompleted(GAME_ID),
       onLevelSelect: (index, restart) => {
         if (restart) {
           this.restartLevel();
@@ -213,6 +215,9 @@ class ParkingEscapeGame {
           this.startLevel(index);
           this.levelNav.setCurrentLevel(index);
         }
+      },
+      onDailySelect: () => {
+        window.location.search = '?daily=true';
       },
     });
     this.levelNav.strip.style.position = 'relative';
@@ -466,7 +471,13 @@ class ParkingEscapeGame {
     if (this.isDailyMode) completeDailyChallenge(GAME_ID);
 
     // Advance the level-select strip: mark this level complete, unlock + advance
-    if (this.levelNav) this.levelNav.completeLevel(this.currentLevelIndex);
+    if (this.levelNav) {
+      if (this.isDailyMode) {
+        this.levelNav.completeDaily();
+      } else {
+        this.levelNav.completeLevel(this.currentLevelIndex);
+      }
+    }
 
     const optimality = level.targetMoves
       ? Math.round(Math.min(100, (level.targetMoves / Math.max(1, moves)) * 100))
