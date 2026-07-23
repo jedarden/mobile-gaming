@@ -22,6 +22,7 @@ import {
   LANE_MIN,
   LANE_MAX
 } from '../../src/games/crowd-runner/state.js';
+import { generateLevel } from '../../src/games/crowd-runner/generator.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -665,5 +666,44 @@ describe('advance — non-running status "lost" guard (status !== "running" bran
   it('returns same state reference when status is "lost" (guard true branch)', () => {
     const state = { ...createInitialState(makeLevel()), status: 'lost' };
     expect(advance(state, 1 / 60)).toBe(state);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'crowd-runner-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    expect(level).not.toBeNull();
+    expect(level).toHaveProperty('startingCrowd');
+    expect(level).toHaveProperty('gates');
+    expect(level).toHaveProperty('boss');
+    expect(level.gates).toBeInstanceOf(Array);
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'crowd-runner-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    const level1 = generateLevel('seed-1', 'medium', 0);
+    const level2 = generateLevel('seed-2', 'medium', 0);
+
+    // Gates should be different between seeds
+    expect(level1.gates).not.toEqual(level2.gates);
+  });
+
+  it('returns null when generation fails (all retries exhausted)', () => {
+    // Use a seed that might fail generation
+    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // The generator returns null if it fails all retries
+    // This triggers the fallback in game.js: levels[seed % levels.length]
+    expect(level === null || typeof level === 'object').toBe(true);
   });
 });

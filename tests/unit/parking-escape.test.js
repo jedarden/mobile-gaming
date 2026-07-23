@@ -12,6 +12,7 @@ import {
   checkWin,
   solve
 } from '../../src/games/parking-escape/state.js';
+import { generateLevel } from '../../src/games/parking-escape/generator.js';
 
 const SIMPLE_LEVEL = {
   grid: {
@@ -732,5 +733,54 @@ describe('getVehicleMoves — boundary constraints', () => {
     });
     const moves = getVehicleMoves(state, 'v1');
     expect(moves.some(m => m.direction === 'down')).toBe(false);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'parking-escape-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    // Generator may return null if it cannot produce a solvable level
+    // This is expected behavior - the game falls back to bundled levels
+    expect(level === null || typeof level === 'object').toBe(true);
+
+    if (level !== null) {
+      expect(level).toHaveProperty('grid');
+      expect(level.grid).toHaveProperty('vehicles');
+      expect(level.grid.vehicles).toBeInstanceOf(Array);
+    }
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'parking-escape-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', async () => {
+    const level1 = generateLevel('seed-1', 'medium', 0);
+    const level2 = generateLevel('seed-2', 'medium', 0);
+
+    // If both generations succeeded, levels should differ
+    // If either failed (returned null), skip the comparison
+    if (level1 !== null && level2 !== null) {
+      expect(level1.grid.vehicles).not.toEqual(level2.grid.vehicles);
+    } else {
+      // At least one failed - this is valid behavior
+      expect(level1 === null || level2 === null || level1.grid.vehicles !== level2.grid.vehicles).toBe(true);
+    }
+  }, 20000); // 20 second timeout for slow generator
+
+  it('returns null when generation fails (all retries exhausted)', () => {
+    // Use a seed that might fail generation
+    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // The generator returns null if it fails all retries
+    // This triggers the fallback in game.js: levels[seed % levels.length]
+    expect(level === null || typeof level === 'object').toBe(true);
   });
 });

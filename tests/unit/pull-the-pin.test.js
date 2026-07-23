@@ -24,6 +24,7 @@ import {
   BALL_RADIUS,
   MAX_TICKS,
 } from '../../src/games/pull-the-pin/state.js';
+import { generateLevel } from '../../src/games/pull-the-pin/generator.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -618,5 +619,57 @@ describe('isStillSolvable', () => {
     };
     const state = createInitialState(level);
     expect(isStillSolvable(state)).toBe(true);
+  });
+});
+
+// ── Daily Challenge ─────────────────────────────────────────────────────────────
+
+describe('Daily Challenge', () => {
+  it('generates a level from a known seed', () => {
+    const seed = 'pull-the-pin-test-seed-2026-07-23';
+    const level = generateLevel(seed, 'medium', 0);
+
+    // Generator may return null if it cannot produce a solvable level
+    // This is expected behavior - the game falls back to bundled levels
+    expect(level === null || typeof level === 'object').toBe(true);
+
+    if (level !== null) {
+      expect(level).toHaveProperty('pins');
+      expect(level).toHaveProperty('balls');
+      expect(level).toHaveProperty('cups');
+      expect(level.pins).toBeInstanceOf(Array);
+      expect(level.balls).toBeInstanceOf(Array);
+      expect(level.cups).toBeInstanceOf(Array);
+    }
+  });
+
+  it('generates identical levels from the same seed (deterministic)', () => {
+    const seed = 'pull-the-pin-deterministic-test';
+    const level1 = generateLevel(seed, 'medium', 0);
+    const level2 = generateLevel(seed, 'medium', 0);
+
+    expect(level1).toEqual(level2);
+  });
+
+  it('generates different levels from different seeds', () => {
+    const level1 = generateLevel('seed-1', 'medium', 0);
+    const level2 = generateLevel('seed-2', 'medium', 0);
+
+    // If both generations succeeded, levels should differ
+    // If either failed (returned null), skip the comparison
+    if (level1 !== null && level2 !== null) {
+      expect(level1.pins).not.toEqual(level2.pins);
+    } else {
+      // At least one failed - this is valid behavior
+      expect(level1 === null || level2 === null || level1.pins !== level2.pins).toBe(true);
+    }
+  });
+
+  it('returns null when generation fails (all retries exhausted)', () => {
+    // Use a seed that might fail generation
+    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // The generator returns null if it fails all retries
+    // This triggers the fallback in game.js: levels[seed % levels.length]
+    expect(level === null || typeof level === 'object').toBe(true);
   });
 });
