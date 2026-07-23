@@ -29,7 +29,12 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const GAME_ID   = 'jelly-shift';
 const LEVELS_URL = './levels.json';
@@ -56,6 +61,10 @@ class JellyShiftGame {
     // Game state
     this.levels = [];
     this.currentLevelIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
+    this.dailySeed = null;
     this.state = null;
     this.renderer = null;
     this.input = null;
@@ -68,6 +77,10 @@ class JellyShiftGame {
 
     // Swipe navigation cleanup
     this.cleanupSwipeNav = null;
+
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
   }
 
   /**
@@ -77,6 +90,9 @@ class JellyShiftGame {
     try {
       await initStorage();
       initAccessibility();
+
+      // Gate synthesized SFX on the persisted sound setting
+      setSoundEnabled(getSettings().soundEnabled);
 
       await this.loadLevels();
 
@@ -106,6 +122,14 @@ class JellyShiftGame {
       const savedState = getSavedGameState(GAME_ID);
       if (savedState) {
         this.restoreStateFromSwipeNav(savedState);
+      }
+
+      // Daily challenge mode (?daily=true) — build today's seeded level.
+      const urlParams = new URLSearchParams(window.location.search);
+      this.isDailyMode = urlParams.get('daily') === 'true';
+      if (this.isDailyMode) {
+        this.dailySeed = getGameDailySeed(GAME_ID);
+        this.generateDailyLevel();
       }
 
       this.startLevel(this.currentLevelIndex);
@@ -155,6 +179,24 @@ class JellyShiftGame {
   }
 
   /**
+   * Build today's daily-challenge level from the seeded generator and make it
+   * the only level (currentLevelIndex reset to 0).
+   */
+  generateDailyLevel() {
+    const level = generateLevel(this.dailySeed);
+    if (level) {
+      this.levels = [level];
+      this.currentLevelIndex = 0;
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      const idx = getGameDailyNumericSeed(GAME_ID) % this.levels.length;
+      this.levels = [this.levels[idx]];
+      this.currentLevelIndex = 0;
+    }
+  }
+
+  /**
    * Save progress
    */
   async saveProgress() {
@@ -189,6 +231,7 @@ class JellyShiftGame {
 
     document.getElementById('setting-sound').addEventListener('change', (e) => {
       updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
     });
 
     document.getElementById('setting-haptic').addEventListener('change', (e) => {
@@ -223,10 +266,40 @@ class JellyShiftGame {
     }
     this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
 
+    this.initRetryOverlay(index);
+
     this.handleResize();
     this.updateUI();
 
     announce(`Level ${index + 1} started. Drag up and down to reshape the jelly blob!`);
+  }
+
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => this.restartLevel(),
+      onShare: (stats) => {
+        quickShare({
+          title: 'Jelly Shift',
+          text: generateShareText({
+            gameName: 'Jelly Shift',
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
   }
 
   /**
@@ -262,6 +335,8 @@ class JellyShiftGame {
             : wall.hole.shape === 'wide' ? 0xff6b6b : 0xffd93d;
           this.renderer.triggerSquish();
           haptic('tap');
+          // Wall-pass SFX (gated by the shared soundEnabled setting)
+          playSound('bounce');
           this.renderer.spawnParticles(
             { x: 0, y: 0, z: wall.z },
             holeColor
@@ -270,6 +345,8 @@ class JellyShiftGame {
           this.state = failWall(this.state);
           this.renderer.triggerSplat();
           haptic('fail');
+          // Wall-fail SFX (gated by the shared soundEnabled setting)
+          playSound('fail');
         }
       }
 
@@ -297,6 +374,8 @@ class JellyShiftGame {
    */
   handleReshape(widthDelta) {
     if (!this.state || isGameOver(this.state)) return;
+    // First reshape gesture unlocks the AudioContext for SFX
+    resumeAudio();
     this.state = reshape(this.state, widthDelta);
   }
 
@@ -323,16 +402,19 @@ class JellyShiftGame {
           finalScore: this.state.score
         });
 
+        if (this.isDailyMode) completeDailyChallenge(GAME_ID);
+
         await this.saveProgress();
 
         haptic('win');
-        this.showWinOverlay(stars);
+        this.lastStars = stars;
+        this.retryOverlay.show(ResultType.WIN, { stars });
         announce(`Level Complete! ${stars} stars! Score: ${this.state.score}`);
       }, 500);
     } else {
       setTimeout(() => {
         recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
-        this.showLoseOverlay();
+        this.retryOverlay.show(ResultType.LOSS, {});
         announce(`Splat! You hit wall ${this.state.wallsPassed + 1}. Score: ${this.state.score}`);
       }, 1000);
     }
@@ -383,7 +465,9 @@ class JellyShiftGame {
 
     this.scoreDisplay.textContent = this.state.score;
     this.speedDisplay.textContent = this.state.speed.toFixed(1);
-    this.levelProgress.textContent = `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
+    this.levelProgress.textContent = this.isDailyMode
+      ? 'Daily Challenge'
+      : `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
 
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;

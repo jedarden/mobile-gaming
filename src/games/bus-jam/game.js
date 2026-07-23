@@ -16,6 +16,8 @@ import { isColorBlindEnabled } from '../../shared/color-blind.js';
 import { getGameDailySeed, completeDailyChallenge } from '../../shared/daily.js';
 import { shareDailyResult } from '../../shared/daily-share.js';
 import { createRNG } from '../../shared/rng.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
 
 import {
   createInitialState,
@@ -84,6 +86,10 @@ class BusJamGame {
     this.isDailyMode = false;
     this.dailySeed = null;
 
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
+
     // Bind methods
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -122,6 +128,10 @@ class BusJamGame {
       this.state = createInitialState(level);
       this.history.clear();
       this.history.push(cloneState(this.state));
+
+      // Create the shared retry overlay for the initial level (init() does
+      // not route through startLevel())
+      this.initRetryOverlay(this.currentLevelIndex);
 
       // Create renderer with state
       this.renderer = createRenderer(this.canvas);
@@ -530,10 +540,48 @@ class BusJamGame {
     // Save progress
     await this.saveProgress();
 
-    // Show win overlay
-    this.showWinOverlay(stars);
+    // Show win overlay via shared universal retry overlay
+    this.lastStars = stars;
+    const moves = this.state.moves;
+    const optimality = level.optimal
+      ? Math.round(Math.min(100, (level.optimal / Math.max(1, moves)) * 100))
+      : undefined;
+    const time = this.levelStartTime
+      ? Math.round((Date.now() - this.levelStartTime) / 1000)
+      : undefined;
+    this.retryOverlay.show(ResultType.WIN, { moves, time, optimality, stars });
 
     announce(`Level complete! ${this.state.moves} moves. ${stars} stars!`);
+  }
+
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => this.restartLevel(),
+      onShare: (stats) => {
+        quickShare({
+          title: 'Bus Jam',
+          text: generateShareText({
+            gameName: 'Bus Jam',
+            moves: stats.moves,
+            time: stats.time,
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
   }
 
   /**
@@ -602,6 +650,9 @@ class BusJamGame {
     this.selectedBus = null;
     this.pathPreview = null;
     this.animating = false;
+
+    // (Re)create the shared retry overlay scoped to this level
+    this.initRetryOverlay(index);
 
     // Resize and render
     this.handleResize();

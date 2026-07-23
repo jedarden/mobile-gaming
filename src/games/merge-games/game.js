@@ -6,11 +6,16 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { createHintSession, getHintTokens } from '../../shared/hints.js';
 import { createInitialState, applyMerge } from './state.js';
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const GAME_ID = 'merge-games';
 const LEVELS_URL = './levels.json';
@@ -32,16 +37,28 @@ class MergeGame {
 
     this.levels = [];
     this.currentLevelIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
+    this.dailySeed = null;
     this.state = null;
     this.renderer = null;
     this.input = null;
     this.hintSession = null;
+
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
+
     this.handleResize = this.handleResize.bind(this);
   }
 
   async init() {
     await initStorage();
     initAccessibility();
+
+    // Gate synthesized SFX on the persisted sound setting
+    setSoundEnabled(getSettings().soundEnabled);
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
 
@@ -58,9 +75,35 @@ class MergeGame {
     const stats = getGameStats(GAME_ID);
     this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
 
+    // Daily challenge mode (?daily=true) — build today's seeded level.
+    const urlParams = new URLSearchParams(window.location.search);
+    this.isDailyMode = urlParams.get('daily') === 'true';
+    if (this.isDailyMode) {
+      this.dailySeed = getGameDailySeed(GAME_ID);
+      this.generateDailyLevel();
+    }
+
     window.addEventListener('resize', this.handleResize);
     this.setupButtons();
     this.startLevel(this.currentLevelIndex);
+  }
+
+  /**
+   * Build today's daily-challenge level from the seeded generator and make it
+   * the only level (currentLevelIndex reset to 0).
+   */
+  generateDailyLevel() {
+    const level = generateLevel(this.dailySeed);
+    if (level) {
+      this.levels = [level];
+      this.currentLevelIndex = 0;
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      const idx = getGameDailyNumericSeed(GAME_ID) % this.levels.length;
+      this.levels = [this.levels[idx]];
+      this.currentLevelIndex = 0;
+    }
   }
 
   setupButtons() {
@@ -87,8 +130,10 @@ class MergeGame {
       this.settingsOverlay.classList.remove('active');
       this.settingsOverlay.setAttribute('aria-hidden', 'true');
     });
-    document.getElementById('setting-sound').addEventListener('change', e =>
-      updateSettings({ soundEnabled: e.target.checked }));
+    document.getElementById('setting-sound').addEventListener('change', e => {
+      updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
+    });
     document.getElementById('setting-motion').addEventListener('change', e => {
       updateSettings({ reducedMotion: e.target.checked });
       this.renderer.setReducedMotion(e.target.checked);
@@ -125,11 +170,45 @@ class MergeGame {
       onTokensEmpty: () => { this.updateHintButton(); },
     });
     this.updateHintButton();
+    this.initRetryOverlay(index);
 
     this.handleResize();
     this.updateUI();
     this.render();
     announce(`Level ${index + 1}. Merge tiles to reach Tier ${level.task.targetTier}.`);
+  }
+
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => {
+        this.restartLevel();
+        if (this.hintSession) this.hintSession.showHint();
+        this.updateHintButton?.();
+      },
+      onShare: (stats) => {
+        quickShare({
+          title: 'Merge Games',
+          text: generateShareText({
+            gameName: 'Merge Games',
+            moves: stats.moves,
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
   }
 
   updateHintButton() {
@@ -163,6 +242,9 @@ class MergeGame {
     }
     this.render();
     haptic('merge');
+    // Merge SFX (gated by the shared soundEnabled setting)
+    resumeAudio();
+    playSound('collect');
     if (this.state.status === 'won') {
       haptic('win');
       setTimeout(() => this.handleWin(), 250);
@@ -174,14 +256,15 @@ class MergeGame {
     const moves = this.state.moves;
     const level = this.levels[this.currentLevelIndex];
     const stars = moves <= 5 ? 3 : moves <= 10 ? 2 : 1;
+    this.lastStars = stars;
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars });
     await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, moves });
+    if (this.isDailyMode) completeDailyChallenge(GAME_ID);
     document.getElementById('stars-display').querySelectorAll('.star').forEach((el, i) => {
       el.classList.toggle('filled', i < stars);
     });
     document.getElementById('stats-summary').textContent = `Reached Tier ${level.task.targetTier} in ${moves} merge${moves !== 1 ? 's' : ''}!`;
-    this.winOverlay.classList.add('active');
-    this.winOverlay.setAttribute('aria-hidden', 'false');
+    this.retryOverlay.show(ResultType.WIN, { moves, stars });
     announce(`Level complete! Reached Tier ${level.task.targetTier} in ${moves} merge${moves !== 1 ? 's' : ''}. ${stars} star${stars !== 1 ? 's' : ''}!`);
   }
 
@@ -196,10 +279,12 @@ class MergeGame {
   updateUI() {
     if (!this.state) return;
     const level = this.levels[this.currentLevelIndex];
-    this.levelDisplay.textContent = this.currentLevelIndex + 1;
+    this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.movesDisplay.textContent = this.state.moves;
     this.goalDisplay.textContent = `T${level.task.targetTier}×${level.task.targetCount}`;
-    this.levelProgress.textContent = `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
+    this.levelProgress.textContent = this.isDailyMode
+      ? 'Daily Challenge'
+      : `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
     this.taskText.textContent = `Merge tiles to reach Tier ${level.task.targetTier}` +
       (level.task.targetCount > 1 ? ` × ${level.task.targetCount}` : '');
     this.btnPrev.disabled = this.currentLevelIndex === 0;

@@ -23,7 +23,12 @@ import { createRenderer } from './renderer.js';
 import { createInput }    from './input.js';
 import { createRng }      from '../../shared/rng.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const GAME_ID   = 'bridge-race';
 const LEVELS_URL = './levels.json';
@@ -46,10 +51,18 @@ class BridgeRaceGame {
 
     this.levels            = [];
     this.currentLevelIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
+    this.dailySeed = null;
     this.state             = null;
     this.renderer          = null;
     this.input             = null;
     this.rng               = createRng(42);
+
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars    = 0;
 
     this.pendingMove = { dx: 0, dz: 0 };
 
@@ -67,6 +80,9 @@ class BridgeRaceGame {
       await initStorage();
       initAccessibility();
 
+      // Gate synthesized SFX on the persisted sound setting
+      setSoundEnabled(getSettings().soundEnabled);
+
       await this.loadLevels();
 
       this.renderer = createRenderer(this.container);
@@ -82,6 +98,15 @@ class BridgeRaceGame {
       this.input.init();
 
       this.loadProgress();
+
+      // Daily challenge mode (?daily=true) — build today's seeded level.
+      const urlParams = new URLSearchParams(window.location.search);
+      this.isDailyMode = urlParams.get('daily') === 'true';
+      if (this.isDailyMode) {
+        this.dailySeed = getGameDailySeed(GAME_ID);
+        this.generateDailyLevel();
+      }
+
       this.setupEventListeners();
       this.startLevel(this.currentLevelIndex);
     } catch (err) {
@@ -122,6 +147,24 @@ class BridgeRaceGame {
     this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
   }
 
+  /**
+   * Build today's daily-challenge level from the seeded generator and make it
+   * the only level (currentLevelIndex reset to 0).
+   */
+  generateDailyLevel() {
+    const level = generateLevel(this.dailySeed);
+    if (level) {
+      this.levels = [level];
+      this.currentLevelIndex = 0;
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      const idx = getGameDailyNumericSeed(GAME_ID) % this.levels.length;
+      this.levels = [this.levels[idx]];
+      this.currentLevelIndex = 0;
+    }
+  }
+
   async saveProgress() {
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex });
   }
@@ -148,6 +191,7 @@ class BridgeRaceGame {
 
     document.getElementById('setting-sound').addEventListener('change', e => {
       updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
     });
     document.getElementById('setting-haptic').addEventListener('change', e => {
       updateSettings({ hapticEnabled: e.target.checked });
@@ -173,6 +217,8 @@ class BridgeRaceGame {
     this.pendingMove = { dx: 0, dz: 0 };
     this.rng         = createRng(index * 137 + 42);
 
+    this.initRetryOverlay(index);
+
     if (this.animId) cancelAnimationFrame(this.animId);
     this.animId = requestAnimationFrame(this.gameLoop);
 
@@ -181,6 +227,37 @@ class BridgeRaceGame {
     this.updateUI();
 
     announce(`Level ${index + 1}. Collect blue blocks and build bridges to the finish!`);
+  }
+
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      // Runners have no hint system — Hint-then-Retry just retries.
+      onHint: () => this.restartLevel(),
+      onShare: (stats) => {
+        quickShare({
+          title: 'Bridge Race',
+          text: generateShareText({
+            gameName: 'Bridge Race',
+            moves: stats.moves,
+            time: stats.time,
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
   }
 
   gameLoop(timestamp) {
@@ -228,7 +305,19 @@ class BridgeRaceGame {
     }
 
     // Proximity actions for all entities
+    const beforeBlocks = s.player.blocks;
+    const beforeBridges = s.player.bridgesCompleted;
     s = performProximityActions(s, 'player');
+    if (s.player.blocks > beforeBlocks) {
+      // Block-collect SFX (gated by the shared soundEnabled setting)
+      resumeAudio();
+      playSound('collect');
+    }
+    if (s.player.bridgesCompleted > beforeBridges) {
+      // Block-place / bridge-built SFX (gated by the shared soundEnabled setting)
+      resumeAudio();
+      playSound('slide');
+    }
     for (let i = 0; i < s.opponents.length; i++) {
       s = performProximityActions(s, i);
     }
@@ -255,15 +344,20 @@ class BridgeRaceGame {
         recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
+        if (this.isDailyMode) completeDailyChallenge(GAME_ID);
         await this.saveProgress();
         haptic('win');
-        this.showWinOverlay(stars);
+        this.lastStars = stars;
+        this.retryOverlay.show(ResultType.WIN, {
+          stars,
+          time: Math.round((Date.now() - (this.levelStartTime || Date.now())) / 1000),
+        });
         announce(`You won! ${stars} star${stars !== 1 ? 's' : ''}! All bridges completed!`);
       });
     } else {
       this.renderer.animateResult(false, () => {
         recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
-        this.showLoseOverlay();
+        this.retryOverlay.show(ResultType.LOSS, {});
         announce('An opponent reached the finish first! Try again!');
       });
     }
@@ -282,8 +376,10 @@ class BridgeRaceGame {
   updateUI() {
     if (!this.state) return;
     this.blockDisplay.textContent  = this.state.player.blocks;
-    this.levelDisplay.textContent  = this.currentLevelIndex + 1;
-    this.levelProgress.textContent = `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
+    this.levelDisplay.textContent  = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
+    this.levelProgress.textContent = this.isDailyMode
+      ? 'Daily Challenge'
+      : `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;
   }

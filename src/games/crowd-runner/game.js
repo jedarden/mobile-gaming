@@ -25,6 +25,8 @@ import { recordLevel } from '../../shared/adaptive.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { createSolveRecorder } from '../../shared/gameplay-share.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const GAME_ID   = 'crowd-runner';
 const LEVELS_URL = './levels.json';
@@ -47,6 +49,10 @@ class CrowdRunnerGame {
 
     this.levels           = [];
     this.currentLevelIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
+    this.dailySeed = null;
     this.state            = null;
     this.renderer         = null;
     this.input            = null;
@@ -85,6 +91,15 @@ class CrowdRunnerGame {
       this.input.init();
 
       this.loadProgress();
+
+      // Daily challenge mode (?daily=true) — build today's seeded level.
+      const urlParams = new URLSearchParams(window.location.search);
+      this.isDailyMode = urlParams.get('daily') === 'true';
+      if (this.isDailyMode) {
+        this.dailySeed = getGameDailySeed(GAME_ID);
+        this.generateDailyLevel();
+      }
+
       this.setupEventListeners();
       this.startLevel(this.currentLevelIndex);
 
@@ -136,6 +151,24 @@ class CrowdRunnerGame {
   loadProgress() {
     const stats = getGameStats(GAME_ID);
     this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
+  }
+
+  /**
+   * Build today's daily-challenge level from the seeded generator and make it
+   * the only level (currentLevelIndex reset to 0).
+   */
+  generateDailyLevel() {
+    const level = generateLevel(this.dailySeed);
+    if (level) {
+      this.levels = [level];
+      this.currentLevelIndex = 0;
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      const idx = getGameDailyNumericSeed(GAME_ID) % this.levels.length;
+      this.levels = [this.levels[idx]];
+      this.currentLevelIndex = 0;
+    }
   }
 
   async saveProgress() {
@@ -289,6 +322,7 @@ class CrowdRunnerGame {
         recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: true });
         await updateGameStats(GAME_ID, { played: 1, completed: 1, stars });
         await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex });
+        if (this.isDailyMode) completeDailyChallenge(GAME_ID);
         await this.saveProgress();
         haptic('win');
         this.lastStars = stars;
@@ -317,8 +351,10 @@ class CrowdRunnerGame {
   updateUI() {
     if (!this.state) return;
     this.crowdDisplay.textContent = this.state.crowdSize;
-    this.levelDisplay.textContent = this.currentLevelIndex + 1;
-    this.levelProgress.textContent = `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
+    this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
+    this.levelProgress.textContent = this.isDailyMode
+      ? 'Daily Challenge'
+      : `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;
   }

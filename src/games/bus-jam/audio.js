@@ -35,8 +35,12 @@ class BusJamAudio {
    * Resume audio context if suspended
    */
   async resume() {
-    if (this.context && this.context.state === 'suspended') {
-      await this.context.resume();
+    try {
+      if (this.context && this.context.state === 'suspended') {
+        await this.context.resume();
+      }
+    } catch (_e) {
+      // Audio resume failed (blocked by browser, etc.)
     }
   }
 

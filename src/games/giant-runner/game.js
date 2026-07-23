@@ -30,7 +30,10 @@ import {
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
 
 // Game constants
 const GAME_ID = 'giant-runner';
@@ -72,6 +75,10 @@ class GiantRunnerGame {
     this.isDailyMode = false;
     this.dailySeed = null;
 
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
+
     // Bind methods
     this.gameLoop = this.gameLoop.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -85,6 +92,9 @@ class GiantRunnerGame {
       // Initialize storage and accessibility
       await initStorage();
       initAccessibility();
+
+      // Gate synthesized SFX on the persisted sound setting
+      setSoundEnabled(getSettings().soundEnabled);
 
       // Load levels
       await this.loadLevels();
@@ -215,6 +225,7 @@ class GiantRunnerGame {
     // Settings checkboxes
     document.getElementById('setting-sound').addEventListener('change', (e) => {
       updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
     });
 
     document.getElementById('setting-haptic').addEventListener('change', (e) => {
@@ -241,6 +252,9 @@ class GiantRunnerGame {
     // Create initial state
     this.state = createInitialState(level);
 
+    // (Re)create shared win/loss retry overlay for this level
+    this.initRetryOverlay(index);
+
     // Reset game loop
     this.lastTime = 0;
     this.accumulator = 0;
@@ -258,6 +272,34 @@ class GiantRunnerGame {
 
     // Announce for screen readers
     announce(`Level ${index + 1} started. Collect ${level.playerColor} orbs to grow and defeat the boss!`);
+  }
+
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => this.restartLevel(),
+      onShare: (stats) => {
+        quickShare({
+          title: 'Giant Runner',
+          text: generateShareText({
+            gameName: 'Giant Runner',
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
   }
 
   /**
@@ -285,12 +327,16 @@ class GiantRunnerGame {
       for (const idx of collectibleCollisions) {
         this.state = collect(this.state, idx);
         haptic('collect');
+        // Collect SFX (gated by the shared soundEnabled setting)
+        playSound('collect');
       }
 
       // Check obstacle collisions
       const obstacleCollisions = checkObstacleCollisions(this.state);
       for (const idx of obstacleCollisions) {
         this.state = hitObstacle(this.state, idx);
+        // Hit SFX (gated by the shared soundEnabled setting)
+        playSound('pop');
       }
 
       this.accumulator -= FIXED_DT;
@@ -319,6 +365,8 @@ class GiantRunnerGame {
    */
   handleSteer(xDelta) {
     if (!this.state || isGameOver(this.state)) return;
+    // First steer gesture unlocks the AudioContext for SFX
+    resumeAudio();
     this.state = steer(this.state, xDelta);
   }
 
@@ -350,14 +398,15 @@ class GiantRunnerGame {
 
         // Show win overlay
         haptic('win');
-        this.showWinOverlay(stars);
+        this.lastStars = stars;
+        this.retryOverlay.show(ResultType.WIN, { stars });
         announce(`Victory! You defeated the boss! ${stars} stars!`);
       });
     } else {
       // Animate loss
       this.renderer.animateBossFight(false, () => {
         recordLevel(GAME_ID, { retryCount: this.levelRetries || 0, solveTime: Date.now() - (this.levelStartTime || Date.now()) }, { won: false });
-        this.showLoseOverlay();
+        this.retryOverlay.show(ResultType.LOSS, {});
         announce('Defeat! The boss was too powerful. Try again!');
       });
     }

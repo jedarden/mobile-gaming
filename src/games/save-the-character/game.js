@@ -9,10 +9,11 @@
  * - Integration with shared systems
  */
 
-import { initStorage, getGameStats, updateGameStats } from '../../shared/storage.js';
+import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats } from '../../shared/storage.js';
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
 
 import {
@@ -30,6 +31,7 @@ import {
 
 import { createRenderer } from './renderer.js';
 import { createInput } from './input.js';
+import { getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
 
 // Game constants
 const GAME_ID = 'save-the-character';
@@ -48,6 +50,9 @@ class SaveTheCharacterGame {
     // Game state
     this.levels = [];
     this.currentLevelIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
     this.state = null;
     this.renderer = null;
     this.input = null;
@@ -80,11 +85,23 @@ class SaveTheCharacterGame {
       await initStorage();
       initAccessibility();
 
+      // Gate synthesized SFX on the persisted sound setting
+      setSoundEnabled(getSettings().soundEnabled);
+      this.syncSoundIcon();
+
       // Load levels
       await this.loadLevels();
 
       // Create initial state BEFORE renderer (needed for Phaser scene init)
       this.loadProgress();
+
+      // Daily challenge mode (?daily=true). Save the Character has no procedural
+      // generator, so the plan's fallback applies:
+      // levelIndex = seed % levels.length.
+      const urlParams = new URLSearchParams(window.location.search);
+      this.isDailyMode = urlParams.get('daily') === 'true';
+      if (this.isDailyMode) this.generateDailyLevel();
+
       const level = this.levels[this.currentLevelIndex];
       this.state = createInitialState(level);
 
@@ -160,6 +177,17 @@ class SaveTheCharacterGame {
   }
 
   /**
+   * Select today's daily scenario deterministically. Save the Character has no
+   * procedural generator, so the plan's fallback applies:
+   * levelIndex = seed % levels.length.
+   */
+  generateDailyLevel() {
+    if (!this.levels.length) return;
+    const seed = getGameDailyNumericSeed(GAME_ID);
+    this.currentLevelIndex = seed % this.levels.length;
+  }
+
+  /**
    * Save progress
    */
   async saveProgress() {
@@ -173,6 +201,33 @@ class SaveTheCharacterGame {
    */
   setupEventListeners() {
     window.addEventListener('resize', this.handleResize);
+
+    const btnSound = document.getElementById('btn-sound');
+    if (btnSound) {
+      btnSound.addEventListener('click', () => this.toggleSound());
+    }
+  }
+
+  /**
+   * Toggle sound on/off and persist the setting
+   */
+  toggleSound() {
+    const enabled = !getSettings().soundEnabled;
+    updateSettings({ soundEnabled: enabled });
+    setSoundEnabled(enabled);
+    this.syncSoundIcon();
+  }
+
+  /**
+   * Reflect the persisted sound setting in the header toggle icon
+   */
+  syncSoundIcon() {
+    const btnSound = document.getElementById('btn-sound');
+    if (!btnSound) return;
+    const enabled = getSettings().soundEnabled;
+    btnSound.innerHTML = enabled
+      ? '<span aria-hidden="true">🔊</span>'
+      : '<span aria-hidden="true">🔇</span>';
   }
 
   /**
@@ -218,6 +273,10 @@ class SaveTheCharacterGame {
 
     // Select the choice
     this.state = selectChoice(this.state, choice.id);
+
+    // Choice-tap SFX (gated by the shared soundEnabled setting)
+    resumeAudio();
+    playSound('tap');
 
     // Press feedback
     if (this.renderer.setPressedChoice) this.renderer.setPressedChoice(choiceIndex);
@@ -288,6 +347,9 @@ class SaveTheCharacterGame {
 
     // Award XP
     await awardLevelComplete(GAME_ID, 1, { scenario: this.currentLevelIndex + 1 });
+
+    // Mark today's daily challenge complete (once per daily-mode win)
+    if (this.isDailyMode) completeDailyChallenge(GAME_ID);
 
     // Save progress
     await this.saveProgress();

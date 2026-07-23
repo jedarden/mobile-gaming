@@ -18,6 +18,8 @@ import { createLevelNav } from '../../shared/level-nav.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const GAME_ID = 'parking-escape';
 const LEVELS_URL = './levels.json';
@@ -41,6 +43,11 @@ class ParkingEscapeGame {
     this.levels = [];
     this.currentLevelIndex = 0;
     this.state = null;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
+    this.dailySeed = null;
+
     this.history = [];  // stack of states for undo
     this.hintSession = null;
     this.renderer = null;
@@ -67,6 +74,15 @@ class ParkingEscapeGame {
 
     // A shared puzzle link (#s=...) takes precedence over saved progress.
     const shared = this.readSharedState();
+
+    // Daily challenge mode (?daily=true) — build today's seeded level. A shared
+    // puzzle link takes precedence over the daily challenge.
+    const urlParams = new URLSearchParams(window.location.search);
+    this.isDailyMode = !shared && urlParams.get('daily') === 'true';
+    if (this.isDailyMode) {
+      this.dailySeed = getGameDailySeed(GAME_ID);
+      this.generateDailyLevel();
+    }
 
     // Initialize state before renderer (needed for Phaser scene init)
     const stats = getGameStats(GAME_ID);
@@ -104,6 +120,21 @@ class ParkingEscapeGame {
 
     // Initialize input after renderer is ready
     this.input.init();
+  }
+
+  /**
+   * Build today's daily-challenge level from the seeded generator and make it
+   * the only level (currentLevelIndex stays 0).
+   */
+  generateDailyLevel() {
+    const level = generateLevel(this.dailySeed);
+    if (level) {
+      this.levels = [level];
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      this.levels = [this.levels[getGameDailyNumericSeed(GAME_ID) % this.levels.length]];
+    }
   }
 
   setupButtons() {
@@ -420,6 +451,9 @@ class ParkingEscapeGame {
     });
     await awardLevelComplete(GAME_ID, stars, { levelId: this.currentLevelIndex, moves });
 
+    // Mark today's daily challenge complete (once per daily-mode win)
+    if (this.isDailyMode) completeDailyChallenge(GAME_ID);
+
     // Advance the level-select strip: mark this level complete, unlock + advance
     if (this.levelNav) this.levelNav.completeLevel(this.currentLevelIndex);
 
@@ -448,11 +482,13 @@ class ParkingEscapeGame {
 
   updateUI() {
     if (!this.state) return;
-    this.levelDisplay.textContent = this.currentLevelIndex + 1;
+    this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.movesDisplay.textContent = this.state.moves;
     const level = this.levels[this.currentLevelIndex];
     this.bestDisplay.textContent = level.targetMoves || '-';
-    this.levelProgress.textContent = `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
+    this.levelProgress.textContent = this.isDailyMode
+      ? 'Daily Challenge'
+      : `Level ${this.currentLevelIndex + 1} / ${this.levels.length}`;
     this.btnUndo.disabled = this.history.length === 0;
     this.btnPrev.disabled = this.currentLevelIndex === 0;
     this.btnNext.disabled = this.currentLevelIndex >= this.levels.length - 1;

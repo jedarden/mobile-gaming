@@ -17,6 +17,13 @@ import { generateLevel as generateWaterSortLevel } from '../src/games/water-sort
 import { solve as solveWaterSort, createInitialState as createWaterSortState, pour as pourWaterSort, checkWin as checkWaterSortWin } from '../src/games/water-sort/state.js';
 import { generateBatch as generateParkingBatch } from '../src/games/parking-escape/generator.js';
 import { solve as solveParking, createInitialState as createParkingState, applyMove as applyParkingMove, checkWin as checkParkingWin } from '../src/games/parking-escape/state.js';
+import { generateBatch as generateCrowdRunnerBatch, calculatePlayabilityMetrics as calculateCrowdMetrics, rankLevels as rankCrowdLevels, curateBestLevels as curateCrowdLevels } from '../src/games/crowd-runner/generator.js';
+import { evaluateAllPaths as evaluateCrowdPaths } from '../src/games/crowd-runner/state.js';
+import { generateBatch as generateGiantRunnerBatch, calculatePlayabilityMetrics as calculateGiantMetrics, rankLevels as rankGiantLevels, curateBestLevels as curateGiantLevels } from '../src/games/giant-runner/generator.js';
+import { generateBatch as generateBridgeRaceBatch, calculatePlayabilityMetrics as calculateBridgeMetrics, rankLevels as rankBridgeLevels, curateBestLevels as curateBridgeLevels } from '../src/games/bridge-race/generator.js';
+import { generateBatch as generateJellyShiftBatch, calculatePlayabilityMetrics as calculateJellyMetrics, rankLevels as rankJellyLevels, curateBestLevels as curateJellyLevels } from '../src/games/jelly-shift/generator.js';
+import { generateBatch as generateMakeoverRunBatch, calculatePlayabilityMetrics as calculateMakeoverMetrics, rankLevels as rankMakeoverLevels, curateBestLevels as curateMakeoverLevels } from '../src/games/makeover-run/generator.js';
+import { simulatePath as simulateMakeoverPath, optimalPath as optimalMakeoverPath } from '../src/games/makeover-run/state.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -331,6 +338,171 @@ function generateAndRankParkingEscape() {
   console.log(`    Selected top ${selected.length} levels across all tiers (moves: ${selected[0]?.optimalMoves}-${selected[selected.length-1]?.optimalMoves}, diversity: ${selected[0]?.diversity}-${selected[selected.length-1]?.diversity})`);
 
   return selected.map(c => c.level);
+}
+
+/**
+ * Generate and rank levels for Crowd Runner.
+ * Pipeline: generate 200 per tier → rank by playability metrics → pick top 30
+ */
+function generateAndRankCrowdRunner() {
+  console.log('\n── Crowd Runner: Generate-Rank-Curate Pipeline ──');
+
+  const tiers = [
+    { name: 'easy', difficulty: 'easy', count: 200 },
+    { name: 'medium', difficulty: 'medium', count: 200 },
+    { name: 'hard', difficulty: 'hard', count: 200 }
+  ];
+
+  const allCandidates = [];
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels...`);
+    const levels = generateCrowdRunnerBatch(5000, tier.difficulty, tier.count);
+    console.log(`    Generated ${levels.length} valid ${tier.name} levels`);
+    allCandidates.push(...levels);
+  }
+
+  // Rank all candidates by playability metrics
+  console.log('  Ranking levels by playability metrics...');
+  const ranked = rankCrowdLevels(allCandidates);
+
+  // Pick top 30
+  const selected = curateCrowdLevels(ranked, 30);
+  console.log(`    Selected top ${selected.length} levels (scores: ${selected[0]?.metrics?.overall}-${selected[selected.length-1]?.metrics?.overall})`);
+
+  return selected;
+}
+
+/**
+ * Generate and rank levels for Giant Runner.
+ * Pipeline: generate 200 per tier → rank by playability metrics → pick top 30
+ */
+function generateAndRankGiantRunner() {
+  console.log('\n── Giant Runner: Generate-Rank-Curate Pipeline ──');
+
+  const tiers = [
+    { name: 'easy', difficulty: 'easy', count: 200 },
+    { name: 'medium', difficulty: 'medium', count: 200 },
+    { name: 'hard', difficulty: 'hard', count: 200 }
+  ];
+
+  const allCandidates = [];
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels...`);
+    const levels = generateGiantRunnerBatch(5000, tier.difficulty, tier.count);
+    console.log(`    Generated ${levels.length} valid ${tier.name} levels`);
+    allCandidates.push(...levels);
+  }
+
+  // Rank all candidates by playability metrics
+  console.log('  Ranking levels by playability metrics...');
+  const ranked = rankGiantLevels(allCandidates);
+
+  // Pick top 30
+  const selected = curateGiantLevels(ranked, 30);
+  console.log(`    Selected top ${selected.length} levels (scores: ${selected[0]?.metrics?.overall}-${selected[selected.length-1]?.metrics?.overall})`);
+
+  return selected;
+}
+
+/**
+ * Generate and rank levels for Bridge Race.
+ * Pipeline: generate 200 per tier → rank by playability metrics → pick top 30
+ */
+function generateAndRankBridgeRace() {
+  console.log('\n── Bridge Race: Generate-Rank-Curate Pipeline ──');
+
+  const tiers = [
+    { name: 'easy', difficulty: 'easy', count: 200 },
+    { name: 'medium', difficulty: 'medium', count: 200 },
+    { name: 'hard', difficulty: 'hard', count: 200 }
+  ];
+
+  const allCandidates = [];
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels...`);
+    const levels = generateBridgeRaceBatch(5000, tier.difficulty, tier.count);
+    console.log(`    Generated ${levels.length} valid ${tier.name} levels`);
+    allCandidates.push(...levels);
+  }
+
+  // Rank all candidates by playability metrics
+  console.log('  Ranking levels by playability metrics...');
+  const ranked = rankBridgeLevels(allCandidates);
+
+  // Pick top 30
+  const selected = curateBridgeLevels(ranked, 30);
+  console.log(`    Selected top ${selected.length} levels (scores: ${selected[0]?.metrics?.overall}-${selected[selected.length-1]?.metrics?.overall})`);
+
+  return selected;
+}
+
+/**
+ * Generate and rank levels for Jelly Shift.
+ * Pipeline: generate 200 per tier → rank by playability metrics → pick top 30
+ */
+function generateAndRankJellyShift() {
+  console.log('\n── Jelly Shift: Generate-Rank-Curate Pipeline ──');
+
+  const tiers = [
+    { name: 'easy', difficulty: 'easy', count: 200 },
+    { name: 'medium', difficulty: 'medium', count: 200 },
+    { name: 'hard', difficulty: 'hard', count: 200 }
+  ];
+
+  const allCandidates = [];
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels...`);
+    const levels = generateJellyShiftBatch(5000, tier.difficulty, tier.count);
+    console.log(`    Generated ${levels.length} valid ${tier.name} levels`);
+    allCandidates.push(...levels);
+  }
+
+  // Rank all candidates by playability metrics
+  console.log('  Ranking levels by playability metrics...');
+  const ranked = rankJellyLevels(allCandidates);
+
+  // Pick top 30
+  const selected = curateJellyLevels(ranked, 30);
+  console.log(`    Selected top ${selected.length} levels (scores: ${selected[0]?.metrics?.overall}-${selected[selected.length-1]?.metrics?.overall})`);
+
+  return selected;
+}
+
+/**
+ * Generate and rank levels for Makeover Run.
+ * Pipeline: generate 200 per tier → rank by playability metrics → pick top 30
+ */
+function generateAndRankMakeoverRun() {
+  console.log('\n── Makeover Run: Generate-Rank-Curate Pipeline ──');
+
+  const tiers = [
+    { name: 'easy', difficulty: 'easy', count: 200 },
+    { name: 'medium', difficulty: 'medium', count: 200 },
+    { name: 'hard', difficulty: 'hard', count: 200 }
+  ];
+
+  const allCandidates = [];
+
+  for (const tier of tiers) {
+    console.log(`  Generating ${tier.count} ${tier.name} levels...`);
+    const levels = generateMakeoverRunBatch(5000, tier.difficulty, tier.count);
+    console.log(`    Generated ${levels.length} valid ${tier.name} levels`);
+    allCandidates.push(...levels);
+  }
+
+  // Rank all candidates by playability metrics
+  console.log('  Ranking levels by playability metrics...');
+  const ranked = rankMakeoverLevels(allCandidates);
+
+  // Pick top 30
+  const selected = curateMakeoverLevels(ranked, 30);
+  console.log(`    Selected top ${selected.length} levels (scores: ${selected[0]?.metrics?.overall}-${selected[selected.length-1]?.metrics?.overall})`);
+
+  return selected;
 }
 
 /**
@@ -728,10 +900,34 @@ const ptpLevels = [...readLevels('pull-the-pin'), ...ptpNewLevels];
 commitLevels('pull-the-pin', ptpLevels);
 
 // ─── CROWD RUNNER ─────────────────────────────────────────────────────────────
-// Current: 12 levels. Target: 20. Adding 8 hard levels.
+// Generate-Rank-Curate Pipeline: generate 200 per tier, rank by playability, pick top 30
 
-const crNewLevels = [
-  {
+const crLevels = generateAndRankCrowdRunner();
+commitLevels('crowd-runner', crLevels);
+
+// ─── GIANT RUNNER ─────────────────────────────────────────────────────────────
+// Generate-Rank-Curate Pipeline: generate 200 per tier, rank by playability, pick top 30
+
+const grLevels = generateAndRankGiantRunner();
+commitLevels('giant-runner', grLevels);
+
+// ─── JELLY SHIFT ─────────────────────────────────────────────────────────────
+// Generate-Rank-Curate Pipeline: generate 200 per tier, rank by playability, pick top 30
+
+const jsLevels = generateAndRankJellyShift();
+commitLevels('jelly-shift', jsLevels);
+
+// ─── MAKEOVER RUN ────────────────────────────────────────────────────────────
+// Generate-Rank-Curate Pipeline: generate 200 per tier, rank by playability, pick top 30
+
+const mrLevels = generateAndRankMakeoverRun();
+commitLevels('makeover-run', mrLevels);
+
+// ─── BRIDGE RACE ─────────────────────────────────────────────────────────────
+// Generate-Rank-Curate Pipeline: generate 200 per tier, rank by playability, pick top 30
+
+const brLevels = generateAndRankBridgeRace();
+commitLevels('bridge-race', brLevels);
     "id": "cr-013",
     "startingCrowd": 10,
     "courseLength": 950,

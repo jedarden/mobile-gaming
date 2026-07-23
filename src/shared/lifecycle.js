@@ -6,6 +6,7 @@
  */
 
 import { suspendAudio, resumeAudio } from './audio.js';
+import { set as storageSet } from './storage.js';
 
 // State tracking
 let currentState = 'loading';
@@ -16,6 +17,10 @@ let errorOverlay = null;
 let canvasContainer = null;
 let gameStateSaveCallback = null;
 let gameStateRestoreCallback = null;
+let onPauseCallback = null;
+let onResumeCallback = null;
+// Whether to install the global window error/unhandledrejection boundary on ready()
+let installErrorBoundary = true;
 
 /**
  * Initialize lifecycle system
@@ -25,35 +30,52 @@ let gameStateRestoreCallback = null;
  * @param {HTMLElement} options.container - Container element for overlays
  * @param {Function} options.onSave - Callback to save game state
  * @param {Function} options.onRestore - Callback to restore game state
+ * @param {Function} options.onPause - Callback to freeze the game's own RAF/scene loop
+ * @param {Function} options.onResume - Callback to restart the game's own RAF/scene loop
+ * @param {boolean} [options.loadingOverlay=true] - Create the loading overlay
+ * @param {boolean} [options.errorBoundary=true] - Install the global error boundary on ready()
  */
 export function initLifecycle(options = {}) {
   canvasContainer = options.container || document.body;
   gameStateSaveCallback = options.onSave;
   gameStateRestoreCallback = options.onRestore;
+  onPauseCallback = options.onPause || null;
+  onResumeCallback = options.onResume || null;
+  installErrorBoundary = options.errorBoundary !== false;
 
-  // Create overlays
-  _createOverlays();
+  // Create overlays (resume overlay is always created — it is the pause UI;
+  // loading/error overlays are optional so games can opt out)
+  _createOverlays({
+    loading: options.loadingOverlay !== false,
+    error: options.errorBoundary !== false,
+  });
 }
 
 /**
  * Create overlay elements
+ *
+ * @param {Object} opts - Which overlays to create
+ * @param {boolean} opts.loading - Create the loading overlay
+ * @param {boolean} opts.error - Create the error overlay
  */
-function _createOverlays() {
+function _createOverlays({ loading = true, error = true } = {}) {
   // Loading overlay
-  loadingOverlay = document.createElement('div');
-  loadingOverlay.id = 'mg-loading';
-  loadingOverlay.className = 'mg-overlay';
-  loadingOverlay.innerHTML = `
-    <div class="mg-spinner"></div>
-    <div class="mg-loading-text">Loading...</div>
-  `;
-  loadingOverlay.style.cssText = `
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--mg-bg, #1a1a2e); display: flex;
-    flex-direction: column; align-items: center; justify-content: center;
-    z-index: 1000; transition: opacity 0.3s ease;
-  `;
-  canvasContainer.appendChild(loadingOverlay);
+  if (loading) {
+    loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'mg-loading';
+    loadingOverlay.className = 'mg-overlay';
+    loadingOverlay.innerHTML = `
+      <div class="mg-spinner"></div>
+      <div class="mg-loading-text">Loading...</div>
+    `;
+    loadingOverlay.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--mg-bg, #1a1a2e); display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      z-index: 1000; transition: opacity 0.3s ease;
+    `;
+    canvasContainer.appendChild(loadingOverlay);
+  }
 
   // Resume overlay
   resumeOverlay = document.createElement('div');
@@ -76,24 +98,26 @@ function _createOverlays() {
   canvasContainer.appendChild(resumeOverlay);
 
   // Error overlay
-  errorOverlay = document.createElement('div');
-  errorOverlay.id = 'mg-error';
-  errorOverlay.className = 'mg-overlay mg-hidden';
-  errorOverlay.innerHTML = `
-    <div class="mg-error-content">
-      <div class="mg-error-icon">⚠️</div>
-      <div class="mg-error-text">Something went wrong</div>
-      <button class="mg-error-btn">Restart Game</button>
-    </div>
-  `;
-  errorOverlay.style.cssText = `
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.9); display: flex;
-    align-items: center; justify-content: center;
-    z-index: 1001; opacity: 0; pointer-events: none;
-    transition: opacity 0.3s ease;
-  `;
-  canvasContainer.appendChild(errorOverlay);
+  if (error) {
+    errorOverlay = document.createElement('div');
+    errorOverlay.id = 'mg-error';
+    errorOverlay.className = 'mg-overlay mg-hidden';
+    errorOverlay.innerHTML = `
+      <div class="mg-error-content">
+        <div class="mg-error-icon">⚠️</div>
+        <div class="mg-error-text">Something went wrong</div>
+        <button class="mg-error-btn">Restart Game</button>
+      </div>
+    `;
+    errorOverlay.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9); display: flex;
+      align-items: center; justify-content: center;
+      z-index: 1001; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    `;
+    canvasContainer.appendChild(errorOverlay);
+  }
 
   // Resume button handler
   resumeOverlay.querySelector('.mg-resume-btn').addEventListener('click', resume);
@@ -116,7 +140,9 @@ export function ready() {
   }
 
   // Setup error boundary
-  _setupErrorBoundary();
+  if (installErrorBoundary) {
+    _setupErrorBoundary();
+  }
 }
 
 /**
@@ -164,6 +190,15 @@ export function pause() {
     resumeOverlay.style.opacity = '1';
     resumeOverlay.style.pointerEvents = 'auto';
   }
+
+  // Freeze the game's own RAF/scene loop
+  if (onPauseCallback) {
+    try {
+      onPauseCallback();
+    } catch (e) {
+      console.warn('onPause callback failed:', e);
+    }
+  }
 }
 
 /**
@@ -199,6 +234,15 @@ export function resume() {
       gameStateRestoreCallback();
     } catch (e) {
       console.warn('Failed to restore game state:', e);
+    }
+  }
+
+  // Restart the game's own RAF/scene loop
+  if (onResumeCallback) {
+    try {
+      onResumeCallback();
+    } catch (e) {
+      console.warn('onResume callback failed:', e);
     }
   }
 }
@@ -297,6 +341,31 @@ export function setupVisibilityHandler() {
       pause();
     } else {
       showResumeOverlay();
+    }
+  });
+}
+
+/**
+ * Setup page visibility handler for untimed puzzle games.
+ *
+ * Puzzle games have no game clock, so backgrounding cannot advance state and
+ * no resume overlay is needed (per plan). On hide we only persist the current
+ * in-progress state (via the provided onSave callback, typically writing to
+ * shared/storage.js) so it survives mobile tab eviction. On return to the tab
+ * the player simply continues — nothing is shown.
+ *
+ * @param {Object} options - Configuration options
+ * @param {Function} options.onSave - Callback to persist current state when hidden
+ */
+export function setupPuzzleVisibilityHandler(options = {}) {
+  const onSave = options.onSave;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && typeof onSave === 'function') {
+      try {
+        onSave();
+      } catch (e) {
+        console.warn('Failed to persist puzzle state on hide:', e);
+      }
     }
   });
 }

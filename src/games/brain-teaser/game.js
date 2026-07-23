@@ -26,6 +26,9 @@ import { audio } from './audio.js';
 import { haptic } from '../../shared/haptics.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { createHintSession, getHintTokens } from '../../shared/hints.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
 
 // Game constants
 const GAME_ID = 'brain-teaser';
@@ -55,10 +58,17 @@ class BrainTeaserGame {
     // Game state
     this.puzzles = [];
     this.currentPuzzleIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
     this.state = null;
     this.renderer = null;
     this.input = null;
     this.hintSession = null;
+
+    // Shared win retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
 
     // Interaction state
     this.animating = false;
@@ -87,6 +97,13 @@ class BrainTeaserGame {
 
       // Load saved progress
       this.loadProgress();
+
+      // Daily challenge mode (?daily=true). Brain Teaser has no procedural
+      // generator, so the daily puzzle is chosen deterministically from the
+      // existing set: levelIndex = seed % puzzles.length.
+      const urlParams = new URLSearchParams(window.location.search);
+      this.isDailyMode = urlParams.get('daily') === 'true';
+      if (this.isDailyMode) this.generateDailyLevel();
 
       // Create initial state first (needed for Phaser scene)
       const puzzle = this.puzzles[this.currentPuzzleIndex];
@@ -173,6 +190,17 @@ class BrainTeaserGame {
   loadProgress() {
     const stats = getGameStats(GAME_ID);
     this.currentPuzzleIndex = Math.min(stats.lastLevel || 0, this.puzzles.length - 1);
+  }
+
+  /**
+   * Select today's daily puzzle deterministically. Brain Teaser has no
+   * procedural generator, so the plan's fallback applies:
+   * levelIndex = seed % puzzles.length.
+   */
+  generateDailyLevel() {
+    if (!this.puzzles.length) return;
+    const seed = getGameDailyNumericSeed(GAME_ID);
+    this.currentPuzzleIndex = seed % this.puzzles.length;
   }
 
   /**
@@ -288,6 +316,7 @@ class BrainTeaserGame {
       onTokensEmpty: () => { this.updateHintButton(); },
     });
     this.updateHintButton();
+    this.initRetryOverlay(index);
 
     // Resize and render
     this.handleResize();
@@ -295,6 +324,41 @@ class BrainTeaserGame {
 
     // Announce for screen readers
     announce(`Puzzle ${index + 1}: ${puzzle.title}. ${puzzle.prompt}`);
+  }
+
+  /**
+   * (Re)create the shared win retry overlay for the given level.
+   *
+   * A fresh instance per level keeps the persisted failure count scoped to
+   * gameId:levelIndex (so "Skip Level" appears after 3 fails on THIS level).
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartPuzzle(),
+      onNext: () => this.nextPuzzle(),
+      onSkip: () => this.nextPuzzle(),
+      onHint: () => {
+        this.restartPuzzle();
+        if (this.hintSession) this.hintSession.showHint();
+        this.updateHintButton();
+      },
+      onShare: (stats) => {
+        quickShare({
+          title: 'Brain Teaser',
+          text: generateShareText({
+            gameName: 'Brain Teaser',
+            moves: stats.moves,
+            time: stats.time,
+            stars: stats.stars,
+          }),
+          url: window.location.href,
+        });
+      },
+    });
   }
 
   /**
@@ -398,14 +462,22 @@ class BrainTeaserGame {
     // Award XP
     await awardLevelComplete(GAME_ID, 1, { attempts: this.state.attempts });
 
+    // Mark today's daily challenge complete (once per daily-mode win)
+    if (this.isDailyMode) completeDailyChallenge(GAME_ID);
+
     // Save progress
     await this.saveProgress();
 
     // Play celebration animation
     await this.renderer.playAnimation({ type: 'celebration' });
 
-    // Show win overlay
-    this.showWinOverlay();
+    // Show the shared win overlay (attempts as "moves", solve time in seconds).
+    const moves = this.state.attempts + 1;
+    const solveTime = Date.now() - (this.levelStartTime || Date.now());
+    this.retryOverlay.show(ResultType.WIN, {
+      moves,
+      time: Math.round(solveTime / 1000),
+    });
 
     announce(`Puzzle solved! ${this.state.attempts} attempts.`);
   }
@@ -565,9 +637,11 @@ class BrainTeaserGame {
    * Update UI elements
    */
   updateUI() {
-    this.levelDisplay.textContent = this.currentPuzzleIndex + 1;
+    this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentPuzzleIndex + 1;
     this.attemptsDisplay.textContent = this.state.attempts;
-    this.levelProgress.textContent = `Puzzle ${this.currentPuzzleIndex + 1} / ${this.puzzles.length}`;
+    this.levelProgress.textContent = this.isDailyMode
+      ? 'Daily Challenge'
+      : `Puzzle ${this.currentPuzzleIndex + 1} / ${this.puzzles.length}`;
 
     // Update buttons
     this.btnPrev.disabled = this.currentPuzzleIndex === 0;

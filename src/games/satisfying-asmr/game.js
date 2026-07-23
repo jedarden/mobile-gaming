@@ -6,9 +6,14 @@ import { initStorage, getSettings, updateSettings, getGameStats, updateGameStats
 import { awardLevelComplete } from '../../shared/meta.js';
 import { initAccessibility, announce, isReducedMotionEnabled } from '../../shared/accessibility.js';
 import { haptic } from '../../shared/haptics.js';
+import { playSound, setSoundEnabled, resumeAudio } from '../../shared/audio.js';
 import { recordLevel } from '../../shared/adaptive.js';
 import { createInitialState, cleanArea, getProgress, isComplete } from './state.js';
 import { createRenderer } from './renderer.js';
+import { createRetryOverlay, ResultType } from '../../shared/retry.js';
+import { quickShare, generateShareText } from '../../shared/share.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const GAME_ID = 'satisfying-asmr';
 const LEVELS_URL = './levels.json';
@@ -31,8 +36,16 @@ class SatisfyingGame {
 
     this.levels = [];
     this.currentLevelIndex = 0;
+
+    // Daily challenge mode (reachable via ?daily=true)
+    this.isDailyMode = false;
+    this.dailySeed = null;
     this.state = null;
     this.renderer = null;
+
+    // Shared win/loss retry overlay (created per level)
+    this.retryOverlay = null;
+    this.lastStars = 0;
 
     this.handleResize = this.handleResize.bind(this);
   }
@@ -40,11 +53,22 @@ class SatisfyingGame {
   async init() {
     await initStorage();
     initAccessibility();
+
+    // Gate synthesized SFX on the persisted sound setting
+    setSoundEnabled(getSettings().soundEnabled);
     const res = await fetch(LEVELS_URL);
     this.levels = await res.json();
 
     const stats = getGameStats(GAME_ID);
     this.currentLevelIndex = Math.min(stats.lastLevel || 0, this.levels.length - 1);
+
+    // Daily challenge mode (?daily=true) — build today's seeded level.
+    const urlParams = new URLSearchParams(window.location.search);
+    this.isDailyMode = urlParams.get('daily') === 'true';
+    if (this.isDailyMode) {
+      this.dailySeed = getGameDailySeed(GAME_ID);
+      this.generateDailyLevel();
+    }
 
     // Create renderer (Phaser game initializes here)
     this.renderer = createRenderer(this.canvas);
@@ -79,8 +103,10 @@ class SatisfyingGame {
       this.settingsOverlay.classList.remove('active');
       this.settingsOverlay.setAttribute('aria-hidden', 'true');
     });
-    document.getElementById('setting-sound').addEventListener('change', e =>
-      updateSettings({ soundEnabled: e.target.checked }));
+    document.getElementById('setting-sound').addEventListener('change', e => {
+      updateSettings({ soundEnabled: e.target.checked });
+      setSoundEnabled(e.target.checked);
+    });
     document.getElementById('setting-motion').addEventListener('change', e => {
       updateSettings({ reducedMotion: e.target.checked });
       this.renderer.setReducedMotion(e.target.checked);
@@ -100,9 +126,54 @@ class SatisfyingGame {
     // Resize renderer (builds reveal layer, grain, and dirt)
     this.renderer.resize(this.state);
 
+    this.initRetryOverlay(index);
+
     this.updateUI();
     this.renderer.render(this.state);
     announce(`Level ${index + 1}. Clean the surface by spraying dirty areas.`);
+  }
+
+  /**
+   * (Re)create the shared win/loss retry overlay for the given level.
+   * A fresh instance per level scopes the persisted failure count to
+   * gameId:levelIndex.
+   */
+  initRetryOverlay(index) {
+    if (this.retryOverlay) this.retryOverlay.destroy();
+    this.retryOverlay = createRetryOverlay({
+      container: document.body,
+      gameId: GAME_ID,
+      levelIndex: index,
+      onRetry: () => this.restartLevel(),
+      onNext: () => this.nextLevel(),
+      onSkip: () => this.nextLevel(),
+      onHint: () => this.restartLevel(),
+      onShare: (stats) => {
+        quickShare({
+          title: 'Satisfying ASMR',
+          text: generateShareText({ gameName: 'Satisfying ASMR', stars: stats.stars }),
+          url: window.location.href,
+        });
+      },
+    });
+  }
+
+  /**
+   * Build today's daily-challenge level from the seeded generator and make it
+   * the only level (currentLevelIndex reset to 0).
+   */
+  generateDailyLevel() {
+    const level = generateLevel(this.dailySeed);
+    if (level) {
+      this.levels = [level];
+      this.currentLevelIndex = 0;
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      const idx = getGameDailyNumericSeed(GAME_ID) % this.levels.length;
+      this.levels = [this.levels[idx]];
+      this.currentLevelIndex = 0;
+    }
   }
 
   restartLevel() { this.levelRetries = (this.levelRetries || 0) + 1; this.startLevel(this.currentLevelIndex); }
@@ -121,6 +192,9 @@ class SatisfyingGame {
     this.renderer.eraseArea(this.state.cells, gc, gr, SPRAY_RADIUS, this.state.width);
     this.renderer.render(this.state);
     haptic('tap');
+    // Spray SFX (gated by the shared soundEnabled setting)
+    resumeAudio();
+    playSound('whoosh');
     this.renderer.spawnDebris(px, py);
     this.updateUI();
 
@@ -136,6 +210,7 @@ class SatisfyingGame {
     const pct = Math.round(getProgress(this.state) * 100);
     await updateGameStats(GAME_ID, { lastLevel: this.currentLevelIndex, played: 1, completed: 1, stars: 3 });
     await awardLevelComplete(GAME_ID, 3, { levelId: this.currentLevelIndex });
+    if (this.isDailyMode) completeDailyChallenge(GAME_ID);
     document.getElementById('stats-summary').textContent = `${pct}% of surface cleaned!`;
     this.winOverlay.classList.add('active');
     this.winOverlay.setAttribute('aria-hidden', 'false');
@@ -153,7 +228,7 @@ class SatisfyingGame {
     if (!this.state) return;
     const level = this.levels[this.currentLevelIndex];
     const pct = Math.round(getProgress(this.state) * 100);
-    this.levelDisplay.textContent = this.currentLevelIndex + 1;
+    this.levelDisplay.textContent = this.isDailyMode ? 'Daily' : this.currentLevelIndex + 1;
     this.progressDisplay.textContent = `${pct}%`;
     this.patternDisplay.textContent = level.patternType || '-';
     this.progressBar.style.width = `${pct}%`;

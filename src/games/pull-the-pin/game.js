@@ -20,6 +20,8 @@ import { createHintSession, getHintTokens } from '../../shared/hints.js';
 import { createRetryOverlay, ResultType } from '../../shared/retry.js';
 import { quickShare, generateShareText } from '../../shared/share.js';
 import { encodeState, decodeState, isStateHash } from '../../shared/state-url.js';
+import { getGameDailySeed, getGameDailyNumericSeed, completeDailyChallenge } from '../../shared/daily.js';
+import { generateLevel } from './generator.js';
 
 const PHYSICS_TICK_MS = 1000 / 60; // 60 FPS
 
@@ -281,11 +283,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const canvas = document.getElementById('game-canvas');
   if (!canvas) return;
 
-  const levels = levelsData;
+  let levels = levelsData;
   let currentLevelIndex = 0;
   let levelStartTime = Date.now();
   let levelRetries = 0;
   let retryOverlay = null;
+
+  // Daily challenge mode (reachable via ?daily=true)
+  let isDailyMode = false;
 
   const levelIndicator = document.getElementById('level-indicator');
   const pinCountEl = document.getElementById('pin-count');
@@ -308,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateUI(gameState) {
-    if (levelIndicator) levelIndicator.textContent = `Level ${currentLevelIndex + 1}`;
+    if (levelIndicator) levelIndicator.textContent = isDailyMode ? 'Daily' : `Level ${currentLevelIndex + 1}`;
     if (pinCountEl && gameState) {
       const remaining = gameState.pins.filter(p => !p.removed).length;
       pinCountEl.textContent = `Pins: ${remaining}`;
@@ -328,6 +333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       announce(`Level ${currentLevelIndex + 1} complete! All balls reached their cups!`);
       await updateGameStats(GAME_ID, { lastLevel: currentLevelIndex, played: 1, completed: 1, stars: 3 });
       await awardLevelComplete(GAME_ID, 3, { levelId: currentLevelIndex });
+      if (isDailyMode) completeDailyChallenge(GAME_ID);
     },
     onLose() {
       haptic('fail');
@@ -425,8 +431,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     resetBtn.addEventListener('click', () => loadLevel(currentLevelIndex));
   }
 
-  // A shared puzzle link (#s=...) takes precedence over loading level 1.
+  // A shared puzzle link (#s=...) takes precedence over the daily challenge.
   const shared = readSharedState();
+
+  // Daily challenge mode (?daily=true) — build today's seeded level and make it
+  // the only level so loadLevel(0) starts it.
+  const urlParams = new URLSearchParams(window.location.search);
+  isDailyMode = !shared && urlParams.get('daily') === 'true';
+  if (isDailyMode) {
+    const dailyLevel = generateLevel(getGameDailySeed(GAME_ID));
+    if (dailyLevel) {
+      levels = [dailyLevel];
+    } else {
+      // Generator produced nothing solvable for today's seed; fall back to a
+      // deterministic bundled level so the daily is identical for everyone.
+      levels = [levels[getGameDailyNumericSeed(GAME_ID) % levels.length]];
+    }
+  }
+
   if (shared) {
     currentLevelIndex = Math.min(Math.max(shared.levelIndex | 0, 0), levels.length - 1);
     levelStartTime = Date.now();
