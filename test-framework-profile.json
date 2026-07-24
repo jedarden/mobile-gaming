@@ -1,0 +1,134 @@
+{
+  "framework": {
+    "initialization": [],
+    "overallSetup": [],
+    "overallTeardown": [],
+    "no-hooks": {
+      "totalTime": 1921.3507769999999,
+      "testCount": 3,
+      "avgTestTime": 0.6666666666666666
+    },
+    "beforeEach-only": {
+      "totalTime": 2062.350913,
+      "testCount": 3,
+      "avgTestTime": 1
+    },
+    "both-hooks": {
+      "totalTime": 1857.7175210000005,
+      "testCount": 3,
+      "avgTestTime": 1.3333333333333333
+    },
+    "all-hooks": {
+      "totalTime": 1912.5925779999998,
+      "testCount": 3,
+      "avgTestTime": 1
+    },
+    "scale-1tests": {
+      "testCount": 1,
+      "totalTime": 2086.9244609999996,
+      "avgTimePerTest": 2086.9244609999996
+    },
+    "scale-5tests": {
+      "testCount": 5,
+      "totalTime": 2008.9062900000008,
+      "avgTimePerTest": 401.78125800000015
+    },
+    "scale-10tests": {
+      "testCount": 10,
+      "totalTime": 1737.6998039999999,
+      "avgTimePerTest": 173.76998039999998
+    },
+    "scale-20tests": {
+      "testCount": 20,
+      "totalTime": 1796.913564999999,
+      "avgTimePerTest": 89.84567824999995
+    },
+    "scale-50tests": {
+      "testCount": 50,
+      "totalTime": 1748.5733499999988,
+      "avgTimePerTest": 34.971466999999976
+    }
+  },
+  "byCategory": {
+    "shared": [
+      {
+        "file": "tests/shared/colors.test.js",
+        "totalTime": 1831.428989,
+        "testCount": 47,
+        "avgTestTime": 0.5531914893617021
+      },
+      {
+        "file": "tests/shared/audio.test.js",
+        "totalTime": 1937.749498000001,
+        "testCount": 24,
+        "avgTestTime": 3.9583333333333335
+      }
+    ],
+    "unit": [
+      {
+        "file": "tests/unit/quick-play.test.js",
+        "totalTime": 1940.7201760000025,
+        "testCount": 47,
+        "avgTestTime": 0.5106382978723404
+      },
+      {
+        "file": "tests/unit/jelly-shift.test.js",
+        "totalTime": 2193.9018319999996,
+        "testCount": 91,
+        "avgTestTime": 0.3076923076923077
+      },
+      {
+        "file": "tests/unit/retry.test.js",
+        "totalTime": 3771.1509689999984,
+        "testCount": 70,
+        "avgTestTime": 10.3
+      }
+    ]
+  },
+  "summary": {
+    "frameworkOverhead": {
+      "beforeEachOnly": "7.34",
+      "bothHooks": "-3.31",
+      "allHooks": "-0.46"
+    },
+    "scaling": [
+      {
+        "testCount": 1,
+        "totalTime": 2086.9244609999996,
+        "avgTimePerTest": 2086.9244609999996
+      },
+      {
+        "testCount": 5,
+        "totalTime": 2008.9062900000008,
+        "avgTimePerTest": 401.78125800000015
+      },
+      {
+        "testCount": 10,
+        "totalTime": 1737.6998039999999,
+        "avgTimePerTest": 173.76998039999998
+      },
+      {
+        "testCount": 20,
+        "totalTime": 1796.913564999999,
+        "avgTimePerTest": 89.84567824999995
+      },
+      {
+        "testCount": 50,
+        "totalTime": 1748.5733499999988,
+        "avgTimePerTest": 34.971466999999976
+      }
+    ],
+    "shared": {
+      "fileCount": 2,
+      "totalTests": 71,
+      "totalTime": 3769.178487000001,
+      "avgTimePerTest": 53.08702094366198
+    },
+    "unit": {
+      "fileCount": 3,
+      "totalTests": 208,
+      "totalTime": 7905.7729770000005,
+      "avgTimePerTest": 38.00852392788462
+    }
+  }
+}
