@@ -1,0 +1,3 @@
+# Unit Test Logs for mobile-gaming-ci
+# Bead: bf-2fjqo
+# No stderr output captured during unit test execution
