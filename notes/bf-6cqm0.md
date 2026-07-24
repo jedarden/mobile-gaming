@@ -567,3 +567,96 @@ The mobile-gaming CI remains completely unstable with a persistent 100% failure 
 ---
 
 **Total Verification History:** 7 separate verifications over ~9 hours, all confirming 100% CI failure rate.
+
+---
+
+## EIGHTH VERIFICATION - 2026-07-24 15:45 UTC (ROOT CAUSE IDENTIFIED)
+
+**Eighth verification confirms 100% FAILURE rate persists:**
+
+**Targeted Workflow Runs (Current Analysis):**
+| Workflow ID | Age | Phase | Build Status | Unit Status |
+|-------------|-----|-------|--------------|-------------|
+| `mobile-gaming-ci-manual-4v5nm` | 121m | Failed | exit code 1 | TIMEOUT (exit code 143) |
+| `mobile-gaming-ci-manual-5scvf` | 112m | Failed | exit code 1 | TIMEOUT (exit code 143) |
+| `mobile-gaming-ci-manual-6wxgr` | 108m | Failed | exit code 1 | TIMEOUT (exit code 143) |
+
+**Result:** 3/3 workflows FAILED (100% failure rate)
+
+### ROOT CAUSE IDENTIFIED: Bundle Size Budget Violation
+
+**Local Build Analysis Results:**
+
+The CI build step is **correctly failing** due to bundle size budget violations:
+
+#### Bundle Size Budget (from WorkflowTemplate)
+- **JS Budget**: 500 KB (512,000 bytes)
+- **CSS Budget**: 100 KB
+
+#### Actual Bundle Sizes (from local build)
+- **Total JS**: 2,451.3 KB (2,510,132 bytes) = **4.9x over budget**
+- **Total CSS**: 47.7 KB (48,838 bytes) = within budget ✅
+
+#### Largest JS Bundles (Sorted by Size)
+| Bundle | Size | Status |
+|--------|------|--------|
+| `phaser-B61OQUcB.js` | 1,481.79 KB (1,517,794 bytes) | ❌ 2.96x over budget |
+| `three-setup-ByYrO6bh.js` | 515.23 KB (527,595 bytes) | ❌ 1.03x over budget |
+| `pull-the-pin-AaKJNQpC.js` | 81.54 KB | ✅ within budget |
+| `pako.esm-Dy2yOSi5.js` | 47.30 KB | ✅ within budget |
+| `bus-jam-DEqKgw_W.js` | 33.43 KB | ✅ within budget |
+
+**Build Step CI Check:**
+```bash
+JS_BUDGET=$((500 * 1024))
+[ "$JS_SIZE" -le "$JS_BUDGET" ] || { echo "ERROR: JS bundle exceeds 500KB"; exit 1; }
+```
+
+This check is **functioning correctly** and detecting a legitimate bundle size problem.
+
+### Acceptance Criteria FINAL Assessment
+
+| Criterion | Required | Actual | Status |
+|-----------|----------|--------|--------|
+| Verify all 3 workflow runs completed successfully | 3/3 success | 0/3 success | ❌ FAILED |
+| Confirm no failures across any run | 0 failures | 100% failures (3/3) | ❌ FAILED |
+| Confirm no timeouts, selector errors, or assertion failures | None | Timeouts confirmed (all 3 runs) | ❌ FAILED |
+| Confirm consistent test results across runs | Consistent | Consistently failed (all 3) | ✅ CONFIRMED |
+| Document all workflow run IDs | Documented | 3 targeted workflows documented | ✅ DONE |
+| Document final stability confirmation | Stable | Completely unstable - ROOT CAUSE IDENTIFIED | ❌ FAILED |
+| Mark parent bead bf-5lbuo as ready to close | Ready | Cannot close - CI has bundle size issue | ❌ BLOCKED |
+
+**Criteria Met: 3/7 (43%)**
+
+### CONCLUSION
+
+**Task cannot be completed.**
+
+The CI failures are **NOT transient/flaky issues** - they represent a **persistent bundle size problem** that causes the build step to legitimately fail every time.
+
+**The Phaser framework (1.5MB) and Three.js setup (515KB) are the primary contributors to the JS bundle size exceeding the 500KB budget by 4.9x.**
+
+The CI bundle size check is working as designed and correctly preventing the deployment of oversized bundles.
+
+### Root Cause Summary (FINAL)
+1. **Build step legitimately fails** with exit code 1 due to bundle size budget violation
+2. **Unit step times out** (exit code 143 = SIGTERM) because pods are killed when build fails
+3. **Bundle size issue**: JS bundle is 2,451.3 KB vs 500KB budget (4.9x over)
+4. **Primary contributors**: Phaser (1.5MB) + Three.js (515KB) = ~2MB of the 2.45MB total
+5. **Issue is structural**: Not a CI flake - codebase bundle size fundamentally exceeds budget
+
+### Recommendations
+
+To enable CI stability, one of the following must be addressed:
+1. **Reduce bundle size**: Code-split Phaser/Three.js into lazy-loaded chunks
+2. **Increase budget**: Adjust the 500KB JS budget to match actual bundle requirements
+3. **Remove libraries**: Replace Phaser/Three.js with lighter alternatives
+
+This is a **code/infrastructure issue**, not a CI stability issue.
+
+**Bead Status:** CANNOT CLOSE bf-6cqm0
+- Acceptance criteria not met
+- Parent bead bf-5lbuo CANNOT be marked ready to close
+- CI requires bundle size fixes before stability verification can succeed
+
+**Total Verification History:** 8 verifications over ~10 hours, all confirming 100% CI failure rate with root cause now identified.
