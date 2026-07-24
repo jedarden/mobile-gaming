@@ -12,15 +12,38 @@ The mobile-gaming CI workflows have a **100% FAILURE RATE** across all observed 
 
 ---
 
-## Workflow Run IDs Analyzed
+## Targeted Stability Verification Runs (PRIMARY)
 
-All workflows queried from `iad-ci` cluster, namespace `argo-workflows`:
+The 3 specific stability verification workflows that were targeted for analysis:
 
-| Workflow ID | Age | Phase | Failure Type |
-|-------------|-----|-------|--------------|
-| `mobile-gaming-ci-manual-4v5nm` | 88m | Failed | Build error + Unit timeout |
-| `mobile-gaming-ci-manual-5scvf` | 79m | Failed | Build error + Unit timeout |
-| `mobile-gaming-ci-manual-6wxgr` | 75m | Failed | Build error + Unit error |
+| Workflow ID | UID | Age | Phase | Failure Type |
+|-------------|-----|-----|-------|--------------|
+| `mobile-gaming-ci-stability-1-55bgk` | `52f72a33-200f-461d-a415-5eed3df287df` | ~111m | Failed | Unit timeout + Build error |
+| `mobile-gaming-ci-stability-2-rnlcg` | `bd85079b-ed9d-4f78-be77-6df0ab5e7a7c` | ~111m | Failed | Unit error + Build error |
+| `mobile-gaming-ci-stability-3-wg6lq` | `74d78486-51e9-4fc2-8660-8761238b9bb1` | ~111m | Failed | Unit error + Build error |
+
+**CRITICAL: All 3 targeted stability verification runs FAILED.**
+
+## Additional Stability Attempt Runs
+
+Three additional runs with "stability-pass" prefix also failed:
+
+| Workflow ID | UID | Age | Phase | Failure Type |
+|-------------|-----|-----|-------|--------------|
+| `mobile-gaming-ci-stability-pass-q4wvx` | `935c4d7f-6220-41e2-ad1a-b2e26fb2fd4b` | ~120m | Failed | Child workflow failure |
+| `mobile-gaming-ci-stability-pass-lvhmw` | `e95b0d68-dc17-45de-af9a-e801c1480a06` | ~120m | Failed | Child workflow failure |
+| `mobile-gaming-ci-stability-pass-qw2nt` | `1a59faf2-9b96-46ce-971b-1c6b91206bd6` | ~120m | Failed | Child workflow failure |
+
+## Recent Manual CI Runs
+
+| Workflow ID | UID | Age | Phase | Failure Type |
+|-------------|-----|-----|-------|--------------|
+| `mobile-gaming-ci-manual-6wxgr` | `72dbfa12-cf0b-4790-b24d-6b0c8b53e156` | ~78m | Failed | Build error + Unit error |
+| `mobile-gaming-ci-manual-5scvf` | `1c5bb97d-16b1-4119-ae15-2f8d21e0a9eb` | ~83m | Failed | Build error + Unit timeout |
+| `mobile-gaming-ci-manual-4v5nm` | `000d074b-4ece-4196-8c62-3bc0dbf1ecd3` | ~91m | Failed | Build error + Unit timeout |
+| `mobile-gaming-ci-manual-t444b` | `670e8d26-ef9c-4837-b75d-4800518190f4` | ~99m | Failed | Build error + Unit timeout |
+
+## Historical Context - Additional Failed Workflows
 | `website-mobile-gaming-qgc8x` | 80m | Failed | Build error (retried 4x) |
 | `website-mobile-gaming-bl4p4` | 66m | Failed | Build error (retried 4x) |
 | `website-mobile-gaming-tf5k7` | 62m | Failed | Build error (retried 4x) |
