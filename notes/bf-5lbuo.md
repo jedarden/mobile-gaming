@@ -1,175 +1,71 @@
-# CI Stability Testing - parking-escape (bf-5lbuo)
+# BF-5LBUO: parking-escape CI Stability Testing Results
 
-**Date:** 2026-07-24
-**Task:** Run multiple CI passes for parking-escape daily-challenge stability confirmation
+## Task Objective
+Run 2-3 CI workflow runs to verify consistent test stability for parking-escape daily-challenge.
 
-## Summary
+## Execution Summary
 
-**Status:** ❌ **CANNOT COMPLETE ACCEPTANCE CRITERIA**
+### Workflows Triggered
+1. **mobile-gaming-ci-stab-tlcb7** - Failed (build/unit errors)
+2. **mobile-gaming-ci-stab-hf77r** - Failed (build/unit errors)
+3. **mobile-gaming-ci-stab-vvwn8** - Failed (build/unit errors)
 
-This task required "All runs pass without failures" but extensive testing across **11 documented runs** shows systematic CI failures that are 100% reproducible. The parking-escape CI is stable in its failure pattern, not in passing execution.
+### Previous Runs (All Failed)
+- mobile-gaming-ci-stability-pass1-9h827 - Failed (timeout)
+- mobile-gaming-ci-stability-pass2-q5h2v - Failed (timeout)
+- mobile-gaming-ci-stability-pass3-7d867 - Failed (timeout)
+- mobile-gaming-ci-stability-1-89fpp - Failed
+- mobile-gaming-ci-stability-1-mvxbg - Failed
+- mobile-gaming-ci-stability-2-2pkb5 - Failed
+- mobile-gaming-ci-stability-2-2tr2p - Failed
+- mobile-gaming-ci-stability-3-dq4ms - Failed
+- mobile-gaming-ci-stability-847mx - Failed
+- mobile-gaming-ci-stability-fbz9b - Failed
+- mobile-gaming-ci-stability-fhmmx - Failed
 
-## All Documented Workflow Runs
+## Failure Analysis
 
-### Run 1 (Historical - bf-42m8n)
-- **Workflow ID:** `mobile-gaming-ci-manual-4gxjc`
-- **Date:** Jul 22
-- **Status:** Failed
-- **Failure:** unit timeout + build exit code 1
+### Pattern 1: Pod Timeout
+```
+NODE: unit
+MESSAGE: Pod was active on the node longer than the specified deadline
+```
+This indicates the unit tests are running too long and hitting the workflow timeout.
 
-### Run 2 (Historical - bf-2brrk)
-- **Workflow ID:** `mobile-gaming-ci-manual-4qvlx`
-- **Date:** Jul 22
-- **Status:** Failed
-- **Failure:** unit timeout + build exit code 1
+### Pattern 2: Build/Unit Exit Code 1
+```
+NODE: build
+MESSAGE: main: Error (exit code 1)
 
-### Run 3 (Historical - bf-q3wc3)
-- **Workflow ID:** `mobile-gaming-ci-manual-6cfwf`
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure:** unit timeout + build exit code 1
-
-### Run 4 (Historical - bf-537t9)
-- **Workflow ID:** Not documented
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure:** Systematic pattern confirmed
-
-### Run 5 (Historical - bf-59o1u)
-- **Workflow ID:** Not documented
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure:** Build + unit timeout pattern
-
-### Run 6 (Historical - bf-52cqi)
-- **Workflow ID:** Not documented
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure:** Same systematic failures
-
-### Run 7 (Current Attempt)
-- **Workflow ID:** `mobile-gaming-ci-manual-btfq6`
-- **Date:** Jul 24
-- **Status:** Failed
-- **Failure:** unit timeout + build exit code 1
-
-### Run 8 (Final Verification - bf-5lbuo)
-- **Workflow ID:** `mobile-gaming-ci-manual-khsbr`
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure Details:**
-  - **Unit Step:** Pod active longer than specified deadline (298s duration)
-  - **Build Step:** Exit code 1 (54s duration)
-  - **Total Workflow:** 342s (5.7 minutes)
-- **Conclusion:** Confirmed systematic timeout failure pattern persists
-
-### Run 9 (bf-5lbuo Additional Run 1)
-- **Workflow ID:** `mobile-gaming-ci-stability-run1-gcs7h`
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure Details:**
-  - **Unit Step:** Pod exceeded deadline (timeout)
-  - **Build Step:** Failed
-- **Duration:** ~6 minutes
-- **Conclusion:** Timeout pattern continues
-
-### Run 10 (bf-5lbuo Additional Run 2)
-- **Workflow ID:** `mobile-gaming-ci-stability-run2-b5zvg`
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure Details:**
-  - **Unit Step:** Error (exit code 1)
-  - **Build Step:** Error (exit code 1)
-- **Duration:** ~6 minutes
-- **Conclusion:** Exit code failure pattern
-
-### Run 11 (bf-5lbuo Additional Run 3)
-- **Workflow ID:** `mobile-gaming-ci-stability-run3-sftt6`
-- **Date:** Jul 23
-- **Status:** Failed
-- **Failure Details:**
-  - **Unit Step:** Error (exit code 1)
-  - **Build Step:** Error (exit code 1)
-- **Duration:** ~6 minutes
-- **Conclusion:** Exit code failure pattern
-
-## Systematic Failure Pattern Analysis
-
-Across **11 documented runs**, the CI shows **100% consistent failure behavior**:
-
-| Step | Success Rate | Pattern |
-|------|--------------|---------|
-| **lint** | 100% (11/11) | ✅ Always passes |
-| **build** | 0% (0/11) | ❌ Exit code 1 or timeout |
-| **unit** | 0% (0/11) | ❌ Pod deadline exceeded or exit code 1 |
-| **e2e** | N/A | Never reached |
-
-### Failure Characteristics
-
-1. **Unit test timeout** - The `unit` step consistently exceeds the 5-minute deadline (300s activeDeadlineSeconds)
-2. **Build step failure** - The `build` step fails with exit code 1
-3. **Lint success** - Console.log checks and scaffold validation always pass
-
-### Root Cause Assessment
-
-The unit tests are taking longer than the configured 5-minute timeout in the CI environment. This is a **systematic CI infrastructure issue**, not a test flakiness problem.
-
-### Workflow Configuration
-From `mobile-gaming-ci` WorkflowTemplate:
-- lint: 300s (5 minutes)
-- unit: 300s (5 minutes) ← **This is being exceeded**
-- build: 300s (5 minutes)
-- e2e: 600s (10 minutes)
+NODE: unit  
+MESSAGE: main: Error (exit code 1)
+```
+The build and unit test steps are failing with non-zero exit codes.
 
 ## Acceptance Criteria Status
 
-| Criterion | Required | Actual | Status |
-|-----------|----------|--------|--------|
-| Complete 2-3 separate CI workflow runs | 2-3 | 11 documented | ✅ Exceeded |
-| All runs pass without failures | 100% pass | 0% pass | ❌ Failed |
-| No timeouts, selector errors, or assertion failures | 0 failures | 100% failure rate | ❌ Failed |
-| Test results are consistent across runs | Consistent | 100% consistent | ✅ Passed |
-| No flaky or intermittent behavior observed | Stable | Systematically stable | ✅ Passed |
-| Document all workflow run IDs and results | Documented | Fully documented | ✅ Complete |
+❌ **Complete 2-3 separate CI workflow runs** - Done (3 runs)
+❌ **All runs pass without failures** - FAILED (all runs failed)
+❌ **No timeouts, selector errors, or assertion failures** - FAILED (timeouts and build failures present)
+❌ **Test results are consistent across runs** - FAILED (consistent failure pattern)
+❌ **No flaky or intermittent behavior observed** - FAILED (stability issue confirmed)
+✅ **Document all workflow run IDs and results** - Done
 
 ## Conclusion
+The parking-escape daily-challenge CI tests are **NOT stable**. All workflow runs are failing with either:
+1. Pod timeouts during unit test execution
+2. Build/unit test step failures with exit code 1
 
-**❌ CANNOT COMPLETE ACCEPTANCE CRITERIA**
+The acceptance criteria for stability are not met. The bead should not be closed and should be re-evaluated.
 
-The task requirement "All runs pass without failures" cannot be met because:
+## Recommendation
+Investigate the root cause of:
+1. Why unit tests are timing out (likely infinite loops or hanging browser contexts)
+2. Why build/unit steps are failing with exit code 1
 
-1. **Systematic failures:** 100% of 11 documented CI runs fail with identical pattern
-2. **Not flaky:** Failures are reproducible and systematic, not intermittent
-3. **Infrastructure issue:** Unit tests exceed configured timeout deadline
+This may require:
+- Checking the parking-escape game code for console.log violations
+- Reviewing the test configuration for appropriate timeouts
+- Examining the E2E test selectors that may be causing issues
 
-### Stability Assessment
-
-The parking-escape CI **IS stable** - but in a negative sense:
-- ✅ **Test results are consistent** across all 11 runs
-- ✅ **No flaky behavior** - failures are systematic
-- ❌ **Cannot confirm passing execution** - no successful runs documented
-
-The CI demonstrates **consistent failure patterns** rather than flaky test instability.
-
-### Issue
-The unit tests consistently exceed the 5-minute timeout in the CI environment. This prevents the parking-escape feature from passing CI and indicates a performance/timeout configuration issue that must be resolved before passing stability can be confirmed.
-
-### Next Steps Required
-
-Before attempting additional stability confirmation runs:
-
-1. **Root cause analysis** - Investigate why unit tests exceed 5-minute timeout in CI
-2. **Fix options** - Either optimize test performance OR increase unit step timeout
-3. **Verify fixes** with single CI run before attempting multi-run stability confirmation
-4. **Address build failures** - Build step also needs investigation
-
-## Historical Context
-
-This is part of a series of CI stability investigations for parking-escape:
-- **11 documented runs** across multiple beads (bf-42m8n, bf-2brrk, bf-q3wc3, bf-537t9, bf-59o1u, bf-52cqi, bf-2tw0v, bf-5lbuo runs 1-3)
-- All runs show identical systematic failure pattern
-- See `notes/bf-2tw0v.md` for comprehensive stability analysis
-- The pattern suggests the feature or test infrastructure has systematic issues that must be resolved first
-
-**Task Status:** ❌ Cannot complete - systematic CI failures prevent meeting acceptance criteria
-**Stability:** ✅ Confirmed - but as systematic failure pattern, not passing runs
+Date: 2026-07-24
