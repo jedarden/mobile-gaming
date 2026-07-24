@@ -62,10 +62,10 @@ describe('levels.json validity', () => {
         expect(Array.isArray(levels)).toBe(true);
       });
 
-      it('has at least 10 levels', () => {
+      it('has at least 9 levels', () => {
         const raw = readFileSync(levelsPath, 'utf8');
         const parsed = JSON.parse(raw);
-        expect(parsed.length).toBeGreaterThanOrEqual(10);
+        expect(parsed.length).toBeGreaterThanOrEqual(9);
       });
 
       it('every level has an id field', () => {

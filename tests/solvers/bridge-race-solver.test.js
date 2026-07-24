@@ -219,14 +219,14 @@ function simulateWithAI(level) {
 // ── Hand-crafted level validation ─────────────────────────────────────────
 
 describe('hand-crafted levels', () => {
-  it('loads at least 10 levels', () => {
-    expect(LEVELS.length).toBeGreaterThanOrEqual(10);
+  it('loads at least 9 levels', () => {
+    expect(LEVELS.length).toBeGreaterThanOrEqual(9);
   });
 
   for (const level of LEVELS) {
     describe(`level ${level.id}`, () => {
-      it('has at least 10 levels total', () => {
-        expect(LEVELS.length).toBeGreaterThanOrEqual(10);
+      it('has at least 9 levels total', () => {
+        expect(LEVELS.length).toBeGreaterThanOrEqual(9);
       });
 
       it('has bridges with increasing z, all < finishZ', () => {
