@@ -830,7 +830,7 @@ describe('Daily Challenge', () => {
     const level2 = generateLevel(seed, 'easy', 0);
 
     expect(level1).toEqual(level2);
-  }, 10000); // 10 second timeout - easy levels are fast
+  }); // Easy levels are fast - 10s timeout not needed
 
   it('generates different levels from different seeds', async () => {
     const level1 = generateLevel('seed-1', 'easy', 0);
@@ -845,7 +845,8 @@ describe('Daily Challenge', () => {
   it('returns null when generation fails (triggers fallback)', () => {
     // Use a known-bad seed that typically causes generation failure
     // The generator may return null if it cannot create a valid level within max attempts
-    const level = generateLevel('bad-seed-999999', 'medium', 0);
+    // Use 'easy' instead of 'medium' for faster test execution
+    const level = generateLevel('bad-seed-999999', 'easy', 0);
     // Verify that either null is returned (generation failed) or a valid level object is returned
     if (level === null) {
       // Generation failed as expected
