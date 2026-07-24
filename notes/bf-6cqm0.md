@@ -1,101 +1,145 @@
 # CI Stability Verification Report - bf-6cqm0
 
-**Date**: 2026-07-24  
-**Verification Status**: ❌ FAILED - CI system is completely unstable  
-**Overall Success Rate**: 0% (0/27 completed workflows passed)
+**Task:** Verify stability across all CI runs for mobile-gaming project
+**Date:** 2026-07-24
+**Workspace:** /home/coding/mobile-gaming
 
-## Summary
+## Executive Summary
 
-The mobile-gaming CI workflow is experiencing **100% failure rate** across all completed runs. The acceptance criteria for stability verification are **NOT met**.
+❌ **STABILITY VERIFICATION FAILED**
+
+The mobile-gaming CI workflows have a **100% FAILURE RATE** across all observed runs. All acceptance criteria failed.
+
+---
 
 ## Workflow Run IDs Analyzed
 
-### Stability Test Runs (3 runs)
-- `mobile-gaming-ci-stability-test-1-j9r9t` - ❌ Failed
-- `mobile-gaming-ci-stability-test-2-6t6lp` - ❌ Failed  
-- `mobile-gaming-ci-stability-test-3-z8zdx` - ❌ Failed
+All workflows queried from `iad-ci` cluster, namespace `argo-workflows`:
 
-### Stability Runs (3 runs)
-- `mobile-gaming-ci-stability-1-55bgk` - ❌ Failed
-- `mobile-gaming-ci-stability-2-rnlcg` - ❌ Failed
-- `mobile-gaming-ci-stability-3-wg6lq` - ❌ Failed
+| Workflow ID | Age | Phase | Failure Type |
+|-------------|-----|-------|--------------|
+| `mobile-gaming-ci-manual-4v5nm` | 88m | Failed | Build error + Unit timeout |
+| `mobile-gaming-ci-manual-5scvf` | 79m | Failed | Build error + Unit timeout |
+| `mobile-gaming-ci-manual-6wxgr` | 75m | Failed | Build error + Unit error |
+| `website-mobile-gaming-qgc8x` | 80m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-bl4p4` | 66m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-tf5k7` | 62m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-np6hz` | 57m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-cfvpx` | 48m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-46n9d` | 45m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-pn9cx` | 40m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-qxk5n` | 39m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-q52sx` | 35m | Failed | Build error (retried 4x) |
+| `website-mobile-gaming-dszml` | 32m | Failed | Build error (retried 4x) |
 
-### Stability Pass Attempts (3 runs)
-- `mobile-gaming-ci-stability-pass-q4wvx` - ❌ Failed
-- `mobile-gaming-ci-stability-pass-lvhmw` - ❌ Failed
-- `mobile-gaming-ci-stability-pass-qw2nt` - ❌ Failed
+**Running workflows (at time of check):**
+- `website-mobile-gaming-9zgp8` - Running (29m)
+- `website-mobile-gaming-2b2qn` - Running (22m)
+- `website-mobile-gaming-lpwgm` - Running (16m)
+- `website-mobile-gaming-bm662` - Running (15m)
+- `website-mobile-gaming-6dmb8` - Running (12m)
+- `website-mobile-gaming-bbdj8` - Running (4m40s)
+- `website-mobile-gaming-dxkdf` - Running (87s)
 
-### Manual CI Runs (4 runs)
-- `mobile-gaming-ci-manual-t444b` - ❌ Failed
-- `mobile-gaming-ci-manual-4v5nm` - ❌ Failed
-- `mobile-gaming-ci-manual-5scvf` - ❌ Failed
-- `mobile-gaming-ci-manual-6wxgr` - ❌ Failed
+---
 
-## Failure Patterns
+## Failure Analysis
 
-### 1. Build Step Failures
-**Error**: `main: Error (exit code 1)`  
-**Affected Workflows**: All completed runs  
-**Impact**: Build process is failing, preventing downstream steps from running
+### mobile-gaming-ci Workflows (WorkflowTemplate: `mobile-gaming-ci`)
 
-### 2. Unit Test Step Failures  
-**Error**: `main: Error (exit code 1)`  
-**Affected Workflows**: All completed runs  
-**Impact**: Unit tests are failing with exit code 1
+**Run 1: mobile-gaming-ci-manual-4v5nm** (Failed, 88m ago)
+```
+Phase: Failed
+Message: child 'mobile-gaming-ci-manual-4v5nm-3689110171' failed
 
-### 3. Timeout Issues
-**Error**: `Pod was active on the node longer than the specified deadline`  
-**Affected Workflows**: Multiple runs (particularly stability-test-* series)  
-**Impact**: Pods are exceeding timeout limits, causing step failures
+Failed nodes:
+  - build: Failed - main: Error (exit code 1)
+  - unit: Failed - Pod was active on the node longer than the specified deadline (TIMEOUT)
+```
 
-### 4. Child Workflow Failures
-**Error**: `child '<workflow-id>' failed`  
-**Affected Workflows**: All runs  
-**Impact**: Parent workflow reports child failures, indicating deep failures in workflow execution
+**Run 2: mobile-gaming-ci-manual-5scvf** (Failed, 79m ago)
+```
+Phase: Failed
 
-## Acceptance Criteria Verification
+Failed nodes:
+  - build: Failed - main: Error (exit code 1)
+  - unit: Failed - Pod was active on the node longer than the specified deadline (TIMEOUT)
+```
+
+**Run 3: mobile-gaming-ci-manual-6wxgr** (Failed, 75m ago)
+```
+Phase: Failed
+
+Failed nodes:
+  - build: Failed - main: Error (exit code 1)
+  - unit: Failed - main: Error (exit code 1)
+```
+
+### website-mobile-gaming Workflows (WorkflowTemplate: `website-build`)
+
+All `website-mobile-gaming-*` workflows failed with:
+```
+Phase: Failed
+Message: No more retries left
+
+Multiple retry attempts (0, 1, 2, 3) all failed with:
+  main: Error (exit code 1)
+```
+
+---
+
+## Acceptance Criteria Status
 
 | Criterion | Status | Evidence |
 |-----------|--------|----------|
-| Verify all 3 workflow runs completed successfully | ❌ FAILED | 0/3 stability test runs passed (100% failure rate) |
-| Confirm no failures across any run | ❌ FAILED | All 27 completed workflows failed |
-| Confirm no timeouts, selector errors, or assertion failures | ❌ FAILED | Multiple timeout errors observed ("Pod was active on the node longer than the specified deadline") |
-| Confirm consistent test results across runs | ❌ FAILED | Results are consistently failed, but not in the intended way |
-| Document all workflow run IDs | ✅ COMPLETE | 13 primary workflow IDs documented above |
-| Document final stability confirmation | ❌ FAILED | Cannot confirm stability - system is completely unstable |
+| Verify all 3 workflow runs completed successfully | ❌ FAILED | 0/3 `mobile-gaming-ci-manual-*` runs succeeded |
+| Confirm no failures across any run | ❌ FAILED | 100% failure rate (13/13 workflows failed) |
+| Confirm no timeouts, selector errors, or assertion failures | ❌ FAILED | Timeouts observed on `unit` step (2/3 runs) |
+| Confirm consistent test results across runs | ❌ FAILED | Cannot confirm consistency - no successful runs |
+| Document all workflow run IDs | ✅ COMPLETE | 13 failed + 7 running workflows documented |
+| Document final stability confirmation | ❌ FAILED | CI is completely UNSTABLE |
+| Mark parent bead bf-5lbuo as ready to close | ❌ CANNOT | Parent bead cannot be closed - CI is unstable |
 
-## Overall Statistics
+---
 
-- **Total Workflows**: 33
-- **Failed**: 27 (81.8%)
-- **Running**: 6 (18.2%)
-- **Succeeded**: 0 (0%)
-- **Success Rate for Completed Workflows**: 0%
+## Root Cause Assessment
 
-## Root Cause Analysis
+1. **Build failures**: All workflows fail at the `build` step with `exit code 1`
+   - The build step is the first point of failure across all runs
+   - No build logs are available (pods deleted due to `podGC: OnPodCompletion`)
 
-The CI system is fundamentally broken with multiple failure modes:
+2. **Unit test timeouts**: 2/3 manual workflows experienced pod deadline timeouts
+   - Suggests tests may be hanging or exceeding the configured timeout
+   - Consistent timeout pattern indicates a systemic issue
 
-1. **Build Infrastructure**: Build step consistently failing with exit code 1
-2. **Test Infrastructure**: Unit tests failing with exit code 1  
-3. **Resource Management**: Timeout issues suggest resource constraints or hanging processes
-4. **Workflow Orchestration**: Child workflow failures indicate systemic issues
+3. **No successful runs**: Querying workflow history found **ZERO successful** `mobile-gaming` workflows
+   - This indicates the CI has been unstable for an extended period
+   - Not a transient failure - this is a chronic issue
+
+---
+
+## Recommendations
+
+1. **Immediate**: Capture build logs from a running workflow before podGC deletes them
+   - Submit a debug workflow with `podGC: OnWorkflowCompletion` override
+   - Stream logs manually while pods are still active
+
+2. **Root cause investigation needed**:
+   - Check build step configuration in WorkflowTemplate `mobile-gaming-ci`
+   - Verify npm dependencies are installable
+   - Check for timeout issues in unit test configuration
+
+3. **Before closing bf-5lbuo**:
+   - CI must achieve at least 3 consecutive successful runs
+   - All acceptance criteria must be met
+   - A new stability verification should confirm 100% pass rate
+
+---
 
 ## Conclusion
 
-**The mobile-gaming CI system cannot be confirmed as stable.** The acceptance criteria for this task are not met:
+**The mobile-gaming CI is completely unstable with a 100% failure rate across all observed workflow runs. The task requirements CANNOT be met.**
 
-- ❌ All workflows are failing (100% failure rate)
-- ❌ Multiple failure modes present (build, unit tests, timeouts)
-- ❌ No consistent successful runs to verify stability
-- ❌ System appears to be in a degraded state requiring investigation
+**This bead (bf-6cqm0) CANNOT be closed.** The parent bead (bf-5lbuo) should NOT be marked as ready to close until the CI is stabilized.
 
-**Recommendation**: The parent bead `bf-5lbuo` should **NOT** be closed as ready. The CI system requires root cause analysis and remediation before stability can be verified.
-
-## Next Steps Required
-
-1. Investigate build step failure (exit code 1 root cause)
-2. Investigate unit test failures
-3. Address timeout/deadline issues
-4. Verify CI infrastructure health
-5. Achieve consistent successful runs before re-attempting stability verification
+**Next action:** Investigate build failures and fix the CI pipeline before attempting another stability verification.
