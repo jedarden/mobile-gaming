@@ -1,15 +1,15 @@
 {
-  "bead_id": "bf-5lbuo",
+  "bead_id": "bf-pa0ac",
   "agent": "claude-code-glm-4.7",
   "provider": "zai",
   "model": "glm-4.7",
   "exit_code": 0,
   "outcome": "success",
-  "duration_ms": 112558,
+  "duration_ms": 442308,
   "input_tokens": null,
   "output_tokens": null,
   "cost_usd": null,
-  "captured_at": "2026-07-24T04:00:20.510435821Z",
+  "captured_at": "2026-07-24T04:15:48.898650153Z",
   "trace_format": "claude_json",
   "pruned": false,
   "template_version": null
