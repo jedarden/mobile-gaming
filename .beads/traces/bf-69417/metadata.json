@@ -1,0 +1,16 @@
+{
+  "bead_id": "bf-69417",
+  "workflow_name": "mobile-gaming-ci-unit-logs-bf69417-ht9nv",
+  "pod_name": "mobile-gaming-ci-unit-logs-bf69417-ht9nv-unit-426184724",
+  "node_id": "mobile-gaming-ci-unit-logs-bf69417-ht9nv-426184724",
+  "namespace": "argo-workflows",
+  "cluster": "iad-ci",
+  "workflow_template": "mobile-gaming-ci",
+  "step": "unit",
+  "status": "Failed",
+  "exit_code": 1,
+  "started_at": "2026-07-24T19:43:45Z",
+  "finished_at": "2026-07-24T19:45:45Z",
+  "duration_seconds": 120,
+  "retrieved_at": "2026-07-24"
+}
