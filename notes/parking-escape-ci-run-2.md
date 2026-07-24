@@ -1,61 +1,60 @@
-# CI Stability Run #2 - FAILED (Second Attempt)
+# CI Stability Run #2 - FAILED
 
-**Date:** 2026-07-23
-**Workflow:** `mobile-gaming-ci-stability-run2-wkqzd`
-**Status:** ❌ FAILED
+**Date**: 2026-07-24
+**Workflow**: `mobile-gaming-ci-stability-qxhp4`
+**Status**: FAILED
+**Started**: 2026-07-24T03:02:00Z
+**Finished**: 2026-07-24T03:07:42Z
+**Duration**: ~5 minutes 42 seconds
 
-## Failure Summary
+## Failures
 
-Run #2 (second attempt) of the CI stability testing FAILED with unit test timeout:
+### 1. Unit Test Failure
+- **Step**: unit
+- **Error**: `main: Error (exit code 1)`
+- **Details**: Unit tests failed with exit code 1
 
-1. **Unit tests timed out** - "Pod was active on the node longer than the specified deadline"
-2. **Build step also failed** - Exit code 1 (likely downstream effect of unit failure)
+### 2. Build Failure  
+- **Step**: build
+- **Error**: `main: Error (exit code 1)`
+- **Details**: Build step failed with exit code 1 (likely bundle size exceeded)
 
-## Detailed Failure Information
+## Workflow Node Summary
 
 ```
-Workflow: mobile-gaming-ci-stability-run2-wkqzd
-Phase: Failed
-Run Duration: 7m 48s
+lint - Succeeded
+[0] - Succeeded  
+build - Failed (main: Error (exit code 1))
+unit - Failed (main: Error (exit code 1))
 ```
-
-### Failed Nodes
-
-1. **unit** (mobile-gaming-ci-stability-run2-wkqzd-4237810657)
-   - Phase: Failed
-   - Message: `Pod was active on the node longer than the specified deadline`
-
-2. **build** (mobile-gaming-ci-stability-run2-wkqzd-1642372458)
-   - Phase: Failed
-   - Message: `main: Error (exit code 1)`
 
 ## Analysis
 
-This failure (second attempt) indicates that the parking-escape test fixes applied in bf-bmh85 are **NOT stable** across CI runs:
+This is the **third consecutive CI stability run failure**. The pattern shows:
 
-1. **Unit test timeout**: The parking-escape unit tests are consistently timing out in CI, meaning:
-   - The timeout reductions applied in bf-bmh85 were insufficient for the CI environment
-   - OR there's genuine performance variability in the tests
-   - OR the CI environment is slower than expected
+1. **Both build and unit failing**: Both steps are failing with exit code 1
+2. **Build failure likely due to bundle size**: Based on previous runs, the build step is probably exceeding the 500KB JS / 100KB CSS budget
+3. **Unit test failure**: Tests are failing, possibly due to timeout or actual test failures
 
-2. **Build failure (exit code 1)**: This appears to be a downstream effect of the unit test failure
+## Pattern Recognition
 
-## Pattern Across Runs
+This matches the failure pattern from:
+- **Run #1** (mobile-gaming-ci-manual-9x8jw): Unit timeout + build failure
+- **Run #2** (current): Both build and unit failing with exit code 1
 
-Both stability runs (wkqzd and 9vcgm) failed identically:
-- Same failure point (unit tests)
-- Same error (pod deadline exceeded)
-- Similar duration (~7m 48s)
+The CI stability has **NOT been achieved**. Multiple consecutive runs have failed.
 
-This confirms a **systemic timeout issue**, not a flaky test problem.
+## Next Steps - STOP FURTHER RUNS
 
-## Acceptance Criteria Status
+According to the acceptance criteria for bf-4g6tv:
+- **Run #2 failed** → Stop and document the failure for further investigation
+- **Do NOT proceed to run #3** - task requirements explicitly state to stop on failure
 
-- [x] Complete CI workflow run #2
-- [ ] Run must pass without failures - **FAILED: Unit test timeout**
-- [ ] No timeouts across the run - **FAILED: Pod deadline exceeded**
-- [ ] Document workflow run ID and results - **DONE**
+## Required Investigation
 
-## Conclusion
+Before any additional CI stability runs can be attempted:
+1. **Fix bundle size issue** - The build is consistently failing, likely due to exceeding 500KB/100KB budgets
+2. **Investigate unit test failures** - Need to understand why unit tests are failing
+3. **Verify locally** - Run build and tests locally to confirm they pass before CI attempts
 
-Both stability runs failed consistently with unit test timeouts. The test timeout reduction from previous bead (bf-bmh85) appears to be too aggressive for the CI environment. Further investigation and configuration adjustment is required before the tests can pass consistently.
+This task cannot be completed until the underlying build/test failures are resolved.
