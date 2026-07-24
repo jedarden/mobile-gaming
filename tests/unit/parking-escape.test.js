@@ -799,7 +799,7 @@ describe('Daily Challenge', () => {
     // Create initial state from daily level
     const state = createInitialState(dailyLevel);
     expect(state.status).toBe('playing');
-  }, 10000); // 10 second timeout - easy levels are fast
+  }); // No timeout - uses global vitest.config.js testTimeout (30s)
 
   it('simulates a win on daily level and calls completeDailyChallenge exactly once', () => {
     // Try to generate daily level
@@ -822,7 +822,7 @@ describe('Daily Challenge', () => {
     // Assert completeDailyChallenge was called exactly once
     expect(completeDailyChallenge).toHaveBeenCalledTimes(1);
     expect(completeDailyChallenge).toHaveBeenCalledWith(GAME_ID);
-  }, 10000); // 10 second timeout - easy levels are fast
+  }); // No timeout - uses global vitest.config.js testTimeout (30s)
 
   it('generates deterministic levels from same seed', () => {
     const seed = `${GAME_ID}-deterministic-test`;
@@ -840,7 +840,7 @@ describe('Daily Challenge', () => {
     if (level1 !== null && level2 !== null) {
       expect(level1.grid.vehicles).not.toEqual(level2.grid.vehicles);
     }
-  }, 10000); // 10 second timeout - easy levels are fast
+  }); // No timeout - uses global vitest.config.js testTimeout (30s)
 
   it('returns null when generation fails (triggers fallback)', () => {
     // Use a known-bad seed that typically causes generation failure
