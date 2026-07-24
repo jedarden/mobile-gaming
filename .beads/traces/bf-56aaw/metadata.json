@@ -3,25 +3,14 @@
   "agent": "claude-code-glm-4.7",
   "provider": "zai",
   "model": "glm-4.7",
-  "task_type": "unit_test_verification",
-  "source_trace": "bf-69417",
-  "outcome": "success",
-  "findings": {
-    "total_tests": 2121,
-    "passed_tests": 2102,
-    "failed_tests": 1,
-    "skipped_tests": 18,
-    "pass_rate": 99.95,
-    "duration_seconds": 137.358,
-    "duration_under_threshold": true,
-    "threshold_seconds": 300
-  },
-  "failed_test_details": {
-    "test_name": "tests/unit/parking-escape-generator.test.js > generateLevel > medium difficulty target moves in range [9, 16]",
-    "issue": "timeout",
-    "timeout_ms": 15000,
-    "recommendation": "Increase timeout or optimize generation algorithm"
-  },
-  "assessed_at": "2026-07-24T20:00:00Z",
-  "trace_format": "analysis"
+  "exit_code": 1,
+  "outcome": "failure",
+  "duration_ms": 167626,
+  "input_tokens": null,
+  "output_tokens": null,
+  "cost_usd": null,
+  "captured_at": "2026-07-24T19:51:58.047748011Z",
+  "trace_format": "claude_json",
+  "pruned": false,
+  "template_version": null
 }
