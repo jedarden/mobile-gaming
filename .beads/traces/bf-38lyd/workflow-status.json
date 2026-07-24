@@ -1,0 +1,603 @@
+{
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "Workflow",
+    "metadata": {
+        "annotations": {
+            "workflows.argoproj.io/last-seen-version": "50410167",
+            "workflows.argoproj.io/pod-name-format": "v2"
+        },
+        "creationTimestamp": "2026-07-24T19:36:12Z",
+        "generateName": "mobile-gaming-ci-manual-",
+        "generation": 7,
+        "labels": {
+            "workflows.argoproj.io/completed": "true",
+            "workflows.argoproj.io/phase": "Failed"
+        },
+        "name": "mobile-gaming-ci-manual-pv8fz",
+        "namespace": "argo-workflows",
+        "resourceVersion": "50410640",
+        "uid": "16aa0f98-da87-48f4-9a3f-fbd28d8c6a6c"
+    },
+    "spec": {
+        "arguments": {},
+        "workflowTemplateRef": {
+            "name": "mobile-gaming-ci"
+        }
+    },
+    "status": {
+        "artifactGCStatus": {
+            "notSpecified": true
+        },
+        "artifactRepositoryRef": {
+            "artifactRepository": {},
+            "default": true
+        },
+        "conditions": [
+            {
+                "status": "False",
+                "type": "PodRunning"
+            },
+            {
+                "status": "True",
+                "type": "Completed"
+            }
+        ],
+        "finishedAt": "2026-07-24T19:39:14Z",
+        "message": "child 'mobile-gaming-ci-manual-pv8fz-2076573049' failed",
+        "nodes": {
+            "mobile-gaming-ci-manual-pv8fz": {
+                "children": [
+                    "mobile-gaming-ci-manual-pv8fz-1215573890"
+                ],
+                "displayName": "mobile-gaming-ci-manual-pv8fz",
+                "finishedAt": "2026-07-24T19:39:14Z",
+                "id": "mobile-gaming-ci-manual-pv8fz",
+                "message": "child 'mobile-gaming-ci-manual-pv8fz-2076573049' failed",
+                "name": "mobile-gaming-ci-manual-pv8fz",
+                "outboundNodes": [
+                    "mobile-gaming-ci-manual-pv8fz-2076573049",
+                    "mobile-gaming-ci-manual-pv8fz-4077357097"
+                ],
+                "phase": "Failed",
+                "progress": "2/3",
+                "resourcesDuration": {
+                    "cpu": 152,
+                    "memory": 1562
+                },
+                "startedAt": "2026-07-24T19:36:13Z",
+                "templateName": "ci",
+                "templateScope": "local/",
+                "type": "Steps"
+            },
+            "mobile-gaming-ci-manual-pv8fz-1215573890": {
+                "boundaryID": "mobile-gaming-ci-manual-pv8fz",
+                "children": [
+                    "mobile-gaming-ci-manual-pv8fz-4279051289"
+                ],
+                "displayName": "[0]",
+                "finishedAt": "2026-07-24T19:36:57Z",
+                "id": "mobile-gaming-ci-manual-pv8fz-1215573890",
+                "name": "mobile-gaming-ci-manual-pv8fz[0]",
+                "nodeFlag": {},
+                "phase": "Succeeded",
+                "progress": "2/3",
+                "resourcesDuration": {
+                    "cpu": 152,
+                    "memory": 1562
+                },
+                "startedAt": "2026-07-24T19:36:13Z",
+                "templateScope": "local/",
+                "type": "StepGroup"
+            },
+            "mobile-gaming-ci-manual-pv8fz-2076573049": {
+                "boundaryID": "mobile-gaming-ci-manual-pv8fz",
+                "displayName": "unit",
+                "finishedAt": "2026-07-24T19:39:04Z",
+                "hostNodeName": "prod-instance-17817844549640125",
+                "id": "mobile-gaming-ci-manual-pv8fz-2076573049",
+                "message": "main: Error (exit code 1)",
+                "name": "mobile-gaming-ci-manual-pv8fz[1].unit",
+                "outputs": {
+                    "exitCode": "1"
+                },
+                "phase": "Failed",
+                "progress": "0/1",
+                "resourcesDuration": {
+                    "cpu": 73,
+                    "memory": 749
+                },
+                "startedAt": "2026-07-24T19:36:57Z",
+                "taskResultSynced": true,
+                "templateName": "unit",
+                "templateScope": "local/",
+                "type": "Pod"
+            },
+            "mobile-gaming-ci-manual-pv8fz-4077357097": {
+                "boundaryID": "mobile-gaming-ci-manual-pv8fz",
+                "displayName": "build",
+                "finishedAt": "2026-07-24T19:37:58Z",
+                "hostNodeName": "prod-instance-17817844549640125",
+                "id": "mobile-gaming-ci-manual-pv8fz-4077357097",
+                "name": "mobile-gaming-ci-manual-pv8fz[1].build",
+                "outputs": {
+                    "exitCode": "0"
+                },
+                "phase": "Succeeded",
+                "progress": "1/1",
+                "resourcesDuration": {
+                    "cpu": 61,
+                    "memory": 629
+                },
+                "startedAt": "2026-07-24T19:36:57Z",
+                "taskResultSynced": true,
+                "templateName": "build",
+                "templateScope": "local/",
+                "type": "Pod"
+            },
+            "mobile-gaming-ci-manual-pv8fz-4279051289": {
+                "boundaryID": "mobile-gaming-ci-manual-pv8fz",
+                "children": [
+                    "mobile-gaming-ci-manual-pv8fz-74548703"
+                ],
+                "displayName": "lint",
+                "finishedAt": "2026-07-24T19:36:47Z",
+                "hostNodeName": "prod-instance-17817844549640125",
+                "id": "mobile-gaming-ci-manual-pv8fz-4279051289",
+                "name": "mobile-gaming-ci-manual-pv8fz[0].lint",
+                "outputs": {
+                    "exitCode": "0"
+                },
+                "phase": "Succeeded",
+                "progress": "1/1",
+                "resourcesDuration": {
+                    "cpu": 18,
+                    "memory": 184
+                },
+                "startedAt": "2026-07-24T19:36:13Z",
+                "taskResultSynced": true,
+                "templateName": "lint",
+                "templateScope": "local/",
+                "type": "Pod"
+            },
+            "mobile-gaming-ci-manual-pv8fz-74548703": {
+                "boundaryID": "mobile-gaming-ci-manual-pv8fz",
+                "children": [
+                    "mobile-gaming-ci-manual-pv8fz-2076573049",
+                    "mobile-gaming-ci-manual-pv8fz-4077357097"
+                ],
+                "displayName": "[1]",
+                "finishedAt": "2026-07-24T19:39:14Z",
+                "id": "mobile-gaming-ci-manual-pv8fz-74548703",
+                "message": "child 'mobile-gaming-ci-manual-pv8fz-2076573049' failed",
+                "name": "mobile-gaming-ci-manual-pv8fz[1]",
+                "nodeFlag": {},
+                "phase": "Failed",
+                "progress": "1/2",
+                "resourcesDuration": {
+                    "cpu": 134,
+                    "memory": 1378
+                },
+                "startedAt": "2026-07-24T19:36:57Z",
+                "templateScope": "local/",
+                "type": "StepGroup"
+            }
+        },
+        "phase": "Failed",
+        "progress": "2/3",
+        "resourcesDuration": {
+            "cpu": 152,
+            "memory": 1562
+        },
+        "startedAt": "2026-07-24T19:36:13Z",
+        "storedTemplates": {
+            "namespaced/mobile-gaming-ci/build": {
+                "activeDeadlineSeconds": 300,
+                "container": {
+                    "args": [
+                        "set -ex\n\napt-get update -q \u0026\u0026 apt-get install -y -q git\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\nnpm run build\n\n# Bundle size budget: 3000KB JS, 150KB CSS\nJS_SIZE=$(du -sb dist/assets/*.js 2\u003e/dev/null | awk '{sum+=$1} END {print sum+0}')\nCSS_SIZE=$(du -sb dist/assets/*.css 2\u003e/dev/null | awk '{sum+=$1} END {print sum+0}')\nJS_BUDGET=$((3000 * 1024))\nCSS_BUDGET=$((150 * 1024))\necho \"JS: $((JS_SIZE / 1024))KB (budget 3000KB)  CSS: $((CSS_SIZE / 1024))KB (budget 150KB)\"\n[ \"$JS_SIZE\" -le \"$JS_BUDGET\" ] || { echo \"ERROR: JS bundle exceeds 3000KB\"; exit 1; }\n[ \"$CSS_SIZE\" -le \"$CSS_BUDGET\" ] || { echo \"ERROR: CSS bundle exceeds 150KB\"; exit 1; }\n\necho \"Build passed!\"\n"
+                    ],
+                    "command": [
+                        "bash",
+                        "-c"
+                    ],
+                    "env": [
+                        {
+                            "name": "GH_TOKEN",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "token",
+                                    "name": "github-webhook-secret"
+                                }
+                            }
+                        }
+                    ],
+                    "image": "node:20-bookworm",
+                    "name": "",
+                    "resources": {
+                        "limits": {
+                            "cpu": "2",
+                            "memory": "2Gi"
+                        },
+                        "requests": {
+                            "cpu": "1",
+                            "memory": "1Gi"
+                        }
+                    }
+                },
+                "inputs": {},
+                "metadata": {},
+                "name": "build",
+                "outputs": {}
+            },
+            "namespaced/mobile-gaming-ci/ci": {
+                "inputs": {},
+                "metadata": {},
+                "name": "ci",
+                "outputs": {},
+                "steps": [
+                    [
+                        {
+                            "arguments": {},
+                            "name": "lint",
+                            "template": "lint"
+                        }
+                    ],
+                    [
+                        {
+                            "arguments": {},
+                            "name": "unit",
+                            "template": "unit"
+                        },
+                        {
+                            "arguments": {},
+                            "name": "build",
+                            "template": "build"
+                        }
+                    ],
+                    [
+                        {
+                            "arguments": {},
+                            "name": "e2e",
+                            "template": "e2e"
+                        }
+                    ]
+                ]
+            },
+            "namespaced/mobile-gaming-ci/e2e": {
+                "activeDeadlineSeconds": 600,
+                "container": {
+                    "args": [
+                        "set -ex\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\nnpx playwright install chromium\nnpm run build\nnpm run test:e2e\n\necho \"E2E passed!\"\n"
+                    ],
+                    "command": [
+                        "bash",
+                        "-c"
+                    ],
+                    "env": [
+                        {
+                            "name": "GH_TOKEN",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "token",
+                                    "name": "github-webhook-secret"
+                                }
+                            }
+                        }
+                    ],
+                    "image": "mcr.microsoft.com/playwright/node:1.49.0-noble",
+                    "name": "",
+                    "resources": {
+                        "limits": {
+                            "cpu": "2",
+                            "memory": "4Gi"
+                        },
+                        "requests": {
+                            "cpu": "1",
+                            "memory": "2Gi"
+                        }
+                    }
+                },
+                "inputs": {},
+                "metadata": {},
+                "name": "e2e",
+                "outputs": {}
+            },
+            "namespaced/mobile-gaming-ci/lint": {
+                "activeDeadlineSeconds": 300,
+                "container": {
+                    "args": [
+                        "set -ex\n\napt-get update -q \u0026\u0026 apt-get install -y -q git jq\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\n\n# No console.log in game source files\nif grep -r \"console\\.log\" src/games/*/state.js src/games/*/renderer.js \\\n    src/games/*/input.js src/games/*/generator.js 2\u003e/dev/null; then\n  echo \"ERROR: console.log statements found in game files\"\n  exit 1\nfi\n\n# Every game directory must have the 7 required scaffold files and \u003e= 3 levels\nfor game_dir in src/games/*/; do\n  game_name=$(basename \"$game_dir\")\n  echo \"Checking $game_name...\"\n  for file in index.html game.js state.js renderer.js input.js styles.css levels.json; do\n    [ -f \"$game_dir$file\" ] || { echo \"ERROR: $game_dir missing $file\"; exit 1; }\n  done\n  level_count=$(jq 'length' \"$game_dir/levels.json\" 2\u003e/dev/null || echo \"0\")\n  [ \"$level_count\" -ge 3 ] || { echo \"ERROR: $game_dir/levels.json has only $level_count levels (need \u003e= 3)\"; exit 1; }\ndone\n\necho \"Lint passed!\"\n"
+                    ],
+                    "command": [
+                        "bash",
+                        "-c"
+                    ],
+                    "env": [
+                        {
+                            "name": "GH_TOKEN",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "token",
+                                    "name": "github-webhook-secret"
+                                }
+                            }
+                        }
+                    ],
+                    "image": "node:20-bookworm",
+                    "name": "",
+                    "resources": {
+                        "limits": {
+                            "cpu": "1",
+                            "memory": "1Gi"
+                        },
+                        "requests": {
+                            "cpu": "500m",
+                            "memory": "512Mi"
+                        }
+                    }
+                },
+                "inputs": {},
+                "metadata": {},
+                "name": "lint",
+                "outputs": {}
+            },
+            "namespaced/mobile-gaming-ci/unit": {
+                "activeDeadlineSeconds": 600,
+                "container": {
+                    "args": [
+                        "set -ex\n\napt-get update -q \u0026\u0026 apt-get install -y -q git\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\nnpm test\nnpm run test:levels\n\necho \"Unit tests passed!\"\n"
+                    ],
+                    "command": [
+                        "bash",
+                        "-c"
+                    ],
+                    "env": [
+                        {
+                            "name": "GH_TOKEN",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "token",
+                                    "name": "github-webhook-secret"
+                                }
+                            }
+                        }
+                    ],
+                    "image": "node:20-bookworm",
+                    "name": "",
+                    "resources": {
+                        "limits": {
+                            "cpu": "1",
+                            "memory": "1Gi"
+                        },
+                        "requests": {
+                            "cpu": "500m",
+                            "memory": "512Mi"
+                        }
+                    }
+                },
+                "inputs": {},
+                "metadata": {},
+                "name": "unit",
+                "outputs": {}
+            }
+        },
+        "storedWorkflowTemplateSpec": {
+            "arguments": {
+                "parameters": [
+                    {
+                        "name": "branch",
+                        "value": "main"
+                    }
+                ]
+            },
+            "entrypoint": "ci",
+            "nodeSelector": {
+                "servers.ngpc.rxt.io/class": "ch.vs1.large-iad"
+            },
+            "podGC": {
+                "strategy": "OnPodCompletion"
+            },
+            "serviceAccountName": "argo-workflow",
+            "templates": [
+                {
+                    "inputs": {},
+                    "metadata": {},
+                    "name": "ci",
+                    "outputs": {},
+                    "steps": [
+                        [
+                            {
+                                "arguments": {},
+                                "name": "lint",
+                                "template": "lint"
+                            }
+                        ],
+                        [
+                            {
+                                "arguments": {},
+                                "name": "unit",
+                                "template": "unit"
+                            },
+                            {
+                                "arguments": {},
+                                "name": "build",
+                                "template": "build"
+                            }
+                        ],
+                        [
+                            {
+                                "arguments": {},
+                                "name": "e2e",
+                                "template": "e2e"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "activeDeadlineSeconds": 300,
+                    "container": {
+                        "args": [
+                            "set -ex\n\napt-get update -q \u0026\u0026 apt-get install -y -q git jq\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\n\n# No console.log in game source files\nif grep -r \"console\\.log\" src/games/*/state.js src/games/*/renderer.js \\\n    src/games/*/input.js src/games/*/generator.js 2\u003e/dev/null; then\n  echo \"ERROR: console.log statements found in game files\"\n  exit 1\nfi\n\n# Every game directory must have the 7 required scaffold files and \u003e= 3 levels\nfor game_dir in src/games/*/; do\n  game_name=$(basename \"$game_dir\")\n  echo \"Checking $game_name...\"\n  for file in index.html game.js state.js renderer.js input.js styles.css levels.json; do\n    [ -f \"$game_dir$file\" ] || { echo \"ERROR: $game_dir missing $file\"; exit 1; }\n  done\n  level_count=$(jq 'length' \"$game_dir/levels.json\" 2\u003e/dev/null || echo \"0\")\n  [ \"$level_count\" -ge 3 ] || { echo \"ERROR: $game_dir/levels.json has only $level_count levels (need \u003e= 3)\"; exit 1; }\ndone\n\necho \"Lint passed!\"\n"
+                        ],
+                        "command": [
+                            "bash",
+                            "-c"
+                        ],
+                        "env": [
+                            {
+                                "name": "GH_TOKEN",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "token",
+                                        "name": "github-webhook-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "node:20-bookworm",
+                        "name": "",
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "500m",
+                                "memory": "512Mi"
+                            }
+                        }
+                    },
+                    "inputs": {},
+                    "metadata": {},
+                    "name": "lint",
+                    "outputs": {}
+                },
+                {
+                    "activeDeadlineSeconds": 600,
+                    "container": {
+                        "args": [
+                            "set -ex\n\napt-get update -q \u0026\u0026 apt-get install -y -q git\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\nnpm test\nnpm run test:levels\n\necho \"Unit tests passed!\"\n"
+                        ],
+                        "command": [
+                            "bash",
+                            "-c"
+                        ],
+                        "env": [
+                            {
+                                "name": "GH_TOKEN",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "token",
+                                        "name": "github-webhook-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "node:20-bookworm",
+                        "name": "",
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "500m",
+                                "memory": "512Mi"
+                            }
+                        }
+                    },
+                    "inputs": {},
+                    "metadata": {},
+                    "name": "unit",
+                    "outputs": {}
+                },
+                {
+                    "activeDeadlineSeconds": 300,
+                    "container": {
+                        "args": [
+                            "set -ex\n\napt-get update -q \u0026\u0026 apt-get install -y -q git\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\nnpm run build\n\n# Bundle size budget: 3000KB JS, 150KB CSS\nJS_SIZE=$(du -sb dist/assets/*.js 2\u003e/dev/null | awk '{sum+=$1} END {print sum+0}')\nCSS_SIZE=$(du -sb dist/assets/*.css 2\u003e/dev/null | awk '{sum+=$1} END {print sum+0}')\nJS_BUDGET=$((3000 * 1024))\nCSS_BUDGET=$((150 * 1024))\necho \"JS: $((JS_SIZE / 1024))KB (budget 3000KB)  CSS: $((CSS_SIZE / 1024))KB (budget 150KB)\"\n[ \"$JS_SIZE\" -le \"$JS_BUDGET\" ] || { echo \"ERROR: JS bundle exceeds 3000KB\"; exit 1; }\n[ \"$CSS_SIZE\" -le \"$CSS_BUDGET\" ] || { echo \"ERROR: CSS bundle exceeds 150KB\"; exit 1; }\n\necho \"Build passed!\"\n"
+                        ],
+                        "command": [
+                            "bash",
+                            "-c"
+                        ],
+                        "env": [
+                            {
+                                "name": "GH_TOKEN",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "token",
+                                        "name": "github-webhook-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "node:20-bookworm",
+                        "name": "",
+                        "resources": {
+                            "limits": {
+                                "cpu": "2",
+                                "memory": "2Gi"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            }
+                        }
+                    },
+                    "inputs": {},
+                    "metadata": {},
+                    "name": "build",
+                    "outputs": {}
+                },
+                {
+                    "activeDeadlineSeconds": 600,
+                    "container": {
+                        "args": [
+                            "set -ex\n\ngit clone --depth 1 --branch {{workflow.parameters.branch}} \\\n  \"https://x-access-token:${GH_TOKEN}@github.com/jedarden/mobile-gaming.git\" \\\n  /workspace\ncd /workspace\n\nnpm ci\nnpx playwright install chromium\nnpm run build\nnpm run test:e2e\n\necho \"E2E passed!\"\n"
+                        ],
+                        "command": [
+                            "bash",
+                            "-c"
+                        ],
+                        "env": [
+                            {
+                                "name": "GH_TOKEN",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "token",
+                                        "name": "github-webhook-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "mcr.microsoft.com/playwright/node:1.49.0-noble",
+                        "name": "",
+                        "resources": {
+                            "limits": {
+                                "cpu": "2",
+                                "memory": "4Gi"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            }
+                        }
+                    },
+                    "inputs": {},
+                    "metadata": {},
+                    "name": "e2e",
+                    "outputs": {}
+                }
+            ],
+            "ttlStrategy": {
+                "secondsAfterCompletion": 3600,
+                "secondsAfterFailure": 7200,
+                "secondsAfterSuccess": 1800
+            },
+            "workflowTemplateRef": {
+                "name": "mobile-gaming-ci"
+            }
+        }
+    }
+}
