@@ -142,3 +142,132 @@ E2E: Not reached (blocked by unit failure)
 ## Verification Date
 
 2026-07-24 17:47 UTC
+
+---
+
+# Third Verification - 2026-07-24 14:52 UTC
+
+## Task Re-examination
+
+Investigation of CI unit test and build step failures with focus on schema validation.
+
+## Unit Test Results (Latest Run)
+
+### `npm test` (vitest unit tests)
+- **Status:** ✅ PASS
+- **Test Files:** 111 passed (111)
+- **Tests:** 5262 passed (5262)
+- **Duration:** 26.48s
+- **Under 300s timeout:** ✅ YES
+
+### `npm run test:levels` (schema + generator validation)
+- **Status:** ❌ FAIL
+- **Schema Validation:** 305 passed, **25 failed**
+- **Generator Validation:** Incomplete (schema failures exit early)
+
+**CRITICAL FINDING:** The CI unit step fails at **schema validation**, not unit test timeouts.
+
+## Schema Validation Failures
+
+### Root Cause
+Committed level JSON files have `difficulty` as a number instead of required string enum.
+
+**Expected format (per schema):**
+```json
+"difficulty": "easy"  // or "medium" or "hard"
+```
+
+**Actual format in committed files:**
+```json
+"difficulty": 1  // numeric instead of string enum
+```
+
+### Failed Files (25 total)
+
+#### merge-games (15 files)
+- `levels/merge-games/mg-001.json` through `mg-015.json`
+- Error: `instance.difficulty: is not of a type(s) string`
+- Error: `instance.difficulty: is not one of enum values: easy,medium,hard`
+
+#### satisfying-asmr (10 files)
+- `levels/satisfying-asmr/asmr-001.json` through `asmr-010.json`
+- Error: `instance.difficulty: is not of a type(s) string`
+- Error: `instance.difficulty: is not one of enum values: easy,medium,hard`
+
+### Schema Reference
+File: `/home/coding/mobile-gaming/schemas/merge-games.schema.json`
+```json
+"difficulty": {
+  "type": "string",
+  "enum": ["easy", "medium", "hard"],
+  "description": "Difficulty tier"
+}
+```
+
+## Build Step Verification
+
+### Build Status
+- **Status:** ✅ PASS
+- **Build Duration:** 4.55s
+- **No navigator property errors**
+
+### Bundle Sizes (CI Budget Compliance)
+- **JS Total:** 2410KB (CI budget: 3000KB) ✅
+- **CSS Total:** 47KB (CI budget: 150KB) ✅
+
+**Note:** Build passes CI budget limits. Previous verification noted bead requirement budget (500KB JS, 100KB CSS) is exceeded by Phaser (1.48MB) and Three.js (515KB) bundles, but CI workflow uses higher limits (3000KB JS, 150KB CSS).
+
+## Updated Acceptance Criteria Status
+
+- ✗ **Unit tests pass with no failures** - Schema validation fails (25 committed levels)
+- ✗ **Test:levels pass** - Schema validation rejects 25 level files
+- ✓ **Vitest tests pass** - 5262 tests pass, 26.48s
+- ✓ **Test duration under 300s** - 26.48s (well under timeout)
+- ✓ **Build step completes successfully** - 4.55s
+- ✓ **Bundle sizes under CI budget** - JS 2410KB < 3000KB, CSS 47KB < 150KB
+- ✗ **Bundle sizes under bead requirements budget** - Exceeds 500KB JS limit
+- ✓ **No navigator property errors** - None detected
+- ✗ **Workflow reaches E2E step** - Blocked by unit step schema failure
+
+## Critical Issue Identified
+
+The CI unit step fails due to **25 committed level files with invalid `difficulty` field format**. This is a data integrity issue, not a test flakiness or performance issue.
+
+### Required Fix
+Convert `difficulty` field from number to string enum in affected files:
+
+**Files requiring fixes:**
+- `levels/merge-games/mg-001.json` through `mg-015.json` (15 files)
+- `levels/satisfying-asmr/asmr-001.json` through `asmr-010.json` (10 files)
+
+**Conversion needed:**
+```json
+// Before (invalid)
+"difficulty": 1
+
+// After (valid) - map numbers to appropriate difficulty tier
+"difficulty": "easy"  // for difficulty = 1
+"difficulty": "medium"  // for difficulty = 2
+"difficulty": "hard"  // for difficulty = 3
+```
+
+## Workflow Status (Actual)
+
+```
+lint: Succeeded ✓
+unit: Failed ✗ (schema validation: 25 level files rejected)
+build: Succeeded ✓ (passes CI budget)
+E2E: Not reached (blocked by unit failure)
+```
+
+## Methodology
+- Examined workflow template: `mobile-gaming-ci` in `jedarden/declarative-config`
+- Checked recent CI workflow runs on iad-ci cluster
+- Ran unit tests locally: `npm test` (passed)
+- Ran level validation locally: `npm run test:levels` (schema validation failed)
+- Examined failing level files to identify root cause
+- Verified build step locally and checked bundle sizes
+
+## Verification Date
+
+2026-07-24 14:52 UTC
