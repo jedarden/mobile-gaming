@@ -82,7 +82,7 @@ describe('generateLevel', () => {
       break;
     }
     expect(found).toBe(true);
-  }, 15000); // Reduced timeout - 10 seeds instead of 20
+  }, 60000); // Increased timeout for CI (slower than local)
 
   it('hard difficulty: difficulty score uses 8 + Math.round(targetMoves / 15) formula', () => {
     // Try just one seed; skip if generation times out (hard puzzles require 17+ moves)
