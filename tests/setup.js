@@ -4,6 +4,8 @@
  * This file runs before all tests and provides common mocks and setup.
  * It's particularly important for tests using @vitest-environment jsdom
  * which may reference navigator properties that don't exist in all CI contexts.
+ *
+ * For additional test utilities, see: test-utils.js, level-loader.js, generator-test-utils.js
  */
 
 import { beforeAll, vi } from 'vitest';
@@ -32,5 +34,10 @@ beforeAll(() => {
   // Mock other navigator properties that may be referenced
   if (!global.navigator.userAgent) {
     global.navigator.userAgent = 'Mozilla/5.0 (ci-test) Vitest/1.0';
+  }
+
+  // Mock window.devicePixelRatio for canvas/WebGL tests
+  if (typeof global.window !== 'undefined' && !global.window.devicePixelRatio) {
+    global.window.devicePixelRatio = 1;
   }
 });

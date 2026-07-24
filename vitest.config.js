@@ -26,8 +26,22 @@ export default defineConfig({
     pool: 'threads',         // Use worker threads for parallel execution
     poolOptions: {
       threads: {
-        singleThread: false  // Enable parallel test execution
+        singleThread: false,  // Enable parallel test execution
+        minThreads: 2,        // Use at least 2 threads
+        maxThreads: 4         // Limit to 4 threads to prevent resource exhaustion
       }
-    }
+    },
+
+    // Performance optimizations
+    cache: true,             // Enable module caching
+    clearMocks: true,        // Automatically clear mocks before each test
+    restoreMocks: true,      // Automatically restore mocks after each test
+
+    // Coverage options (for future use)
+    // coverage: {
+    //   provider: 'v8',
+    //   reporter: ['text', 'json', 'html'],
+    //   exclude: ['tests/', 'node_modules/']
+    // }
   }
 });
