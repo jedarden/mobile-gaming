@@ -7,7 +7,7 @@
 
 **Status:** ❌ **CANNOT COMPLETE ACCEPTANCE CRITERIA**
 
-This task required "All runs pass without failures" but extensive testing across 7+ documented runs shows systematic CI failures that are 100% reproducible. The parking-escape CI is stable in its failure pattern, not in passing execution.
+This task required "All runs pass without failures" but extensive testing across **11 documented runs** shows systematic CI failures that are 100% reproducible. The parking-escape CI is stable in its failure pattern, not in passing execution.
 
 ## All Documented Workflow Runs
 
@@ -63,15 +63,45 @@ This task required "All runs pass without failures" but extensive testing across
   - **Total Workflow:** 342s (5.7 minutes)
 - **Conclusion:** Confirmed systematic timeout failure pattern persists
 
+### Run 9 (bf-5lbuo Additional Run 1)
+- **Workflow ID:** `mobile-gaming-ci-stability-run1-gcs7h`
+- **Date:** Jul 23
+- **Status:** Failed
+- **Failure Details:**
+  - **Unit Step:** Pod exceeded deadline (timeout)
+  - **Build Step:** Failed
+- **Duration:** ~6 minutes
+- **Conclusion:** Timeout pattern continues
+
+### Run 10 (bf-5lbuo Additional Run 2)
+- **Workflow ID:** `mobile-gaming-ci-stability-run2-b5zvg`
+- **Date:** Jul 23
+- **Status:** Failed
+- **Failure Details:**
+  - **Unit Step:** Error (exit code 1)
+  - **Build Step:** Error (exit code 1)
+- **Duration:** ~6 minutes
+- **Conclusion:** Exit code failure pattern
+
+### Run 11 (bf-5lbuo Additional Run 3)
+- **Workflow ID:** `mobile-gaming-ci-stability-run3-sftt6`
+- **Date:** Jul 23
+- **Status:** Failed
+- **Failure Details:**
+  - **Unit Step:** Error (exit code 1)
+  - **Build Step:** Error (exit code 1)
+- **Duration:** ~6 minutes
+- **Conclusion:** Exit code failure pattern
+
 ## Systematic Failure Pattern Analysis
 
-Across **8 documented runs**, the CI shows **100% consistent failure behavior**:
+Across **11 documented runs**, the CI shows **100% consistent failure behavior**:
 
 | Step | Success Rate | Pattern |
 |------|--------------|---------|
-| **lint** | 100% (8/8) | ✅ Always passes |
-| **build** | 0% (0/8) | ❌ Exit code 1 |
-| **unit** | 0% (0/8) | ❌ Pod deadline exceeded |
+| **lint** | 100% (11/11) | ✅ Always passes |
+| **build** | 0% (0/11) | ❌ Exit code 1 or timeout |
+| **unit** | 0% (0/11) | ❌ Pod deadline exceeded or exit code 1 |
 | **e2e** | N/A | Never reached |
 
 ### Failure Characteristics
@@ -95,7 +125,7 @@ From `mobile-gaming-ci` WorkflowTemplate:
 
 | Criterion | Required | Actual | Status |
 |-----------|----------|--------|--------|
-| Complete 2-3 separate CI workflow runs | 2-3 | 8 documented | ✅ Exceeded |
+| Complete 2-3 separate CI workflow runs | 2-3 | 11 documented | ✅ Exceeded |
 | All runs pass without failures | 100% pass | 0% pass | ❌ Failed |
 | No timeouts, selector errors, or assertion failures | 0 failures | 100% failure rate | ❌ Failed |
 | Test results are consistent across runs | Consistent | 100% consistent | ✅ Passed |
@@ -108,14 +138,14 @@ From `mobile-gaming-ci` WorkflowTemplate:
 
 The task requirement "All runs pass without failures" cannot be met because:
 
-1. **Systematic failures:** 100% of 8 documented CI runs fail with identical pattern
+1. **Systematic failures:** 100% of 11 documented CI runs fail with identical pattern
 2. **Not flaky:** Failures are reproducible and systematic, not intermittent
 3. **Infrastructure issue:** Unit tests exceed configured timeout deadline
 
 ### Stability Assessment
 
 The parking-escape CI **IS stable** - but in a negative sense:
-- ✅ **Test results are consistent** across all 7 runs
+- ✅ **Test results are consistent** across all 11 runs
 - ✅ **No flaky behavior** - failures are systematic
 - ❌ **Cannot confirm passing execution** - no successful runs documented
 
@@ -136,7 +166,7 @@ Before attempting additional stability confirmation runs:
 ## Historical Context
 
 This is part of a series of CI stability investigations for parking-escape:
-- 8 documented runs across multiple beads (bf-42m8n, bf-2brrk, bf-q3wc3, bf-537t9, bf-59o1u, bf-52cqi, bf-2tw0v, bf-5lbuo)
+- **11 documented runs** across multiple beads (bf-42m8n, bf-2brrk, bf-q3wc3, bf-537t9, bf-59o1u, bf-52cqi, bf-2tw0v, bf-5lbuo runs 1-3)
 - All runs show identical systematic failure pattern
 - See `notes/bf-2tw0v.md` for comprehensive stability analysis
 - The pattern suggests the feature or test infrastructure has systematic issues that must be resolved first
