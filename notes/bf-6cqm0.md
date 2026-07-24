@@ -127,18 +127,18 @@ This bead should remain open for retry after CI issues are resolved.
 
 ---
 
-## Re-verification Attempt (2026-07-24)
+## Re-verification Attempt (2026-07-24 08:10 UTC)
 
-**Timestamp:** 2026-07-24  
-**Re-verification result:** ❌ FAILED - CI remains unstable
+**Timestamp:** 2026-07-24T08:10:00Z
+**Re-verification result:** ❌ FAILED - CI remains completely unstable
 
 **Re-verification Findings:**
-- Total stability runs found: 9 (all from previous verification window)
+- Total stability runs found: 9 (from current verification window)
 - Failed: 9
 - Succeeded: 0
 - Failure rate: 100%
 
-**Re-verified Workflow Run IDs:**
+**Re-verified Workflow Run IDs (Current Window):**
 - mobile-gaming-ci-stability-test-1-j9r9t (UID: 22e5191d-845d-4315-82c5-f413f204c741)
 - mobile-gaming-ci-stability-test-2-6t6lp (UID: 91cd451e-53be-4ec5-a879-ee1b6b85c8af)
 - mobile-gaming-ci-stability-test-3-z8zdx (UID: 8730665e-a04a-40b1-8dcc-954314b72b1a)
@@ -149,7 +149,12 @@ This bead should remain open for retry after CI issues are resolved.
 - mobile-gaming-ci-stability-2-rnlcg (UID: bd85079b-ed9d-4f78-be77-6df0ab5e7a7c)
 - mobile-gaming-ci-stability-3-wg6lq (UID: 74d78486-51e9-4fc2-8660-8761238b9bb1)
 
+**Failure Pattern Confirmation:**
+All 9 stability runs exhibit identical failure modes:
+- Unit test step: "Pod was active on the node longer than the specified deadline" (timeout)
+- Build step: "main: Error (exit code 1)" (build failure)
+
 **Re-verification Conclusion:**
-No change in CI stability status. The mobile-gaming CI pipeline remains completely unstable with 0% success rate. The acceptance criteria for this bead cannot be met.
+No change in CI stability status. The mobile-gaming CI pipeline remains completely unstable with 0% success rate across all observed runs. The acceptance criteria for this bead cannot be met.
 
 **Bead Status:** bf-6cqm0 remains open - cannot complete task due to persistent CI failures.
