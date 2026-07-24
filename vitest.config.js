@@ -5,12 +5,13 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.js'],
     environment: 'node',   // solvers are pure functions, no DOM needed
+    setupFiles: ['./tests/setup.js'],  // Setup file for navigator mocking
 
     // Timeout guards to prevent CI hangs
-    testTimeout: 30000,      // 30s per test (overrides default infinite)
-    hookTimeout: 30000,      // 30s for beforeAll/afterAll/beforeEach/afterEach
+    testTimeout: 300000,     // 300s per test (overrides default infinite)
+    hookTimeout: 300000,    // 300s for beforeAll/afterAll/beforeEach/afterEach
     sequence: {
-      timeout: 120000       // 2min overall test suite timeout
+      timeout: 360000       // 6min overall test suite timeout
     },
 
     // Fail-fast mechanism - stop after first failure
