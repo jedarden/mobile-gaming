@@ -53,15 +53,25 @@ This task required "All runs pass without failures" but extensive testing across
 - **Status:** Failed
 - **Failure:** unit timeout + build exit code 1
 
+### Run 8 (Final Verification - bf-5lbuo)
+- **Workflow ID:** `mobile-gaming-ci-manual-khsbr`
+- **Date:** Jul 23
+- **Status:** Failed
+- **Failure Details:**
+  - **Unit Step:** Pod active longer than specified deadline (298s duration)
+  - **Build Step:** Exit code 1 (54s duration)
+  - **Total Workflow:** 342s (5.7 minutes)
+- **Conclusion:** Confirmed systematic timeout failure pattern persists
+
 ## Systematic Failure Pattern Analysis
 
-Across **7 documented runs**, the CI shows **100% consistent failure behavior**:
+Across **8 documented runs**, the CI shows **100% consistent failure behavior**:
 
 | Step | Success Rate | Pattern |
 |------|--------------|---------|
-| **lint** | 100% (7/7) | ✅ Always passes |
-| **build** | 0% (0/7) | ❌ Exit code 1 |
-| **unit** | 0% (0/7) | ❌ Pod deadline exceeded |
+| **lint** | 100% (8/8) | ✅ Always passes |
+| **build** | 0% (0/8) | ❌ Exit code 1 |
+| **unit** | 0% (0/8) | ❌ Pod deadline exceeded |
 | **e2e** | N/A | Never reached |
 
 ### Failure Characteristics
@@ -85,7 +95,7 @@ From `mobile-gaming-ci` WorkflowTemplate:
 
 | Criterion | Required | Actual | Status |
 |-----------|----------|--------|--------|
-| Complete 2-3 separate CI workflow runs | 2-3 | 7 documented | ✅ Exceeded |
+| Complete 2-3 separate CI workflow runs | 2-3 | 8 documented | ✅ Exceeded |
 | All runs pass without failures | 100% pass | 0% pass | ❌ Failed |
 | No timeouts, selector errors, or assertion failures | 0 failures | 100% failure rate | ❌ Failed |
 | Test results are consistent across runs | Consistent | 100% consistent | ✅ Passed |
@@ -98,7 +108,7 @@ From `mobile-gaming-ci` WorkflowTemplate:
 
 The task requirement "All runs pass without failures" cannot be met because:
 
-1. **Systematic failures:** 100% of documented CI runs fail with identical pattern
+1. **Systematic failures:** 100% of 8 documented CI runs fail with identical pattern
 2. **Not flaky:** Failures are reproducible and systematic, not intermittent
 3. **Infrastructure issue:** Unit tests exceed configured timeout deadline
 
@@ -126,7 +136,7 @@ Before attempting additional stability confirmation runs:
 ## Historical Context
 
 This is part of a series of CI stability investigations for parking-escape:
-- 7+ documented runs across multiple beads (bf-42m8n, bf-2brrk, bf-q3wc3, bf-537t9, bf-59o1u, bf-52cqi, bf-2tw0v)
+- 8 documented runs across multiple beads (bf-42m8n, bf-2brrk, bf-q3wc3, bf-537t9, bf-59o1u, bf-52cqi, bf-2tw0v, bf-5lbuo)
 - All runs show identical systematic failure pattern
 - See `notes/bf-2tw0v.md` for comprehensive stability analysis
 - The pattern suggests the feature or test infrastructure has systematic issues that must be resolved first
