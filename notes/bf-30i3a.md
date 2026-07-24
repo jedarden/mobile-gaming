@@ -1,71 +1,101 @@
 # CI Unit Test and Build Step Verification - bf-30i3a
 
-## Date: 2026-07-24 (Updated)
+## Date: 2026-07-24 (Updated - Second Verification)
 
 ## Task
 Verify CI unit test and build steps pass.
 
-## Latest Workflow: mobile-gaming-ci-debug-bf30i3a-mqtwn
+## Latest Workflow: mobile-gaming-ci-unit-only-q2jp5
 
 ## Unit Test Results
 
 ### Status: FAILED ✗
-- **Duration**: 78.26s (under 300s timeout) ✓
-- **Tests**: 2105 passed, 1 failed, 38 test files passed, 1 skipped
-- **Failure**: `tests/unit/parking-escape-generator.test.js > generateLevel > medium difficulty target moves in range [9, 16]`
+- **Duration**: 25.33s local (under 300s timeout) ✓
+- **CI Duration**: ~78s workflow, test timeout after 15s
+- **Tests Local Run**: 5262 passed, 111 test files passed
+- **CI Failure**: `tests/unit/parking-escape-generator.test.js > generateLevel > medium difficulty target moves in range [9, 16]`
 - **Error**: Test timed out in 15000ms (default 15s timeout exceeded)
 
 ### Test Details
-The parking-escape-generator test loops through 10 seeds and generates levels to verify the target moves fall within [9, 16] range for medium difficulty. This test appears to be running slowly in the CI environment, exceeding the default 15-second timeout.
+The parking-escape-generator test at lines 74-85 has:
+- 15-second timeout specified in test
+- Loops through 10 seeds to find a valid medium difficulty level
+- Each seed requires BFS solver validation which can be slow
+- CI environment appears slower than local, causing timeout
 
 **Test location**: `tests/unit/parking-escape-generator.test.js:74:5`
 
-### Test Output Summary
+**Test Code**:
+```javascript
+it('medium difficulty target moves in range [9, 16]', () => {
+  let found = false;
+  for (let seed = 0; seed < 10; seed++) {
+    const level = generateLevel(seed, 'medium', 0);
+    if (!level) continue;
+    expect(level.targetMoves).toBeGreaterThanOrEqual(9);
+    expect(level.targetMoves).toBeLessThanOrEqual(16);
+    found = true;
+    break;
+  }
+  expect(found).toBe(true);
+}, 15000); // 15s timeout
 ```
-Test Files  1 failed | 38 passed | 1 skipped (111)
-     Tests  1 failed | 2105 passed (2143)
-  Start at  17:19:45
-  Duration  78.26s (transform 9.36s, setup 2.42s, collect 14.53s, tests 119.08s, environment 35ms, prepare 21.34s)
+
+### Local Test Output Summary
+```
+Test Files  111 passed (111)
+     Tests  5262 passed (5262)
+  Start at  13:47:43
+   Duration  25.33s (transform 5.62s, setup 2.78s, collect 27.24s, tests 56.10s, environment 32.98s, prepare 24.83s)
 ```
 
 ## Build Step Results
 
 ### Status: SUCCEEDED ✓
-- **Build completed**: Successfully in 4.37s
+- **Build completed**: Successfully in ~23s
 - **No navigator property errors**: ✓
+- **Build output**: All chunks built successfully
 
 ### Bundle Size Analysis
 
-#### JS Bundles - BUDGET EXCEEDED ✗
-| Bundle | Size | Budget | Status |
-|--------|------|--------|--------|
-| phaser-B61OQUcB.js | 1,481.79 kB (1.48 MB) | 500 KB | ✗ 3x over budget |
-| three-setup-ByYrO6bh.js | 515.23 kB | 500 KB | ✗ Exceeds budget |
-| pull-the-pin-DPWisfos.js | 39.25 kB | 500 KB | ✓ |
-| bus-jam-DEqKgw_W.js | 33.43 kB | 500 KB | ✓ |
-| brain-teaser-DdFgF9rQ.js | 32.43 kB | 500 KB | ✓ |
-| parking-escape-Rd3l_Kyr.js | 31.49 kB | 500 KB | ✓ |
-| jelly-shift-Dp44ArhR.js | 29.82 kB | 500 KB | ✓ |
-| hub-DIdxUYRn.js | 28.61 kB | 500 KB | ✓ |
-| water-sort-CbGduzA3.js | 25.77 kB | 500 KB | ✓ |
-| lifecycle-DL1f7R_M.js | 23.62 kB | 500 KB | ✓ |
-| All other JS bundles | < 25 kB | 500 KB | ✓ |
+#### Actual Bundle Sizes (from CI build)
+```
+JS: 2410KB (CI budget 3000KB)
+CSS: 47KB (CI budget 150KB)
+```
 
-#### CSS Bundles - WITHIN BUDGET ✓
-| Bundle | Size | Budget | Status |
-|--------|------|--------|--------|
-| game-shell-CBwTCW1H.css | 12.41 kB | 100 KB | ✓ |
-| hub-DIuotwui.css | 5.11 kB | 100 KB | ✓ |
-| makeover-run-CxC6Ds7o.css | 3.99 kB | 100 KB | ✓ |
-| All other CSS bundles | < 4 kB | 100 KB | ✓ |
+#### Major JS Bundles
+| Bundle | Size | Bead Budget (500KB) | CI Budget (3000KB) | Status |
+|--------|------|-------------------|-------------------|--------|
+| phaser-B61OQUcB.js | 1,481.79 kB (1.48 MB) | ✗ 3x over | ✓ Under | ✗ exceeds bead budget |
+| three-setup-ByYrO6bh.js | 515.23 kB | ✗ Exceeds | ✓ Under | ✗ exceeds bead budget |
+| pull-the-pin-DPWisfos.js | 39.25 kB | ✓ | ✓ | ✓ |
+| bus-jam-DEqKgw_W.js | 33.43 kB | ✓ | ✓ | ✓ |
+| brain-teaser-DdFgF9rQ.js | 32.43 kB | ✓ | ✓ | ✓ |
+| parking-escape-Rd3l_Kyr.js | 31.49 kB | ✓ | ✓ | ✓ |
+| Other individual bundles | < 30 kB | ✓ | ✓ | ✓ |
+
+#### CSS Bundles
+| Bundle | Size | Bead Budget (100KB) | CI Budget (150KB) | Status |
+|--------|------|-------------------|-------------------|--------|
+| game-shell-CBwTCW1H.css | 12.41 kB | ✓ | ✓ | ✓ |
+| hub-DIuotwui.css | 5.11 kB | ✓ | ✓ | ✓ |
+| makeover-run-CxC6Ds7o.css | 3.99 kB | ✓ | ✓ | ✓ |
+| All other CSS bundles | < 4 kB | ✓ | ✓ | ✓ |
+
+#### Budget Discrepancy Found
+- **Bead requirements**: 500KB JS, 100KB CSS
+- **CI workflow budget**: 3000KB JS, 150KB CSS
+- **Build passes CI budget** but **exceeds bead requirements budget**
 
 ## Acceptance Criteria Status
 
-- ✗ **Unit tests pass with no failures** - 1 test timeout failure
-- ✓ **Test duration captured and under 300s** - 78.26s duration
-- ✓ **Build step completes successfully** - Completed in 4.37s
-- ✗ **Bundle sizes under budget** - JS bundles exceed (phaser: 1.48MB, three-setup: 515KB); CSS within budget
-- ✓ **No navigator property errors in build logs** - None found
+- ✗ **Unit tests pass with no failures** - CI has test timeout failure (local passes)
+- ✓ **Test duration captured and under 300s** - 25.33s local, CI workflow ~78s
+- ✓ **Build step completes successfully** - Completed in ~23s
+- ✗ **Bundle sizes under budget (JS < 500KB, CSS < 100KB)** - JS exceeds bead budget (phaser: 1.48MB, three-setup: 515KB); CSS within budget
+- ✓ **Bundle sizes under CI budget (JS < 3000KB, CSS < 150KB)** - Passes CI budget
+- ✓ **No navigator property errors in build logs** - None detected
 - ✗ **Workflow reaches E2E step** - Blocked at unit test failure
 
 ## Issues Found
@@ -74,13 +104,22 @@ Test Files  1 failed | 38 passed | 1 skipped (111)
 
 1. **Unit Test Timeout (High Priority)**
    - Test: `parking-escape-generator.test.js > generateLevel > medium difficulty target moves in range [9, 16]`
-   - Issue: Test exceeds default 15s timeout in CI environment
+   - Location: `tests/unit/parking-escape-generator.test.js:74-85`
+   - Issue: Test exceeds 15s timeout in CI environment (passes locally)
+   - Root cause: BFS solver validation for medium difficulty levels is slow in CI
    - Impact: Blocks CI pipeline from reaching E2E tests
-   - Recommendation: Increase timeout for this test or optimize the level generation algorithm
+   - Recommendation: Increase timeout to 30s or reduce seed iterations
 
-2. **JS Bundle Size Exceeds Budget (High Priority)**
-   - `phaser-B61OQUcB.js`: 1,481.79 kB (3x over 500KB budget)
-   - `three-setup-ByYrO6bh.js`: 515.23 kB (exceeds 500KB budget)
+2. **Budget Configuration Discrepancy (Medium Priority)**
+   - Bead requirements specify: 500KB JS, 100KB CSS
+   - CI workflow enforces: 3000KB JS, 150KB CSS
+   - Impact: Unclear which budget is the actual requirement
+   - Current build: Passes CI budget but exceeds bead budget
+   - Recommendation: Align bead requirements with CI budget or vice versa
+
+3. **Large JS Bundles (Performance Issue)**
+   - `phaser-B61OQUcB.js`: 1,481.79 kB (1.48 MB)
+   - `three-setup-ByYrO6bh.js`: 515.23 kB
    - Impact: Large initial payload affects load performance
    - Recommendation: Implement code-splitting with dynamic imports for Phaser/Three.js
 
@@ -88,17 +127,18 @@ Test Files  1 failed | 38 passed | 1 skipped (111)
 
 ```
 lint: Succeeded ✓
-build: Succeeded ✓ (with bundle size warnings)
+build: Succeeded ✓ (passes CI budget, exceeds bead requirements budget)
 unit: Failed ✗ (test timeout)
 E2E: Not reached (blocked by unit failure)
 ```
 
-## Next Steps
-
-1. Fix the parking-escape-generator test timeout issue
-2. Implement code-splitting for large JS bundles (phaser, three-setup)
-3. Re-run CI verification after fixes
+## Methodology
+- Submitted debug workflow `mobile-gaming-ci-unit-only-q2jp5` to iad-ci cluster
+- Captured build step logs from completed pod
+- Ran unit tests locally for comparison
+- Analyzed workflow template configuration
+- Compared bead requirements budget with CI workflow budget
 
 ## Verification Date
 
-2026-07-24 17:21 UTC
+2026-07-24 17:47 UTC
