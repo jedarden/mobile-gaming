@@ -6,7 +6,7 @@
  * which may reference navigator properties that don't exist in all CI contexts.
  */
 
-import { beforeAll } from 'vitest';
+import { beforeAll, vi } from 'vitest';
 
 // Mock navigator properties that may be missing in CI/node environments
 // This ensures jsdom-based tests can access navigator.clipboard, navigator.share, etc.
