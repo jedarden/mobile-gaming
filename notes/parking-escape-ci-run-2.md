@@ -1,60 +1,61 @@
-# CI Stability Run #2 - FAILED
+# CI Stability Run #2 - FAILED (Second Attempt)
 
-**Date:** 2026-07-23  
-**Workflow:** `mobile-gaming-ci-stability-run2-7qzqc`  
-**Status:** ❌ FAILED  
+**Date:** 2026-07-23
+**Workflow:** `mobile-gaming-ci-stability-run2-wkqzd`
+**Status:** ❌ FAILED
 
 ## Failure Summary
 
-Run #2 of the CI stability testing FAILED with TWO distinct issues:
+Run #2 (second attempt) of the CI stability testing FAILED with unit test timeout:
 
-1. **Build step failed** - Exit code 1
-2. **Unit tests timed out** - "Pod was active on the node longer than the specified deadline"
+1. **Unit tests timed out** - "Pod was active on the node longer than the specified deadline"
+2. **Build step also failed** - Exit code 1 (likely downstream effect of unit failure)
 
 ## Detailed Failure Information
 
 ```
-Workflow: mobile-gaming-ci-stability-run2-7qzqc
+Workflow: mobile-gaming-ci-stability-run2-wkqzd
 Phase: Failed
-Message: child 'mobile-gaming-ci-stability-run2-7qzqc-4116118740' failed
+Run Duration: 7m 48s
 ```
 
 ### Failed Nodes
 
-1. **build** (mobile-gaming-ci-stability-run2-7qzqc-1642372458)
-   - Phase: Failed
-   - Message: `main: Error (exit code 1)`
-
-2. **unit** (mobile-gaming-ci-stability-run2-7qzqc-4116118740)
+1. **unit** (mobile-gaming-ci-stability-run2-wkqzd-4237810657)
    - Phase: Failed
    - Message: `Pod was active on the node longer than the specified deadline`
 
+2. **build** (mobile-gaming-ci-stability-run2-wkqzd-1642372458)
+   - Phase: Failed
+   - Message: `main: Error (exit code 1)`
+
 ## Analysis
 
-This failure indicates that the parking-escape test fixes applied in bf-bmh85 are **NOT stable** across CI runs:
+This failure (second attempt) indicates that the parking-escape test fixes applied in bf-bmh85 are **NOT stable** across CI runs:
 
-1. **Build failure (exit code 1)**: This is a new issue not seen in the first stability run. Could be:
-   - Intermittent build error
-   - Dependency issue
-   - Bundle size budget failure (previous issue)
+1. **Unit test timeout**: The parking-escape unit tests are consistently timing out in CI, meaning:
+   - The timeout reductions applied in bf-bmh85 were insufficient for the CI environment
+   - OR there's genuine performance variability in the tests
+   - OR the CI environment is slower than expected
 
-2. **Unit test timeout**: The parking-escape unit tests are still timing out, meaning:
-   - The timeout reductions applied were insufficient
-   - OR there's genuine flakiness in the tests
-   - OR the test execution time varies significantly between CI runs
+2. **Build failure (exit code 1)**: This appears to be a downstream effect of the unit test failure
 
-## Impact on Acceptance Criteria
+## Pattern Across Runs
 
-Per the acceptance criteria for bf-4g6tv:
-> If either run fails, stop and document the failure for further investigation
+Both stability runs (wkqzd and 9vcgm) failed identically:
+- Same failure point (unit tests)
+- Same error (pod deadline exceeded)
+- Similar duration (~7m 48s)
 
-**RUN #3 WAS NOT EXECUTED** due to run #2 failure.
+This confirms a **systemic timeout issue**, not a flaky test problem.
 
-## Next Steps
+## Acceptance Criteria Status
 
-This bead (bf-4g6tv) cannot be closed until:
-1. The build failure is investigated and fixed
-2. The unit test timeout issue is definitively resolved
-3. A full set of 3 consecutive stable CI runs is achieved
+- [x] Complete CI workflow run #2
+- [ ] Run must pass without failures - **FAILED: Unit test timeout**
+- [ ] No timeouts across the run - **FAILED: Pod deadline exceeded**
+- [ ] Document workflow run ID and results - **DONE**
 
-Requires further investigation before retrying stability testing.
+## Conclusion
+
+Both stability runs failed consistently with unit test timeouts. The test timeout reduction from previous bead (bf-bmh85) appears to be too aggressive for the CI environment. Further investigation and configuration adjustment is required before the tests can pass consistently.
