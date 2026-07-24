@@ -1,113 +1,89 @@
-# CI Stability Verification Report - bf-6cqm0
+# CI Stability Verification - bf-6cqm0
 
 ## Executive Summary
-**CI STABILITY VERIFICATION FAILED - 100% FAILURE RATE CONFIRMED**
 
-## Analysis Period
-2026-07-24 - Analyzed all mobile-gaming CI workflow runs on iad-ci cluster
+**Task Status: CANNOT COMPLETE** - CI is unstable due to actual code defects, not flaky tests.
 
-## Workflow Run Statistics
-- **Total Workflows Analyzed:** 26
-- **Failed Workflows:** 24 (100% of completed runs)
-- **Running Workflows:** 2 (expected to fail based on pattern)
-- **Successful Workflows:** 0
+## Workflow Runs Analyzed
 
-## Workflow Run IDs
-All workflow runs followed pattern: `website-mobile-gaming-{random}`
+All 3 most recent workflow runs failed consistently:
 
-Sample of failed workflow IDs:
-- website-mobile-gaming-bl4p4 (131m ago) - Failed: "No more retries left"
-- website-mobile-gaming-tf5k7 (127m ago) - Failed: "No more retries left"
-- website-mobile-gaming-np6hz (122m ago) - Failed: "No more retries left"
-- website-mobile-gaming-cfvpx (113m ago) - Failed: "No more retries left"
-- website-mobile-gaming-46n9d (110m ago) - Failed: "No more retries left"
-- website-mobile-gaming-pn9cx (105m ago) - Failed: "No more retries left"
-- website-mobile-gaming-qxk5n (104m ago) - Failed: "No more retries left"
-- website-mobile-gaming-q52sx (99m ago) - Failed: "No more retries left"
-- website-mobile-gaming-dszml (97m ago) - Failed: "No more retries left"
-- website-mobile-gaming-9zgp8 (93m ago) - Failed: "No more retries left"
-- website-mobile-gaming-2b2qn (86m ago) - Failed: "No more retries left"
-- website-mobile-gaming-lpwgm (80m ago) - Failed: "No more retries left"
-- website-mobile-gaming-bm662 (80m ago) - Failed: "No more retries left"
-- website-mobile-gaming-6dmb8 (77m ago) - Failed: "No more retries left"
-- website-mobile-gaming-bbdj8 (69m ago) - Failed: "No more retries left"
-- website-mobile-gaming-dxkdf (66m ago) - Failed: "No more retries left"
-- website-mobile-gaming-vjtr9 (61m ago) - Failed: "No more retries left"
-- website-mobile-gaming-srffh (55m ago) - Failed: "No more retries left"
-- website-mobile-gaming-6rkf5 (52m ago) - Failed: "No more retries left"
-- website-mobile-gaming-xjd4t (49m ago) - Failed: "No more retries left"
-- website-mobile-gaming-t72x7 (44m ago) - Failed: "No more retries left"
-- website-mobile-gaming-65zjk (41m ago) - Failed: "No more retries left"
-- website-mobile-gaming-fh7gf (37m ago) - Failed: "No more retries left"
-- website-mobile-gaming-ndq4f (35m ago) - Failed: "No more retries left"
+| Run ID | Status | Age | Key Issues |
+|--------|--------|-----|------------|
+| mobile-gaming-ci-stability-fhmmx | Failed | 17m | Unit tests failed, Build failed |
+| mobile-gaming-ci-stability-fbz9b | Failed | 17m | Unit tests failed, Build failed |
+| mobile-gaming-ci-stability-847mx | Failed | 17m | Unit timeout, Build failed |
 
-Currently running:
-- website-mobile-gaming-xwwbx (20m) - Running
-- website-mobile-gaming-v9fk6 (8m) - Running
+## Root Cause Analysis
 
-## Failure Analysis
+### 1. Unit Test Failures (Consistent across all runs)
 
-### Error Pattern
-Every completed workflow shows:
-- **Status:** Failed
-- **Message:** "No more retries left"
-- **Root Cause:** Exit code 1 in main container
+**88 tests failing** in `tests/solvers/pull-the-pin-solver.test.js` due to unsolvable levels:
 
-### Detailed Failure Analysis (website-mobile-gaming-qxk5n)
 ```
-Phase: Failed
-Message: No more retries left
-
-Failed Nodes:
-- website-mobile-gaming-qxk5n - Failed (Retry)
-  Message: No more retries left
-
-- website-mobile-gaming-qxk5n(0) - Failed (Pod)
-  Message: main: Error (exit code 1)
-
-- website-mobile-gaming-qxk5n(1) - Failed (Pod)
-  Message: main: Error (exit code 1)
-
-- website-mobile-gaming-qxk5n(2) - Failed (Pod)
-  Message: main: Error (exit code 1)
-
-- website-mobile-gaming-qxk5n(3) - Failed (Pod)
-  Message: main: Error (exit code 1)
+FAIL levels: ptp-011, ptp-014, ptp-016, ptp-018, ptp-019, ptp-020
+Error: Level is unsolvable: expected false to be true
 ```
+
+**Test Files**: 4 failed | 107 passed (111)
+**Tests**: 88 failed | 5430 passed (5518)
+
+These are **not intermittent failures** - the pull-the-pin game has unsolvable levels that need fixing.
+
+### 2. Build Step Failures (Consistent across all runs)
+
+**JS Bundle Size**: 2,451 KB actual vs 500 KB budget (4.9x over limit)
+
+```bash
+# Largest offenders:
+- phaser-B61OQUcB.js: 1,481.79 KB (gzip: 337.88 KB)
+- three-setup-ByYrO6bh.js: 515.23 KB (gzip: 128.15 KB)
+- pull-the-pin-AaKJNQpC.js: 81.54 KB (gzip: 17.40 KB)
+```
+
+**CSS Bundle Size**: 47 KB actual vs 100 KB budget ✓
+
+The build fails due to bundle size enforcement - requires code splitting.
+
+### 3. Timeout Issue (Run 847mx only)
+
+One run experienced: `Pod was active on the node longer than the specified deadline`
+
+This suggests the unit tests are taking longer than the 300s activeDeadlineSeconds.
 
 ## Acceptance Criteria Status
 
-❌ **CRITICAL FAILURE - ALL ACCEPTANCE CRITERIA NOT MET:**
-
-1. ❌ **"Verify all 3 workflow runs completed successfully"**
-   - Result: 0/24 completed successfully (100% failure rate)
-
-2. ❌ **"Confirm no failures across any run"**
-   - Result: 100% failure rate across all completed runs
-
-3. ❌ **"Confirm no timeouts, selector errors, or assertion failures"**
-   - Result: Exit code 1 errors in all retry attempts
-
-4. ❌ **"Confirm consistent test results across runs"**
-   - Result: Consistently failing across all runs
-
-5. ✅ **"Document all workflow run IDs"**
-   - Result: Documented in this report
-
-6. ❌ **"Document final stability confirmation"**
-   - Result: CI INSTABILITY CONFIRMED - 100% FAILURE RATE
-
-7. ❌ **"Mark parent bead bf-5lbuo as ready to close"**
-   - Result: CANNOT MARK PARENT READY - CI verification failed
+| Criterion | Status | Details |
+|-----------|--------|---------|
+| All 3 runs completed successfully | ❌ FAILED | All 3 failed |
+| No failures across any run | ❌ FAILED | Unit + build failures |
+| No timeouts | ❌ FAILED | Timeout in 847mx |
+| No selector errors or assertion failures | ❌ FAILED | Assertion failures on unsolvable levels |
+| Consistent test results | ✓ | Consistently failed (not flaky) |
+| Document workflow run IDs | ✓ | Documented above |
+| Final stability confirmation | ❌ CANNOT CONFIRM | CI is unstable |
+| Mark parent bead bf-5lbuo ready | ❌ CANNOT COMPLETE | Dependent on CI stability |
 
 ## Conclusion
 
-**CANNOT COMPLETE TASK AS SPECIFIED**
+**The CI is NOT stable**. These are consistent, reproducible failures caused by:
 
-The mobile-gaming CI is completely broken with a 100% failure rate. This task's acceptance criteria require verifying stable, successful CI runs, but the evidence shows the opposite - systematic failure across every single workflow attempt.
+1. **Code defects**: 6 unsolvable levels in pull-the-pin game
+2. **Technical debt**: JS bundle 4.9x over budget needs code splitting
 
-**Historical Context:**
-This is the 12th attempt to verify CI stability (based on git log). All previous attempts also confirmed 100% failure rate, indicating a persistent, unresolved CI infrastructure issue.
+**Recommendation**: This bead cannot be closed as completed. The underlying issues must be fixed first:
 
-**Recommendation:**
-This bead (bf-6cqm0) should NOT be closed. The parent bead (bf-5lbuo) should NOT be marked ready to close. A separate investigation/repair bead should be created to diagnose and fix the CI infrastructure before any stability verification can succeed.
+1. Fix unsolvable pull-the-pin levels (ptp-011, ptp-014, ptp-016, ptp-018, ptp-019, ptp-020)
+2. Implement code splitting to reduce JS bundle size under 500 KB
+3. Re-verify CI stability after fixes
+
+**Verdict**: Task cannot be completed - CI has 100% failure rate due to actual code issues, not test flakiness.
+
+## Metadata
+
+- **Bead ID**: bf-6cqm0
+- **Parent Bead**: bf-5lbuo (cannot be marked ready)
+- **Verification Date**: 2026-07-24
+- **Total Runs Analyzed**: 3
+- **Success Rate**: 0%
+- **Failure Mode**: Consistent (not flaky)
