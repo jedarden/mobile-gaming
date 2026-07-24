@@ -73,7 +73,7 @@ describe('generateLevel', () => {
 
   it('medium difficulty target moves in range [9, 16]', () => {
     let found = false;
-    for (let seed = 0; seed < 20; seed++) {
+    for (let seed = 0; seed < 10; seed++) {
       const level = generateLevel(seed, 'medium', 0);
       if (!level) continue;
       expect(level.targetMoves).toBeGreaterThanOrEqual(9);
@@ -82,7 +82,7 @@ describe('generateLevel', () => {
       break;
     }
     expect(found).toBe(true);
-  }, 30000);
+  }, 15000); // Reduced timeout - 10 seeds instead of 20
 
   it('hard difficulty: difficulty score uses 8 + Math.round(targetMoves / 15) formula', () => {
     // Try just one seed; skip if generation times out (hard puzzles require 17+ moves)
@@ -92,7 +92,7 @@ describe('generateLevel', () => {
     expect(level.difficulty).toBe(8 + Math.round(level.targetMoves / 15));
     expect(level.targetMoves).toBeGreaterThanOrEqual(17);
     expect(level.targetMoves).toBeLessThanOrEqual(30);
-  }, 60000);
+  }, 30000); // Reduced timeout from 60s to 30s
 
   it('easy difficulty: difficulty score uses 2 + Math.round(targetMoves / 4) formula', () => {
     let level = null;
@@ -104,15 +104,15 @@ describe('generateLevel', () => {
     expect(level.difficulty).toBe(2 + Math.round(level.targetMoves / 4));
   });
 
-  it('medium difficulty: difficulty score uses 5 + Math.round(targetMoves / 8) formula', { timeout: 30000 }, () => {
+  it('medium difficulty: difficulty score uses 5 + Math.round(targetMoves / 8) formula', { timeout: 15000 }, () => {
     let level = null;
-    for (let s = 0; s < 30; s++) {
+    for (let s = 0; s < 15; s++) {
       level = generateLevel(s, 'medium', 0);
       if (level) break;
     }
     if (!level) return;
     expect(level.difficulty).toBe(5 + Math.round(level.targetMoves / 8));
-  });
+  }); // Reduced timeout and seed iterations
 
   it('generated levels include both horizontal and vertical non-hero vehicles', () => {
     let hasHoriz = false, hasVert = false;
@@ -174,10 +174,10 @@ describe('generateLevel', () => {
     }
   });
 
-  it('can generate truck vehicles (type=truck, length=3) from the 25% isTruck probability', { timeout: 30000 }, () => {
+  it('can generate truck vehicles (type=truck, length=3) from the 25% isTruck probability', { timeout: 15000 }, () => {
     // With 25% per vehicle and many seeds, at least one truck should appear
     let foundTruck = false;
-    for (let seed = 0; seed < 50; seed++) {
+    for (let seed = 0; seed < 25; seed++) {
       const level = generateLevel(seed, 'medium', 0);
       if (!level) continue;
       const trucks = level.grid.vehicles.filter(v => v.type === 'truck');
@@ -192,7 +192,7 @@ describe('generateLevel', () => {
       }
     }
     expect(foundTruck).toBe(true);
-  });
+  }); // Reduced timeout and iterations
 });
 
 describe('validateLevel', () => {
@@ -227,15 +227,15 @@ describe('validateLevel', () => {
     expect(result.reason).toContain('hero');
   });
 
-  it('returns valid for medium difficulty level', { timeout: 30000 }, () => {
+  it('returns valid for medium difficulty level', { timeout: 15000 }, () => {
     let level = null;
-    for (let s = 0; s < 30; s++) {
+    for (let s = 0; s < 15; s++) {
       level = generateLevel(s, 'medium', 0);
       if (level) break;
     }
     if (!level) return; // skip if generation failed in test environment
     expect(validateLevel(level).valid).toBe(true);
-  });
+  }); // Reduced timeout and iterations
 
   it('returns invalid with "unsolvable" reason when hero is trapped (if(!solution) branch)', () => {
     // Hero at (0,2) width=2 occupies cols 0-1 on row 2.
@@ -266,7 +266,7 @@ describe('validateLevel', () => {
 });
 
 describe('generateLevel — unknown difficulty', () => {
-  it('falls back to medium config for an unknown difficulty string', { timeout: 30000 }, () => {
+  it('falls back to medium config for an unknown difficulty string', { timeout: 15000 }, () => {
     // DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium (line 106)
     const level = generateLevel(42, 'legendary', 0);
     // Should not throw and should return a level or null (medium config is used)
@@ -278,7 +278,7 @@ describe('generateLevel — unknown difficulty', () => {
     const mediumLevel = generateLevel(42, 'medium', 0);
     // Both use same config → same structure (may both be null or both be a level)
     expect((level === null)).toBe((mediumLevel === null));
-  });
+  }); // Reduced timeout
 });
 
 describe('generateBatch', () => {

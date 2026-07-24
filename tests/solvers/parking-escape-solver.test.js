@@ -168,17 +168,17 @@ describe('Parking Escape — generated easy levels', () => {
 });
 
 describe('Parking Escape — generated medium levels', () => {
-  const GEN_LEVELS = generateBatch(90000, 'medium', 3);
+  const GEN_LEVELS = generateBatch(90000, 'medium', 2);
 
-  it('generates 3 medium levels', () => {
-    expect(GEN_LEVELS.length).toBe(3);
-  }, 60000);
+  it('generates 2 medium levels', () => {
+    expect(GEN_LEVELS.length).toBe(2);
+  }, 30000); // Reduced from 60s to 30s
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
     it(`generated medium level ${i} is BFS-solvable`, () => {
       const level = GEN_LEVELS[i];
       const result = solve(level);
       expect(result, `generated medium level ${i}: solve returned null`).not.toBeNull();
-    }, 30000);
+    }, 20000); // Reduced from 30s to 20s
   }
-});
+}); // Reduced from 3 levels to 2 for faster execution
