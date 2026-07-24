@@ -12,13 +12,33 @@ Since the CI workflow pods are deleted immediately after completion (podGC: OnPo
 - **Status**: PASSED
 - **Test Files**: 111 passed (111)
 - **Total Tests**: 5262 passed (5262)
-- **Duration**: 24.76s
-  - Transform: 5.29s
-  - Setup: 2.24s
-  - Collect: 23.86s
-  - Tests: 50.12s
-  - Environment: 29.65s
-  - Prepare: 21.68s
+
+### Test Coverage Areas
+- **Replay System:** URL handling, encoding/decoding, recording, playback
+- **Share Functionality:** Web Share API, file sharing, mobile detection
+- **Game Solvers:** Bridge-race solver with hand-crafted level validation
+- **Daily Challenge Behavioral:** Completion calls for multiple game types
+- **Schema Validation:** Level JSON structure validation
+- **Generator Validation:** Procedural level generation verification
+
+## Level Test Results (npm run test:levels)
+**Schema Results:** 305 passed, 25 failed
+**Generator Results:** All game generators producing expected levels
+
+### Schema Validation Issues
+25 levels failed schema validation, all in satisfying-asmr game:
+- `asmr-001.json` through `asmr-010.json` (10 levels total)
+- Issue: `instance.difficulty` is not a string type and not one of enum values (easy, medium, hard)
+
+### Generator Validation Status
+All game generators successfully produced validated levels:
+- bridge-race: easy, medium, hard ✓
+- crowd-runner: easy, medium, hard ✓
+- giant-runner: easy, medium ✓
+- jelly-shift: easy, medium, hard ✓
+- makeover-run: easy, medium, hard ✓
+- merge-games: easy, medium, hard ✓
+- parking-escape: easy ✓
 
 ## Log File Location
 `notes/unit-test-logs.txt` (7247 lines)
