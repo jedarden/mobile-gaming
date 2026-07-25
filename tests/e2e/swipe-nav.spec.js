@@ -12,8 +12,21 @@ const BRAIN_TEASER_URL = '/brain-teaser/';
 test.describe('Swipe Navigation', () => {
   test.describe('Game Ring Indicator', () => {
     test.beforeEach(async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       // Navigate to a game
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       // Wait for game to initialize
       await page.waitForSelector('#game-canvas');
     });
@@ -43,7 +56,21 @@ test.describe('Swipe Navigation', () => {
   test.describe('Edge Swipe Detection', () => {
     test.beforeEach(async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
+
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
     });
 
@@ -91,7 +118,20 @@ test.describe('Swipe Navigation', () => {
 
   test.describe('Two-Finger Swipe', () => {
     test.beforeEach(async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
     });
 
@@ -155,7 +195,20 @@ test.describe('Swipe Navigation', () => {
 
   test.describe('State Preservation', () => {
     test.beforeEach(async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
     });
 
@@ -192,8 +245,19 @@ test.describe('Swipe Navigation', () => {
         localStorage.setItem(key, JSON.stringify(data));
       });
 
-      // Reload page
+      // Reload page - wait for network requests
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
 
       // Verify state was stored
@@ -209,7 +273,20 @@ test.describe('Swipe Navigation', () => {
 
   test.describe('Game Ring Configuration', () => {
     test('should have configurable game ring order', async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
 
       // Test game ring storage
@@ -230,7 +307,20 @@ test.describe('Swipe Navigation', () => {
     });
 
     test('should support wrap-around navigation', async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
 
       // Test wrap-around logic
       const result = await page.evaluate(() => {
@@ -259,7 +349,20 @@ test.describe('Swipe Navigation', () => {
 
   test.describe('Preloading', () => {
     test('should preload adjacent games on initialization', async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
 
       // Check for modulepreload links (if swipe-nav is integrated)
@@ -274,7 +377,20 @@ test.describe('Swipe Navigation', () => {
 
   test.describe('Accessibility', () => {
     test.beforeEach(async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
     });
 
@@ -309,7 +425,20 @@ test.describe('Swipe Navigation', () => {
 
   test.describe('Integration with Games', () => {
     test('should integrate swipe navigation module into game', async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
 
       // Check if initSwipeNav is available
@@ -322,7 +451,20 @@ test.describe('Swipe Navigation', () => {
     });
 
     test('should not interfere with game input handling', async ({ page }) => {
+      // Wait for game.js module to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+      );
+
+      // Wait for levels.json network request to complete
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(WATER_SORT_URL);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas');
 
       // Click in center of canvas (game interaction area)
@@ -342,7 +484,20 @@ test.describe('Swipe Navigation - Mobile Viewport', () => {
   });
 
   test('should handle touch events on mobile', async ({ page }) => {
+    // Wait for game.js module to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+    );
+
+    // Wait for levels.json network request to complete
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(WATER_SORT_URL);
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Simulate touch on canvas
@@ -360,7 +515,20 @@ test.describe('Swipe Navigation - Mobile Viewport', () => {
   });
 
   test('edge threshold should work on narrow screens', async ({ page }) => {
+    // Wait for game.js module to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+    );
+
+    // Wait for levels.json network request to complete
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(WATER_SORT_URL);
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Test edge detection at 40px threshold
