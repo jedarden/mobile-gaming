@@ -10,7 +10,18 @@ const GAME_URL = '/jelly-shift/';
 
 test.describe('Jelly Shift Game', () => {
   test.beforeEach(async ({ page }) => {
+    // Wait for game module and levels.json to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/jelly-shift/game.js') && response.status() === 200
+    );
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(GAME_URL);
+
+    // Ensure network resources are loaded before waiting for UI
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     // Wait for Three.js canvas to render
     await page.waitForSelector('#game-container canvas', { timeout: 5000 });
   });

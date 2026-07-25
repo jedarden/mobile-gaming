@@ -10,7 +10,18 @@ const GAME_URL = '/brain-teaser/';
 
 test.describe('Brain Teaser Game', () => {
   test.beforeEach(async ({ page }) => {
+    // Wait for game module and levels.json to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/brain-teaser/game.js') && response.status() === 200
+    );
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(GAME_URL);
+
+    // Ensure network resources are loaded before waiting for UI
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     // Wait for game to initialize
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
