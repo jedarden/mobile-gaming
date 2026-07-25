@@ -72,7 +72,13 @@ async function hasLevelNav(page) {
 test.describe('Level Navigation - Core Rendering', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: renders level nav strip at bottom of screen`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level nav strip should exist
@@ -92,27 +98,43 @@ test.describe('Level Navigation - Core Rendering', () => {
     });
 
     test(`${gameId}: level dots are rendered with correct count`, async ({ page }) => {
+      // Wait for levels.json network request to complete before verifying UI state
+      // This prevents race conditions where UI might render before data is loaded
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+
+      // Ensure the network request completes before checking UI state
+      await levelsJsonPromise;
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
-      // Get total levels from levels.json (minimum 3)
-      const totalLevels = await page.evaluate(async () => {
-        const response = await fetch('./levels.json');
-        const levels = await response.json();
-        return levels.length;
-      });
-
-      // Should have at least 3 level dots
+      // Verify we have at least 3 level dots (minimum required by scaffold)
+      // The actual count comes from levels.json which is now loaded
       const levelDots = page.locator('.mg-level-dot[data-level]');
       const count = await levelDots.count();
-      expect(count).toBeGreaterThanOrEqual(Math.min(totalLevels, 3));
+      expect(count).toBeGreaterThanOrEqual(3);
     });
 
     test(`${gameId}: current level is highlighted correctly`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       // Clear progress first
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await clearGameProgress(page, gameId);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Current level dot (level 0/1) should have blue color
@@ -135,7 +157,13 @@ test.describe('Level Navigation - Core Rendering', () => {
     });
 
     test(`${gameId}: level strip is horizontally scrollable`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const navStrip = page.locator('.mg-level-nav');
@@ -153,12 +181,25 @@ test.describe('Level Navigation - Core Rendering', () => {
 test.describe('Level Navigation - Visual States', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: completed levels show green with checkmark`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Set level 0 as completed
       await setGameProgress(page, gameId, { '0': 'completed' }, 1);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level 0 dot should show green/completed state
@@ -180,12 +221,25 @@ test.describe('Level Navigation - Visual States', () => {
     });
 
     test(`${gameId}: locked levels are grayed out`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Clear progress so all levels except first are locked
       await clearGameProgress(page, gameId);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level 2 should be locked (index 2)
@@ -207,12 +261,25 @@ test.describe('Level Navigation - Visual States', () => {
     });
 
     test(`${gameId}: skipped levels show dash indicator`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Mark level 0 as skipped, current is level 1
       await setGameProgress(page, gameId, { '0': 'skipped' }, 1);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const skippedDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -226,7 +293,13 @@ test.describe('Level Navigation - Visual States', () => {
 test.describe('Level Navigation - Tap Interactions', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: tapping current level does nothing destructive`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const currentDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -242,12 +315,25 @@ test.describe('Level Navigation - Tap Interactions', () => {
     });
 
     test(`${gameId}: tapping unlocked level navigates to it`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Complete level 0, making level 1 unlocked
       await setGameProgress(page, gameId, { '0': 'completed' }, 1);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Tap level 0 dot (unlocked/completed)
@@ -260,7 +346,13 @@ test.describe('Level Navigation - Tap Interactions', () => {
     });
 
     test(`${gameId}: locked levels are not interactive`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // With no progress, level 2 should be locked
@@ -277,7 +369,13 @@ test.describe('Level Navigation - Tap Interactions', () => {
     });
 
     test(`${gameId}: level dots have proper ARIA labels`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const levelDots = page.locator('.mg-level-dot[data-level]');
@@ -292,7 +390,13 @@ test.describe('Level Navigation - Tap Interactions', () => {
 test.describe('Level Navigation - Daily Challenge', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: daily challenge indicator shows when available`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Wait for level-nav to be present and fully rendered
@@ -337,7 +441,13 @@ test.describe('Level Navigation - Daily Challenge', () => {
     });
 
     test(`${gameId}: daily shows green when completed`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Wait for level-nav to be present and fully rendered
@@ -374,7 +484,13 @@ test.describe('Level Navigation - Daily Challenge', () => {
           localStorage.setItem('mg:daily', JSON.stringify(data));
         }, today);
 
+        // Wait for levels.json to load after reload
+        const reloadLevelsPromise = page.waitForResponse(response =>
+          response.url().includes('levels.json') && response.status() === 200
+        );
+
         await page.reload();
+        await reloadLevelsPromise; // Ensure levels data is loaded
         await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
         // Wait for level-nav to be present and fully rendered
@@ -405,7 +521,13 @@ test.describe('Level Navigation - Daily Challenge', () => {
 test.describe('Level Navigation - Endless Mode', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: endless mode indicator shows when available`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check if this game has endless mode
@@ -430,7 +552,13 @@ test.describe('Level Navigation - Endless Mode', () => {
     });
 
     test(`${gameId}: endless dot is tappable`, async ({ page }) => {
+      // Wait for levels.json to load before checking UI
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const hasEndless = await page.evaluate(() =>
@@ -458,12 +586,25 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
       const storageKey = `level-progress:${gameId}`;
       const currentKey = `level-progress:${gameId}:current`;
 
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       // Set initial progress
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       await setGameProgress(page, gameId, { '0': 'completed', '1': 'completed' }, 2);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check progress persisted
@@ -483,7 +624,13 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
     });
 
     test(`${gameId}: level strip updates after completing a level`, async ({ page }) => {
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Initially on level 0
@@ -492,7 +639,14 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
 
       // Mark level 0 as completed
       await setGameProgress(page, gameId, { '0': 'completed' }, 1);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level 0 should now show completed state
@@ -510,7 +664,13 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
     });
 
     test(`${gameId}: localStorage uses correct keys`, async ({ page }) => {
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check that keys are properly formatted
@@ -533,7 +693,14 @@ test.describe('Level Navigation - Responsive Design', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: level nav works on mobile viewport`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
+
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const navStrip = page.locator('.mg-level-nav');
@@ -549,7 +716,14 @@ test.describe('Level Navigation - Responsive Design', () => {
 
     test(`${gameId}: level nav works on tablet viewport`, async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
+
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const navStrip = page.locator('.mg-level-nav');
@@ -557,7 +731,13 @@ test.describe('Level Navigation - Responsive Design', () => {
     });
 
     test(`${gameId}: level dots are tap-friendly size`, async ({ page }) => {
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const firstDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -576,7 +756,13 @@ test.describe('Level Navigation - Responsive Design', () => {
 test.describe('Level Navigation - Accessibility', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: all interactive elements have aria-labels`, async ({ page }) => {
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check all level dots
@@ -591,12 +777,25 @@ test.describe('Level Navigation - Accessibility', () => {
     });
 
     test(`${gameId}: current level auto-scrolls into view`, async ({ page }) => {
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Set to a higher level
       await setGameProgress(page, gameId, { '0': 'completed', '1': 'completed', '2': 'completed' }, 3);
+
+      // Wait for levels.json to load after reload
+      const reloadLevelsPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.reload();
+      await reloadLevelsPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Wait for auto-scroll to complete
@@ -626,7 +825,13 @@ test.describe('Level Navigation - Accessibility', () => {
     });
 
     test(`${gameId}: locked dots have disabled appearance`, async ({ page }) => {
+      // Wait for levels.json to load
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // With no progress, level 3+ should be locked
@@ -650,7 +855,13 @@ test.describe('Level Navigation - Cross-Game Consistency', () => {
     const gamesWithNav = [];
 
     for (const gameId of GAMES_WITH_LEVEL_NAV) {
+      // Wait for levels.json to load for each game
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const hasNav = await hasLevelNav(page);
@@ -665,7 +876,13 @@ test.describe('Level Navigation - Cross-Game Consistency', () => {
 
   test('all games use consistent CSS class names', async ({ page }) => {
     for (const gameId of GAMES_WITH_LEVEL_NAV.slice(0, 3)) {
+      // Wait for levels.json to load for each game
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.goto(`/${gameId}/`);
+      await levelsJsonPromise; // Ensure levels data is loaded
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const hasNav = await hasLevelNav(page);
@@ -686,7 +903,14 @@ test.describe('Level Navigation - Cross-Game Consistency', () => {
 test.describe('Level Navigation - Edge Cases', () => {
   test('handles rapid level switching gracefully', async ({ page }) => {
     const gameId = 'water-sort';
+
+    // Wait for levels.json to load
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(`/${gameId}/`);
+    await levelsJsonPromise; // Ensure levels data is loaded
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Set up multiple completed levels
@@ -695,7 +919,14 @@ test.describe('Level Navigation - Edge Cases', () => {
       '1': 'completed',
       '2': 'completed'
     }, 3);
+
+    // Wait for levels.json to load after reload
+    const reloadLevelsPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.reload();
+    await reloadLevelsPromise; // Ensure levels data is loaded
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Rapidly tap different level dots
@@ -715,9 +946,24 @@ test.describe('Level Navigation - Edge Cases', () => {
 
   test('handles empty progress correctly', async ({ page }) => {
     const gameId = 'water-sort';
+
+    // Wait for levels.json to load
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(`/${gameId}/`);
+    await levelsJsonPromise; // Ensure levels data is loaded
+
     await clearGameProgress(page, gameId);
+
+    // Wait for levels.json to load after reload
+    const reloadLevelsPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.reload();
+    await reloadLevelsPromise; // Ensure levels data is loaded
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Should still show level-nav
@@ -731,15 +977,22 @@ test.describe('Level Navigation - Edge Cases', () => {
 
   test('handles all levels completed', async ({ page }) => {
     const gameId = 'water-sort';
+
+    // Wait for levels.json network request to complete before accessing level data
+    // This ensures the JSON is fully loaded before we query total level count
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(`/${gameId}/`);
+
+    // Ensure the network request completes
+    await levelsJsonPromise;
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
-    // Get total levels
-    const totalLevels = await page.evaluate(async () => {
-      const response = await fetch('./levels.json');
-      const levels = await response.json();
-      return levels.length;
-    });
+    // Get total levels by reading the level dots count (already rendered from loaded data)
+    const allDots = page.locator('.mg-level-dot[data-level]');
+    const totalLevels = await allDots.count();
 
     // Mark all as completed
     const allCompleted = {};
@@ -748,11 +1001,18 @@ test.describe('Level Navigation - Edge Cases', () => {
     }
 
     await setGameProgress(page, gameId, allCompleted, totalLevels - 1);
+
+    // Wait for levels.json to load after reload
+    const reloadLevelsPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.reload();
+    await reloadLevelsPromise; // Ensure levels data is loaded after reload
+
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // All should show checkmarks
-    const allDots = page.locator('.mg-level-dot[data-level]');
     const count = await allDots.count();
 
     for (let i = 0; i < Math.min(count, 5); i++) {

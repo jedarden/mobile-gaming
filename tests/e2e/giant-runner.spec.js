@@ -8,7 +8,20 @@ const GAME_URL = '/giant-runner/';
 
 test.describe('Giant Runner', () => {
   test.beforeEach(async ({ page }) => {
+    // Wait for game.js module to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/giant-runner/game.js') && response.status() === 200
+    );
+
+    // Wait for levels.json network request to complete
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(GAME_URL);
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-container canvas', { timeout: 5000 });
   });
 
@@ -44,17 +57,48 @@ test.describe('Giant Runner', () => {
 
   test('level navigation works', async ({ page }) => {
     await expect(page.locator('#btn-next')).toBeEnabled();
+
+    // Wait for level data to load after navigation
+    const levelLoadPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.click('#btn-next');
+    await levelLoadPromise; // Ensure level data is loaded before checking UI
+
     await expect(page.locator('#level-display')).toHaveText('2');
     await expect(page.locator('#level-progress')).toContainText('Level 2');
+
+    // Wait for level data to load after navigating back
+    const prevLevelPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.click('#btn-prev');
+    await prevLevelPromise; // Ensure level data is loaded before checking UI
+
     await expect(page.locator('#level-display')).toHaveText('1');
   });
 
   test('restart button resets to level 1', async ({ page }) => {
+    // Wait for level data to load after navigating to next level
+    const levelLoadPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.click('#btn-next');
+    await levelLoadPromise; // Ensure level data is loaded
+
     await expect(page.locator('#level-display')).toHaveText('2');
+
+    // Wait for level data to load after restart
+    const restartPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.click('#btn-restart');
+    await restartPromise; // Ensure level data is loaded after reset
+
     await expect(page.locator('#level-display')).toHaveText('1');
     await expect(page.locator('#game-container')).toBeVisible();
   });
