@@ -50,6 +50,11 @@ test.describe('Share your solve - record and share flow', () => {
   });
 
   test('records a clip, burns the outro card, and opens the share picker', async ({ page }) => {
+    // Wait for gameplay-share.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/gameplay-share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const { createSolveRecorder } = await import('/src/shared/gameplay-share.js');
 
@@ -84,12 +89,24 @@ test.describe('Share your solve - record and share flow', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(result.threw).toBe(false);
     expect(result.capturing).toBe(true);
 
+    // Wait for share.js module to load for share picker initialization
     // Desktop Chromium is not "mobile", so share.js renders the custom picker.
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    ).catch(() => null); // No-op if already loaded or no network request
+
     const overlay = page.locator('#share-overlay');
     await expect(overlay).toBeVisible({ timeout: 3000 });
+
+    // Ensure share.js has loaded before checking picker elements
+    await shareModulePromise;
+
     await expect(overlay.locator('.share-platform-btn').first()).toBeVisible();
     // A recorded clip was attached, so the download (video) action is present.
     await expect(overlay.locator('.share-download-btn')).toBeVisible();
