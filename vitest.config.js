@@ -19,7 +19,7 @@ export default defineConfig({
 
     // Slow test logging for debugging
     slowTestThreshold: 3000, // Log tests slower than 3s
-    reporters: ['verbose'],  // Show detailed test timing info
+    reporters: ['verbose', './tests/timing-reporter.js'],  // Custom timing reporter
 
     // Isolation and concurrency
     isolate: true,           // Isolate each test file

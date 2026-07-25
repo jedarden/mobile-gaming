@@ -13,6 +13,9 @@
     "test:bundle-size": "node scripts/check-bundle-size.js",
     "test:og": "node scripts/check-og-images.js",
     "test:audio": "vitest run tests/unit/game-audio-wiring.test.js tests/unit/game-audio-mute-gating.test.js tests/unit/audio.test.js tests/unit/brain-teaser-audio.test.js tests/unit/bus-jam-audio.test.js tests/shared/audio.test.js",
+    "test:timing": "node scripts/aggregate-timing-data.js",
+    "test:timing:json": "node scripts/aggregate-timing-data.js --format json",
+    "test:timing:md": "node scripts/aggregate-timing-data.js --format markdown",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:og": "node scripts/generate-og.js",
     "lint": "eslint src/"
