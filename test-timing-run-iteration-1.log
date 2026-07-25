@@ -1,0 +1,73 @@
+
+> test
+> vitest run tests/profile/setup-teardown-measurement.test.js
+
+
+ RUN  v3.2.7 /home/coding/mobile-gaming
+
+stdout | tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite
+
+Setup/Teardown Measurement Suite - Timing Summary:
+  Setup (beforeAll + beforeEach): 25.32ms (65.92%)
+  Test Execution:                   4.65ms (12.11%)
+  Teardown (afterEach + afterAll):  8.44ms (21.97%)
+  Total:                            38.41ms
+
+Detailed Breakdown:
+  beforeAll:  9.41ms (2 calls, avg 4.70ms)
+  beforeEach: 15.91ms (17 calls, avg 0.936ms)
+  afterEach:  3.32ms (17 calls, avg 0.195ms)
+  afterAll:   5.12ms (1 calls, avg 5.12ms)
+
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Minimal Setup Overhead > minimal test 1 1ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Minimal Setup Overhead > minimal test 2 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Minimal Setup Overhead > minimal test 3 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Moderate Setup Overhead > moderate test 1 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Moderate Setup Overhead > moderate test 2 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Moderate Setup Overhead > moderate test 3 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Heavy Setup Overhead > heavy test 1 5ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Heavy Setup Overhead > heavy test 2 4ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Heavy Setup Overhead > heavy test 3 5ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Async Setup Overhead > async test 1 4ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Async Setup Overhead > async test 2 4ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Async Setup Overhead > async test 3 4ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Nested Describes with Hooks > nested test 1 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Nested Describes with Hooks > Nested Suite 1 > nested test 2 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Nested Describes with Hooks > Nested Suite 1 > nested test 3 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Fixture Loading Simulation > should use fixture data 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Fixture Loading Simulation > should query fixture data 0ms
+ ✓ tests/profile/setup-teardown-measurement.test.js > Setup/Teardown Measurement Suite > Fixture Loading Simulation > should process fixture data 0ms
+Available state properties: filesMap, pathsSet, idMap, taskFileMap, errorsSet, processTimeoutCauses, reportedTasksMap, blobs
+Using state.filesMap
+Processing 1 test files
+Sample file - name: tests/profile/setup-teardown-measurement.test.js, type: suite
+Sample file has tasks: 1
+Extracted 18 test results
+
+✓ Timing data written to: /home/coding/mobile-gaming/test-timing-results/timing-2026-07-25T02-42-49.json
+
+=== Test Timing Summary ===
+Total Tests: 18
+Passed: 18, Failed: 0, Skipped: 0
+Total Duration: 0.23s
+
+Top 10 Slowest Tests:
+  1. heavy test 1 - 0.005s (setup-teardown-measurement.test.js)
+  2. heavy test 3 - 0.005s (setup-teardown-measurement.test.js)
+  3. heavy test 2 - 0.004s (setup-teardown-measurement.test.js)
+  4. async test 2 - 0.004s (setup-teardown-measurement.test.js)
+  5. async test 1 - 0.004s (setup-teardown-measurement.test.js)
+  6. async test 3 - 0.004s (setup-teardown-measurement.test.js)
+  7. minimal test 1 - 0.001s (setup-teardown-measurement.test.js)
+  8. moderate test 1 - 0.000s (setup-teardown-measurement.test.js)
+  9. nested test 1 - 0.000s (setup-teardown-measurement.test.js)
+  10. minimal test 3 - 0.000s (setup-teardown-measurement.test.js)
+
+Top 10 Slowest Files:
+  1. setup-teardown-measurement.test.js - 0.05s (18 tests)
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  22:42:49
+   Duration  231ms (transform 37ms, setup 6ms, collect 21ms, tests 46ms, environment 0ms, prepare 52ms)
+
