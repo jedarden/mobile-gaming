@@ -1,0 +1,35 @@
+file,line,operation_type,specific_operation,current_implementation,recommended_wait,priority,estimated_effort
+tests/e2e/gameplay-share.spec.js,54,module_import,await import('/src/shared/gameplay-share.js'),waitForFunction only,waitForResponse for /src/shared/gameplay-share.js,MEDIUM,10min
+tests/e2e/gameplay-share.spec.js,76,share_api,rec.shareSolve() call,waitForFunction for overlay,Wait for share picker initialization,MEDIUM,5min
+tests/e2e/recorder.spec.js,27,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,53,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,76,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,100,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,134,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,168,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,215,module_import,await import('/src/shared/recorder.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,262,module_import,await import('/src/shared/video-overlay.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,288,module_import,await import('/src/shared/video-overlay.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,312,module_import,await import('/src/shared/video-overlay.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,341,module_import,await import('/src/shared/video-overlay.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,375,module_import,await import('/src/shared/video-overlay.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,404,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,430,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,452,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,473,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,498,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,525,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,555,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,575,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,596,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/recorder.spec.js,617,module_import,await import('/src/shared/share.js'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/level-nav.spec.js,106,level_data,fetch('./levels.json'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/level-nav.spec.js,754,level_data,fetch('./levels.json'),✅ ALREADY HAS waitForResponse,N/A,LOW,0min
+tests/e2e/cross-game.spec.js,44,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/cross-game.spec.js,81,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/cross-game.spec.js,114,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/gameplay-share.spec.js,22,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/gameplay-share.spec.js,48,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/lifecycle.spec.js,21,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/lifecycle.spec.js,145,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
+tests/e2e/lifecycle.spec.js,222,page_navigation,page.goto() for game load,waitForSelector only,waitForLoadState('networkidle') optional,LOW,5min
