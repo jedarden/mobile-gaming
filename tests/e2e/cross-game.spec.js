@@ -43,8 +43,19 @@ test.describe('Cross-Game Navigation Flow', () => {
       const playBtn = gameCard.locator('.play-btn');
       await playBtn.click();
 
-      // Step 3: Wait for game to load
+      // Step 3: Wait for game resources to load from network
+      // This ensures game.js module and levels.json are loaded before checking UI
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes(`/src/games/${game.id}/game.js`) && response.status() === 200
+      );
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.waitForURL(game.path);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Verify game loaded
@@ -89,7 +100,17 @@ test.describe('Quick Play Cross-Game Flow', () => {
     const gameId = GAMES.find(g => currentUrl.includes(g.path))?.id;
     expect(gameId).toBeDefined();
 
-    // Wait for game to load
+    // Wait for game resources to load from network
+    // This ensures game.js module and levels.json are loaded before checking UI
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes(`/src/games/${gameId}/game.js`) && response.status() === 200
+    );
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Perform minimal interaction
@@ -117,8 +138,19 @@ test.describe('All Games Navigation Loop', () => {
       const gameCard = page.locator(`.game-card[data-game-id="${game.id}"]`);
       await gameCard.locator('.play-btn').click();
 
-      // Wait for game to load
+      // Wait for game resources to load from network
+      // This ensures game.js module and levels.json are loaded before checking UI
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes(`/src/games/${game.id}/game.js`) && response.status() === 200
+      );
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
       await page.waitForURL(game.path);
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Verify game loaded
@@ -161,7 +193,17 @@ test.describe('Game Categories Filter and Navigate', () => {
       // Navigate to first game in category
       await visibleCards.first().locator('.play-btn').click();
 
-      // Verify game loaded
+      // Wait for game resources to load from network
+      // This ensures game.js module and levels.json are loaded before checking UI
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes('/src/games/') && response.url().includes('/game.js') && response.status() === 200
+      );
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
       await expect(page.locator('.back-link')).toBeVisible();
 
@@ -239,6 +281,17 @@ test.describe('Cross-Game State Management', () => {
     // Start with brain-teaser
     await page.goto(HUB_URL);
     await page.click('.game-card[data-game-id="brain-teaser"] .play-btn');
+
+    // Wait for game resources to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/brain-teaser/game.js') && response.status() === 200
+    );
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Set some state in first game
@@ -252,6 +305,17 @@ test.describe('Cross-Game State Management', () => {
 
     // Navigate to second game
     await page.click('.game-card[data-game-id="water-sort"] .play-btn');
+
+    // Wait for game resources to load from network
+    const waterSortModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/water-sort/game.js') && response.status() === 200
+    );
+    const waterSortLevelsPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([waterSortModulePromise, waterSortLevelsPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Verify second game loaded correctly
@@ -266,6 +330,17 @@ test.describe('Cross-Game State Management', () => {
     await page.locator('.back-link').click();
     await page.waitForURL(HUB_URL);
     await page.click('.game-card[data-game-id="brain-teaser"] .play-btn');
+
+    // Wait for game resources to load from network
+    const brainTeaserModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/brain-teaser/game.js') && response.status() === 200
+    );
+    const brainTeaserLevelsPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([brainTeaserModulePromise, brainTeaserLevelsPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Verify first game state is preserved
@@ -288,6 +363,16 @@ test.describe('Cross-Game Performance', () => {
       await page.goto(HUB_URL);
       await page.click(`.game-card[data-game-id="${game.id}"] .play-btn`);
 
+      // Wait for game resources to load from network
+      const gameModulePromise = page.waitForResponse(response =>
+        response.url().includes(`/src/games/${game.id}/game.js`) && response.status() === 200
+      );
+      const levelsJsonPromise = page.waitForResponse(response =>
+        response.url().includes('levels.json') && response.status() === 200
+      );
+
+      // Ensure network requests complete before waiting for selectors
+      await Promise.all([gameModulePromise, levelsJsonPromise]);
       await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const loadTime = Date.now() - startTime;
