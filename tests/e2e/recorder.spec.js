@@ -178,10 +178,18 @@ test.describe('Video Recording Module', () => {
 
         const isActive = recorder.isActive();
 
-        // Minimal wait for MediaRecorder to encode at least one frame.
-        // MediaRecorder starts asynchronously and requires time for the encoder
-        // to produce data. Without this, stopRecording() may return an empty blob.
-        await new Promise(r => setTimeout(r, 50));
+        // Wait for MediaRecorder to encode at least one frame by polling
+        // for buffered chunks instead of using a fixed timeout.
+        await new Promise((resolve) => {
+          const checkChunks = () => {
+            if (recorder.getBufferedChunks().length > 0) {
+              resolve();
+            } else {
+              setTimeout(checkChunks, 5);
+            }
+          };
+          checkChunks();
+        });
 
         const blob = await recorder.stopRecording();
 

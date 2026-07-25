@@ -74,10 +74,19 @@ test.describe('Share your solve - record and share flow', () => {
 
         const capturing = rec.isCapturing();
 
-        // Minimal wait for MediaRecorder to encode at least one frame.
-        // MediaRecorder starts asynchronously and requires time for the encoder
-        // to produce data. Without this, shareSolve may produce an empty recording.
-        await new Promise((r) => setTimeout(r, 50));
+        // Wait for MediaRecorder to encode at least one frame by polling
+        // for buffered chunks instead of using a fixed timeout.
+        const { recorder } = await import('/src/shared/recorder.js');
+        await new Promise((resolve) => {
+          const checkChunks = () => {
+            if (recorder.getBufferedChunks().length > 0) {
+              resolve();
+            } else {
+              setTimeout(checkChunks, 5);
+            }
+          };
+          checkChunks();
+        });
         await rec.shareSolve({
           stats: { moves: 12, time: 34, stars: 3 },
           url: 'https://example.com/jelly-shift',
