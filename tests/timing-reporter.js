@@ -138,10 +138,15 @@ class TimingReporter {
 
   processTask(task, tests, file) {
     if (task.type === 'test' && task.result) {
+      // Normalize state names: pass -> passed, fail -> failed
+      let state = task.result.state || 'unknown';
+      if (state === 'pass') state = 'passed';
+      else if (state === 'fail') state = 'failed';
+
       const timingInfo = {
         name: task.name,
         file: file,
-        result: task.result.state || 'unknown',
+        result: state,
         duration: task.result.duration || 0,
         startTime: task.result.startTime,
         endTime: task.result.endTime
