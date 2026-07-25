@@ -95,6 +95,37 @@ function loadTimingData(files) {
   return runs;
 }
 
+// Calculate statistical measures
+function calculateStatistics(values) {
+  if (values.length === 0) {
+    return { min: 0, max: 0, mean: 0, median: 0, stdDev: 0 };
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const min = sorted[0];
+  const max = sorted[sorted.length - 1];
+
+  // Mean
+  const sum = values.reduce((acc, val) => acc + val, 0);
+  const mean = sum / values.length;
+
+  // Median
+  let median;
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    median = (sorted[mid - 1] + sorted[mid]) / 2;
+  } else {
+    median = sorted[mid];
+  }
+
+  // Standard deviation
+  const squaredDiffs = values.map(val => Math.pow(val - mean, 2));
+  const variance = squaredDiffs.reduce((acc, val) => acc + val, 0) / values.length;
+  const stdDev = Math.sqrt(variance);
+
+  return { min, max, mean, median, stdDev };
+}
+
 // Aggregate statistics across runs
 function aggregateStats(runs) {
   const stats = {
@@ -105,10 +136,8 @@ function aggregateStats(runs) {
       passedTests: 0,
       failedTests: 0,
       skippedTests: 0,
-      avgDuration: 0,
-      minDuration: Infinity,
-      maxDuration: 0,
-      totalDuration: 0
+      totalDuration: 0,
+      durations: [] // Track all durations for proper statistics
     },
     byTest: {},
     byFile: {},
@@ -125,8 +154,7 @@ function aggregateStats(runs) {
     stats.overall.failedTests += summary.failedTests;
     stats.overall.skippedTests += summary.skippedTests;
     stats.overall.totalDuration += duration;
-    stats.overall.minDuration = Math.min(stats.overall.minDuration, duration);
-    stats.overall.maxDuration = Math.max(stats.overall.maxDuration, duration);
+    stats.overall.durations.push(duration);
 
     // Track per-test statistics
     for (const test of run.tests) {
@@ -137,8 +165,7 @@ function aggregateStats(runs) {
           file: test.file,
           runs: 0,
           totalTime: 0,
-          minTime: Infinity,
-          maxTime: 0,
+          durations: [], // Track all durations for proper statistics
           failures: 0,
           skipped: 0
         };
@@ -147,8 +174,7 @@ function aggregateStats(runs) {
       const t = stats.byTest[key];
       t.runs++;
       t.totalTime += test.duration;
-      t.minTime = Math.min(t.minTime, test.duration);
-      t.maxTime = Math.max(t.maxTime, test.duration);
+      t.durations.push(test.duration);
 
       if (test.result === 'failed') t.failures++;
       if (test.result === 'skipped') t.skipped++;
@@ -164,8 +190,7 @@ function aggregateStats(runs) {
             file: file.file,
             runs: 0,
             totalTime: 0,
-            minTime: Infinity,
-            maxTime: 0,
+            durations: [], // Track all durations for proper statistics
             testCount: 0
           };
         }
@@ -173,8 +198,7 @@ function aggregateStats(runs) {
         const f = stats.byFile[file.file];
         f.runs++;
         f.totalTime += file.duration;
-        f.minTime = Math.min(f.minTime, file.duration);
-        f.maxTime = Math.max(f.maxTime, file.duration);
+        f.durations.push(file.duration);
         f.testCount = Math.max(f.testCount, file.testCount);
       }
     }
@@ -189,18 +213,27 @@ function aggregateStats(runs) {
     });
   }
 
-  // Calculate averages
-  stats.overall.avgDuration = stats.overall.totalDuration / stats.runCount;
+  // Calculate overall statistics
+  stats.overall.stats = calculateStatistics(stats.overall.durations);
+  stats.overall.avgDuration = stats.overall.stats.mean;
+  stats.overall.minDuration = stats.overall.stats.min;
+  stats.overall.maxDuration = stats.overall.stats.max;
+  stats.overall.medianDuration = stats.overall.stats.median;
+  stats.overall.stdDev = stats.overall.stats.stdDev;
 
-  // Calculate per-test averages and find outliers
+  // Calculate per-test statistics and find outliers
   for (const key in stats.byTest) {
     const test = stats.byTest[key];
-    test.avgTime = test.totalTime / test.runs;
-    test.stdDev = calculateStdDev(test);
+    test.stats = calculateStatistics(test.durations);
+    test.avgTime = test.stats.mean;
+    test.minTime = test.stats.min;
+    test.maxTime = test.stats.max;
+    test.medianTime = test.stats.median;
+    test.stdDev = test.stats.stdDev;
 
     // Flag outliers: tests with >50% variation or consistently slow
-    const cv = test.stdDev / test.avgTime; // Coefficient of variation
-    if (cv > 0.5 || test.avgTime > 5000) {
+    const cv = test.stats.mean > 0 ? test.stats.stdDev / test.stats.mean : 0; // Coefficient of variation
+    if (cv > 0.5 || test.stats.mean > 5000) {
       stats.outliers.push({
         ...test,
         reason: cv > 0.5 ? 'high_variance' : 'consistently_slow'
@@ -208,20 +241,18 @@ function aggregateStats(runs) {
     }
   }
 
-  // Calculate per-file averages
+  // Calculate per-file statistics
   for (const key in stats.byFile) {
     const file = stats.byFile[key];
-    file.avgTime = file.totalTime / file.runs;
-    file.stdDev = calculateStdDev(file);
+    file.stats = calculateStatistics(file.durations);
+    file.avgTime = file.stats.mean;
+    file.minTime = file.stats.min;
+    file.maxTime = file.stats.max;
+    file.medianTime = file.stats.median;
+    file.stdDev = file.stats.stdDev;
   }
 
   return stats;
-}
-
-// Calculate standard deviation (placeholder - needs full data)
-function calculateStdDev(entity) {
-  // This is a simplified version - full implementation would need all data points
-  return entity.avgTime * 0.1; // Assume 10% variation as placeholder
 }
 
 // Output results
@@ -241,9 +272,11 @@ function outputStats(stats, format) {
   console.log(`Analyzing ${stats.runCount} runs from ${stats.runs[0].timestamp} to ${stats.runs[stats.runs.length - 1].timestamp}`);
 
   console.log('\n--- Overall Statistics ---');
-  console.log(`Average Duration: ${(stats.overall.avgDuration / 1000).toFixed(2)}s`);
-  console.log(`Min Duration: ${(stats.overall.minDuration / 1000).toFixed(2)}s`);
-  console.log(`Max Duration: ${(stats.overall.maxDuration / 1000).toFixed(2)}s`);
+  console.log(`Mean Duration: ${(stats.overall.stats.mean / 1000).toFixed(2)}s`);
+  console.log(`Median Duration: ${(stats.overall.stats.median / 1000).toFixed(2)}s`);
+  console.log(`Min Duration: ${(stats.overall.stats.min / 1000).toFixed(2)}s`);
+  console.log(`Max Duration: ${(stats.overall.stats.max / 1000).toFixed(2)}s`);
+  console.log(`Std Deviation: ±${(stats.overall.stats.stdDev / 1000).toFixed(2)}s`);
   console.log(`Average Tests per Run: ${Math.round(stats.overall.totalTests / stats.runCount)}`);
   console.log(`Average Pass Rate: ${((stats.overall.passedTests / stats.overall.totalTests) * 100).toFixed(1)}%`);
 
@@ -254,7 +287,7 @@ function outputStats(stats, format) {
 
   for (const test of slowestTests) {
     console.log(`  ${(test.avgTime / 1000).toFixed(3)}s | ${test.name} (${path.basename(test.file)})`);
-    console.log(`    Range: ${(test.minTime / 1000).toFixed(3)}s - ${(test.maxTime / 1000).toFixed(3)}s | ${test.failures} failures in ${test.runs} runs`);
+    console.log(`    Range: ${(test.minTime / 1000).toFixed(3)}s - ${(test.maxTime / 1000).toFixed(3)}s | Median: ${(test.medianTime / 1000).toFixed(3)}s | StdDev: ±${(test.stdDev / 1000).toFixed(3)}s | ${test.failures} failures in ${test.runs} runs`);
   }
 
   console.log('\n--- Top 10 Slowest Test Files (by average time) ---');
@@ -264,7 +297,7 @@ function outputStats(stats, format) {
 
   for (const file of slowestFiles) {
     console.log(`  ${(file.avgTime / 1000).toFixed(2)}s | ${path.basename(file.file)} (${file.testCount} tests)`);
-    console.log(`    Range: ${(file.minTime / 1000).toFixed(2)}s - ${(file.maxTime / 1000).toFixed(2)}s`);
+    console.log(`    Range: ${(file.minTime / 1000).toFixed(2)}s - ${(file.maxTime / 1000).toFixed(2)}s | Median: ${(file.medianTime / 1000).toFixed(2)}s | StdDev: ±${(file.stdDev / 1000).toFixed(2)}s`);
   }
 
   if (stats.outliers.length > 0) {
@@ -289,34 +322,36 @@ function outputMarkdown(stats) {
   console.log('## Overall Statistics\n');
   console.log(`| Metric | Value |`);
   console.log(`|--------|-------|`);
-  console.log(`| Average Duration | ${(stats.overall.avgDuration / 1000).toFixed(2)}s |`);
-  console.log(`| Min Duration | ${(stats.overall.minDuration / 1000).toFixed(2)}s |`);
-  console.log(`| Max Duration | ${(stats.overall.maxDuration / 1000).toFixed(2)}s |`);
+  console.log(`| Mean Duration | ${(stats.overall.stats.mean / 1000).toFixed(2)}s |`);
+  console.log(`| Median Duration | ${(stats.overall.stats.median / 1000).toFixed(2)}s |`);
+  console.log(`| Min Duration | ${(stats.overall.stats.min / 1000).toFixed(2)}s |`);
+  console.log(`| Max Duration | ${(stats.overall.stats.max / 1000).toFixed(2)}s |`);
+  console.log(`| Std Deviation | ±${(stats.overall.stats.stdDev / 1000).toFixed(2)}s |`);
   console.log(`| Average Tests per Run | ${Math.round(stats.overall.totalTests / stats.runCount)} |`);
   console.log(`| Average Pass Rate | ${((stats.overall.passedTests / stats.overall.totalTests) * 100).toFixed(1)}% |\n`);
 
   console.log('## Top 20 Slowest Tests\n');
-  console.log('| Rank | Test | File | Avg Time | Range | Failures |');
-  console.log('|------|------|------|----------|-------|----------|');
+  console.log('| Rank | Test | File | Mean | Median | Min | Max | StdDev | Failures |');
+  console.log('|------|------|------|------|--------|-----|-----|--------|----------|');
 
   const slowestTests = Object.values(stats.byTest)
-    .sort((a, b) => b.avgTime - a.avgTime)
+    .sort((a, b) => b.stats.mean - a.stats.mean)
     .slice(0, 20);
 
   slowestTests.forEach((test, i) => {
-    console.log(`| ${i + 1} | ${test.name} | ${path.basename(test.file)} | ${(test.avgTime / 1000).toFixed(3)}s | ${(test.minTime / 1000).toFixed(3)}s - ${(test.maxTime / 1000).toFixed(3)}s | ${test.failures}/${test.runs} |`);
+    console.log(`| ${i + 1} | ${test.name} | ${path.basename(test.file)} | ${(test.stats.mean / 1000).toFixed(3)}s | ${(test.stats.median / 1000).toFixed(3)}s | ${(test.stats.min / 1000).toFixed(3)}s | ${(test.stats.max / 1000).toFixed(3)}s | ±${(test.stats.stdDev / 1000).toFixed(3)}s | ${test.failures}/${test.runs} |`);
   });
 
   console.log('\n## Top 10 Slowest Test Files\n');
-  console.log('| Rank | File | Tests | Avg Time | Range |');
-  console.log('|------|------|-------|----------|-------|');
+  console.log('| Rank | File | Tests | Mean | Median | Min | Max | StdDev |');
+  console.log('|------|------|-------|------|--------|-----|-----|--------|');
 
   const slowestFiles = Object.values(stats.byFile)
-    .sort((a, b) => b.avgTime - a.avgTime)
+    .sort((a, b) => b.stats.mean - a.stats.mean)
     .slice(0, 10);
 
   slowestFiles.forEach((file, i) => {
-    console.log(`| ${i + 1} | ${path.basename(file.file)} | ${file.testCount} | ${(file.avgTime / 1000).toFixed(2)}s | ${(file.minTime / 1000).toFixed(2)}s - ${(file.maxTime / 1000).toFixed(2)}s |`);
+    console.log(`| ${i + 1} | ${path.basename(file.file)} | ${file.testCount} | ${(file.stats.mean / 1000).toFixed(2)}s | ${(file.stats.median / 1000).toFixed(2)}s | ${(file.stats.min / 1000).toFixed(2)}s | ${(file.stats.max / 1000).toFixed(2)}s | ±${(file.stats.stdDev / 1000).toFixed(2)}s |`);
   });
 
   if (stats.outliers.length > 0) {
@@ -326,7 +361,7 @@ function outputMarkdown(stats) {
     console.log('|------|------|--------|----------|--------|');
 
     stats.outliers.slice(0, 10).forEach(test => {
-      console.log(`| ${test.name} | ${path.basename(test.file)} | ${test.reason} | ${(test.avgTime / 1000).toFixed(3)}s | ±${(test.stdDev / 1000).toFixed(3)}s |`);
+      console.log(`| ${test.name} | ${path.basename(test.file)} | ${test.reason} | ${(test.stats.mean / 1000).toFixed(3)}s | ±${(test.stats.stdDev / 1000).toFixed(3)}s |`);
     });
   }
 
