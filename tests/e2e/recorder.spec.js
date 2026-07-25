@@ -17,6 +17,11 @@ test.describe('Video Recording Module', () => {
   });
 
   test('recorder module should be importable', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       try {
         const recorder = await import('/src/shared/recorder.js');
@@ -31,11 +36,19 @@ test.describe('Video Recording Module', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(result.error).toBeUndefined();
     expect(result.hasFunctions).toBe(true);
   });
 
   test('should detect codec support', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const recorder = await import('/src/shared/recorder.js');
       return {
@@ -45,12 +58,20 @@ test.describe('Video Recording Module', () => {
       };
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(typeof result.hasVP9Support).toBe('boolean');
     expect(typeof result.hasH264Support).toBe('boolean');
     expect(result.bestMimeType).toContain('video/webm');
   });
 
   test('should create output canvas with correct dimensions', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const recorder = await import('/src/shared/recorder.js');
       const { canvas, ctx } = recorder.createOutputCanvas();
@@ -61,12 +82,20 @@ test.describe('Video Recording Module', () => {
       };
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(result.width).toBe(1080);
     expect(result.height).toBe(1920);
     expect(result.hasContext).toBe(true);
   });
 
   test('should calculate game position within output frame', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const recorder = await import('/src/shared/recorder.js');
 
@@ -78,6 +107,9 @@ test.describe('Video Recording Module', () => {
 
       return { portraitPos, landscapePos };
     });
+
+    // Ensure module loading has completed
+    await modulePromise;
 
     // Portrait should be centered with padding
     expect(result.portraitPos.x).toBeGreaterThanOrEqual(0);
@@ -93,6 +125,11 @@ test.describe('Video Recording Module', () => {
   });
 
   test('should capture canvas stream', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const recorder = await import('/src/shared/recorder.js');
 
@@ -114,11 +151,19 @@ test.describe('Video Recording Module', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(result.success).toBe(true);
     expect(result.hasVideoTracks).toBe(true);
   });
 
   test('should start and stop recording', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const recorder = await import('/src/shared/recorder.js');
 
@@ -152,12 +197,20 @@ test.describe('Video Recording Module', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(result.error).toBeUndefined();
     expect(result.wasActive).toBe(true);
     expect(result.blobType).toBe('video/webm');
   });
 
   test('should get recording status', async ({ page }) => {
+    // Wait for recorder.js module to load
+    const modulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/recorder.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const recorder = await import('/src/shared/recorder.js');
 
@@ -187,6 +240,9 @@ test.describe('Video Recording Module', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await modulePromise;
+
     expect(result.error).toBeUndefined();
     expect(result.initialNotRecording).toBe(true);
     expect(result.recordingActive).toBe(true);
@@ -196,6 +252,11 @@ test.describe('Video Recording Module', () => {
 
 test.describe('Video Overlay Module', () => {
   test('overlay module should be importable', async ({ page }) => {
+    // Wait for video-overlay.js module to load from network
+    const overlayModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/video-overlay.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       try {
         const overlay = await import('/src/shared/video-overlay.js');
@@ -210,11 +271,19 @@ test.describe('Video Overlay Module', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await overlayModulePromise;
+
     expect(result.error).toBeUndefined();
     expect(result.hasFunctions).toBe(true);
   });
 
   test('should create overlay canvas', async ({ page }) => {
+    // Wait for video-overlay.js module to load from network
+    const overlayModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/video-overlay.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const overlay = await import('/src/shared/video-overlay.js');
       const { canvas, ctx } = overlay.createOverlayCanvas();
@@ -225,12 +294,20 @@ test.describe('Video Overlay Module', () => {
       };
     });
 
+    // Ensure module loading has completed
+    await overlayModulePromise;
+
     expect(result.width).toBe(1080);
     expect(result.height).toBe(1920);
     expect(result.hasContext).toBe(true);
   });
 
   test('should draw intro frame', async ({ page }) => {
+    // Wait for video-overlay.js module to load from network
+    const overlayModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/video-overlay.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const overlay = await import('/src/shared/video-overlay.js');
       const { canvas, ctx } = overlay.createOverlayCanvas();
@@ -248,10 +325,18 @@ test.describe('Video Overlay Module', () => {
       };
     });
 
+    // Ensure module loading has completed
+    await overlayModulePromise;
+
     expect(result.hasDrawing).toBe(true);
   });
 
   test('should draw outro frame with stats', async ({ page }) => {
+    // Wait for video-overlay.js module to load from network
+    const overlayModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/video-overlay.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const overlay = await import('/src/shared/video-overlay.js');
       const { canvas, ctx } = overlay.createOverlayCanvas();
@@ -274,10 +359,18 @@ test.describe('Video Overlay Module', () => {
       };
     });
 
+    // Ensure module loading has completed
+    await overlayModulePromise;
+
     expect(result.hasDrawing).toBe(true);
   });
 
   test('should calculate frame counts', async ({ page }) => {
+    // Wait for video-overlay.js module to load from network
+    const overlayModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/video-overlay.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const overlay = await import('/src/shared/video-overlay.js');
       return {
@@ -286,6 +379,9 @@ test.describe('Video Overlay Module', () => {
         totalDuration: overlay.getTotalOverlayDuration()
       };
     });
+
+    // Ensure module loading has completed
+    await overlayModulePromise;
 
     // Intro is 1.5s at 30fps = 45 frames
     expect(result.introFrames).toBe(45);
@@ -298,6 +394,11 @@ test.describe('Video Overlay Module', () => {
 
 test.describe('Share Module', () => {
   test('share module should be importable', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       try {
         const share = await import('/src/shared/share.js');
@@ -312,11 +413,19 @@ test.describe('Share Module', () => {
       }
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     expect(result.error).toBeUndefined();
     expect(result.hasFunctions).toBe(true);
   });
 
   test('should detect Web Share support', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       return {
@@ -325,17 +434,28 @@ test.describe('Share Module', () => {
       };
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     // In Chromium, Web Share may or may not be available
     expect(typeof result.hasWebShare).toBe('boolean');
     expect(typeof result.hasFileShare).toBe('boolean');
   });
 
   test('should get available platforms', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       const platforms = share.getAvailablePlatforms();
       return { platforms };
     });
+
+    // Ensure module loading has completed
+    await shareModulePromise;
 
     expect(Array.isArray(result.platforms)).toBe(true);
     expect(result.platforms.length).toBeGreaterThan(0);
@@ -344,6 +464,11 @@ test.describe('Share Module', () => {
   });
 
   test('should generate share text', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       const text = share.generateShareText({
@@ -355,12 +480,20 @@ test.describe('Share Module', () => {
       return { text };
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     expect(result.text).toContain('Water Sort');
     expect(result.text).toContain('14 moves');
     expect(result.text).toContain('45');
   });
 
   test('should show share overlay', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       await share.showShareOverlay({
@@ -371,6 +504,9 @@ test.describe('Share Module', () => {
       });
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     // Wait for overlay to appear
     const overlay = page.locator('#share-overlay');
     await expect(overlay).toBeVisible({ timeout: 2000 });
@@ -380,6 +516,11 @@ test.describe('Share Module', () => {
   });
 
   test('should hide share overlay', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       await share.showShareOverlay({
@@ -387,6 +528,9 @@ test.describe('Share Module', () => {
         videoBlob: new Blob(['test'], { type: 'video/webm' })
       });
     });
+
+    // Ensure module loading has completed
+    await shareModulePromise;
 
     const overlay = page.locator('#share-overlay');
     await expect(overlay).toBeVisible({ timeout: 2000 });
@@ -402,6 +546,11 @@ test.describe('Share Module', () => {
     // Grant clipboard permissions
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
 
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       return await share.shareToPlatform('copyLink', {
@@ -409,11 +558,19 @@ test.describe('Share Module', () => {
       });
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     expect(result.success).toBe(true);
     expect(result.message).toContain('copied');
   });
 
   test('should handle Twitter share', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       return await share.shareToPlatform('twitter', {
@@ -422,11 +579,19 @@ test.describe('Share Module', () => {
       });
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     expect(result.success).toBe(true);
     expect(result.openUrl).toContain('twitter.com/intent/tweet');
   });
 
   test('should handle Facebook share', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     const result = await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       return await share.shareToPlatform('facebook', {
@@ -435,11 +600,19 @@ test.describe('Share Module', () => {
       });
     });
 
+    // Ensure module loading has completed
+    await shareModulePromise;
+
     expect(result.success).toBe(true);
     expect(result.openUrl).toContain('facebook.com/sharer');
   });
 
   test('should have download button in overlay', async ({ page }) => {
+    // Wait for share.js module to load from network
+    const shareModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/shared/share.js') && response.status() === 200
+    );
+
     await page.evaluate(async () => {
       const share = await import('/src/shared/share.js');
       await share.showShareOverlay({
@@ -447,6 +620,9 @@ test.describe('Share Module', () => {
         videoBlob: new Blob(['test'], { type: 'video/webm' })
       });
     });
+
+    // Ensure module loading has completed
+    await shareModulePromise;
 
     const overlay = page.locator('#share-overlay');
     await expect(overlay).toBeVisible({ timeout: 2000 });
