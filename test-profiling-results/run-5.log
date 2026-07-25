@@ -1,0 +1,10 @@
+ ✓ tests/unit/adaptive.test.js > saveProfile — catch block > does not throw when localStorage.setItem throws (catch swallows QuotaExceeded) 0ms
+ ✓ tests/unit/adaptive.test.js > resetAdaptive — catch block > does not throw when localStorage.removeItem throws 0ms
+ ✓ tests/unit/adaptive.test.js > saveProfile — history trimming (if history.length > MAX_HISTORY true branch) > trims history to MAX_HISTORY=20 after 22 recorded levels 1ms
+ ✓ tests/unit/adaptive.test.js > recordLevel — retryCount null coalescing (?? 0 operator with null) > treats retryCount: null as 0 via ?? operator (null ?? 0 = 0), allowing easy-win streak 0ms
+
+ Test Files  120 passed (120)
+      Tests  5360 passed (5360)
+   Start at  20:55:13
+   Duration  52.13s (transform 5.71s, setup 2.62s, collect 32.41s, tests 41.62s, environment 36.65s, prepare 33.19s)
+

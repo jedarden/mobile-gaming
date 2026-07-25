@@ -1,0 +1,10 @@
+ ✓ tests/unit/storage.test.js > StorageManager — getUsage > returns positive bytes after setting a key 0ms
+ ✓ tests/unit/storage.test.js > StorageManager — getUsage > returns 0 for the item when localStorage.getItem returns null (if(item) false branch) 0ms
+ ✓ tests/unit/storage.test.js > StorageManager — _getAllKeys (if fullKey && fullKey.startsWith branch) > skips null entries from localStorage.key(i) (&& short-circuit when fullKey is null) 1ms
+ ✓ tests/unit/storage.test.js > StorageManager — _getAllKeys (if fullKey && fullKey.startsWith branch) > skips keys that do not start with the mg: namespace prefix (false branch) 1ms
+
+ Test Files  120 passed (120)
+      Tests  5360 passed (5360)
+   Start at  20:54:15
+   Duration  55.81s (transform 6.16s, setup 2.45s, collect 34.35s, tests 46.01s, environment 44.28s, prepare 34.46s)
+

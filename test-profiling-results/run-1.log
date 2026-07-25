@@ -1,0 +1,10 @@
+ ✓ tests/unit/daily-challenge-behavioral.test.js > No Stray Calls — completeDailyChallenge Only Called in Guarded Win Handler > brain-teaser > does not call completeDailyChallenge in non-win contexts (init, update, etc.) 0ms
+ ✓ tests/unit/daily-challenge-behavioral.test.js > No Stray Calls — completeDailyChallenge Only Called in Guarded Win Handler > save-the-character > has exactly one call to completeDailyChallenge(GAME_ID) 0ms
+ ✓ tests/unit/daily-challenge-behavioral.test.js > No Stray Calls — completeDailyChallenge Only Called in Guarded Win Handler > save-the-character > does not call completeDailyChallenge without GAME_ID argument 0ms
+ ✓ tests/unit/daily-challenge-behavioral.test.js > No Stray Calls — completeDailyChallenge Only Called in Guarded Win Handler > save-the-character > does not call completeDailyChallenge in non-win contexts (init, update, etc.) 0ms
+
+ Test Files  120 passed (120)
+      Tests  5360 passed (5360)
+   Start at  20:51:44
+   Duration  43.95s (transform 5.11s, setup 2.18s, collect 27.93s, tests 34.92s, environment 35.34s, prepare 26.87s)
+
