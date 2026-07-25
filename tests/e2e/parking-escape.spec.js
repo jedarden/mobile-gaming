@@ -8,7 +8,18 @@ const GAME_URL = '/parking-escape/';
 
 test.describe('Parking Escape', () => {
   test.beforeEach(async ({ page }) => {
+    // Wait for game module and levels.json to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/parking-escape/game.js') && response.status() === 200
+    );
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(GAME_URL);
+
+    // Ensure network resources are loaded before waiting for UI
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
