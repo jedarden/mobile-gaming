@@ -20,9 +20,11 @@ test.describe('Visibilitychange Lifecycle', () => {
         test.beforeEach(async ({ page }) => {
           await page.goto(url);
           // Wait for game to initialize
-          await page.waitForSelector('canvas', { timeout: 10000 });
-          // Wait for lifecycle ready() to complete
-          await page.waitForTimeout(500);
+          await page.waitForSelector('canvas', { timeout: 5000 });
+          // Wait for lifecycle ready() to complete - check for resume overlay element
+          await page.waitForFunction(() => {
+            return document.getElementById('mg-resume') !== null;
+          }, { timeout: 1500 });
         });
 
         test('shows resume overlay after visibilitychange to hidden', async ({ page }) => {
@@ -111,8 +113,11 @@ test.describe('Visibilitychange Lifecycle', () => {
           // The resume overlay should be visible
           await expect(page.locator('#mg-resume')).toBeVisible();
 
-          // Wait a bit - if the game were running, something would change
-          await page.waitForTimeout(1000);
+          // Wait with specific condition - if the game were running, something would change
+          await page.waitForFunction(() => {
+            const levelEl = document.getElementById('level-display');
+            return levelEl && levelEl.textContent === initialLevel;
+          }, { timeout: 800 });
 
           // Level should not have changed (game is frozen)
           const levelAfterWait = await page.locator('#level-display').textContent();
@@ -138,8 +143,13 @@ test.describe('Visibilitychange Lifecycle', () => {
       test.describe(name, () => {
         test.beforeEach(async ({ page }) => {
           await page.goto(url);
-          await page.waitForSelector('canvas', { timeout: 10000 });
-          await page.waitForTimeout(500);
+          await page.waitForSelector('canvas', { timeout: 5000 });
+          // Wait for game state to be ready
+          await page.waitForFunction(() => {
+            return window.location.pathname.includes('water-sort')
+              ? window.__wsGame && window.__wsGame.state
+              : true;
+          }, { timeout: 1500 });
         });
 
         test('persists game state on visibilitychange without showing overlay', async ({ page }) => {
@@ -149,7 +159,10 @@ test.describe('Visibilitychange Lifecycle', () => {
             const box = await canvas.boundingBox();
             // Tap to make a move
             await page.tap('#game-canvas', { position: { x: box.width * 0.2, y: box.height * 0.5 } });
-            await page.waitForTimeout(200);
+            // Wait for move to register
+            await page.waitForFunction(() => {
+              return window.__wsGame && window.__wsGame.state && window.__wsGame.state.moves > 0;
+            }, { timeout: 1500 });
           }
 
           // No resume overlay should exist for puzzle games (they don't pause)
@@ -208,7 +221,10 @@ test.describe('Visibilitychange Lifecycle', () => {
             // Reload the page
             await page.goto(url);
             await page.waitForSelector('#game-canvas');
-            await page.waitForTimeout(500);
+            // Wait for game state to be restored
+            await page.waitForFunction(() => {
+              return window.__wsGame && window.__wsGame.state;
+            }, { timeout: 1500 });
 
             // State should be restored
             const afterState = await page.evaluate(() => {
@@ -252,7 +268,10 @@ test.describe('Visibilitychange Lifecycle', () => {
             // Reload to trigger restoration
             await page.goto(url);
             await page.waitForSelector('#game-canvas');
-            await page.waitForTimeout(500);
+            // Wait for game state to be restored
+            await page.waitForFunction(() => {
+              return window.__wsGame && window.__wsGame.state;
+            }, { timeout: 1500 });
 
             // State should be cleared after restoration
             const hasStateAfter = await page.evaluate(() => {

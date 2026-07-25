@@ -93,8 +93,18 @@ for (const game of GAMES) {
     test('JS executes — canvas has drawn content', async ({ page }) => {
       await page.goto(`/${game}/`);
 
-      // Wait for the game to initialize (up to 5 s)
-      await page.waitForTimeout(2000);
+      // Wait for game to initialize by checking canvas has content
+      await page.waitForFunction(() => {
+        const canvas = document.getElementById('game-canvas');
+        if (!canvas) return false;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return false;
+        const { width, height } = canvas;
+        // Sample center pixel to check if something was drawn
+        const px = ctx.getImageData(Math.floor(width / 2), Math.floor(height / 2), 1, 1).data;
+        // alpha > 0 means something was drawn
+        return px[3] > 0;
+      }, { timeout: 3000 });
 
       const canvas = page.locator('#game-canvas');
       await expect(canvas).toBeVisible();

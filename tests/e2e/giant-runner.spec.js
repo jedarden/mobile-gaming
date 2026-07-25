@@ -9,7 +9,7 @@ const GAME_URL = '/giant-runner/';
 test.describe('Giant Runner', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-container canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-container canvas', { timeout: 5000 });
   });
 
   test('loads game page with correct title', async ({ page }) => {

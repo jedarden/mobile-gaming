@@ -13,7 +13,7 @@ const GAME_URL = '/save-the-character/';
 test.describe('Save the Character', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
   test('loads game page with correct title', async ({ page }) => {

@@ -13,7 +13,7 @@ test.describe('Video Recording Module', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
     // Wait for canvas to render
-    await page.waitForSelector('#game-container canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-container canvas', { timeout: 5000 });
   });
 
   test('recorder module should be importable', async ({ page }) => {
@@ -392,10 +392,8 @@ test.describe('Share Module', () => {
     // Click close button
     await overlay.locator('.share-close').click();
 
-    // Wait for animation
-    await page.waitForTimeout(400);
-
-    await expect(overlay).not.toBeVisible();
+    // Wait for overlay to be hidden after animation
+    await expect(overlay).not.toBeVisible({ timeout: 800 });
   });
 
   test('should handle copy link action', async ({ page }) => {

@@ -57,8 +57,8 @@ test.describe('Swipe Navigation', () => {
       await page.mouse.up();
 
       // If swipe-nav is integrated, it would trigger navigation
-      // For now, just verify no errors
-      await page.waitForTimeout(100);
+      // For now, just verify no errors and we're still on the game page
+      await expect(page.locator('#game-canvas')).toBeVisible();
     });
 
     test('should detect right edge swipe', async ({ page }) => {
@@ -70,7 +70,8 @@ test.describe('Swipe Navigation', () => {
       await page.mouse.move(265, 200, { steps: 10 });
       await page.mouse.up();
 
-      await page.waitForTimeout(100);
+      // Verify we're still on the game page (no errors occurred)
+      await expect(page.locator('#game-canvas')).toBeVisible();
     });
 
     test('should not trigger navigation for center swipe', async ({ page }) => {
@@ -82,9 +83,9 @@ test.describe('Swipe Navigation', () => {
       await page.mouse.move(100, 200, { steps: 10 });
       await page.mouse.up();
 
-      // Should stay on same page
-      await page.waitForTimeout(100);
+      // Should stay on same page (navigation not triggered)
       expect(page.url()).toContain('water-sort');
+      await expect(page.locator('#game-canvas')).toBeVisible();
     });
   });
 
@@ -123,9 +124,7 @@ test.describe('Swipe Navigation', () => {
         canvas.dispatchEvent(startEvent);
       });
 
-      await page.waitForTimeout(50);
-
-      // Move both fingers horizontally
+      // Move both fingers horizontally (no artificial delay needed)
       await page.evaluate(() => {
         const canvas = document.getElementById('game-canvas');
 
@@ -149,7 +148,8 @@ test.describe('Swipe Navigation', () => {
         canvas.dispatchEvent(moveEvent);
       });
 
-      await page.waitForTimeout(50);
+      // Verify touch events were processed (page still responsive)
+      await expect(page.locator('#game-canvas')).toBeVisible();
     });
   });
 
@@ -329,9 +329,9 @@ test.describe('Swipe Navigation', () => {
       const canvas = page.locator('#game-canvas');
       await canvas.click({ position: { x: 187, y: 300 } });
 
-      // Game should still be responsive
-      await page.waitForTimeout(100);
+      // Game should still be responsive after click
       expect(page.url()).toContain('water-sort');
+      await expect(canvas).toBeVisible();
     });
   });
 });
@@ -343,7 +343,7 @@ test.describe('Swipe Navigation - Mobile Viewport', () => {
 
   test('should handle touch events on mobile', async ({ page }) => {
     await page.goto(WATER_SORT_URL);
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Simulate touch on canvas
     const canvas = page.locator('#game-canvas');
@@ -352,16 +352,16 @@ test.describe('Swipe Navigation - Mobile Viewport', () => {
     if (box) {
       // Touch in center
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-      await page.waitForTimeout(50);
     }
 
-    // Should remain on page
+    // Should remain on page (no navigation triggered)
     expect(page.url()).toContain('water-sort');
+    await expect(page.locator('#game-canvas')).toBeVisible();
   });
 
   test('edge threshold should work on narrow screens', async ({ page }) => {
     await page.goto(WATER_SORT_URL);
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Test edge detection at 40px threshold
     const result = await page.evaluate(() => {

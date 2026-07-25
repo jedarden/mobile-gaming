@@ -12,7 +12,7 @@ test.describe('Brain Teaser Game', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
     // Wait for game to initialize
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
   test('should load the game page', async ({ page }) => {
@@ -112,7 +112,7 @@ test.describe('Brain Teaser Game', () => {
 test.describe('Brain Teaser Gameplay', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
   test('should show win overlay on correct answer', async ({ page }) => {
@@ -143,8 +143,13 @@ test.describe('Brain Teaser Gameplay', () => {
 
     await canvas.click({ position: { x: leftX, y: centerY } });
 
-    // Wait a moment for animation
-    await page.waitForTimeout(500);
+    // Wait for attempts counter to potentially update
+    await page.waitForFunction(() => {
+      const attemptsDisplay = document.getElementById('attempts-display');
+      return attemptsDisplay && parseInt(attemptsDisplay.textContent) >= 0;
+    }, { timeout: 500 }).catch(() => {
+      // Animation might not update counter, that's fine
+    });
 
     // Attempts should be > 0 (if we clicked a decoy)
     const attempts = await page.locator('#attempts-display').textContent();
@@ -155,7 +160,7 @@ test.describe('Brain Teaser Gameplay', () => {
 test.describe('Brain Teaser Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
   test('should have proper heading structure', async ({ page }) => {
@@ -201,7 +206,7 @@ test.describe('Brain Teaser Responsive', () => {
   test('should work on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Canvas should still be visible
     const canvas = page.locator('#game-canvas');
@@ -215,7 +220,7 @@ test.describe('Brain Teaser Responsive', () => {
   test('should work on tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-canvas');
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     const canvas = page.locator('#game-canvas');
     await expect(canvas).toBeVisible();

@@ -73,7 +73,7 @@ test.describe('Level Navigation - Core Rendering', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: renders level nav strip at bottom of screen`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level nav strip should exist
       const navStrip = page.locator('.mg-level-nav');
@@ -93,7 +93,7 @@ test.describe('Level Navigation - Core Rendering', () => {
 
     test(`${gameId}: level dots are rendered with correct count`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Get total levels from levels.json (minimum 3)
       const totalLevels = await page.evaluate(async () => {
@@ -113,7 +113,7 @@ test.describe('Level Navigation - Core Rendering', () => {
       await page.goto(`/${gameId}/`);
       await clearGameProgress(page, gameId);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Current level dot (level 0/1) should have blue color
       const currentDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -136,7 +136,7 @@ test.describe('Level Navigation - Core Rendering', () => {
 
     test(`${gameId}: level strip is horizontally scrollable`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const navStrip = page.locator('.mg-level-nav');
 
@@ -154,12 +154,12 @@ test.describe('Level Navigation - Visual States', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: completed levels show green with checkmark`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Set level 0 as completed
       await setGameProgress(page, gameId, { '0': 'completed' }, 1);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level 0 dot should show green/completed state
       const completedDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -181,12 +181,12 @@ test.describe('Level Navigation - Visual States', () => {
 
     test(`${gameId}: locked levels are grayed out`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Clear progress so all levels except first are locked
       await clearGameProgress(page, gameId);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level 2 should be locked (index 2)
       const lockedDot = page.locator('.mg-level-dot[data-level="2"]');
@@ -208,12 +208,12 @@ test.describe('Level Navigation - Visual States', () => {
 
     test(`${gameId}: skipped levels show dash indicator`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Mark level 0 as skipped, current is level 1
       await setGameProgress(page, gameId, { '0': 'skipped' }, 1);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const skippedDot = page.locator('.mg-level-dot[data-level="0"]');
       const text = await skippedDot.evaluate(el => el.textContent);
@@ -227,7 +227,7 @@ test.describe('Level Navigation - Tap Interactions', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: tapping current level does nothing destructive`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const currentDot = page.locator('.mg-level-dot[data-level="0"]');
       await expect(currentDot).toBeVisible();
@@ -243,12 +243,12 @@ test.describe('Level Navigation - Tap Interactions', () => {
 
     test(`${gameId}: tapping unlocked level navigates to it`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Complete level 0, making level 1 unlocked
       await setGameProgress(page, gameId, { '0': 'completed' }, 1);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Tap level 0 dot (unlocked/completed)
       const level0Dot = page.locator('.mg-level-dot[data-level="0"]');
@@ -261,7 +261,7 @@ test.describe('Level Navigation - Tap Interactions', () => {
 
     test(`${gameId}: locked levels are not interactive`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // With no progress, level 2 should be locked
       const lockedDot = page.locator('.mg-level-dot[data-level="2"]');
@@ -278,7 +278,7 @@ test.describe('Level Navigation - Tap Interactions', () => {
 
     test(`${gameId}: level dots have proper ARIA labels`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const levelDots = page.locator('.mg-level-dot[data-level]');
       const firstDot = levelDots.first();
@@ -293,13 +293,13 @@ test.describe('Level Navigation - Daily Challenge', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: daily challenge indicator shows when available`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Wait for level-nav to be present and fully rendered
       await page.waitForFunction(() => {
         const nav = document.querySelector('.mg-level-nav');
         return nav && nav.offsetParent !== null;
-      }, { timeout: 5000 });
+      }, { timeout: 3000 });
 
       // Check if this game has daily challenge (after level-nav is ready)
       const hasDaily = await page.evaluate(() => {
@@ -309,44 +309,26 @@ test.describe('Level Navigation - Daily Challenge', () => {
 
       if (hasDaily) {
         const dailyDot = page.locator('.mg-level-daily');
-        // Wait for the daily dot to be visible and stable
+        // Wait for the daily dot to be visible
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
           return el && el.offsetParent !== null;
-        }, { timeout: 5000 });
-        // Stability check: verify daily dot is stably visible
-        await page.waitForTimeout(50);
-        await page.waitForFunction(() => {
-          const el = document.querySelector('.mg-level-daily');
-          return el && el.offsetParent !== null;
-        }, { timeout: 5000 });
+        }, { timeout: 3000 });
         await expect(dailyDot).toBeVisible();
 
         // Wait for text content to be applied
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
-          return el && el.textContent && el.textContent.length > 0;
-        }, { timeout: 5000 });
-        // Stability check: verify text content is stable
-        await page.waitForTimeout(50);
-        await page.waitForFunction(() => {
-          const el = document.querySelector('.mg-level-daily');
           return el && el.textContent && el.textContent === '★';
-        }, { timeout: 5000 });
+        }, { timeout: 3000 });
         const text = await dailyDot.evaluate(el => el.textContent);
         expect(text).toBe('★');
 
         // Wait for aria-label to be set
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
-          return el && el.getAttribute('aria-label');
-        }, { timeout: 5000 });
-        // Stability check: verify aria-label is stable
-        await page.waitForTimeout(50);
-        await page.waitForFunction(() => {
-          const el = document.querySelector('.mg-level-daily');
           return el && el.getAttribute('aria-label') === 'Daily Challenge';
-        }, { timeout: 5000 });
+        }, { timeout: 3000 });
         const ariaLabel = await dailyDot.getAttribute('aria-label');
         expect(ariaLabel).toBe('Daily Challenge');
       } else {
@@ -356,13 +338,13 @@ test.describe('Level Navigation - Daily Challenge', () => {
 
     test(`${gameId}: daily shows green when completed`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Wait for level-nav to be present and fully rendered
       await page.waitForFunction(() => {
         const nav = document.querySelector('.mg-level-nav');
         return nav && nav.offsetParent !== null;
-      }, { timeout: 5000 });
+      }, { timeout: 3000 });
 
       const hasDaily = await page.evaluate(() =>
         document.querySelector('.mg-level-daily') !== null
@@ -375,14 +357,7 @@ test.describe('Level Navigation - Daily Challenge', () => {
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
           return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
-        }, { timeout: 5000 });
-
-        // Stability check: verify border color is stable
-        await page.waitForTimeout(50);
-        await page.waitForFunction(() => {
-          const el = document.querySelector('.mg-level-daily');
-          return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
-        }, { timeout: 5000 });
+        }, { timeout: 3000 });
 
         // Initially should be yellow (not completed)
         const initialBorder = await dailyDot.evaluate(el =>
@@ -400,34 +375,20 @@ test.describe('Level Navigation - Daily Challenge', () => {
         }, today);
 
         await page.reload();
-        await page.waitForSelector('#game-canvas', { timeout: 10000 });
+        await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
         // Wait for level-nav to be present and fully rendered
         await page.waitForFunction(() => {
           const nav = document.querySelector('.mg-level-nav');
           return nav && nav.offsetParent !== null;
-        }, { timeout: 5000 });
-
-        // Stability check: verify level-nav is stably visible
-        await page.waitForTimeout(50);
-        await page.waitForFunction(() => {
-          const nav = document.querySelector('.mg-level-nav');
-          return nav && nav.offsetParent !== null;
-        }, { timeout: 5000 });
+        }, { timeout: 3000 });
 
         // Wait for daily dot styles to be applied after reload
         await page.waitForFunction(() => {
           const el = document.querySelector('.mg-level-daily');
-          return el && el.offsetParent !== null && window.getComputedStyle(el).borderColor;
-        }, { timeout: 5000 });
-
-        // Stability check: verify completed border color is stable
-        await page.waitForTimeout(50);
-        await page.waitForFunction(() => {
-          const el = document.querySelector('.mg-level-daily');
           const borderColor = window.getComputedStyle(el).borderColor;
           return el && el.offsetParent !== null && borderColor && borderColor.includes('0, 158, 115');
-        }, { timeout: 5000 });
+        }, { timeout: 3000 });
 
         // Should now show green border (completed)
         const completedBorder = await dailyDot.evaluate(el =>
@@ -445,7 +406,7 @@ test.describe('Level Navigation - Endless Mode', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: endless mode indicator shows when available`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check if this game has endless mode
       const hasEndless = await page.evaluate(() => {
@@ -470,7 +431,7 @@ test.describe('Level Navigation - Endless Mode', () => {
 
     test(`${gameId}: endless dot is tappable`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const hasEndless = await page.evaluate(() =>
         document.querySelector('.mg-level-endless') !== null
@@ -499,11 +460,11 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
 
       // Set initial progress
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       await setGameProgress(page, gameId, { '0': 'completed', '1': 'completed' }, 2);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check progress persisted
       const progress = await page.evaluate(key => {
@@ -523,7 +484,7 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
 
     test(`${gameId}: level strip updates after completing a level`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Initially on level 0
       let currentDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -532,7 +493,7 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
       // Mark level 0 as completed
       await setGameProgress(page, gameId, { '0': 'completed' }, 1);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Level 0 should now show completed state
       const completedDot = page.locator('.mg-level-dot[data-level="0"]');
@@ -550,7 +511,7 @@ test.describe('Level Navigation - LocalStorage Persistence', () => {
 
     test(`${gameId}: localStorage uses correct keys`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check that keys are properly formatted
       const keys = await page.evaluate(id => {
@@ -573,7 +534,7 @@ test.describe('Level Navigation - Responsive Design', () => {
     test(`${gameId}: level nav works on mobile viewport`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const navStrip = page.locator('.mg-level-nav');
       await expect(navStrip).toBeVisible();
@@ -589,7 +550,7 @@ test.describe('Level Navigation - Responsive Design', () => {
     test(`${gameId}: level nav works on tablet viewport`, async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const navStrip = page.locator('.mg-level-nav');
       await expect(navStrip).toBeVisible();
@@ -597,7 +558,7 @@ test.describe('Level Navigation - Responsive Design', () => {
 
     test(`${gameId}: level dots are tap-friendly size`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const firstDot = page.locator('.mg-level-dot[data-level="0"]');
       const size = await firstDot.evaluate(el => {
@@ -616,7 +577,7 @@ test.describe('Level Navigation - Accessibility', () => {
   GAMES_WITH_LEVEL_NAV.forEach(gameId => {
     test(`${gameId}: all interactive elements have aria-labels`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Check all level dots
       const levelDots = page.locator('.mg-level-dot');
@@ -631,15 +592,22 @@ test.describe('Level Navigation - Accessibility', () => {
 
     test(`${gameId}: current level auto-scrolls into view`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Set to a higher level
       await setGameProgress(page, gameId, { '0': 'completed', '1': 'completed', '2': 'completed' }, 3);
       await page.reload();
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
-      // Wait for auto-scroll
-      await page.waitForTimeout(100);
+      // Wait for auto-scroll to complete
+      await page.waitForFunction(() => {
+        const currentDot = document.querySelector('.mg-level-dot[data-level="3"]');
+        const strip = currentDot?.closest('.mg-level-nav');
+        if (!currentDot || !strip) return false;
+        const rect = currentDot.getBoundingClientRect();
+        const stripRect = strip.getBoundingClientRect();
+        return rect.left >= stripRect.left && rect.right <= stripRect.right;
+      }, { timeout: 1500 });
 
       const currentDot = page.locator('.mg-level-dot[data-level="3"]');
       const isVisible = await currentDot.isVisible();
@@ -659,7 +627,7 @@ test.describe('Level Navigation - Accessibility', () => {
 
     test(`${gameId}: locked dots have disabled appearance`, async ({ page }) => {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // With no progress, level 3+ should be locked
       const lockedDot = page.locator('.mg-level-dot[data-level="3"]');
@@ -683,7 +651,7 @@ test.describe('Level Navigation - Cross-Game Consistency', () => {
 
     for (const gameId of GAMES_WITH_LEVEL_NAV) {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const hasNav = await hasLevelNav(page);
       if (hasNav) {
@@ -698,7 +666,7 @@ test.describe('Level Navigation - Cross-Game Consistency', () => {
   test('all games use consistent CSS class names', async ({ page }) => {
     for (const gameId of GAMES_WITH_LEVEL_NAV.slice(0, 3)) {
       await page.goto(`/${gameId}/`);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const hasNav = await hasLevelNav(page);
       if (hasNav) {
@@ -719,7 +687,7 @@ test.describe('Level Navigation - Edge Cases', () => {
   test('handles rapid level switching gracefully', async ({ page }) => {
     const gameId = 'water-sort';
     await page.goto(`/${gameId}/`);
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Set up multiple completed levels
     await setGameProgress(page, gameId, {
@@ -728,19 +696,17 @@ test.describe('Level Navigation - Edge Cases', () => {
       '2': 'completed'
     }, 3);
     await page.reload();
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Rapidly tap different level dots
     const level0 = page.locator('.mg-level-dot[data-level="0"]');
     const level1 = page.locator('.mg-level-dot[data-level="1"]');
     const level2 = page.locator('.mg-level-dot[data-level="2"]');
 
+    // Rapidly tap different level dots (test rapid switching)
     await level0.click();
-    await page.waitForTimeout(50);
     await level1.click();
-    await page.waitForTimeout(50);
     await level2.click();
-    await page.waitForTimeout(50);
 
     // Should not crash - game should still be responsive
     const canvas = page.locator('#game-canvas');
@@ -752,7 +718,7 @@ test.describe('Level Navigation - Edge Cases', () => {
     await page.goto(`/${gameId}/`);
     await clearGameProgress(page, gameId);
     await page.reload();
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Should still show level-nav
     const navStrip = page.locator('.mg-level-nav');
@@ -766,7 +732,7 @@ test.describe('Level Navigation - Edge Cases', () => {
   test('handles all levels completed', async ({ page }) => {
     const gameId = 'water-sort';
     await page.goto(`/${gameId}/`);
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Get total levels
     const totalLevels = await page.evaluate(async () => {
@@ -783,7 +749,7 @@ test.describe('Level Navigation - Edge Cases', () => {
 
     await setGameProgress(page, gameId, allCompleted, totalLevels - 1);
     await page.reload();
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // All should show checkmarks
     const allDots = page.locator('.mg-level-dot[data-level]');

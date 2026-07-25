@@ -45,7 +45,7 @@ test.describe('Cross-Game Navigation Flow', () => {
 
       // Step 3: Wait for game to load
       await page.waitForURL(game.path);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Verify game loaded
       await expect(page).toHaveTitle(new RegExp(game.title, 'i'));
@@ -90,7 +90,7 @@ test.describe('Quick Play Cross-Game Flow', () => {
     expect(gameId).toBeDefined();
 
     // Wait for game to load
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Perform minimal interaction
     await performGameInteraction(page, gameId);
@@ -119,7 +119,7 @@ test.describe('All Games Navigation Loop', () => {
 
       // Wait for game to load
       await page.waitForURL(game.path);
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       // Verify game loaded
       await expect(page).toHaveTitle(new RegExp(game.title, 'i'));
@@ -162,7 +162,7 @@ test.describe('Game Categories Filter and Navigate', () => {
       await visibleCards.first().locator('.play-btn').click();
 
       // Verify game loaded
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
       await expect(page.locator('.back-link')).toBeVisible();
 
       // Return to hub
@@ -182,8 +182,13 @@ test.describe('Game Categories Filter and Navigate', () => {
  * This is a smoke test - verifies basic game interactivity without deep gameplay
  */
 async function performGameInteraction(page, gameId) {
-  // Wait a moment for game to fully initialize
-  await page.waitForTimeout(500);
+  // Wait for game to be fully initialized by checking for game state
+  await page.waitForFunction(() => {
+    // Check for common game initialization indicators
+    return document.getElementById('level-display') !== null ||
+           document.getElementById('game-canvas') !== null ||
+           window.__gameState !== undefined;
+  }, { timeout: 1500 });
 
   // Common interaction - verify canvas is interactive
   const canvas = page.locator('#game-canvas');
@@ -194,10 +199,16 @@ async function performGameInteraction(page, gameId) {
   try {
     // Try to interact with game controls if present
     const restartBtn = page.locator('#btn-restart, .btn-restart, .game-btn').first();
-    if (await restartBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+    if (await restartBtn.isVisible({ timeout: 800 }).catch(() => false)) {
       // Click restart to verify button is functional
       await restartBtn.click();
-      await page.waitForTimeout(200);
+      // Wait for button state to change or game to respond
+      await page.waitForFunction(() => {
+        const levelDisplay = document.getElementById('level-display');
+        return levelDisplay !== null;
+      }, { timeout: 300 }).catch(() => {
+        // Some games don't update level display on restart, that's fine
+      });
     }
   } catch (e) {
     // Some games may not have restart button, that's fine
@@ -208,7 +219,12 @@ async function performGameInteraction(page, gameId) {
     const box = await canvas.boundingBox();
     if (box) {
       await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } });
-      await page.waitForTimeout(300);
+      // Verify game is still responsive after interaction
+      await page.waitForFunction(() => {
+        return document.getElementById('game-canvas') !== null;
+      }, { timeout: 200 }).catch(() => {
+        // Canvas might not update immediately, that's acceptable
+      });
     }
   } catch (e) {
     // Canvas click might not work for all games, that's acceptable
@@ -223,7 +239,7 @@ test.describe('Cross-Game State Management', () => {
     // Start with brain-teaser
     await page.goto(HUB_URL);
     await page.click('.game-card[data-game-id="brain-teaser"] .play-btn');
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Set some state in first game
     await page.evaluate(() => {
@@ -236,7 +252,7 @@ test.describe('Cross-Game State Management', () => {
 
     // Navigate to second game
     await page.click('.game-card[data-game-id="water-sort"] .play-btn');
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Verify second game loaded correctly
     await expect(page).toHaveTitle(/Water Sort/i);
@@ -250,7 +266,7 @@ test.describe('Cross-Game State Management', () => {
     await page.locator('.back-link').click();
     await page.waitForURL(HUB_URL);
     await page.click('.game-card[data-game-id="brain-teaser"] .play-btn');
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
     // Verify first game state is preserved
     const savedState = await page.evaluate(() => {
@@ -272,7 +288,7 @@ test.describe('Cross-Game Performance', () => {
       await page.goto(HUB_URL);
       await page.click(`.game-card[data-game-id="${game.id}"] .play-btn`);
 
-      await page.waitForSelector('#game-canvas', { timeout: 10000 });
+      await page.waitForSelector('#game-canvas', { timeout: 5000 });
 
       const loadTime = Date.now() - startTime;
       loadTimes.push({ game: game.title, time: loadTime });

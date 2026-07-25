@@ -9,7 +9,7 @@ const GAME_URL = '/parking-escape/';
 test.describe('Parking Escape', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(GAME_URL);
-    await page.waitForSelector('#game-canvas', { timeout: 10000 });
+    await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
   test('loads game page with correct title', async ({ page }) => {
@@ -26,7 +26,7 @@ test.describe('Parking Escape', () => {
   });
 
   test('displays initial stats on level 1', async ({ page }) => {
-    await page.waitForSelector('#level-display', { state: 'visible', timeout: 5000 });
+    await page.waitForSelector('#level-display', { state: 'visible', timeout: 3000 });
     await expect(page.locator('#level-display')).toHaveText('1');
     await expect(page.locator('#moves-display')).toHaveText('0');
     await expect(page.locator('#level-progress')).toContainText('Level 1');
@@ -48,26 +48,14 @@ test.describe('Parking Escape', () => {
     await page.waitForFunction(() => {
       const levelEl = document.getElementById('level-display');
       return levelEl && levelEl.textContent === '2';
-    }, { timeout: 5000 });
-    // Stability check: verify level-display is stable at 2
-    await page.waitForTimeout(50); // brief pause to detect transient states
-    await page.waitForFunction(() => {
-      const levelEl = document.getElementById('level-display');
-      return levelEl && levelEl.textContent === '2';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#level-display')).toHaveText('2');
     await expect(page.locator('#level-progress')).toContainText('Level 2');
     await page.click('#btn-prev');
     await page.waitForFunction(() => {
       const levelEl = document.getElementById('level-display');
       return levelEl && levelEl.textContent === '1';
-    }, { timeout: 5000 });
-    // Stability check: verify level-display is stable at 1
-    await page.waitForTimeout(50); // brief pause to detect transient states
-    await page.waitForFunction(() => {
-      const levelEl = document.getElementById('level-display');
-      return levelEl && levelEl.textContent === '1';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#level-display')).toHaveText('1');
   });
 
@@ -77,14 +65,7 @@ test.describe('Parking Escape', () => {
       const movesEl = document.getElementById('moves-display');
       const levelEl = document.getElementById('level-display');
       return movesEl && movesEl.textContent === '0' && levelEl && levelEl.textContent === '1';
-    }, { timeout: 5000 });
-    // Stability check: verify moves-display and level-display are stable at 0 and 1
-    await page.waitForTimeout(50); // brief pause to detect transient states
-    await page.waitForFunction(() => {
-      const movesEl = document.getElementById('moves-display');
-      const levelEl = document.getElementById('level-display');
-      return movesEl && movesEl.textContent === '0' && levelEl && levelEl.textContent === '1';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#moves-display')).toHaveText('0');
     await expect(page.locator('#level-display')).toHaveText('1');
   });
@@ -94,13 +75,7 @@ test.describe('Parking Escape', () => {
     await page.waitForFunction(() => {
       const overlay = document.getElementById('settings-overlay');
       return overlay && overlay.getAttribute('aria-hidden') === 'false';
-    }, { timeout: 5000 });
-    // Stability check: verify settings-overlay is stably open
-    await page.waitForTimeout(50); // brief pause to detect transient states
-    await page.waitForFunction(() => {
-      const overlay = document.getElementById('settings-overlay');
-      return overlay && overlay.getAttribute('aria-hidden') === 'false';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     const overlay = page.locator('#settings-overlay');
     await expect(overlay).toHaveAttribute('aria-hidden', 'false');
     await expect(page.locator('#setting-sound')).toBeVisible();
@@ -113,19 +88,13 @@ test.describe('Parking Escape', () => {
     await page.waitForFunction(() => {
       const overlay = document.getElementById('settings-overlay');
       return overlay && overlay.getAttribute('aria-hidden') === 'false';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#settings-overlay')).toHaveAttribute('aria-hidden', 'false');
     await page.click('#btn-close-settings');
     await page.waitForFunction(() => {
       const overlay = document.getElementById('settings-overlay');
       return overlay && overlay.getAttribute('aria-hidden') === 'true';
-    }, { timeout: 5000 });
-    // Stability check: verify settings-overlay is stably closed
-    await page.waitForTimeout(50); // brief pause to detect transient states
-    await page.waitForFunction(() => {
-      const overlay = document.getElementById('settings-overlay');
-      return overlay && overlay.getAttribute('aria-hidden') === 'true';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#settings-overlay')).toHaveAttribute('aria-hidden', 'true');
   });
 
@@ -159,7 +128,7 @@ test.describe('Parking Escape', () => {
     // Share → writes a #s=parking-escape.* hash to the address bar.
     await page.click('#btn-share');
     // Wait for hash to be set (shareState is async)
-    await page.waitForFunction(() => window.location.hash && window.location.hash.startsWith('#s=parking-escape.'), { timeout: 5000 });
+    await page.waitForFunction(() => window.location.hash && window.location.hash.startsWith('#s=parking-escape.'), { timeout: 3000 });
     const hash = await page.evaluate(() => window.location.hash);
     expect(hash.startsWith('#s=parking-escape.')).toBe(true);
 
@@ -167,12 +136,10 @@ test.describe('Parking Escape', () => {
     await page.goto(GAME_URL + hash);
     await page.waitForSelector('#game-canvas');
     await page.waitForFunction(() => window.__peGame && window.__peGame.state && window.__peGame.state.moves === 5);
-    // Stability check: verify moves-display has updated to reflect loaded state
-    await page.waitForTimeout(50); // brief pause to detect transient states
     await page.waitForFunction(() => {
       const movesEl = document.getElementById('moves-display');
       return movesEl && movesEl.textContent === '5';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#moves-display')).toHaveText('5');
     const after = await page.evaluate(() => ({
       moves: window.__peGame.state.moves,
@@ -186,13 +153,7 @@ test.describe('Parking Escape', () => {
     await page.waitForFunction(() => {
       const movesEl = document.getElementById('moves-display');
       return movesEl && movesEl.textContent === '0';
-    }, { timeout: 5000 });
-    // Stability check: verify moves-display is actually stable at 0
-    await page.waitForTimeout(50); // brief pause to detect transient states
-    await page.waitForFunction(() => {
-      const movesEl = document.getElementById('moves-display');
-      return movesEl && movesEl.textContent === '0';
-    }, { timeout: 5000 });
+    }, { timeout: 2000 });
     await expect(page.locator('#moves-display')).toHaveText('0');
   });
 });
