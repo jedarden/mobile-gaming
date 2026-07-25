@@ -1,0 +1,190 @@
+{
+  "baseline_runs": {
+    "run_1": {
+      "duration": "17.58s",
+      "transform": "1.81s",
+      "setup": "656ms",
+      "collect": "12.45s",
+      "tests": "15.53s",
+      "environment": "14.87s",
+      "prepare": "8.86s"
+    },
+    "run_2": {
+      "duration": "17.40s",
+      "transform": "1.60s",
+      "setup": "689ms",
+      "collect": "11.55s",
+      "tests": "14.00s",
+      "environment": "14.24s",
+      "prepare": "8.78s"
+    },
+    "run_3": {
+      "duration": "18.45s",
+      "transform": "1.52s",
+      "setup": "627ms",
+      "collect": "11.03s",
+      "tests": "14.89s",
+      "environment": "17.13s",
+      "prepare": "9.00s"
+    },
+    "run_4": {
+      "duration": "20.32s",
+      "transform": "1.82s",
+      "setup": "725ms",
+      "collect": "13.00s",
+      "tests": "16.38s",
+      "environment": "17.97s",
+      "prepare": "10.09s"
+    },
+    "run_5": {
+      "duration": "19.57s",
+      "transform": "1.88s",
+      "setup": "749ms",
+      "collect": "13.68s",
+      "tests": "16.12s",
+      "environment": "16.83s",
+      "prepare": "10.12s"
+    },
+    "averages": {
+      "duration": "18.66s",
+      "transform": "1.73s",
+      "setup": "679ms",
+      "collect": "12.34s",
+      "tests": "15.38s",
+      "environment": "16.21s",
+      "prepare": "9.37s"
+    }
+  },
+  "slow_test_files": [
+    {
+      "file": "tests/solvers/parking-escape-solver.test.js",
+      "duration": 2278,
+      "test_count": 84,
+      "avg_per_test": 27,
+      "percentage_of_total": 14.8,
+      "bottleneck": "Solver algorithm execution"
+    },
+    {
+      "file": "tests/unit/pull-the-pin-generator.test.js",
+      "duration": 2187,
+      "test_count": 33,
+      "avg_per_test": 66,
+      "percentage_of_total": 14.2,
+      "bottleneck": "Generator complexity + validation"
+    },
+    {
+      "file": "tests/unit/parking-escape.test.js",
+      "duration": 1505,
+      "test_count": 65,
+      "avg_per_test": 23,
+      "percentage_of_total": 9.8,
+      "bottleneck": "State management operations"
+    },
+    {
+      "file": "tests/unit/parking-escape-generator.test.js",
+      "duration": 1408,
+      "test_count": 25,
+      "avg_per_test": 56,
+      "percentage_of_total": 9.2,
+      "bottleneck": "Generator algorithm"
+    },
+    {
+      "file": "tests/unit/level-nav.test.js",
+      "duration": 736,
+      "test_count": 66,
+      "avg_per_test": 11,
+      "percentage_of_total": 4.8,
+      "bottleneck": "DOM interaction simulation"
+    },
+    {
+      "file": "tests/unit/lifecycle.test.js",
+      "duration": 450,
+      "test_count": 50,
+      "avg_per_test": 9,
+      "percentage_of_total": 2.9,
+      "bottleneck": "Game lifecycle setup"
+    },
+    {
+      "file": "tests/unit/analytics.test.js",
+      "duration": 381,
+      "test_count": 42,
+      "avg_per_test": 9,
+      "percentage_of_total": 2.5,
+      "bottleneck": "Analytics tracking overhead"
+    },
+    {
+      "file": "tests/solvers/water-sort-solver.test.js",
+      "duration": 379,
+      "test_count": 92,
+      "avg_per_test": 4,
+      "percentage_of_total": 2.5,
+      "bottleneck": "Solver algorithm"
+    }
+  ],
+  "setup_teardown_overhead": {
+    "setup_percentage": 68.06,
+    "test_execution_percentage": 11.38,
+    "teardown_percentage": 20.57,
+    "hooks": {
+      "beforeAll": {
+        "total": 10.36,
+        "calls": 2,
+        "average": 5.18
+      },
+      "beforeEach": {
+        "total": 17.33,
+        "calls": 17,
+        "average": 1.02
+      },
+      "afterEach": {
+        "total": 3.26,
+        "calls": 17,
+        "average": 0.19
+      },
+      "afterAll": {
+        "total": 5.11,
+        "calls": 1,
+        "average": 5.11
+      }
+    }
+  },
+  "vitest_infrastructure": {
+    "transform": {
+      "duration": "1.73s",
+      "percentage": 9.3,
+      "purpose": "ESM transpilation"
+    },
+    "environment": {
+      "duration": "16.21s",
+      "percentage": 86.9,
+      "purpose": "jsdom setup, test context initialization"
+    },
+    "prepare": {
+      "duration": "9.37s",
+      "percentage": 50.2,
+      "purpose": "File collection, dependency resolution"
+    },
+    "collect": {
+      "duration": "12.34s",
+      "percentage": 66.1,
+      "purpose": "Test discovery and organization"
+    }
+  },
+  "summary": {
+    "total_test_files": 121,
+    "total_tests": 5378,
+    "average_duration": "18.66s",
+    "test_execution_time": "15.38s",
+    "tests_over_5s": 0,
+    "tests_over_1s": 8,
+    "primary_bottlenecks": [
+      "Parking Escape Solver",
+      "Pull-the-Pin Generator",
+      "Parking Escape Core",
+      "Parking Escape Generator",
+      "Level Navigation"
+    ]
+  },
+  "generated": "2026-07-24",
+  "bead": "bf-6b3eu"
+}
