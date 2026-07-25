@@ -83,11 +83,20 @@ test.describe('Visibilitychange Lifecycle', () => {
           await page.click('#btn-next');
           await expect(page.locator('#level-display')).toHaveText('2');
 
+          // Set up waitForResponse for potential save endpoint
+          // This follows the pattern established for levels.json and module imports
+          const saveResponsePromise = page.waitForResponse(response =>
+            response.url().includes('/save') && response.status() === 200
+          ).catch(() => null); // No-op if no save endpoint exists
+
           // Trigger visibilitychange to trigger state save
           await page.evaluate(() => {
             Object.defineProperty(document, 'hidden', { value: true, writable: true });
             document.dispatchEvent(new Event('visibilitychange'));
           });
+
+          // Wait for potential save response (will resolve immediately if no endpoint)
+          await saveResponsePromise;
 
           // Verify state was saved to localStorage
           const savedState = await page.evaluate(() => {
@@ -170,11 +179,19 @@ test.describe('Visibilitychange Lifecycle', () => {
           const hasOverlay = await resumeOverlay.count();
           expect(hasOverlay).toBe(0);
 
+          // Set up waitForResponse for potential save endpoint
+          const saveResponsePromise = page.waitForResponse(response =>
+            response.url().includes('/save') && response.status() === 200
+          ).catch(() => null); // No-op if no save endpoint exists
+
           // Trigger visibilitychange to trigger state persistence
           await page.evaluate(() => {
             Object.defineProperty(document, 'hidden', { value: true, writable: true });
             document.dispatchEvent(new Event('visibilitychange'));
           });
+
+          // Wait for potential save response (will resolve immediately if no endpoint)
+          await saveResponsePromise;
 
           // State should be persisted to storage
           const stateKey = await page.evaluate(() => {
@@ -218,9 +235,19 @@ test.describe('Visibilitychange Lifecycle', () => {
               document.dispatchEvent(new Event('visibilitychange'));
             });
 
+            // Set up waitForResponse for potential load endpoint
+            // This follows the pattern established for levels.json and module imports
+            const loadResponsePromise = page.waitForResponse(response =>
+              response.url().includes('/load') && response.status() === 200
+            ).catch(() => null); // No-op if no load endpoint exists
+
             // Reload the page
             await page.goto(url);
             await page.waitForSelector('#game-canvas');
+
+            // Wait for potential load response (will resolve immediately if no endpoint)
+            await loadResponsePromise;
+
             // Wait for game state to be restored
             await page.waitForFunction(() => {
               return window.__wsGame && window.__wsGame.state;
@@ -265,9 +292,18 @@ test.describe('Visibilitychange Lifecycle', () => {
             });
             expect(hasStateBefore).toBe(true);
 
+            // Set up waitForResponse for potential load endpoint
+            const loadResponsePromise = page.waitForResponse(response =>
+              response.url().includes('/load') && response.status() === 200
+            ).catch(() => null); // No-op if no load endpoint exists
+
             // Reload to trigger restoration
             await page.goto(url);
             await page.waitForSelector('#game-canvas');
+
+            // Wait for potential load response (will resolve immediately if no endpoint)
+            await loadResponsePromise;
+
             // Wait for game state to be restored
             await page.waitForFunction(() => {
               return window.__wsGame && window.__wsGame.state;

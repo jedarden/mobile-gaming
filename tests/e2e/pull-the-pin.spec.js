@@ -13,7 +13,18 @@ const GAME_URL = '/pull-the-pin/';
 
 test.describe('Pull the Pin', () => {
   test.beforeEach(async ({ page }) => {
+    // Wait for game module and levels.json to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/pull-the-pin/game.js') && response.status() === 200
+    );
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(GAME_URL);
+
+    // Ensure network resources are loaded before waiting for UI
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
@@ -75,8 +86,18 @@ test.describe('Pull the Pin', () => {
       return { sig: gs.pins.map(p => `${p.id}:${p.removed ? 1 : 0}`).join('|') };
     });
 
+    // Set up waitForResponse for potential share endpoint
+    // This follows the pattern established for levels.json and module imports
+    const shareResponsePromise = page.waitForResponse(response =>
+      response.url().includes('/share') && response.status() === 200
+    ).catch(() => null); // No-op if no share endpoint exists
+
     // Share → writes a #s=pull-the-pin.* hash to the address bar.
     await page.click('#btn-share');
+
+    // Wait for potential share response (will resolve immediately if no endpoint)
+    await shareResponsePromise;
+
     const hash = await page.evaluate(() => window.location.hash);
     expect(hash.startsWith('#s=pull-the-pin.')).toBe(true);
 

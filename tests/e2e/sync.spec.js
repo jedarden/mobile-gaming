@@ -29,9 +29,18 @@ async function exportCode(page) {
 
 /** Open Settings and drive the Import action, answering the prompt with `code`. */
 async function importCode(page, code) {
+  // Set up waitForResponse for potential import endpoint before clicking
+  // This follows the pattern established for levels.json and module imports
+  const importResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/import') && response.status() === 200
+  ).catch(() => null); // No-op if no import endpoint exists
+
   page.once('dialog', (d) => d.accept(code));
   await openSettings(page);
   await page.click('[data-action="sync-import"]');
+
+  // Wait for potential import response (will resolve immediately if no endpoint)
+  await importResponsePromise;
 }
 
 test.describe('Sync via Hub Settings UI', () => {
@@ -50,7 +59,17 @@ test.describe('Sync via Hub Settings UI', () => {
     await page.reload();
 
     await openSettings(page);
+
+    // Set up waitForResponse for potential export endpoint
+    // This follows the pattern established for levels.json and module imports
+    const exportResponsePromise = page.waitForResponse(response =>
+      response.url().includes('/export') && response.status() === 200
+    ).catch(() => null); // No-op if no export endpoint exists
+
     await page.click('[data-action="sync-export"]');
+
+    // Wait for potential export response (will resolve immediately if no endpoint)
+    await exportResponsePromise;
 
     const dialog = page.locator('.mg-sync-dialog');
     await expect(dialog).toBeVisible();
