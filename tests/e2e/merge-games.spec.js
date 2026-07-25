@@ -10,7 +10,20 @@ const GAME_URL = '/merge-games/';
 
 test.describe('Merge Games', () => {
   test.beforeEach(async ({ page }) => {
+    // Wait for game.js module to load from network
+    const gameModulePromise = page.waitForResponse(response =>
+      response.url().includes('/src/games/merge-games/game.js') && response.status() === 200
+    );
+
+    // Wait for levels.json network request to complete
+    const levelsJsonPromise = page.waitForResponse(response =>
+      response.url().includes('levels.json') && response.status() === 200
+    );
+
     await page.goto(GAME_URL);
+
+    // Ensure network requests complete before waiting for selectors
+    await Promise.all([gameModulePromise, levelsJsonPromise]);
     await page.waitForSelector('#game-canvas', { timeout: 5000 });
   });
 
