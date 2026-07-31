@@ -8,3 +8,6 @@ public/og/*.png
 test-results/
 test-timing-results/
 .marathon/
+
+# CI/execution trace logs — may contain tokens from CI output; never commit
+.beads/traces/

@@ -1,2 +1,0 @@
-Running as unit: run-p2774116-i237542087.scope; invocation ID: f8d13f97d8754f689602b9b2dd8c3540
-⚠ claude.ai connectors are disabled because ANTHROPIC_API_KEY or another auth source is set and takes precedence over your claude.ai login · Unset it to load your organization's connectors
