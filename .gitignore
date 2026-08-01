@@ -11,3 +11,6 @@ test-timing-results/
 
 # CI/execution trace logs — may contain tokens from CI output; never commit
 .beads/traces/
+
+# needle worker worktrees - never track
+.claude/worktrees/
