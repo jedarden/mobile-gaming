@@ -175,7 +175,10 @@ export function generateLevel(seed, difficulty = 'medium', index = 0) {
     cells,
     patternType,
     totalDirt: cells.filter(v => v).length,
-    difficulty
+    // Emit the numeric rating, not the tier name: the schema and the static
+    // asmr-*.json levels both use integers (same easy/medium/hard -> 1/2/3
+    // mapping as pull-the-pin and scripts/gen-new-game-levels.js).
+    difficulty: difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3
   };
 }
 

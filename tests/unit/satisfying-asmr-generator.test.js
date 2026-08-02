@@ -176,9 +176,12 @@ describe('generateLevel', () => {
   });
 
   it('level includes difficulty field', () => {
+    // Emitted as a numeric rating (easy/medium/hard -> 1/2/3) to match the
+    // schema and the static asmr-*.json levels; the tier name stays in level.id.
+    const expected = { easy: 1, medium: 2, hard: 3 };
     for (const diff of ['easy', 'medium', 'hard']) {
       const level = generateLevel(42, diff, 0);
-      expect(level.difficulty).toBe(diff);
+      expect(level.difficulty).toBe(expected[diff]);
     }
   });
 });

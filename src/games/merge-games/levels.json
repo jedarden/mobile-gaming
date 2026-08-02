@@ -44,7 +44,7 @@
       "targetTier": 3,
       "targetCount": 1
     },
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Match Two"
   },
   {
@@ -92,7 +92,7 @@
       "targetTier": 3,
       "targetCount": 1
     },
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Simple Chain"
   },
   {
@@ -140,7 +140,7 @@
       "targetTier": 3,
       "targetCount": 1
     },
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Stack Up"
   },
   {
@@ -188,7 +188,7 @@
       "targetTier": 3,
       "targetCount": 1
     },
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Merge Up"
   },
   {
@@ -236,7 +236,7 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Double Chain"
   },
   {
@@ -284,7 +284,7 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Level Five"
   },
   {
@@ -332,7 +332,7 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Four Play"
   },
   {
@@ -380,7 +380,7 @@
       "targetTier": 4,
       "targetCount": 1
     },
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Tier Up"
   },
   {
@@ -428,7 +428,7 @@
       "targetTier": 4,
       "targetCount": 2
     },
-    "difficulty": "hard",
+    "difficulty": 3,
     "title": "Hard Stack"
   },
   {
@@ -476,7 +476,7 @@
       "targetTier": 4,
       "targetCount": 2
     },
-    "difficulty": "hard",
+    "difficulty": 3,
     "title": "Twin Goals"
   },
   {
@@ -524,7 +524,7 @@
       "targetTier": 4,
       "targetCount": 2
     },
-    "difficulty": "hard",
+    "difficulty": 3,
     "title": "Supreme"
   }
 ]

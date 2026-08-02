@@ -263,7 +263,7 @@
     ],
     "patternType": "stripes",
     "totalDirt": 144,
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Full Cover"
   },
   {
@@ -530,7 +530,7 @@
     ],
     "patternType": "stripes",
     "totalDirt": 128,
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Simple Stripes"
   },
   {
@@ -797,7 +797,7 @@
     ],
     "patternType": "stripes",
     "totalDirt": 127,
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Checker Clean"
   },
   {
@@ -1064,7 +1064,7 @@
     ],
     "patternType": "stripes",
     "totalDirt": 128,
-    "difficulty": "easy",
+    "difficulty": 1,
     "title": "Splatter"
   },
   {
@@ -1331,7 +1331,7 @@
     ],
     "patternType": "splatter",
     "totalDirt": 209,
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Stripes Medium"
   },
   {
@@ -1598,7 +1598,7 @@
     ],
     "patternType": "splatter",
     "totalDirt": 177,
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Blob Clean"
   },
   {
@@ -1865,7 +1865,7 @@
     ],
     "patternType": "checkerboard",
     "totalDirt": 130,
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Spot Check"
   },
   {
@@ -2132,7 +2132,7 @@
     ],
     "patternType": "splatter",
     "totalDirt": 189,
-    "difficulty": "medium",
+    "difficulty": 2,
     "title": "Pattern Wash"
   },
   {
@@ -2399,7 +2399,7 @@
     ],
     "patternType": "splatter",
     "totalDirt": 168,
-    "difficulty": "hard",
+    "difficulty": 3,
     "title": "Tough Splatter"
   },
   {
@@ -2666,7 +2666,7 @@
     ],
     "patternType": "splatter",
     "totalDirt": 231,
-    "difficulty": "hard",
+    "difficulty": 3,
     "title": "Sparse Stripes"
   },
   {
@@ -2933,7 +2933,7 @@
     ],
     "patternType": "splatter",
     "totalDirt": 139,
-    "difficulty": "hard",
+    "difficulty": 3,
     "title": "Master Clean"
   }
 ]

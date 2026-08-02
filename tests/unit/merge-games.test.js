@@ -669,7 +669,9 @@ describe('Daily Challenge', () => {
     const level = generateLevel('test-seed-medium', 'medium', 0);
 
     if (level !== null) {
-      expect(level.difficulty).toBe('medium');
+      // Numeric rating (medium -> 2), matching the schema and the static
+      // mg-*.json levels; the tier name is still carried in level.id.
+      expect(level.difficulty).toBe(2);
       expect(level.task.targetTier).toBe(4);
       expect(level.task.targetCount).toBe(1);
     }
@@ -679,7 +681,7 @@ describe('Daily Challenge', () => {
     const level = generateLevel('test-seed-easy', 'easy', 0);
 
     if (level !== null) {
-      expect(level.difficulty).toBe('easy');
+      expect(level.difficulty).toBe(1);
       expect(level.task.targetTier).toBe(3);
       expect(level.task.targetCount).toBe(1);
     }
@@ -689,7 +691,7 @@ describe('Daily Challenge', () => {
     const level = generateLevel('test-seed-hard', 'hard', 0);
 
     if (level !== null) {
-      expect(level.difficulty).toBe('hard');
+      expect(level.difficulty).toBe(3);
       expect(level.task.targetTier).toBe(4);
       expect(level.task.targetCount).toBe(2);
     }
