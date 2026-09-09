@@ -1,0 +1,3 @@
+{"bead":"mobgame-5301aefd","event":"claim","strand":"explore","ts":"2026-08-29T21:48:44.107533086+00:00","worker":"glm-trail"}
+{"adapter":"claude-code-glm-4.7","bead":"mobgame-5301aefd","event":"dispatch","model":"glm-4.7","strand":"explore","ts":"2026-08-29T21:48:44.217983787+00:00","worker":"glm-trail"}
+{"bead":"mobgame-5301aefd","duration_ms":800492,"event":"complete","exit_code":0,"outcome":"success","strand":"explore","ts":"2026-08-29T22:02:04.720432347+00:00","worker":"glm-trail"}
