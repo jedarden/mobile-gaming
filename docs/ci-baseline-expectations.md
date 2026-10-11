@@ -111,12 +111,13 @@ The CI enforces bundle size limits to prevent code bloat:
 
 | Bundle Type | Budget | Status |
 |-------------|--------|--------|
-| JavaScript | ≤ 500KB | Enforced |
+| JavaScript | ≤ 3,000KB total generated (including vendor chunks); ≤500KB gzipped per game | Enforced |
 | CSS | ≤ 100KB | Enforced |
 
 **Budget enforcement:**
 - Build step fails if bundle exceeds budget
 - Percentage over budget is reported in error
+- Shared Phaser and Three.js vendor chunks count toward the total budget
 - Must reduce bundle size to proceed
 
 **Current status:**

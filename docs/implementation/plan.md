@@ -2035,8 +2035,15 @@ UX polish is a continuous phase that begins after each game's base mechanics are
 - Texture atlas for sprite-based games (Pull the Pin, Brain Teaser, Save the Character): single draw call per frame
 - Object pooling for particle systems and instanced meshes (Crowd Runner, Giant Runner) to avoid GC pauses
 - `requestAnimationFrame` with delta-time clamping: skip frames gracefully on slow devices rather than running game logic at half speed
-- Bundle size budget: each game's JS bundle ≤ 150KB gzipped (2D games), ≤ 400KB gzipped (3D games)
-- **Phaser migration:** 2D bundle size budget increases to ≤ 200KB gzipped (accounting for Phaser framework after Compressor stripping). Phaser handles WebGL draw call batching automatically, replacing manual texture atlas management. Phaser's game loop handles delta-time clamping internally. Only loaded for 2D games — no cross-contamination with Three.js entry points.
+- Bundle size budget: total generated JavaScript ≤ 3,000KB uncompressed,
+  including shared vendor chunks; each game's initial JavaScript ≤ 500KB
+  gzipped. Phaser and Three.js remain isolated to their respective game
+  entries and are shared within those entries.
+- **Phaser migration:** the larger vendor chunk is accounted for explicitly in
+  the total and per-entry budgets. Phaser handles WebGL draw call batching
+  automatically, replacing manual texture atlas management. Phaser's game loop
+  handles delta-time clamping internally. Only loaded for 2D games — no
+  cross-contamination with Three.js entry points.
 
 ### 5.5 Progressive Enhancement
 

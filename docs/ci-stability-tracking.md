@@ -24,7 +24,8 @@ The following baseline expectations must be met for a CI stability test to be co
 6. **No flaky behavior** - No intermittent or random failures
 
 ### CI Budget Limits
-- **JavaScript bundle:** ≤ 500KB
+- **JavaScript bundle:** ≤ 3,000KB total generated (including vendor chunks),
+  with ≤500KB gzipped initial JavaScript per game
 - **CSS bundle:** ≤ 100KB
 - **Unit test timeout:** 300 seconds
 - **E2E test timeout:** 120 seconds

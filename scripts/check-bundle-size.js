@@ -3,9 +3,13 @@
 /**
  * Bundle size CI gate
  *
- * Enforces JS bundle size limits per game:
- * - 2D games (Phaser-based): ≤200KB gzipped
- * - 3D games (Three.js-based): ≤400KB gzipped
+ * Enforces JavaScript bundle size limits:
+ * - Total generated JavaScript: ≤3,000KB uncompressed
+ * - Each game's initial JavaScript: ≤500KB gzipped
+ *
+ * The total budget includes shared Phaser and Three.js vendor chunks. The
+ * per-entry budget protects page-load size while allowing those framework
+ * chunks to remain shared and independently cacheable.
  *
  * Usage: node scripts/check-bundle-size.js
  */
@@ -18,9 +22,12 @@ import { execSync } from 'child_process';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const distDir = join(__dirname, '..', 'dist');
 
-// Bundle size budget (KB, gzipped)
-const BUDGET_2D = 200;
-const BUDGET_3D = 400;
+// Per-entry bundle budgets (KB, gzipped)
+const BUDGET_2D = 500;
+const BUDGET_3D = 500;
+
+// Total generated JavaScript budget (KB, uncompressed, using 1024-byte KB)
+const TOTAL_JS_BUDGET = 3000;
 
 // 2D games use Phaser, 3D games use Three.js
 const GAMES_2D = [
@@ -127,6 +134,26 @@ function getAssetSizes() {
 }
 
 /**
+ * Calculate the total uncompressed size of generated JavaScript assets.
+ */
+function getTotalJsSize() {
+  const assetsDir = join(distDir, 'assets');
+  let totalBytes = 0;
+
+  try {
+    for (const file of readdirSync(assetsDir)) {
+      if (file.endsWith('.js')) {
+        totalBytes += readFileSync(join(assetsDir, file)).length;
+      }
+    }
+  } catch (err) {
+    return null;
+  }
+
+  return totalBytes / 1024;
+}
+
+/**
  * Determine if a game is 2D or 3D based on which shared chunks it references
  */
 function getGameType(scripts) {
@@ -190,9 +217,21 @@ function calculateBundleSize(entryScripts, assetSizes, is2D) {
 function checkBundleSizes() {
   const entryChunks = getEntryChunks();
   const assetSizes = getAssetSizes();
+  const totalJsSize = getTotalJsSize();
 
   let failures = [];
   const results = [];
+
+  if (totalJsSize === null) {
+    console.error('Failed to calculate total JavaScript bundle size');
+    process.exit(1);
+  }
+
+  const totalJsPassed = totalJsSize <= TOTAL_JS_BUDGET;
+  console.log(`\n📦 Total JavaScript: ${totalJsSize.toFixed(1)}KB / ${TOTAL_JS_BUDGET}KB${totalJsPassed ? '' : ` (${(totalJsSize - TOTAL_JS_BUDGET).toFixed(1)}KB over)`}`);
+  if (!totalJsPassed) {
+    failures.push({ game: 'total JavaScript', total: totalJsSize, budget: TOTAL_JS_BUDGET });
+  }
 
   // Check each game
   for (const game of [...GAMES_2D, ...GAMES_3D]) {

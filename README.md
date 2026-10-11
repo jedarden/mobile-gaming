@@ -108,7 +108,8 @@ mobile-gaming/
 
 - **121 unit test files** covering game logic, state management, and scoring
 - **E2E tests** with Playwright (mobile Chrome & Safari)
-- **Bundle size enforcement**: 3000KB JS, 150KB CSS budget
+- **Bundle size enforcement**: 3000KB total generated JS (including vendor
+  chunks), with a 500KB gzipped initial-JS budget per game; 150KB CSS budget
 - **Level validation**: All games must have ≥ 3 levels
 
 ## 🚢 Deployment

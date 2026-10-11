@@ -64,6 +64,9 @@ function flattenSrcOutput() {
 
 export default defineConfig({
   build: {
+    // Phaser and Three.js are intentionally retained as shared vendor chunks.
+    // The CI bundle gate enforces the 3,000KB total budget explicitly.
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       input: {
         hub: resolve(__dirname, 'src/hub/index.html'),

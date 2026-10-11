@@ -19,7 +19,9 @@ npm run build             # Vite build → dist/
 npm run test:e2e          # Playwright E2E (chromium)
 ```
 
-Bundle size budget enforced by CI: 500KB JS, 100KB CSS.
+Bundle size budget enforced by CI: 3,000KB total generated JavaScript
+(including Phaser and Three.js vendor chunks), with a 500KB gzipped initial
+JavaScript budget per game. CSS remains limited to 100KB.
 
 ## CI — Argo Workflows on iad-ci only. GitHub Actions are disabled.
 
