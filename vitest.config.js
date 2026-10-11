@@ -1,11 +1,14 @@
 // vitest.config.js
 import { defineConfig } from 'vitest/config';
+import { fileURLToPath } from 'node:url';
+
+const setupFile = fileURLToPath(new URL('./tests/setup.js', import.meta.url));
 
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.js'],
     environment: 'node',   // solvers are pure functions, no DOM needed
-    setupFiles: ['./tests/setup.js'],  // Setup file for navigator mocking
+    setupFiles: [setupFile],  // Setup file for navigator mocking
 
     // Timeout guards to prevent CI hangs
     testTimeout: 300000,     // 300s per test (overrides default infinite)
