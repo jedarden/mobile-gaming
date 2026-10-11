@@ -4,9 +4,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
-  // Reduce retries in CI for faster feedback
-  retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? 'github' : 'list',
+  // The Argo runner installs Chromium only, so this config must not depend on
+  // the CI environment variable to exclude the WebKit project.
+  retries: 1,
+  reporter: 'list',
 
   // Optimize timeout settings for CI
   timeout: 10000, // 10s per test (down from default 30s)
@@ -27,21 +28,11 @@ export default defineConfig({
     actionTimeout: 5000,
   },
 
-  // CI: Run only mobile-chrome for faster execution (50% reduction in test time)
-  // Local: Run both browsers for comprehensive testing
-  projects: process.env.CI ? [
+  // Keep the CI entry point aligned with the browser installed by the workflow.
+  projects: [
     {
       name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
-    },
-  ] : [
-    {
-      name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'mobile-safari',
-      use: { ...devices['iPhone 14'] },
     },
   ],
 
@@ -49,10 +40,9 @@ export default defineConfig({
   webServer: {
     command: 'npx vite preview --port 4173',
     port: 4173,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000, // 2min timeout for server startup
   },
 
-  // Optimize worker count for CI
-  workers: process.env.CI ? 4 : undefined, // 4 parallel workers in CI, auto-detect locally
+  workers: 4,
 });

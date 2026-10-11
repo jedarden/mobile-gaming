@@ -82,8 +82,9 @@ npm run build
 npm run preview
 
 # Run tests
-npm test                 # Unit tests (Vitest)
-npm run test:e2e         # E2E tests (Playwright)
+npm test                 # ESLint pretest, then unit tests (Vitest)
+npm run test:e2e         # CI E2E tests (mobile Chromium)
+npm run test:e2e:all     # Full E2E matrix (mobile Chromium and Safari)
 npm run test:levels      # Level validation
 ```
 
@@ -107,7 +108,11 @@ mobile-gaming/
 ## 🧪 Testing
 
 - **121 unit test files** covering game logic, state management, and scoring
-- **E2E tests** with Playwright (mobile Chrome & Safari)
+- **E2E tests** with Playwright; the CI entry point uses mobile Chromium, and
+  `npm run test:e2e:all` also runs mobile Safari. The CI suite follows the daily
+  challenge banner into its game and checks seeded daily mode in Parking Escape.
+- **Daily-challenge coverage** runs as part of `npm test`, including seeded
+  generation and completion wiring across the supported games
 - **Bundle size enforcement**: 3000KB total generated JS (including vendor
   chunks), with a 500KB gzipped initial-JS budget per game; 150KB CSS budget
 - **Level validation**: All games must have ≥ 3 levels
@@ -119,7 +124,8 @@ mobile-gaming/
 - **Platform:** Cloudflare Pages
 - **CI/CD:** Argo Workflows on `iad-ci` cluster
 - **Trigger:** Automatic on push to `main` branch
-- **Build:** `npm ci && npm test && npm run test:levels && npm run build`
+- **Stages:** lint and scaffold validation; unit tests and sampled level
+  validation; production build and bundle limits; then Chromium E2E tests
 
 The reusable build and deployment definitions live in the public
 [`jedarden/declarative-config`](https://github.com/jedarden/declarative-config)

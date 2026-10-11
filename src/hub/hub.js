@@ -110,7 +110,9 @@ function initDailyChallenge() {
 
   if (game) {
     subtitle.textContent = `${game.title} - ${isCompleted ? 'Completed!' : 'Play now'}`;
-    banner.href = `/${challenge.gameId}/?daily=${challenge.seed}`;
+    // Game entry points use the boolean flag to enable daily mode. The date
+    // seed selects today's game above; each game derives its own seeded level.
+    banner.href = `/${challenge.gameId}/?daily=true`;
   }
 
   // Update banner style based on completion
