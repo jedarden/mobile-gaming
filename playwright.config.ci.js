@@ -12,9 +12,9 @@ export default defineConfig({
   reporter: 'list',
 
   // Optimize timeout settings for CI
-  timeout: 10000, // 10s per test (down from default 30s)
+  timeout: 20000,
   expect: {
-    timeout: 5000, // 5s for assertions (down from default 5s)
+    timeout: 10000,
   },
 
   use: {
@@ -27,7 +27,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     // Reduce action timeout for faster failure detection
-    actionTimeout: 5000,
+    actionTimeout: 10000,
   },
 
   // Keep the CI entry point aligned with the browser installed by the workflow.
@@ -46,5 +46,7 @@ export default defineConfig({
     timeout: 120000, // 2min timeout for server startup
   },
 
-  workers: 4,
+  // The Argo E2E container is limited to two CPUs; match its concurrency to
+  // avoid browser and level-data requests timing out under four workers.
+  workers: 2,
 });
