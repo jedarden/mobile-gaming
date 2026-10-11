@@ -3,13 +3,13 @@
 ## Result
 
 The repository's CI commands passed from a fresh `git archive` extraction of
-implementation revision `daa641d`. The Chromium production smoke stage covers
+current `HEAD` (`16cfc68`). The Chromium production smoke stage covers
 the hub, all 13 game routes and their level data, and daily-challenge entry and
 seeded-mode behavior.
 
-This is local clean-archive verification, not a reported Argo Workflow run. The
-configured `iad-ci` kubeconfig was rejected as unauthenticated, so no live
-workflow could be submitted or observed.
+This is a fresh local clean-archive workflow, not a reported Argo Workflow run.
+The configured `iad-ci` kubeconfig was rejected as unauthenticated when queried,
+so no live workflow could be submitted or observed from this host.
 
 ## Stage evidence
 
@@ -17,11 +17,12 @@ workflow could be submitted or observed.
 | --- | --- | --- |
 | Install | `npm ci` | Exit 0 |
 | Lint | `npm run lint` | Exit 0; 83 existing warnings, no errors |
-| Unit | `npm test` | Exit 0; 121 files and 5,387 tests passed. `pretest` runs ESLint. |
+| Unit | `npm test` | Exit 0; 123 files and 5,391 tests passed. `pretest` runs ESLint. |
 | Level validation | `npm run test:levels -- --count 5` | Exit 0; 330 schemas and 31 generator tiers passed |
 | Build | `npm run build` | Exit 0 |
-| Bundle budgets | `npm run test:bundle-size` and the Argo raw-byte budget guard | Both exit 0; 2,467,891 / 3,072,000 JS bytes and 48,838 / 153,600 CSS bytes |
-| E2E | `PLAYWRIGHT_TEST_PORT=49190 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers npm run test:e2e` | Exit 0; 16 Chromium production-preview tests passed |
+| Bundle budgets | `npm run test:bundle-size` and the Argo raw-byte budget guard | Both exit 0; 2,468,204 / 3,072,000 JS bytes and 48,838 / 153,600 CSS bytes |
+| Chromium install | `npx playwright install chromium` | Exit 0 |
+| E2E | `PLAYWRIGHT_TEST_PORT=49190 npm run test:e2e` | Exit 0; 16 Chromium production-preview tests passed |
 
 The Argo lint shell checks also passed: no prohibited `console.log` statements,
 all seven required scaffold files were present for every game, and each game
