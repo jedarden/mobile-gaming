@@ -4,6 +4,9 @@
 
 import { test, expect } from '@playwright/test';
 
+// Parking Escape's seeded level generation is CPU-heavy on the CI runner.
+test.setTimeout(20000);
+
 test('hub daily challenge opens its selected game in daily mode', async ({ page }) => {
   await page.goto('/');
 
