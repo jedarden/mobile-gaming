@@ -87,6 +87,13 @@ This is a **pre-existing issue** unrelated to parking-escape timeout configurati
 
 2. **Re-run CI workflow** - After fixing bridge-race issue
 
+> **RESOLVED (2026-10-11):** This failure was fixed by Option 1 — commit `f425763`
+> appended level `br-010` to `src/games/bridge-race/levels.json` and raised both
+> solver count assertions in `tests/solvers/bridge-race-solver.test.js` from
+> `>= 9` to `>= 10`. Option 2 above was **not** taken: the contract is at least
+> 10 curated levels (shipped today as `br-001`..`br-010`), and the test
+> expectation of 10 is correct as-is. Do not lower the assertion to 9.
+
 ### Follow-up (Verify Full Pipeline)
 
 3. **Confirm build succeeds** - Verify Vite build completes

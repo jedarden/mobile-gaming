@@ -223,6 +223,16 @@ describe('hand-crafted levels', () => {
     expect(LEVELS.length).toBeGreaterThanOrEqual(10);
   });
 
+  it('ships the full ordered level set br-001..br-0NN', () => {
+    // Zero-padded ids, contiguous from br-001, in ascending order — so the
+    // per-level checks above and below exercise every shipped level in
+    // progression order, and a reordered, gapped, or duplicated file fails
+    // here rather than silently passing the count check.
+    LEVELS.forEach((level, i) => {
+      expect(level.id).toBe(`br-${String(i + 1).padStart(3, '0')}`);
+    });
+  });
+
   for (const level of LEVELS) {
     describe(`level ${level.id}`, () => {
       it('has at least 10 levels total', () => {
