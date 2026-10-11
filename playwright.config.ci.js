@@ -1,6 +1,8 @@
 // playwright.config.ci.js - CI-optimized configuration for faster test execution
 import { defineConfig, devices } from '@playwright/test';
 
+const previewPort = Number(process.env.PLAYWRIGHT_TEST_PORT || 4173);
+
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
@@ -16,7 +18,7 @@ export default defineConfig({
   },
 
   use: {
-    baseURL: 'http://localhost:4173',
+    baseURL: `http://localhost:${previewPort}`,
     // Mobile viewport matching iPhone 14 — the canonical logical resolution for all portrait games
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 2,
@@ -38,8 +40,8 @@ export default defineConfig({
 
   // Start Vite preview server before running tests
   webServer: {
-    command: 'npx vite preview --port 4173',
-    port: 4173,
+    command: `npx vite preview --port ${previewPort}`,
+    port: previewPort,
     reuseExistingServer: false,
     timeout: 120000, // 2min timeout for server startup
   },
