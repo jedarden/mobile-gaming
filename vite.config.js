@@ -25,6 +25,48 @@ const gameEntries = existsSync(gamesDir)
 function flattenSrcOutput() {
   return {
     name: 'flatten-src-output',
+    configureServer(server) {
+      // The deployed site flattens source entry points to /<game>/ and /.
+      // Mirror those routes in Vite dev mode so E2E tests exercise the same
+      // browser URLs while still observing the source modules they assert on.
+      server.middlewares.use((req, res, next) => {
+        if (!req.url) return next();
+        const requestURL = new URL(req.url, 'http://localhost');
+        const route = requestURL.pathname.replace(/\/+$/, '') || '/';
+        let entryPath;
+        if (route === '/') entryPath = '/src/hub/index.html';
+        else {
+          const game = route.slice(1);
+          if (gameEntries[game]) entryPath = `/src/games/${game}/index.html`;
+        }
+        if (entryPath) req.url = `${entryPath}${requestURL.search}`;
+        else {
+          const match = requestURL.pathname.match(/^\/([^/]+)\/(.+)$/);
+          if (match && gameEntries[match[1]]) {
+            res.statusCode = 302;
+            res.setHeader('Location', `/src/games/${match[1]}/${match[2]}${requestURL.search}`);
+            return res.end();
+          }
+          const sharedStyle = requestURL.pathname.match(/^\/styles\/(.+)$/);
+          if (sharedStyle) {
+            res.statusCode = 302;
+            res.setHeader('Location', `/src/styles/${sharedStyle[1]}${requestURL.search}`);
+            return res.end();
+          }
+          if (requestURL.pathname === '/styles.css') {
+            res.statusCode = 302;
+            res.setHeader('Location', `/src/hub/styles.css${requestURL.search}`);
+            return res.end();
+          }
+          if (requestURL.pathname === '/hub.js') {
+            res.statusCode = 302;
+            res.setHeader('Location', `/src/hub/hub.js${requestURL.search}`);
+            return res.end();
+          }
+        }
+        next();
+      });
+    },
     closeBundle() {
       const distSrc = resolve(__dirname, 'dist/src');
       if (!existsSync(distSrc)) return;
@@ -42,6 +84,18 @@ function flattenSrcOutput() {
           if (entry.isDirectory()) {
             renameSync(resolve(srcGames, entry.name), resolve(__dirname, 'dist', entry.name));
           }
+        }
+      }
+
+      // Game levels are fetched at runtime from ./levels.json. Vite does not
+      // copy JSON files that are only fetched by URL, so include each game's
+      // data file beside its flattened index.html for production previews.
+      const sourceGames = resolve(__dirname, 'src/games');
+      for (const entry of readdirSync(sourceGames, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const levels = resolve(sourceGames, entry.name, 'levels.json');
+        if (existsSync(levels)) {
+          copyFileSync(levels, resolve(__dirname, 'dist', entry.name, 'levels.json'));
         }
       }
 

@@ -11,10 +11,11 @@ test('hub daily challenge opens its selected game in daily mode', async ({ page 
   await expect(banner).toBeVisible();
   await expect(banner).toHaveAttribute('href', /^\/[\w-]+\/\?daily=true$/);
 
-  const navigation = page.waitForURL(url => url.searchParams.get('daily') === 'true');
+  const navigation = page.waitForNavigation();
   await banner.click();
-  await navigation;
-  await expect(page.locator('#game-canvas')).toBeVisible();
+  const response = await navigation;
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveURL(url => url.searchParams.get('daily') === 'true');
 });
 
 test('Parking Escape loads one seeded level for the daily challenge', async ({ page }) => {

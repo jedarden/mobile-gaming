@@ -2,6 +2,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const previewPort = Number(process.env.PLAYWRIGHT_TEST_PORT || 4173);
+const useProductionPreview = process.env.PLAYWRIGHT_TEST_SERVER === 'preview';
+const webServerCommand = useProductionPreview
+  ? `npx vite preview --host 127.0.0.1 --port ${previewPort}`
+  : `npx vite --host 127.0.0.1 --port ${previewPort}`;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -38,9 +42,10 @@ export default defineConfig({
     },
   ],
 
-  // Start Vite preview server before running tests
+  // E2E suites inspect Vite-served source modules. CI can opt into a production
+  // preview for deployable-output smoke tests after the build stage.
   webServer: {
-    command: `npx vite preview --port ${previewPort}`,
+    command: webServerCommand,
     port: previewPort,
     reuseExistingServer: false,
     timeout: 120000, // 2min timeout for server startup
