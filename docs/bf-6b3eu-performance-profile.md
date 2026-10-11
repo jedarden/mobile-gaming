@@ -160,5 +160,5 @@ Changes behind the result:
   the existing assertions remain in place.
 
 The focused post-change run covered all four affected test files: 207 tests
-passed. Full-suite verification and the clean-checkout result are recorded on
-the owning task.
+passed. A clean archive of the committed change passed `npm test`: 121 test
+files and 5,387 tests passed; Vitest reported 40.56s for the suite.
