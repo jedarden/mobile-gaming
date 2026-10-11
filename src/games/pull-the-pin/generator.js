@@ -267,10 +267,11 @@ export function findSolution(level) {
 
   // BFS over pin-removal permutations
   const queue = [{ state: initialState, removed: [] }];
+  let queueHead = 0;
   const visited = new Set();
 
-  while (queue.length > 0) {
-    const { state: current, removed } = queue.shift();
+  while (queueHead < queue.length) {
+    const { state: current, removed } = queue[queueHead++];
 
     // Get remaining pins
     const remaining = current.pins.filter(p => !p.removed).map(p => p.id);

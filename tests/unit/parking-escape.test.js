@@ -763,6 +763,15 @@ describe('Daily Challenge', () => {
   });
 
   const GAME_ID = 'parking-escape';
+  let generatedDailyLevel;
+
+  function getGeneratedDailyLevel() {
+    if (generatedDailyLevel === undefined) {
+      generatedDailyLevel = generateLevel(getGameDailySeed(GAME_ID), 'easy', 0);
+    }
+    return generatedDailyLevel;
+  }
+
   const SOLVABLE_LEVEL = {
     grid: {
       width: 6,
@@ -782,7 +791,7 @@ describe('Daily Challenge', () => {
     expect(typeof numericSeed).toBe('number');
 
     // Try to generate daily level from seed
-    const generatedLevel = generateLevel(getGameDailySeed(GAME_ID), 'easy', 0);
+    const generatedLevel = getGeneratedDailyLevel();
 
     let dailyLevel;
     if (generatedLevel !== null) {
@@ -803,7 +812,7 @@ describe('Daily Challenge', () => {
 
   it('simulates a win on daily level and calls completeDailyChallenge exactly once', () => {
     // Try to generate daily level
-    const generatedLevel = generateLevel(getGameDailySeed(GAME_ID), 'easy', 0);
+    const generatedLevel = getGeneratedDailyLevel();
 
     let dailyLevel;
     if (generatedLevel !== null) {

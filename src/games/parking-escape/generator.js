@@ -32,33 +32,37 @@ const VEHICLE_COLORS = ['#E74C3C', '#3498DB', '#2ECC71', '#F39C12', '#9B59B6', '
 /**
  * Check whether a vehicle placement overlaps any existing vehicle.
  *
- * @param {Array} vehicles - Existing vehicle list
+ * @param {number[]} occupiedRows - Bit mask of occupied cells for each row
  * @param {number} x - Top-left x of new vehicle
  * @param {number} y - Top-left y of new vehicle
  * @param {number} w - Width of new vehicle
  * @param {number} h - Height of new vehicle
  * @returns {boolean}
  */
-function overlaps(vehicles, x, y, w, h) {
-  for (const v of vehicles) {
-    const vw = v.width;
-    const vh = v.height;
-    if (x < v.x + vw && x + w > v.x && y < v.y + vh && y + h > v.y) {
-      return true;
-    }
+function overlaps(occupiedRows, x, y, w, h) {
+  const mask = ((1 << w) - 1) << x;
+  for (let row = y; row < y + h; row++) {
+    if ((occupiedRows[row] & mask) !== 0) return true;
   }
   return false;
+}
+
+function markOccupied(occupiedRows, x, y, w, h) {
+  const mask = ((1 << w) - 1) << x;
+  for (let row = y; row < y + h; row++) {
+    occupiedRows[row] |= mask;
+  }
 }
 
 /**
  * Try to place a random vehicle on the grid without overlap.
  *
- * @param {Array} vehicles - Existing vehicles
  * @param {Object} rng - Seeded RNG
  * @param {number} id - Vehicle index for naming
+ * @param {number[]} occupiedRows - Bit mask of occupied cells for each row
  * @returns {Object|null} New vehicle or null if placement failed
  */
-function tryPlaceVehicle(vehicles, rng, id) {
+function tryPlaceVehicle(rng, id, occupiedRows) {
   const isHoriz = rng.next() < 0.5;
   const isTruck = rng.next() < 0.25;
   const len = isTruck ? 3 : 2;
@@ -78,7 +82,8 @@ function tryPlaceVehicle(vehicles, rng, id) {
       y = rng.nextInt(0, GRID_SIZE - h);
     }
 
-    if (!overlaps(vehicles, x, y, w, h)) {
+    if (!overlaps(occupiedRows, x, y, w, h)) {
+      markOccupied(occupiedRows, x, y, w, h);
       return {
         id: `v${id}`,
         type,
@@ -123,10 +128,12 @@ export function generateLevel(seed, difficulty = 'medium', index = 0) {
     };
 
     const vehicles = [hero];
+    const occupiedRows = Array(GRID_SIZE).fill(0);
+    markOccupied(occupiedRows, hero.x, hero.y, hero.width, hero.height);
 
     // Add random blockers
     for (let v = 0; v < targetVehicles - 1; v++) {
-      const placed = tryPlaceVehicle(vehicles, r, v);
+      const placed = tryPlaceVehicle(r, v, occupiedRows);
       if (placed) vehicles.push(placed);
     }
 

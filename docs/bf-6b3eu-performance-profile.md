@@ -128,4 +128,37 @@ The test suite performs reasonably well at 18.66 seconds total, but clear optimi
 - **Setup/teardown** represents **88%** of overhead in controlled scenarios  
 - **Solver algorithms** are the primary bottleneck in test execution
 
-The next phase should focus on optimizing the identified bottlenecks, starting with the parking-escape and pull-the-pin test suites.
+The parking-escape and pull-the-pin bottlenecks identified here are addressed in
+the verification section below.
+
+## Optimization Verification (2026-10-11)
+
+The following paired benchmark was collected on the same checkout and machine
+with `npm test` before and after the changes. This command runs the repository's
+lint pretest followed by the complete Vitest suite. Each value is a separate
+full-suite run; all six runs exited successfully.
+
+| State | Run 1 | Run 2 | Run 3 | Mean |
+|-------|------:|------:|------:|-----:|
+| Before | 44.156s | 52.046s | 45.572s | 47.258s |
+| After | 41.570s | 41.190s | 40.702s | 41.154s |
+
+The mean end-to-end command time fell by 6.104s (12.9%). The historical 18.66s
+measurement above used a different profiler invocation, so this paired result is
+the comparable baseline for these changes.
+
+Changes behind the result:
+
+- Parking Escape BFS now uses a head-index queue, a flat typed occupancy map per
+  expanded state, and direct vehicle checks for the exit ray. This avoids
+  shifting the BFS queue and rebuilding a grid for each candidate move.
+- Parking Escape generation checks candidate placements against incremental
+  per-row occupancy masks instead of scanning every previously placed vehicle.
+- Pull the Pin BFS now advances through its queue with a head index.
+- Generator tests reuse deterministic, read-only seeded fixtures, and parking
+  solver assertions reuse one result per level. Direct determinism checks and
+  the existing assertions remain in place.
+
+The focused post-change run covered all four affected test files: 207 tests
+passed. Full-suite verification and the clean-checkout result are recorded on
+the owning task.

@@ -21,12 +21,31 @@ import {
   generateBatch,
 } from '../../src/games/pull-the-pin/generator.js';
 
+const generatedLevelCache = new Map();
+const generatedBatchCache = new Map();
+
+function getGeneratedLevel(seed, difficulty = 'medium', index = 0) {
+  const key = `${seed}:${difficulty}:${index}`;
+  if (!generatedLevelCache.has(key)) {
+    generatedLevelCache.set(key, generateLevel(seed, difficulty, index));
+  }
+  return generatedLevelCache.get(key);
+}
+
+function getGeneratedBatch(baseSeed, difficulty, count) {
+  const key = `${baseSeed}:${difficulty}:${count}`;
+  if (!generatedBatchCache.has(key)) {
+    generatedBatchCache.set(key, generateBatch(baseSeed, difficulty, count));
+  }
+  return generatedBatchCache.get(key);
+}
+
 // ── generateLevel ────────────────────────────────────────────────────────────
 
 describe('generateLevel', () => {
   describe('structure', () => {
     it('returns null or a level object (retry loop may exhaust)', () => {
-      const result = generateLevel(1, 'easy');
+      const result = getGeneratedLevel(1, 'easy');
       // Result is either null (failed) or a well-formed object
       if (result !== null) {
         expect(result).toHaveProperty('id');
@@ -42,7 +61,7 @@ describe('generateLevel', () => {
       // Try multiple seeds; at least one should produce a non-null result
       let found = null;
       for (let seed = 1; seed <= 20; seed++) {
-        const level = generateLevel(seed, 'easy');
+        const level = getGeneratedLevel(seed, 'easy');
         if (level !== null) { found = level; break; }
       }
       expect(found).not.toBeNull();
@@ -51,7 +70,7 @@ describe('generateLevel', () => {
     it('id encodes seed and index', () => {
       // Find a seed that produces a non-null level
       for (let seed = 1; seed <= 30; seed++) {
-        const level = generateLevel(seed, 'easy', 0);
+        const level = getGeneratedLevel(seed, 'easy', 0);
         if (level !== null) {
           expect(level.id).toBe(`ptp-gen-${seed}-0`);
           break;
@@ -61,7 +80,7 @@ describe('generateLevel', () => {
 
     it('easy levels have 3 colors and 3 cups/balls', { timeout: 30000 }, () => {
       for (let seed = 1; seed <= 30; seed++) {
-        const level = generateLevel(seed, 'easy');
+        const level = getGeneratedLevel(seed, 'easy');
         if (level !== null) {
           expect(level.cups.length).toBe(3);
           expect(level.balls.length).toBe(3);
@@ -72,7 +91,7 @@ describe('generateLevel', () => {
 
     it('medium levels have 3 colors and 3 cups/balls', { timeout: 30000 }, () => {
       for (let seed = 1; seed <= 30; seed++) {
-        const level = generateLevel(seed, 'medium');
+        const level = getGeneratedLevel(seed, 'medium');
         if (level !== null) {
           expect(level.cups.length).toBe(3);
           expect(level.balls.length).toBe(3);
@@ -83,7 +102,7 @@ describe('generateLevel', () => {
 
     it('hard levels have 4 colors and 4 cups/balls', { timeout: 30000 }, () => {
       for (let seed = 1; seed <= 30; seed++) {
-        const level = generateLevel(seed, 'hard');
+        const level = getGeneratedLevel(seed, 'hard');
         if (level !== null) {
           expect(level.cups.length).toBe(4);
           expect(level.balls.length).toBe(4);
@@ -93,7 +112,7 @@ describe('generateLevel', () => {
     });
 
     it('each cup has required fields', () => {
-      const levels = generateBatch(1, 'easy', 1);
+      const levels = getGeneratedBatch(1, 'easy', 1);
       if (levels.length === 0) return;
       for (const cup of levels[0].cups) {
         expect(cup).toHaveProperty('id');
@@ -104,7 +123,7 @@ describe('generateLevel', () => {
     });
 
     it('each ball has required fields', () => {
-      const levels = generateBatch(1, 'easy', 1);
+      const levels = getGeneratedBatch(1, 'easy', 1);
       if (levels.length === 0) return;
       for (const ball of levels[0].balls) {
         expect(ball).toHaveProperty('id');
@@ -115,7 +134,7 @@ describe('generateLevel', () => {
     });
 
     it('each channel has segments array and blockedByPin field', () => {
-      const levels = generateBatch(1, 'easy', 1);
+      const levels = getGeneratedBatch(1, 'easy', 1);
       if (levels.length === 0) return;
       for (const ch of levels[0].channels) {
         expect(Array.isArray(ch.segments)).toBe(true);
@@ -125,7 +144,7 @@ describe('generateLevel', () => {
     });
 
     it('each pin has id, x, and y', () => {
-      const levels = generateBatch(1, 'easy', 1);
+      const levels = getGeneratedBatch(1, 'easy', 1);
       if (levels.length === 0) return;
       for (const pin of levels[0].pins) {
         expect(pin).toHaveProperty('id');
@@ -168,14 +187,14 @@ describe('generateLevel', () => {
 
 describe('isLevelSolvable', () => {
   it('returns true for levels produced by generateBatch', () => {
-    const levels = generateBatch(100, 'easy', 3);
+    const levels = getGeneratedBatch(100, 'easy', 3);
     for (const level of levels) {
       expect(isLevelSolvable(level)).toBe(true);
     }
   });
 
   it('returns a boolean', () => {
-    const levels = generateBatch(1, 'easy', 1);
+    const levels = getGeneratedBatch(1, 'easy', 1);
     if (levels.length > 0) {
       expect(typeof isLevelSolvable(levels[0])).toBe('boolean');
     }
@@ -199,7 +218,7 @@ describe('isLevelSolvable', () => {
 
 describe('findSolution', () => {
   it('returns an array for a solvable level', () => {
-    const levels = generateBatch(100, 'easy', 3);
+    const levels = getGeneratedBatch(100, 'easy', 3);
     for (const level of levels) {
       const sol = findSolution(level);
       expect(Array.isArray(sol)).toBe(true);
@@ -207,7 +226,7 @@ describe('findSolution', () => {
   });
 
   it('returned array contains pin ids that exist in the level', () => {
-    const levels = generateBatch(100, 'easy', 3);
+    const levels = getGeneratedBatch(100, 'easy', 3);
     for (const level of levels) {
       const sol = findSolution(level);
       if (sol === null) continue;
@@ -230,7 +249,7 @@ describe('findSolution', () => {
   });
 
   it('solution length is at most the number of pins in the level', () => {
-    const levels = generateBatch(100, 'easy', 3);
+    const levels = getGeneratedBatch(100, 'easy', 3);
     for (const level of levels) {
       const sol = findSolution(level);
       if (sol === null) continue;
@@ -280,7 +299,7 @@ describe('findSolution', () => {
 
 describe('validateLevel', () => {
   it('returns { valid, reason } shape', () => {
-    const levels = generateBatch(1, 'easy', 1);
+    const levels = getGeneratedBatch(1, 'easy', 1);
     if (levels.length > 0) {
       const result = validateLevel(levels[0]);
       expect(result).toHaveProperty('valid');
@@ -303,7 +322,7 @@ describe('validateLevel', () => {
   });
 
   it('rejects a level missing pins (has balls and cups but no pins)', () => {
-    const levels = generateBatch(1, 'easy', 1);
+    const levels = getGeneratedBatch(1, 'easy', 1);
     if (levels.length === 0) return;
     const { balls, cups } = levels[0];
     const result = validateLevel({ balls, cups });
@@ -312,7 +331,7 @@ describe('validateLevel', () => {
   });
 
   it('rejects a level missing balls (has pins and cups but no balls)', () => {
-    const levels = generateBatch(1, 'easy', 1);
+    const levels = getGeneratedBatch(1, 'easy', 1);
     if (levels.length === 0) return;
     const { pins, cups } = levels[0];
     const result = validateLevel({ pins, cups });

@@ -10,6 +10,15 @@ import {
 } from '../../src/games/parking-escape/generator.js';
 
 const GRID_SIZE = 6;
+const generatedLevelCache = new Map();
+
+function getGeneratedLevel(seed, difficulty = 'medium', index = 0) {
+  const key = `${seed}:${difficulty}:${index}`;
+  if (!generatedLevelCache.has(key)) {
+    generatedLevelCache.set(key, generateLevel(seed, difficulty, index));
+  }
+  return generatedLevelCache.get(key);
+}
 
 // Pre-computed test levels to avoid expensive BFS operations in tests
 // Pre-computed test levels to avoid expensive BFS operations in tests
@@ -74,7 +83,7 @@ const PRE_COMPUTED_MEDIUM_LEVELS = [
 
 describe('generateLevel', () => {
   it('returns a level object with required fields', () => {
-    const level = generateLevel(42, 'easy', 0);
+    const level = getGeneratedLevel(42, 'easy', 0);
     expect(level).not.toBeNull();
     expect(level.id).toBeTruthy();
     expect(level.grid).toBeDefined();
@@ -87,7 +96,7 @@ describe('generateLevel', () => {
 
   it('always includes a hero vehicle', () => {
     for (let seed = 1; seed <= 5; seed++) {
-      const level = generateLevel(seed, 'easy', 0);
+      const level = getGeneratedLevel(seed, 'easy', 0);
       if (!level) continue;
       const hero = level.grid.vehicles.find(v => v.type === 'hero');
       expect(hero).toBeDefined();
@@ -97,7 +106,7 @@ describe('generateLevel', () => {
 
   it('hero is horizontal and on exit row (y=2)', () => {
     for (let seed = 1; seed <= 5; seed++) {
-      const level = generateLevel(seed, 'easy', 0);
+      const level = getGeneratedLevel(seed, 'easy', 0);
       if (!level) continue;
       const hero = level.grid.vehicles.find(v => v.type === 'hero');
       expect(hero.orientation).toBe('horizontal');
@@ -106,7 +115,7 @@ describe('generateLevel', () => {
   });
 
   it('exit is on the right side', () => {
-    const level = generateLevel(42, 'easy', 0);
+    const level = getGeneratedLevel(42, 'easy', 0);
     if (!level) return;
     expect(level.grid.exit.direction).toBe('right');
     expect(level.grid.exit.y).toBe(2);
@@ -121,7 +130,7 @@ describe('generateLevel', () => {
   it('easy difficulty target moves in range [4, 8]', () => {
     let found = false;
     for (let seed = 0; seed < 20; seed++) {
-      const level = generateLevel(seed, 'easy', 0);
+      const level = getGeneratedLevel(seed, 'easy', 0);
       if (!level) continue;
       expect(level.targetMoves).toBeGreaterThanOrEqual(4);
       expect(level.targetMoves).toBeLessThanOrEqual(8);
@@ -189,7 +198,7 @@ describe('generateLevel', () => {
   it('easy difficulty: difficulty score uses 2 + Math.round(targetMoves / 4) formula', { timeout: 10000 }, () => {
     let level = null;
     for (let s = 0; s < 15; s++) {  // Reduced from 20 to 15
-      level = generateLevel(s, 'easy', 0);
+      level = getGeneratedLevel(s, 'easy', 0);
       if (level) break;
     }
     if (!level) return;
@@ -207,7 +216,7 @@ describe('generateLevel', () => {
   it('generated levels include both horizontal and vertical non-hero vehicles', { timeout: 10000 }, () => {
     let hasHoriz = false, hasVert = false;
     for (let seed = 0; seed < 15; seed++) {  // Reduced from 20 to 15
-      const level = generateLevel(seed, 'easy', 0);
+      const level = getGeneratedLevel(seed, 'easy', 0);
       if (!level) continue;
       for (const v of level.grid.vehicles) {
         if (v.type === 'hero') continue;
@@ -224,7 +233,7 @@ describe('generateLevel', () => {
     // Use easy to avoid slow hard-level generation in tests
     let level = null;
     for (let s = 0; s < 15; s++) {  // Reduced from 20 to 15
-      level = generateLevel(s, 'easy', 7);
+      level = getGeneratedLevel(s, 'easy', 7);
       if (level) break;
     }
     if (!level) return;
@@ -234,7 +243,7 @@ describe('generateLevel', () => {
 
   it('all vehicles fit within grid bounds', () => {
     for (let seed = 1; seed <= 5; seed++) {
-      const level = generateLevel(seed, 'easy', 0);
+      const level = getGeneratedLevel(seed, 'easy', 0);
       if (!level) continue;
       for (const v of level.grid.vehicles) {
         expect(v.x).toBeGreaterThanOrEqual(0);
@@ -247,7 +256,7 @@ describe('generateLevel', () => {
 
   it('vehicles have no overlapping cells', () => {
     for (let seed = 1; seed <= 5; seed++) {
-      const level = generateLevel(seed, 'easy', 0);
+      const level = getGeneratedLevel(seed, 'easy', 0);
       if (!level) continue;
 
       // Build occupancy grid
@@ -268,7 +277,7 @@ describe('generateLevel', () => {
     // With 25% per vehicle and many seeds, at least one truck should appear
     let foundTruck = false;
     for (let seed = 0; seed < 20; seed++) {  // Reduced from 25 to 20
-      const level = generateLevel(seed, 'easy', 0);  // Use easy for faster generation
+      const level = getGeneratedLevel(seed, 'easy', 0);  // Use easy for faster generation
       if (!level) continue;
       const trucks = level.grid.vehicles.filter(v => v.type === 'truck');
       if (trucks.length > 0) {
@@ -289,7 +298,7 @@ describe('validateLevel', () => {
   it('returns valid for a generated level', { timeout: 10000 }, () => {
     let level = null;
     for (let s = 0; s < 15; s++) {  // Reduced from 20 to 15
-      level = generateLevel(s, 'easy', 0);
+      level = getGeneratedLevel(s, 'easy', 0);
       if (level) break;
     }
     expect(level).not.toBeNull();
@@ -301,7 +310,7 @@ describe('validateLevel', () => {
   it('returns invalid for level without hero vehicle', { timeout: 10000 }, () => {
     let level = null;
     for (let s = 0; s < 15; s++) {  // Reduced from 20 to 15
-      level = generateLevel(s, 'easy', 0);
+      level = getGeneratedLevel(s, 'easy', 0);
       if (level) break;
     }
     expect(level).not.toBeNull();

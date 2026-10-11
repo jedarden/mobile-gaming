@@ -185,88 +185,95 @@ export function solve(level, _maxMoves = 40) {
   const height = level.grid.height;
   const exit = level.grid.exit;
   const exitDir = exit.direction || 'right';
+  const heroIndex = vehicles.findIndex(v => v.type === 'hero');
 
   // Positions array: positions[i] = x for horizontal, y for vertical
   const initPos = vehicles.map(v => v.orientation === 'horizontal' ? v.x : v.y);
 
   function buildOcc(pos) {
-    const occ = Array.from({ length: height }, () => Array(width).fill(-1));
+    const occ = new Int32Array(width * height).fill(-1);
     for (let i = 0; i < vehicles.length; i++) {
       const v = vehicles[i];
       if (v.orientation === 'horizontal') {
         for (let dx = 0; dx < v.width; dx++) {
           const cx = pos[i] + dx;
-          if (cx >= 0 && cx < width) occ[v.y][cx] = i;
+          if (cx >= 0 && cx < width) occ[v.y * width + cx] = i;
         }
       } else {
         for (let dy = 0; dy < v.height; dy++) {
           const cy = pos[i] + dy;
-          if (cy >= 0 && cy < height) occ[cy][v.x] = i;
+          if (cy >= 0 && cy < height) occ[cy * width + v.x] = i;
         }
       }
     }
     return occ;
   }
 
+  function isPathClear(pos, axis, fixed, start, end) {
+    for (let i = 0; i < vehicles.length; i++) {
+      if (i === heroIndex) continue;
+
+      const v = vehicles[i];
+      const p = pos[i];
+      if (axis === 'horizontal') {
+        if (v.orientation === 'horizontal') {
+          if (v.y === fixed && p < end && p + v.width > start) return false;
+        } else if (v.x >= start && v.x < end && p <= fixed && fixed < p + v.height) {
+          return false;
+        }
+      } else if (v.orientation === 'vertical') {
+        if (v.x === fixed && p < end && p + v.height > start) return false;
+      } else if (v.y >= start && v.y < end && p <= fixed && fixed < p + v.width) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   function isWon(pos) {
-    const hi = vehicles.findIndex(v => v.type === 'hero');
-    if (hi < 0) return false;
-    const hv = vehicles[hi];
-    const hp = pos[hi];
-    const occ = buildOcc(pos);
+    if (heroIndex < 0) return false;
+    const hv = vehicles[heroIndex];
+    const hp = pos[heroIndex];
     if (exitDir === 'right') {
       if (hv.y !== exit.y) return false;
-      for (let x = hp + hv.width; x < width; x++) {
-        if (occ[hv.y][x] !== -1) return false;
-      }
-      return true;
+      return isPathClear(pos, 'horizontal', hv.y, hp + hv.width, width);
     }
     if (exitDir === 'left') {
       if (hv.y !== exit.y) return false;
-      for (let x = 0; x < hp; x++) {
-        if (occ[hv.y][x] !== -1) return false;
-      }
-      return true;
+      return isPathClear(pos, 'horizontal', hv.y, 0, hp);
     }
     if (exitDir === 'down') {
       if (hv.x !== exit.x) return false;
-      for (let y = hp + hv.height; y < height; y++) {
-        if (occ[y][hv.x] !== -1) return false;
-      }
-      return true;
+      return isPathClear(pos, 'vertical', hv.x, hp + hv.height, height);
     }
     if (exitDir === 'up') {
       if (hv.x !== exit.x) return false;
-      for (let y = 0; y < hp; y++) {
-        if (occ[y][hv.x] !== -1) return false;
-      }
-      return true;
+      return isPathClear(pos, 'vertical', hv.x, 0, hp);
     }
     return false;
   }
 
-  function getMoves(pos) {
-    const occ = buildOcc(pos);
+  function getMoves(pos, occ) {
     const moves = [];
     for (let i = 0; i < vehicles.length; i++) {
       const v = vehicles[i];
       const p = pos[i];
       if (v.orientation === 'horizontal') {
         for (let d = 1; d <= p; d++) {
-          if (occ[v.y][p - d] !== -1) break;
+          if (occ[v.y * width + p - d] !== -1) break;
           moves.push({ i, delta: -d });
         }
         for (let d = 1; p + v.width - 1 + d < width; d++) {
-          if (occ[v.y][p + v.width - 1 + d] !== -1) break;
+          if (occ[v.y * width + p + v.width - 1 + d] !== -1) break;
           moves.push({ i, delta: d });
         }
       } else {
         for (let d = 1; d <= p; d++) {
-          if (occ[p - d][v.x] !== -1) break;
+          if (occ[(p - d) * width + v.x] !== -1) break;
           moves.push({ i, delta: -d });
         }
         for (let d = 1; p + v.height - 1 + d < height; d++) {
-          if (occ[p + v.height - 1 + d][v.x] !== -1) break;
+          if (occ[(p + v.height - 1 + d) * width + v.x] !== -1) break;
           moves.push({ i, delta: d });
         }
       }
@@ -280,13 +287,15 @@ export function solve(level, _maxMoves = 40) {
   // BFS: store parent info for path reconstruction
   const visited = new Map([[initKey, null]]); // key → {parentKey, move} or null for root
   const queue = [initPos];
+  let queueHead = 0;
   const MAX_STATES = 500000;
 
-  while (queue.length > 0 && visited.size < MAX_STATES) {
-    const pos = queue.shift();
+  while (queueHead < queue.length && visited.size < MAX_STATES) {
+    const pos = queue[queueHead++];
     const posKey = pos.join(',');
+    const occ = buildOcc(pos);
 
-    for (const move of getMoves(pos)) {
+    for (const move of getMoves(pos, occ)) {
       const newPos = [...pos];
       newPos[move.i] += move.delta;
       const newKey = newPos.join(',');
@@ -299,19 +308,16 @@ export function solve(level, _maxMoves = 40) {
       const moveRecord = { vehicleId: v.id, direction: dir, distance: dist };
 
       visited.set(newKey, { parentKey: posKey, move: moveRecord });
-
       if (isWon(newPos)) {
-        // Reconstruct path
         const path = [];
         let cur = newKey;
         while (visited.get(cur) !== null) {
-          const { parentKey, move: m } = visited.get(cur);
-          path.unshift(m);
+          const { parentKey, move: pathMove } = visited.get(cur);
+          path.unshift(pathMove);
           cur = parentKey;
         }
         return { cost: path.length, path };
       }
-
       queue.push(newPos);
     }
   }

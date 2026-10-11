@@ -21,6 +21,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const levels = JSON.parse(
   readFileSync(join(__dirname, '../../src/games/parking-escape/levels.json'), 'utf8')
 );
+const solutions = new Map();
+
+function getSolution(level) {
+  if (!solutions.has(level)) solutions.set(level, solve(level));
+  return solutions.get(level);
+}
 
 describe('Parking Escape Solver', () => {
   it('has at least 10 levels', () => {
@@ -71,12 +77,12 @@ describe('Parking Escape Solver', () => {
 
   for (const level of levels) {
     it(`level ${level.id} is solvable`, () => {
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result).not.toBeNull();
     });
 
     it(`level ${level.id} solution replays to won`, () => {
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result).not.toBeNull();
       let state = createInitialState(level);
       for (const move of result.path) {
@@ -86,13 +92,13 @@ describe('Parking Escape Solver', () => {
     });
 
     it(`level ${level.id} solver cost equals targetMoves`, () => {
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result).not.toBeNull();
       expect(result.cost).toBe(level.targetMoves);
     });
 
     it(`level ${level.id} solution path contains only valid vehicle ids`, () => {
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result).not.toBeNull();
       const validIds = new Set(level.grid.vehicles.map(v => v.id));
       for (const move of result.path) {
@@ -101,7 +107,7 @@ describe('Parking Escape Solver', () => {
     });
 
     it(`level ${level.id} solution uses at most maxMoves`, () => {
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result).not.toBeNull();
       expect(result.cost).toBeLessThanOrEqual(level.maxMoves);
     });
@@ -150,13 +156,13 @@ describe('Parking Escape — generated easy levels', () => {
   for (let i = 0; i < 4; i++) {
     it(`generated easy level ${i} is BFS-solvable`, () => {
       const level = GEN_LEVELS[i];
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result, `generated easy level ${i}: solve returned null`).not.toBeNull();
     });
 
     it(`generated easy level ${i} solution replays to won`, () => {
       const level = GEN_LEVELS[i];
-      const result = solve(level);
+      const result = getSolution(level);
       if (!result) return;
       let state = createInitialState(level);
       for (const move of result.path) {
@@ -177,7 +183,7 @@ describe('Parking Escape — generated medium levels', () => {
   for (let i = 0; i < 2; i++) {
     it(`generated medium level ${i} is BFS-solvable`, () => {
       const level = GEN_LEVELS[i];
-      const result = solve(level);
+      const result = getSolution(level);
       expect(result, `generated medium level ${i}: solve returned null`).not.toBeNull();
     }, 20000); // Reduced from 30s to 20s
   }
