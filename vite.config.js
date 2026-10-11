@@ -23,24 +23,29 @@ const gameEntries = existsSync(gamesDir)
 // Cloudflare Pages _redirects expect /hub/ and /<game>/, not /src/hub/ and /src/games/<game>/.
 // This plugin moves dist/src/* up to dist/* after build.
 function flattenSrcOutput() {
+  let outputDir = resolve(__dirname, 'dist');
+
   return {
     name: 'flatten-src-output',
+    configResolved(config) {
+      outputDir = config.build.outDir;
+    },
     closeBundle() {
-      const distSrc = resolve(__dirname, 'dist/src');
+      const distSrc = resolve(outputDir, 'src');
       if (!existsSync(distSrc)) return;
 
-      // Move dist/src/hub -> dist/hub
+      // Move <outDir>/src/hub -> <outDir>/hub
       const srcHub = resolve(distSrc, 'hub');
       if (existsSync(srcHub)) {
-        renameSync(srcHub, resolve(__dirname, 'dist/hub'));
+        renameSync(srcHub, resolve(outputDir, 'hub'));
       }
 
-      // Move dist/src/games/* -> dist/*
+      // Move <outDir>/src/games/* -> <outDir>/*
       const srcGames = resolve(distSrc, 'games');
       if (existsSync(srcGames)) {
         for (const entry of readdirSync(srcGames, { withFileTypes: true })) {
           if (entry.isDirectory()) {
-            renameSync(resolve(srcGames, entry.name), resolve(__dirname, 'dist', entry.name));
+            renameSync(resolve(srcGames, entry.name), resolve(outputDir, entry.name));
           }
         }
       }
@@ -53,7 +58,7 @@ function flattenSrcOutput() {
         if (!entry.isDirectory()) continue;
         const levels = resolve(sourceGames, entry.name, 'levels.json');
         if (existsSync(levels)) {
-          copyFileSync(levels, resolve(__dirname, 'dist', entry.name, 'levels.json'));
+          copyFileSync(levels, resolve(outputDir, entry.name, 'levels.json'));
         }
       }
 
@@ -61,15 +66,15 @@ function flattenSrcOutput() {
       rmSync(distSrc, { recursive: true, force: true });
 
       // Copy hub/index.html to root index.html so / serves the hub directly
-      const hubIndex = resolve(__dirname, 'dist/hub/index.html');
+      const hubIndex = resolve(outputDir, 'hub/index.html');
       if (existsSync(hubIndex)) {
-        copyFileSync(hubIndex, resolve(__dirname, 'dist/index.html'));
+        copyFileSync(hubIndex, resolve(outputDir, 'index.html'));
       }
 
       // Write version.json with the current git SHA for deploy verification
       let sha = 'unknown';
       try { sha = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim(); } catch (_) {}
-      writeFileSync(resolve(__dirname, 'dist/version.json'), JSON.stringify({ sha }));
+      writeFileSync(resolve(outputDir, 'version.json'), JSON.stringify({ sha }));
     }
   };
 }
