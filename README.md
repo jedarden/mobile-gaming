@@ -83,7 +83,7 @@ npm run preview
 
 # Run tests
 npm test                 # ESLint pretest, then unit tests (Vitest)
-npm run test:e2e         # CI E2E tests (mobile Chromium)
+npm run test:e2e         # CI smoke checks of the built site (mobile Chromium)
 npm run test:e2e:all     # Full E2E matrix (mobile Chromium and Safari)
 npm run test:levels      # Level validation
 ```
@@ -108,9 +108,10 @@ mobile-gaming/
 ## 🧪 Testing
 
 - **121 unit test files** covering game logic, state management, and scoring
-- **E2E tests** with Playwright; the CI entry point uses mobile Chromium, and
-  `npm run test:e2e:all` also runs mobile Safari. The CI suite follows the daily
-  challenge banner into its game and checks seeded daily mode in Parking Escape.
+- **E2E tests** with Playwright; the CI entry point uses mobile Chromium to
+  smoke-check the production hub and all 13 game routes, and checks the daily
+  challenge banner plus seeded daily mode in Parking Escape. The separate
+  `npm run test:e2e:all` command runs the broader mobile Chromium and Safari matrix.
 - **Daily-challenge coverage** runs as part of `npm test`, including seeded
   generation and completion wiring across the supported games
 - **Bundle size enforcement**: 3000KB total generated JS (including vendor
