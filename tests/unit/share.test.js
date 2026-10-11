@@ -3,10 +3,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 // Setup globals
 let shareModule;
 let mockNavigator;
+let originalNavigatorDescriptor;
 
 async function getFreshModule() {
   vi.resetModules();
   vi.unstubAllGlobals();
+
+  // Capture the host descriptor before Vitest stubs the Node read-only global.
+  originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
 
   // Mock navigator - use stubGlobal to avoid read-only property errors
   mockNavigator = {
@@ -85,6 +89,14 @@ describe('share', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  it('stubs the read-only runtime navigator with Vitest', () => {
+    expect(originalNavigatorDescriptor).toEqual(expect.objectContaining({
+      get: expect.any(Function),
+      set: undefined
+    }));
+    expect(globalThis.navigator).toBe(mockNavigator);
   });
 
   describe('hasWebShareSupport', () => {
