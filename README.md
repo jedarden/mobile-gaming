@@ -85,7 +85,8 @@ npm run preview
 npm test                 # ESLint pretest, then unit tests (Vitest)
 npm run test:e2e         # CI smoke checks of the built site (mobile Chromium)
 npm run test:e2e:all     # Full E2E matrix (mobile Chromium and Safari)
-npm run test:levels      # Level validation
+npm run test:levels                 # Level validation: all committed levels + 100 generated per tier
+npm run test:levels -- --count 5    # Level validation, 5 generated per tier — the scope CI runs
 ```
 
 The dev server runs on `http://localhost:5173/` and auto-discovers all games from `src/games/*/`.
@@ -116,7 +117,23 @@ mobile-gaming/
   generation and completion wiring across the supported games
 - **Bundle size enforcement**: 3000KB total generated JS (including vendor
   chunks), with a 500KB gzipped initial-JS budget per game; 150KB CSS budget
-- **Level validation**: All games must have ≥ 3 levels
+- **Level validation** (`scripts/validate-levels.js`): two phases. Phase 1
+  schema-validates **every** committed level file in `levels/` against its
+  game's schema. Phase 2 generator validation generates N levels per game per
+  difficulty tier and checks solvability with the generator's own
+  `validateLevel()`. `--count N` sets N only for phase 2 — default 100, and a
+  missing, non-numeric, or zero value silently falls back to 100. Phase 1
+  always covers all committed levels regardless of the flag.
+  `--schema-only` skips generator validation entirely.
+  - **Local full validation** is `npm run test:levels` (100 per tier).
+  - **CI runs `npm run test:levels -- --count 5`** — the `unit` step of the
+    `mobile-gaming-ci` Argo WorkflowTemplate (in `declarative-config`,
+    `k8s/iad-ci/argo-workflows/`) — because generating 100 per tier exceeded
+    that step's 600s deadline. Tier coverage (the set of game × difficulty
+    combinations checked) is identical at either count; only samples per tier
+    shrink, so a rare per-tier generation failure can pass CI but fail the
+    full local run.
+- **Level scaffold rule**: All games must have ≥ 3 levels
 
 ## 🚢 Deployment
 

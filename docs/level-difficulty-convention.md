@@ -58,6 +58,15 @@ npx vitest run        # expect 121 files, 5378 tests
 npm run test:levels   # expect Schema 330/0, Generator 31 tiers/0, exit 0
 ```
 
+That `test:levels` line is the **full** validation — 100 generated levels per
+game per tier. CI deliberately runs a reduced scope,
+`npm run test:levels -- --count 5` (five per tier, to stay inside the `unit`
+step's 600s deadline). Tier coverage is the same at either count, but CI
+samples each tier five times instead of a hundred, so a rare per-tier
+generation failure can pass CI and still fail the full run — which is why the
+gate above stays at full scope locally. Flag semantics are documented in the
+README's Level validation section.
+
 > `vitest.config.js` sets `bail: 1`, so a failing run reports only the **first**
 > failing file. "One failure" never means "one failure" — fix it and run again
 > until the suite is green, rather than assuming the count.
