@@ -92,3 +92,44 @@ scripts/definition-of-done.sh --fast  → exit 0
 install / lint / unit / level validation (330 schemas, 31 generator tiers) /
 build / bundle budgets all passed locally on Node 24 — again showing the unit
 suite is green on modern Node and red only under the CI image's Node 20.
+
+## 2026-10-24 addendum — verifier gate resolved at current HEAD
+
+The NEEDLE fallback gate re-ran this verifier *without* `--fast` and it
+failed: the e2e stage pinned preview port 4173, which an orphaned preview
+server held on this shared host (`reuseExistingServer: false` fails such a
+run outright). `mobgame-119a31db` fixed the verifier on `main` (`ee5b82c`)
+by auto-selecting an ephemeral port when `PLAYWRIGHT_TEST_PORT` is unset,
+so the collision can no longer occur.
+
+Re-verified at current `HEAD` (`f8ccd79`) in a fresh `git archive`
+extraction, full verifier (no `--fast`):
+
+```
+scripts/definition-of-done.sh  → exit 0
+```
+
+Every stage ran: install, lint, unit, level validation, build, bundle
+budgets, and e2e — 16/16 Chromium tests passed.
+
+Product code is unchanged between `5af635d` (the live run above) and
+`f8ccd79` — only this document and the verifier itself differ — so the
+recorded live outcome still describes current `HEAD`. The CI unit red
+(`share.test.js` navigator descriptor under the CI image's Node 20) remains
+tracked on `mobgame-aeaece0e` / `mobgame-293f51d2`, not here.
+
+The Argo `Workflow` object is no longer retrievable (`NotFound` on
+2026-10-24 ~01:50Z, about 90 minutes after the run — expected Argo TTL
+behavior). The Garage archive is the durable record, and retrieval was
+re-verified post-reaping (`kubectl port-forward` to
+`svc/needle-ci-artifacts-iad`, SigV4 list against bucket
+`ci-release-artifacts`):
+
+```
+ 20352  …/mobile-gaming-ci-manual-5hl76-lint-550019469/main.log
+139903  …/mobile-gaming-ci-manual-5hl76-unit-1230683341/main.log
+  8110  …/mobile-gaming-ci-manual-5hl76-build-3911617637/main.log
+```
+
+The build step's log is archived alongside lint and unit; all three sizes
+match the run as recorded above.
