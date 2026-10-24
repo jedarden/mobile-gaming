@@ -1,5 +1,28 @@
 # CI workflow verification — 2026-10-11
 
+> **UPDATE (2026-10-24):** The access blocker recorded below is resolved, but
+> **no successful live run exists yet** — every green stage in this document
+> remains local clean-archive evidence, not live CI evidence. Do not cite it
+> as a reported Argo Workflow run.
+>
+> - **Kubeconfig blocker closed (2026-10-23):** the iad-ci credential was
+>   restored from the operator-provisioned OpenBao secret (bead
+>   `mobgame-adc92828`); manual `workflowTemplateRef` submission works again —
+>   see
+>   [2026-10-23-workflow-live-verification.md](2026-10-23-workflow-live-verification.md).
+> - **First live run after restoration failed (2026-10-24):** workflow
+>   `mobile-gaming-ci-manual-5hl76` went red at the unit stage —
+>   `tests/unit/share.test.js:95` asserts a `navigator` accessor descriptor
+>   that the CI image's Node 20 `globalThis` does not expose (lint and build
+>   were green; e2e was skipped when unit failed). Tracked on
+>   `mobgame-aeaece0e` / `mobgame-293f51d2`. The July 2026 search in
+>   [bf-5pqa5-ci-verification.md](bf-5pqa5-ci-verification.md) likewise found
+>   17/17 failed runs — no live run of this repository has ever completed all
+>   stages green.
+> - **Pending:** the first fully green live run. Once the Node-20 unit red is
+>   fixed, submit a fresh `mobile-gaming-ci` run and record its workflow name
+>   and date here (bead `mobgame-0e2f2095`).
+
 ## Result
 
 The repository's CI commands passed from a fresh `git archive` extraction of
