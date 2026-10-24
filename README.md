@@ -82,9 +82,10 @@ npm run build
 npm run preview
 
 # Run tests
-npm test                 # ESLint pretest, then unit tests (Vitest)
+npm test                 # ESLint + scaffold pretest, then unit tests (Vitest)
 npm run test:e2e         # CI smoke checks of the built site (mobile Chromium)
 npm run test:e2e:all     # Full E2E matrix (mobile Chromium and Safari)
+npm run test:scaffold                 # Scaffold check: 7 required files + >= 3 levels per game
 npm run test:levels                 # Level validation: all committed levels + 100 generated per tier
 npm run test:levels -- --count 5    # Level validation, 5 generated per tier — the scope CI runs
 ```
@@ -133,7 +134,14 @@ mobile-gaming/
     combinations checked) is identical at either count; only samples per tier
     shrink, so a rare per-tier generation failure can pass CI but fail the
     full local run.
-- **Level scaffold rule**: All games must have ≥ 3 levels
+- **Scaffold validation** (`scripts/validate-scaffold.js`, `npm run
+  test:scaffold`): local parity for the structural checks of the Argo
+  WorkflowTemplate's lint step — every `src/games/<name>/` must contain the
+  seven scaffold files (index.html, game.js, state.js, renderer.js, input.js,
+  styles.css, levels.json) and a `levels.json` top-level array with ≥ 3
+  levels. All violations are reported at once, and an empty `src/games/`
+  fails rather than passing vacuously. Runs as part of `npm test` (pretest),
+  so a violation is visible locally without an Argo round-trip.
 
 ## 🚢 Deployment
 

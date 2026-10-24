@@ -8,6 +8,9 @@ Every game directory must have exactly these files:
 - `index.html`, `game.js`, `state.js`, `renderer.js`, `input.js`, `styles.css`, `levels.json`
 - `levels.json` must contain at least 3 levels
 
+Both structural rules are enforced locally by `npm run test:scaffold`
+(`scripts/validate-scaffold.js`), which runs as part of `npm test` (pretest).
+
 No `console.log` in `state.js`, `renderer.js`, `input.js`, or `generator.js` — the CI lint check fails on these.
 
 ## Build & Test
