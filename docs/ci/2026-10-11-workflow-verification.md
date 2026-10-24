@@ -1,9 +1,10 @@
 # CI workflow verification — 2026-10-11
 
-> **UPDATE (2026-10-24):** The access blocker recorded below is resolved, but
-> **no successful live run exists yet** — every green stage in this document
-> remains local clean-archive evidence, not live CI evidence. Do not cite it
-> as a reported Argo Workflow run.
+> **UPDATE (2026-10-24):** Resolved. The access blocker recorded below is
+> closed and **the first fully green live run exists** —
+> `mobile-gaming-ci-manual-kmtzc` completed all stages on 2026-10-24. Cite
+> that run, not this document, as live CI evidence; the stages below are the
+> local clean-archive verification it corroborates.
 >
 > - **Kubeconfig blocker closed (2026-10-23):** the iad-ci credential was
 >   restored from the operator-provisioned OpenBao secret (bead
@@ -17,11 +18,22 @@
 >   were green; e2e was skipped when unit failed). Tracked on
 >   `mobgame-aeaece0e` / `mobgame-293f51d2`. The July 2026 search in
 >   [bf-5pqa5-ci-verification.md](bf-5pqa5-ci-verification.md) likewise found
->   17/17 failed runs — no live run of this repository has ever completed all
->   stages green.
-> - **Pending:** the first fully green live run. Once the Node-20 unit red is
->   fixed, submit a fresh `mobile-gaming-ci` run and record its workflow name
->   and date here (bead `mobgame-0e2f2095`).
+>   17/17 failed runs.
+> - **Second live run failed on a template image bug (2026-10-24):** workflow
+>   `mobile-gaming-ci-manual-wdbqs` was green through lint, unit (the Node-20
+>   fix above, CI-verified) and build, but its e2e step hit ImagePullBackOff
+>   on a nonexistent WorkflowTemplate image
+>   (`mcr.microsoft.com/playwright/node:1.49.0-noble` — MCR registry 404);
+>   the run was stopped and recorded Failed. Corrected to
+>   `mcr.microsoft.com/playwright:v1.49.0-noble` in declarative-config commit
+>   `756e733fd`, ArgoCD-synced before the run below.
+> - **First green live run (2026-10-24):** workflow
+>   `mobile-gaming-ci-manual-kmtzc` (uid `94f3df07-71a4-4a9a-acb8-89215d9bdcf9`,
+>   created 12:17Z, Succeeded 13:00Z) — lint, unit, build and e2e all
+>   Succeeded against origin/main of the run window (`7891ab9` → `56e8c16`,
+>   bead-checkpoint publishes only, no product-code changes). First live run
+>   of this repository to complete all stages green. Recorded by bead
+>   `mobgame-0e2f2095`.
 
 ## Result
 
