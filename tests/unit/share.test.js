@@ -92,10 +92,16 @@ describe('share', () => {
   });
 
   it('stubs the read-only runtime navigator with Vitest', () => {
-    expect(originalNavigatorDescriptor).toEqual(expect.objectContaining({
-      get: expect.any(Function),
-      set: undefined
-    }));
+    // Only Node >= 21 exposes navigator as a read-only getter global. On the
+    // CI image's Node 20 there is none and tests/setup.js defines a plain
+    // writable data property, so assert the getter shape only when the
+    // runtime actually provides one.
+    if (originalNavigatorDescriptor?.get) {
+      expect(originalNavigatorDescriptor).toEqual(expect.objectContaining({
+        get: expect.any(Function),
+        set: undefined
+      }));
+    }
     expect(globalThis.navigator).toBe(mockNavigator);
   });
 
