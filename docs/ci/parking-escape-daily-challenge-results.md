@@ -7,8 +7,10 @@
 **Duration**: ~6 minutes (18:41:37Z - 18:47:38Z)  
 **Branch**: main
 
-> **RESOLVED (2026-10-23):** Both failures in this 2026-07-23 run are fixed on
-> `main`; everything below is historical.
+> **HISTORICAL RECORD (resolved 2026-10-23, annotated 2026-10-24):** Both
+> failures in this 2026-07-23 run are fixed on `main`; everything below is
+> preserved as a dated record of that run and its diagnoses, not the current
+> state.
 >
 > - **Unit timeout / navigator mocking:** the read-only `navigator` assignment
 >   was replaced with Vitest `vi.stubGlobal` stubbing plus regression coverage
@@ -20,6 +22,11 @@
 >   `scripts/check-bundle-size.js` now budgets 3,000KB of total generated JS
 >   including the Phaser/Three.js vendor chunks (500KB gzipped initial JS per
 >   game), and builds pass it — see
+>   [2026-10-11-workflow-verification.md](2026-10-11-workflow-verification.md).
+> - **Later verification (2026-10-11):** a fresh-archive run — the CI stages
+>   executed locally against a `git archive` extraction of `HEAD`,
+>   **not a live Argo Workflow run** — passed unit tests, build, and the
+>   daily-challenge checks; see
 >   [2026-10-11-workflow-verification.md](2026-10-11-workflow-verification.md).
 >
 > Failed-step logs are now archived despite podGC — see
