@@ -49,3 +49,17 @@ A diagnostic attempt to run all 619 historical E2E cases exposed many stale
 selectors and fixture assumptions; that run was interrupted at 460 cases with
 exit 130. Those cases are not part of the current CI gate, so this report does
 not claim the full historical matrix passes.
+
+## Reproducing this verification
+
+`scripts/local-ci-verify.sh` automates exactly these stages against a fresh
+`git archive` extraction of `HEAD` (or an explicitly passed ref) — never the
+working tree. It stops at the first nonzero exit, prints a per-stage summary
+table, removes the extraction directory on success, and deliberately retains
+it on failure for diagnosis (per-stage logs land in `<extraction>/logs/`).
+Run it from any checkout of the repository:
+
+```bash
+scripts/local-ci-verify.sh            # verify HEAD
+scripts/local-ci-verify.sh <ref>      # verify a specific commit
+```
