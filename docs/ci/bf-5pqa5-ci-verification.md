@@ -5,6 +5,28 @@
 **Status:** ❌ No Successful CI Run Found  
 **Attempted Workflows:** 17 (All Failed)
 
+> **RESOLVED (2026-10-23):** Both barriers recorded here are closed; this
+> document describes the 2026-07-24 state only.
+>
+> - **Log loss under podGC:** the `mobile-gaming-ci` template now archives
+>   every step's logs to the iad-ci Garage store
+>   (`mobile-gaming-ci-logs/v1/…`, 30-day retention) via
+>   `artifactRepositoryRef`, so failures are diagnosable after
+>   `podGC: OnPodCompletion`. Retrieval steps:
+>   [failed-workflow-logs.md](failed-workflow-logs.md); bead
+>   `mobgame-87e1bdf8`. Verified live on 2026-10-23 — see
+>   [2026-10-23-workflow-live-verification.md](2026-10-23-workflow-live-verification.md).
+> - **No successful run:** the navigator-mocking unit failures were replaced
+>   with `vi.stubGlobal` stubbing (commit `5307956`; bead chain
+>   `mobgame-aeaece0e` → `mobgame-ebc96bff` → `mobgame-293f51d2` /
+>   `mobgame-ba2a6ad3`), the JS bundle budget was raised to 3,000KB including
+>   vendor chunks, and a fully green pipeline (lint, unit, level validation,
+>   build, budgets, E2E) was verified on 2026-10-11 — see
+>   [2026-10-11-workflow-verification.md](2026-10-11-workflow-verification.md).
+>   One current unit red specific to the CI image's Node 20 remains tracked on
+>   `mobgame-aeaece0e` / `mobgame-293f51d2`; it is not the July 17/17-failure
+>   state.
+
 ## Objective
 
 Verify that all CI stages passed and document a successful CI workflow run for the mobile-gaming project.

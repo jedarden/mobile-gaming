@@ -7,6 +7,25 @@
 **Duration**: ~6 minutes (18:41:37Z - 18:47:38Z)  
 **Branch**: main
 
+> **RESOLVED (2026-10-23):** Both failures in this 2026-07-23 run are fixed on
+> `main`; everything below is historical.
+>
+> - **Unit timeout / navigator mocking:** the read-only `navigator` assignment
+>   was replaced with Vitest `vi.stubGlobal` stubbing plus regression coverage
+>   (commit `5307956`; bead chain `mobgame-aeaece0e` → `mobgame-ebc96bff` →
+>   `mobgame-293f51d2` / `mobgame-ba2a6ad3`), and per-test timeout guards were
+>   added to `vitest.config.js` (see
+>   [bf-152k3-ci-verification.md](bf-152k3-ci-verification.md)).
+> - **Bundle budget:** the ~3MB recommendation below was adopted —
+>   `scripts/check-bundle-size.js` now budgets 3,000KB of total generated JS
+>   including the Phaser/Three.js vendor chunks (500KB gzipped initial JS per
+>   game), and builds pass it — see
+>   [2026-10-11-workflow-verification.md](2026-10-11-workflow-verification.md).
+>
+> Failed-step logs are now archived despite podGC — see
+> [failed-workflow-logs.md](failed-workflow-logs.md) and bead
+> `mobgame-87e1bdf8`.
+
 ## Test Results Summary
 
 | Step | Status | Duration | Notes |

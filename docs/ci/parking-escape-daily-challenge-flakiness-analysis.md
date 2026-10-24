@@ -4,6 +4,24 @@
 **Bead:** bf-4m05t  
 **Focus:** Daily-challenge test workflow failures
 
+> **RESOLVED (2026-10-23):** The systematic failure analyzed below no longer
+> exists — this document is a historical record of the 2026-07-23 state, not
+> the current one. The root cause (direct assignment to the read-only
+> `navigator` global in `tests/unit/share.test.js`) was replaced with Vitest
+> `vi.stubGlobal` stubbing plus descriptor regression coverage (commit
+> `5307956`; bead chain `mobgame-aeaece0e` → `mobgame-ebc96bff` →
+> `mobgame-293f51d2` / `mobgame-ba2a6ad3`). The pipeline is no longer 100%
+> blocked: lint, unit, level validation, build and E2E all passed from a clean
+> archive on 2026-10-11 — see
+> [2026-10-11-workflow-verification.md](2026-10-11-workflow-verification.md) —
+> and the live run `mobile-gaming-ci-manual-5hl76` on 2026-10-23 had lint and
+> build green. One unrelated residual red remains (a descriptor-shape assertion
+> at `share.test.js:95` under the CI image's Node 20), tracked on
+> `mobgame-aeaece0e` / `mobgame-293f51d2`; it is not the 100%-timeout pattern
+> documented here. Failed-step logs are now archived despite podGC — see
+> [failed-workflow-logs.md](failed-workflow-logs.md) and bead
+> `mobgame-87e1bdf8`.
+
 ## Executive Summary
 
 **All 10 recent CI workflow runs analyzed failed with identical patterns:**
