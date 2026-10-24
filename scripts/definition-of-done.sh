@@ -35,7 +35,15 @@ npm run test:bundle-size
 if [ "$FAST" -eq 0 ]; then
   echo "== e2e =="
   npx playwright install chromium
-  PLAYWRIGHT_TEST_PORT="${PLAYWRIGHT_TEST_PORT:-4173}" npm run test:e2e
+  if [ -z "${PLAYWRIGHT_TEST_PORT:-}" ]; then
+    # This host is shared and port 4173 is regularly held by an unrelated
+    # preview server; playwright.config.ci.js sets reuseExistingServer: false,
+    # so a held port fails the run outright. Let the kernel hand us a free
+    # port instead — CI pins the port explicitly through the env var.
+    PLAYWRIGHT_TEST_PORT="$(node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')"
+    echo "e2e preview port (auto-selected): ${PLAYWRIGHT_TEST_PORT}"
+  fi
+  PLAYWRIGHT_TEST_PORT="$PLAYWRIGHT_TEST_PORT" npm run test:e2e
 fi
 
 echo "definition of done: PASS"
